@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#6366F1"/>
+      <stop offset="100%" stop-color="#4F46E5"/>
+    </linearGradient>
+  </defs>
+  <rect width="512" height="512" rx="96" fill="url(#bg)"/>
+  <g transform="translate(256,260)">
+    <rect x="-80" y="-100" width="160" height="190" rx="12" fill="white" opacity="0.95"/>
+    <rect x="-60" y="-72" width="120" height="8" rx="4" fill="#6366F1" opacity="0.3"/>
+    <rect x="-60" y="-52" width="90" height="8" rx="4" fill="#6366F1" opacity="0.2"/>
+    <rect x="-60" y="-32" width="105" height="8" rx="4" fill="#6366F1" opacity="0.3"/>
+    <rect x="-60" y="-12" width="75" height="8" rx="4" fill="#6366F1" opacity="0.2"/>
+    <rect x="-60" y="8" width="95" height="8" rx="4" fill="#6366F1" opacity="0.3"/>
+    <rect x="-60" y="28" width="60" height="8" rx="4" fill="#6366F1" opacity="0.2"/>
+    <path d="M80,-100 L80,-70 L50,-100 Z" fill="white" opacity="0.95"/>
+  </g>
+  <g transform="translate(256,140)">
+    <rect x="-28" y="-10" width="56" height="56" rx="28" fill="white"/>
+    <rect x="-18" y="0" width="36" height="36" rx="18" fill="#6366F1"/>
+    <path d="M-8,10 A14,14 0 0,0 8,10" stroke="white" stroke-width="3" fill="none"/>
+    <line x1="0" y1="24" x2="0" y2="36" stroke="white" stroke-width="3" stroke-linecap="round"/>
+    <line x1="-8" y1="36" x2="8" y2="36" stroke="white" stroke-width="3" stroke-linecap="round"/>
+  </g>
+</svg>

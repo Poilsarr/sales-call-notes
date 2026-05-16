@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      width: 320px;
+      padding: 16px;
+      font-family: -apple-system, BlinkMacSystemFont, "Inter", sans-serif;
+      background: #0a0a0a;
+      color: #fff;
+    }
+    .logo { display: flex; align-items: center; gap: 8px; margin-bottom: 16px; }
+    .logo-icon { width: 20px; height: 20px; background: #6366f1; border-radius: 4px; transform: rotate(45deg); }
+    .logo-text { font-size: 14px; font-weight: 500; }
+    .logo-text span { color: rgba(255,255,255,0.5); }
+    .status { padding: 12px; border-radius: 12px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); margin-bottom: 12px; }
+    .status-dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; margin-right: 8px; }
+    .active { background: #22c55e; }
+    .inactive { background: #6b7280; }
+    .status-text { font-size: 13px; }
+    .status-sub { font-size: 11px; color: rgba(255,255,255,0.4); margin-top: 4px; }
+    .btn {
+      width: 100%; padding: 10px; border-radius: 12px; border: none;
+      font-size: 12px; font-weight: 600; cursor: pointer; transition: all 0.2s;
+    }
+    .btn-primary { background: #6366f1; color: white; }
+    .btn-primary:hover { background: #4f46e5; }
+    .btn-secondary { background: rgba(255,255,255,0.1); color: white; margin-top: 8px; }
+    .btn-secondary:hover { background: rgba(255,255,255,0.15); }
+    .footer { margin-top: 16px; text-align: center; font-size: 10px; color: rgba(255,255,255,0.3); }
+  </style>
+</head>
+<body>
+  <div class="logo">
+    <div class="logo-icon"></div>
+    <div class="logo-text">CallNote<span>Pro</span></div>
+  </div>
+
+  <div class="status">
+    <div>
+      <span class="status-dot active" id="statusDot"></span>
+      <span class="status-text" id="statusText">Extension Active</span>
+    </div>
+    <div class="status-sub" id="meetingInfo">No meeting detected</div>
+  </div>
+
+  <button class="btn btn-primary" id="openApp">Open CallNote Pro</button>
+  <button class="btn btn-secondary" id="viewHistory">View Recent Notes</button>
+
+  <div class="footer">Captures Google Meet captions for AI analysis</div>
+
+  <script src="popup.js"></script>
+</body>
+</html>

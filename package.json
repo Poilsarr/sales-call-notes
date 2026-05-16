@@ -1,0 +1,48 @@
+{
+  "name": "sales-call-notes",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "postinstall": "prisma generate"
+  },
+  "dependencies": {
+    "@clerk/nextjs": "^5.0.0",
+    "@gsap/react": "^2.1.2",
+    "@prisma/client": "^5.12.0",
+    "@upstash/ratelimit": "^2.0.8",
+    "@upstash/redis": "^1.38.0",
+    "bullmq": "^5.76.7",
+    "clsx": "^2.1.1",
+    "geist": "^1.7.0",
+    "gsap": "^3.15.0",
+    "ioredis": "^5.10.1",
+    "lucide-react": "^0.378.0",
+    "next": "14.2.3",
+    "openai": "^4.47.0",
+    "react": "^18",
+    "react-dom": "^18",
+    "tailwind-merge": "^2.3.0"
+  },
+  "devDependencies": {
+    "@testing-library/jest-dom": "^6.9.1",
+    "@testing-library/react": "^16.3.2",
+    "@types/node": "^20",
+    "@types/react": "^18",
+    "@types/react-dom": "^18",
+    "@vitejs/plugin-react": "^6.0.2",
+    "eslint": "^8",
+    "eslint-config-next": "14.2.3",
+    "jsdom": "^29.1.1",
+    "postcss": "^8",
+    "prisma": "^5.12.0",
+    "tailwindcss": "^3.4.1",
+    "typescript": "^5",
+    "vitest": "^4.1.6"
+  }
+}

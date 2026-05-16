@@ -1,0 +1,31 @@
+{
+  "manifest_version": 3,
+  "name": "CallNote Pro - Meeting Notes",
+  "version": "1.0.0",
+  "description": "Automatically capture Google Meet transcripts and generate AI-powered sales notes.",
+  "permissions": ["storage", "identity", "activeTab"],
+  "host_permissions": ["https://meet.google.com/*", "https://app.callnotepro.com/*"],
+  "action": {
+    "default_popup": "popup.html",
+    "default_icon": {
+      "16": "icon16.png",
+      "48": "icon48.png",
+      "128": "icon128.png"
+    }
+  },
+  "background": {
+    "service_worker": "background.js"
+  },
+  "content_scripts": [
+    {
+      "matches": ["https://meet.google.com/*"],
+      "js": ["content.js"],
+      "run_at": "document_idle"
+    }
+  ],
+  "icons": {
+    "16": "icon16.png",
+    "48": "icon48.png",
+    "128": "icon128.png"
+  }
+}

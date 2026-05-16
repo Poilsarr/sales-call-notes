@@ -1,0 +1,168 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id            String   @id @default(cuid())
+  clerkId       String   @unique
+  email         String   @unique
+  name          String?
+  avatar        String?
+  plan          String   @default("FREE")
+  credits       Int      @default(5)
+  teamId        String?
+  team          Team?    @relation("teamMembers", fields: [teamId], references: [id])
+  ownedTeams    Team[]   @relation("teamOwner")
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@index([email])
+  @@index([teamId])
+  @@index([clerkId])
+}
+
+model Team {
+  id            String        @id @default(cuid())
+  name          String
+  slug          String        @unique
+  ownerId       String
+  owner         User          @relation("teamOwner", fields: [ownerId], references: [id])
+  members       User[]        @relation("teamMembers")
+  calls         Call[]
+  integrations Integration[]
+  settings      String?
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+
+  @@index([slug])
+  @@index([ownerId])
+}
+
+model Call {
+  id            String   @id @default(cuid())
+  userId        String
+  teamId        String?
+  team          Team?    @relation(fields: [teamId], references: [id])
+  filename      String
+  audioUrl      String?
+  duration      Int?
+  transcript    String?
+  language      String   @default("en")
+  summary       String?
+  healthScore   Float?
+  sentiment     String?
+  crmSynced     Boolean  @default(false)
+  crmProvider   String?
+  crmRecordId   String?
+  source        String   @default("upload")
+  tags          String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  actionItems   ActionItem[]
+  decisions     Decision[]
+  nextSteps     NextStep[]
+  speakers      Speaker[]
+  analytics     Analytics?
+
+  @@index([userId])
+  @@index([teamId])
+  @@index([createdAt])
+}
+
+model ActionItem {
+  id          String   @id @default(cuid())
+  callId      String
+  call        Call     @relation(fields: [callId], references: [id])
+  task        String
+  owner       String
+  due         String?
+  status      String   @default("PENDING")
+  completedAt DateTime?
+  createdAt   DateTime @default(now())
+
+  @@index([callId])
+  @@index([status])
+}
+
+model Decision {
+  id        String   @id @default(cuid())
+  callId    String
+  call      Call     @relation(fields: [callId], references: [id])
+  content   String
+  category  String?
+  createdAt DateTime @default(now())
+
+  @@index([callId])
+}
+
+model NextStep {
+  id          String   @id @default(cuid())
+  callId      String
+  call        Call     @relation(fields: [callId], references: [id])
+  step        String
+  date        String?
+  status      String   @default("PENDING")
+  completedAt DateTime?
+  createdAt   DateTime @default(now())
+
+  @@index([callId])
+  @@index([status])
+}
+
+model Speaker {
+  id        String   @id @default(cuid())
+  callId    String
+  call      Call     @relation(fields: [callId], references: [id])
+  name      String?
+  label     String
+  segments  String?
+  duration  Int?
+  createdAt DateTime @default(now())
+
+  @@index([callId])
+}
+
+model Analytics {
+  id                    String   @id @default(cuid())
+  callId                String   @unique
+  call                  Call     @relation(fields: [callId], references: [id])
+  talkRatio             String?
+  interruptions         Int?
+  questionsAsked        Int?
+  objections            String?
+  budgetMentioned       Boolean  @default(false)
+  timelineMentioned     Boolean  @default(false)
+  decisionMakerPresent  Boolean  @default(false)
+  competitorMentioned   Boolean  @default(false)
+  createdAt             DateTime @default(now())
+}
+
+model Integration {
+  id        String   @id @default(cuid())
+  teamId    String
+  team      Team     @relation(fields: [teamId], references: [id])
+  provider  String
+  config    String?
+  enabled   Boolean  @default(true)
+  syncedAt  DateTime?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([teamId])
+  @@index([provider])
+}
+
+model RateLimit {
+  id          String   @id @default(cuid())
+  userId      String   @unique
+  requests    Int      @default(0)
+  windowStart DateTime @default(now())
+  createdAt   DateTime @default(now())
+
+  @@index([userId])
+}

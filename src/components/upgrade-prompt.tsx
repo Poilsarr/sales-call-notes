@@ -1,0 +1,144 @@
+"use client";
+
+import { useState, useEffect } from "react";
+import { useUser } from "@clerk/nextjs";
+import { Zap, Crown, Sparkles, X, Loader2, CheckCircle } from "lucide-react";
+import { FeatureId, PLANS, PlanTier } from "@/lib/plans";
+
+interface UpgradePromptProps {
+  feature: FeatureId;
+  featureName: string;
+  onClose?: () => void;
+  minimal?: boolean;
+}
+
+export default function UpgradePrompt({ feature, featureName, onClose, minimal }: UpgradePromptProps) {
+  const { user } = useUser();
+  const [currentPlan, setCurrentPlan] = useState<PlanTier>("free");
+  const [upgrading, setUpgrading] = useState<string | null>(null);
+  const [success, setSuccess] = useState(false);
+
+  useEffect(() => {
+    if (user?.id) {
+      fetch(`/api/billing?userId=${user.id}`)
+        .then(r => r.json())
+        .then(d => setCurrentPlan(d.plan || "free"))
+        .catch(() => {});
+    }
+  }, [user?.id]);
+
+  const upgrade = async (targetPlan: PlanTier) => {
+    if (!user?.id) return;
+    setUpgrading(targetPlan);
+    try {
+      const res = await fetch("/api/billing", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ userId: user.id, plan: targetPlan }),
+      });
+      if (res.ok) {
+        setSuccess(true);
+        setTimeout(() => {
+          setSuccess(false);
+          setUpgrading(null);
+          onClose?.();
+          window.location.reload();
+        }, 1500);
+      }
+    } catch {}
+    setUpgrading(null);
+  };
+
+  const neededPlan = (() => {
+    for (const [tier, plan] of Object.entries(PLANS)) {
+      if (plan.features[feature] === true) return tier as PlanTier;
+    }
+    return "pro" as PlanTier;
+  })();
+
+  if (success) {
+    return (
+      <div className="p-6 rounded-2xl bg-green-500/10 border border-green-500/20 text-center">
+        <CheckCircle className="w-10 h-10 text-green-400 mx-auto mb-3" />
+        <p className="text-sm font-medium text-green-400">Upgraded successfully!</p>
+      </div>
+    );
+  }
+
+  if (minimal) {
+    return (
+      <div className="flex items-center gap-2 p-3 rounded-xl bg-yellow-500/5 border border-yellow-500/20">
+        <Crown className="w-4 h-4 text-yellow-400 shrink-0" />
+        <p className="text-xs text-yellow-400/80 flex-1">
+          {featureName} requires {neededPlan.charAt(0).toUpperCase() + neededPlan.slice(1)} plan
+        </p>
+        <button onClick={() => upgrade(neededPlan)}
+          disabled={upgrading !== null}
+          className="px-3 py-1 bg-yellow-500 text-black rounded-full text-[10px] font-bold hover:bg-yellow-400 transition disabled:opacity-50">
+          {upgrading ? <Loader2 className="w-3 h-3 animate-spin" /> : `Upgrade - $${PLANS[neededPlan].price / 100}/mo`}
+        </button>
+      </div>
+    );
+  }
+
+  return (
+    <div className="fixed inset-0 z-[70] bg-black/60 backdrop-blur-sm flex items-center justify-center p-6">
+      <div className="w-full max-w-md p-8 rounded-3xl linear-surface linear-border relative">
+        <button onClick={onClose} className="absolute top-4 right-4 p-1 hover:bg-white/5 rounded-lg transition">
+          <X className="w-4 h-4 text-white/40" />
+        </button>
+
+        <div className="text-center mb-8">
+          <div className="w-14 h-14 rounded-2xl bg-linear-indigo/20 flex items-center justify-center mx-auto mb-4">
+            <Sparkles className="w-7 h-7 text-linear-indigo" />
+          </div>
+          <h3 className="text-xl font-medium mb-2">Upgrade to access {featureName}</h3>
+          <p className="text-sm text-white/50">
+            This feature requires the {neededPlan.charAt(0).toUpperCase() + neededPlan.slice(1)} plan or higher.
+          </p>
+        </div>
+
+        <div className="space-y-3 mb-8">
+          {(["pro", "business"] as PlanTier[]).map(tier => {
+            const plan = PLANS[tier];
+            return (
+              <div key={tier}
+                className={`p-4 rounded-xl border transition-all cursor-pointer ${
+                  tier === neededPlan || currentPlan === "free"
+                    ? "border-linear-indigo/30 bg-linear-indigo/5"
+                    : "border-white/10 bg-white/5 hover:border-white/20"
+                } ${plan.features[feature] ? "opacity-100" : "opacity-40"}`}
+                onClick={() => plan.features[feature] && upgrade(tier)}>
+                <div className="flex items-center justify-between mb-2">
+                  <div className="flex items-center gap-2">
+                    <Crown className={`w-4 h-4 ${tier === "business" ? "text-yellow-400" : "text-linear-indigo"}`} />
+                    <span className="font-medium text-sm">{plan.name}</span>
+                  </div>
+                  <span className="text-sm font-semibold">
+                    {plan.priceLabel}<span className="text-[10px] text-white/40 font-normal">/mo</span>
+                  </span>
+                </div>
+                <div className="flex items-center gap-2 text-[11px] text-white/40">
+                  {plan.features[feature] ? <CheckCircle className="w-3 h-3 text-green-400" /> : <X className="w-3 h-3 text-red-400/50" />}
+                  <span>{plan.features[feature] ? `Includes ${featureName}` : "Not included"}</span>
+                </div>
+                {plan.features[feature] && (
+                  <button
+                    onClick={(e) => { e.stopPropagation(); upgrade(tier); }}
+                    disabled={upgrading === tier}
+                    className="mt-3 w-full py-2 rounded-full bg-linear-indigo text-white text-xs font-semibold hover:bg-linear-indigo/80 transition disabled:opacity-50">
+                    {upgrading === tier ? <Loader2 className="w-3 h-3 animate-spin mx-auto" /> : `Choose ${plan.name}`}
+                  </button>
+                )}
+              </div>
+            );
+          })}
+        </div>
+
+        <p className="text-[11px] text-white/30 text-center">
+          No credit card required for upgrade. You can downgrade anytime.
+        </p>
+      </div>
+    </div>
+  );
+}

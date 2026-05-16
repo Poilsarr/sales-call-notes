@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>graphify - graphify-out/graph.html</title>
+<script src="https://unpkg.com/vis-network/standalone/umd/vis-network.min.js"></script>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: #0f0f1a; color: #e0e0e0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; display: flex; height: 100vh; overflow: hidden; }
+  #graph { flex: 1; }
+  #sidebar { width: 280px; background: #1a1a2e; border-left: 1px solid #2a2a4e; display: flex; flex-direction: column; overflow: hidden; }
+  #search-wrap { padding: 12px; border-bottom: 1px solid #2a2a4e; }
+  #search { width: 100%; background: #0f0f1a; border: 1px solid #3a3a5e; color: #e0e0e0; padding: 7px 10px; border-radius: 6px; font-size: 13px; outline: none; }
+  #search:focus { border-color: #4E79A7; }
+  #search-results { max-height: 140px; overflow-y: auto; padding: 4px 12px; border-bottom: 1px solid #2a2a4e; display: none; }
+  .search-item { padding: 4px 6px; cursor: pointer; border-radius: 4px; font-size: 12px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .search-item:hover { background: #2a2a4e; }
+  #info-panel { padding: 14px; border-bottom: 1px solid #2a2a4e; min-height: 140px; }
+  #info-panel h3 { font-size: 13px; color: #aaa; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.05em; }
+  #info-content { font-size: 13px; color: #ccc; line-height: 1.6; }
+  #info-content .field { margin-bottom: 5px; }
+  #info-content .field b { color: #e0e0e0; }
+  #info-content .empty { color: #555; font-style: italic; }
+  .neighbor-link { display: block; padding: 2px 6px; margin: 2px 0; border-radius: 3px; cursor: pointer; font-size: 12px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; border-left: 3px solid #333; }
+  .neighbor-link:hover { background: #2a2a4e; }
+  #neighbors-list { max-height: 160px; overflow-y: auto; margin-top: 4px; }
+  #legend-wrap { flex: 1; overflow-y: auto; padding: 12px; }
+  #legend-wrap h3 { font-size: 13px; color: #aaa; margin-bottom: 10px; text-transform: uppercase; letter-spacing: 0.05em; }
+  .legend-item { display: flex; align-items: center; gap: 8px; padding: 4px 0; cursor: pointer; border-radius: 4px; font-size: 12px; }
+  .legend-item:hover { background: #2a2a4e; padding-left: 4px; }
+  .legend-item.dimmed { opacity: 0.35; }
+  .legend-dot { width: 12px; height: 12px; border-radius: 50%; flex-shrink: 0; }
+  .legend-label { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .legend-count { color: #666; font-size: 11px; }
+  #stats { padding: 10px 14px; border-top: 1px solid #2a2a4e; font-size: 11px; color: #555; }
+</style>
+</head>
+<body>
+<div id="graph"></div>
+<div id="sidebar">
+  <div id="search-wrap">
+    <input id="search" type="text" placeholder="Search nodes..." autocomplete="off">
+    <div id="search-results"></div>
+  </div>
+  <div id="info-panel">
+    <h3>Node Info</h3>
+    <div id="info-content"><span class="empty">Click a node to inspect it</span></div>
+  </div>
+  <div id="legend-wrap">
+    <h3>Communities</h3>
+    <div id="legend"></div>
+  </div>
+  <div id="stats">42 nodes &middot; 48 edges &middot; 13 communities</div>
+</div>
+<script>
+const RAW_NODES = [{"id": "next_env_d", "label": "next-env.d.ts", "color": {"background": "#4E79A7", "border": "#4E79A7", "highlight": {"background": "#ffffff", "border": "#4E79A7"}}, "size": 10.0, "font": {"size": 0, "color": "#ffffff"}, "title": "next-env.d.ts", "community": 10, "community_name": "Community 10", "source_file": "/Users/kushagarhsingh/Desktop/com analayze/works/sales-call-notes/next-env.d.ts", "file_type": "code", "degree": 0}, {"id": "tailwind_config", "label": "tailwind.config.ts", "color": {"background": "#B07AA1", "border": "#B07AA1", "highlight": {"background": "#ffffff", "border": "#B07AA1"}}, "size": 12.0, "font": {"size": 0, "color": "#ffffff"}, "title": "tailwind.config.ts", "community": 6, "community_name": "Community 6", "source_file": "/Users/kushagarhsingh/Desktop/com analayze/works/sales-call-notes/tailwind.config.ts", "file_type": "code", "degree": 1}, {"id": "layout", "label": "layout.tsx", "color": {"background": "#EDC948", "border": "#EDC948", "highlight": {"background": "#ffffff", "border": "#EDC948"}}, "size": 12.0, "font": {"size": 0, "color": "#ffffff"}, "title": "layout.tsx", "community": 5, "community_name": "Community 5", "source_file": "/Users/kushagarhsingh/Desktop/com analayze/works/sales-call-notes/src/app/layout.tsx", "file_type": "code", "degree": 1}, {"id": "layout_rootlayout", "label": "RootLayout()", "color": {"background": "#EDC948", "border": "#EDC948", "highlight": {"background": "#ffffff", "border": "#EDC948"}}, "size": 12.0, "font": {"size": 0, "color": "#ffffff"}, "title": "RootLayout()", "community": 5, "community_name": "Community 5", "source_file": "/Users/kushagarhsingh/Desktop/com analayze/works/sales-call-notes/src/app/layout.tsx", "file_type": "code", "degree": 1}, {"id": "page", "label": "page.tsx", "color": {"background": "#4E79A7", "border": "#4E79A7", "highlight": {"background": "#ffffff", "border": "#4E79A7"}}, "size": 30.0, "font": {"size": 12, "color": "#ffffff"}, "title": "page.tsx", "community": 0, "community_name": "Community 0", "source_file": "/Users/kushagarhsingh/Desktop/com analayze/works/sales-call-notes/src/app/page.tsx", "file_type": "code", "degree": 10}, {"id": "page_formatforclipboard", "label": "formatForClipboard()", "color": {"background": "#4E79A7", "border": "#4E79A7", "highlight": {"background": "#ffffff", "border": "#4E79A7"}}, "size": 14.0, "font": {"size": 0, "color": "#ffffff"}, "title": "formatForClipboard()", "community": 0, "community_name": "Community 0", "source_file": "/Users/kushagarhsingh/Desktop/com analayze/works/sales-call-notes/src/app/page.tsx", "file_type": "code", "degree": 2}, {"id": "page_savetohistory", "label": "saveToHistory()", "color": {"background": "#4E79A7", "border": "#4E79A7", "highlight": {"background": "#ffffff", "border": "#4E79A7"}}, "size": 14.0, "font": {"size": 0, "color": "#ffffff"}, "title": "saveToHistory()", "community": 0, "community_name": "Community 0", "source_file": "/Users/kushagarhsingh/Desktop/com analayze/works/sales-call-notes/src/app/page.tsx", "file_type": "code", "degree": 2}, {"id": "page_deletefromhistory", "label": "deleteFromHistory()", "color": {"background": "#4E79A7", "border": "#4E79A7", "highlight": {"background": "#ffffff", "border": "#4E79A7"}}, "size": 12.0, "font": {"size": 0, "color": "#ffffff"}, "title": "deleteFromHistory()", "community": 0, "community_name": "Community 0", "source_file": "/Users/kushagarhsingh/Desktop/com analayze/works/sales-call-notes/src/app/page.tsx", "file_type": "code", "degree": 1}, {"id": "page_viewhistoryitem", "label": "viewHistoryItem()", "color": {"background": "#4E79A7", "border": "#4E79A7", "highlight": {"background": "#ffffff", "border": "#4E79A7"}}, "size": 12.0, "font": {"size": 0, "color": "#ffffff"}, "title": "viewHistoryItem()", "community": 0, "community_name": "Community 0", "source_file": "/Users/kushagarhsingh/Desktop/com analayze/works/sales-call-notes/src/app/page.tsx", "file_type": "code", "degree": 1}, {"id": "page_handlecopy", "label": "handleCopy()", "color": {"background": "#4E79A7", "border": "#4E79A7", "highlight": {"background": "#ffffff", "border": "#4E79A7"}}, "size": 14.0, "font": {"size": 0, "color": "#ffffff"}, "title": "handleCopy()", "community": 0, "community_name": "Community 0", "source_file": "/Users/kushagarhsingh/Desktop/com analayze/works/sales-call-notes/src/app/page.tsx", "file_type": "code", "degree": 2}, {"id": "page_handlefilechange", "label": "handleFileChange()", "color": {"background": "#4E79A7", "border": "#4E79A7", "highlight": {"background": "#ffffff", "border": "#4E79A7"}}, "size": 12.0, "font": {"size": 0, "color": "#ffffff"}, "title": "handleFileChange()", "community": 0, "community_name": "Community 0", "source_file": "/Users/kushagarhsingh/Desktop/com analayze/works/sales-call-notes/src/app/page.tsx", "file_type": "code", "degree": 1}, {"id": "page_startrecording", "label": "startRecording()", "color": {"background": "#4E79A7", "border": "#4E79A7", "highlight": {"background": "#ffffff", "border": "#4E79A7"}}, "size": 12.0, "font": {"size": 0, "color": "#ffffff"}, "title": "startRecording()", "community": 0, "community_name": "Community 0", "source_file": "/Users/kushagarhsingh/Desktop/com analayze/works/sales-call-notes/src/app/page.tsx", "file_type": "code", "degree": 1}, {"id": "page_stoprecording", "label": "stopRecording()", "color": {"background": "#4E79A7", "border": "#4E79A7", "highlight": {"background": "#ffffff", "border": "#4E79A7"}}, "size": 12.0, "font": {"size": 0, "color": "#ffffff"}, "title": "stopRecording()", "community": 0, "community_name": "Community 0", "source_file": "/Users/kushagarhsingh/Desktop/com analayze/works/sales-call-notes/src/app/page.tsx", "file_type": "code", "degree": 1}, {"id": "page_processcall", "label": "processCall()", "color": {"background": "#4E79A7", "border": "#4E79A7", "highlight": {"background": "#ffffff", "border": "#4E79A7"}}, "size": 14.0, "font": {"size": 0, "color": "#ffffff"}, "title": "processCall()", "community": 0, "community_name": "Community 0", "source_file": "/Users/kushagarhsingh/Desktop/com analayze/works/sales-call-notes/src/app/page.tsx", "file_type": "code", "degree": 2}, {"id": "route", "label": "route.ts", "color": {"background": "#76B7B2", "border": "#76B7B2", "highlight": {"background": "#ffffff", "border": "#76B7B2"}}, "size": 16.0, "font": {"size": 12, "color": "#ffffff"}, "title": "route.ts", "community": 3, "community_name": "Community 3", "source_file": "/Users/kushagarhsingh/Desktop/com analayze/works/sales-call-notes/src/app/api/transcribe/route.ts", "file_type": "code", "degree": 3}, {"id": "route_post", "label": "POST()", "color": {"background": "#76B7B2", "border": "#76B7B2", "highlight": {"background": "#ffffff", "border": "#76B7B2"}}, "size": 12.0, "font": {"size": 0, "color": "#ffffff"}, "title": "POST()", "community": 3, "community_name": "Community 3", "source_file": "/Users/kushagarhsingh/Desktop/com analayze/works/sales-call-notes/src/app/api/transcribe/route.ts", "file_type": "code", "degree": 1}, {"id": "route_get", "label": "GET()", "color": {"background": "#76B7B2", "border": "#76B7B2", "highlight": {"background": "#ffffff", "border": "#76B7B2"}}, "size": 12.0, "font": {"size": 0, "color": "#ffffff"}, "title": "GET()", "community": 3, "community_name": "Community 3", "source_file": "/Users/kushagarhsingh/Desktop/com analayze/works/sales-call-notes/src/app/api/history/route.ts", "file_type": "code", "degree": 1}, {"id": "route_delete", "label": "DELETE()", "color": {"background": "#76B7B2", "border": "#76B7B2", "highlight": {"background": "#ffffff", "border": "#76B7B2"}}, "size": 12.0, "font": {"size": 0, "color": "#ffffff"}, "title": "DELETE()", "community": 3, "community_name": "Community 3", "source_file": "/Users/kushagarhsingh/Desktop/com analayze/works/sales-call-notes/src/app/api/history/route.ts", "file_type": "code", "degree": 1}, {"id": "callnote_pro", "label": "CallNote Pro", "color": {"background": "#E15759", "border": "#E15759", "highlight": {"background": "#ffffff", "border": "#E15759"}}, "size": 40.0, "font": {"size": 12, "color": "#ffffff"}, "title": "CallNote Pro", "community": 2, "community_name": "CRM Integration", "source_file": "README.md", "file_type": "document", "degree": 15}, {"id": "whisper", "label": "Whisper", "color": {"background": "#59A14F", "border": "#59A14F", "highlight": {"background": "#ffffff", "border": "#59A14F"}}, "size": 18.0, "font": {"size": 12, "color": "#ffffff"}, "title": "Whisper", "community": 4, "community_name": "API Routes", "source_file": "README.md", "file_type": "document", "degree": 4}, {"id": "ollama", "label": "Ollama", "color": {"background": "#59A14F", "border": "#59A14F", "highlight": {"background": "#ffffff", "border": "#59A14F"}}, "size": 16.0, "font": {"size": 12, "color": "#ffffff"}, "title": "Ollama", "community": 4, "community_name": "API Routes", "source_file": "README.md", "file_type": "document", "degree": 3}, {"id": "nextjs", "label": "Next.js 14", "color": {"background": "#9C755F", "border": "#9C755F", "highlight": {"background": "#ffffff", "border": "#9C755F"}}, "size": 14.0, "font": {"size": 0, "color": "#ffffff"}, "title": "Next.js 14", "community": 8, "community_name": "Community 8", "source_file": "README.md", "file_type": "document", "degree": 2}, {"id": "react", "label": "React 18", "color": {"background": "#9C755F", "border": "#9C755F", "highlight": {"background": "#ffffff", "border": "#9C755F"}}, "size": 16.0, "font": {"size": 12, "color": "#ffffff"}, "title": "React 18", "community": 8, "community_name": "Community 8", "source_file": "README.md", "file_type": "document", "degree": 3}, {"id": "tailwindcss", "label": "TailwindCSS", "color": {"background": "#B07AA1", "border": "#B07AA1", "highlight": {"background": "#ffffff", "border": "#B07AA1"}}, "size": 14.0, "font": {"size": 0, "color": "#ffffff"}, "title": "TailwindCSS", "community": 6, "community_name": "Community 6", "source_file": "README.md", "file_type": "document", "degree": 2}, {"id": "localstorage", "label": "localStorage", "color": {"background": "#FF9DA7", "border": "#FF9DA7", "highlight": {"background": "#ffffff", "border": "#FF9DA7"}}, "size": 14.0, "font": {"size": 0, "color": "#ffffff"}, "title": "localStorage", "community": 7, "community_name": "Storage", "source_file": "SPEC.md", "file_type": "document", "degree": 2}, {"id": "hubspot", "label": "HubSpot", "color": {"background": "#E15759", "border": "#E15759", "highlight": {"background": "#ffffff", "border": "#E15759"}}, "size": 14.0, "font": {"size": 0, "color": "#ffffff"}, "title": "HubSpot", "community": 2, "community_name": "CRM Integration", "source_file": "SPEC.md", "file_type": "document", "degree": 2}, {"id": "salesforce", "label": "Salesforce", "color": {"background": "#E15759", "border": "#E15759", "highlight": {"background": "#ffffff", "border": "#E15759"}}, "size": 14.0, "font": {"size": 0, "color": "#ffffff"}, "title": "Salesforce", "community": 2, "community_name": "CRM Integration", "source_file": "SPEC.md", "file_type": "document", "degree": 2}, {"id": "postgresql", "label": "PostgreSQL", "color": {"background": "#BAB0AC", "border": "#BAB0AC", "highlight": {"background": "#ffffff", "border": "#BAB0AC"}}, "size": 14.0, "font": {"size": 0, "color": "#ffffff"}, "title": "PostgreSQL", "community": 9, "community_name": "Community 9", "source_file": "SPEC.md", "file_type": "document", "degree": 2}, {"id": "prisma", "label": "Prisma", "color": {"background": "#BAB0AC", "border": "#BAB0AC", "highlight": {"background": "#ffffff", "border": "#BAB0AC"}}, "size": 14.0, "font": {"size": 0, "color": "#ffffff"}, "title": "Prisma", "community": 9, "community_name": "Community 9", "source_file": "SPEC.md", "file_type": "document", "degree": 2}, {"id": "clerk", "label": "Clerk", "color": {"background": "#E15759", "border": "#E15759", "highlight": {"background": "#ffffff", "border": "#E15759"}}, "size": 12.0, "font": {"size": 0, "color": "#ffffff"}, "title": "Clerk", "community": 2, "community_name": "CRM Integration", "source_file": "SPEC.md", "file_type": "document", "degree": 1}, {"id": "api_transcribe", "label": "/api/transcribe", "color": {"background": "#59A14F", "border": "#59A14F", "highlight": {"background": "#ffffff", "border": "#59A14F"}}, "size": 14.0, "font": {"size": 0, "color": "#ffffff"}, "title": "/api/transcribe", "community": 4, "community_name": "API Routes", "source_file": "API.md", "file_type": "document", "degree": 2}, {"id": "api_summarize", "label": "/api/summarize", "color": {"background": "#F28E2B", "border": "#F28E2B", "highlight": {"background": "#ffffff", "border": "#F28E2B"}}, "size": 22.0, "font": {"size": 12, "color": "#ffffff"}, "title": "/api/summarize", "community": 1, "community_name": "API Routes", "source_file": "API.md", "file_type": "document", "degree": 6}, {"id": "api_history", "label": "/api/history", "color": {"background": "#FF9DA7", "border": "#FF9DA7", "highlight": {"background": "#ffffff", "border": "#FF9DA7"}}, "size": 14.0, "font": {"size": 0, "color": "#ffffff"}, "title": "/api/history", "community": 7, "community_name": "Storage", "source_file": "API.md", "file_type": "document", "degree": 2}, {"id": "api_upload", "label": "/api/upload", "color": {"background": "#E15759", "border": "#E15759", "highlight": {"background": "#ffffff", "border": "#E15759"}}, "size": 12.0, "font": {"size": 0, "color": "#ffffff"}, "title": "/api/upload", "community": 2, "community_name": "CRM Integration", "source_file": "API.md", "file_type": "document", "degree": 1}, {"id": "test_mp3", "label": "test.mp3", "color": {"background": "#F28E2B", "border": "#F28E2B", "highlight": {"background": "#ffffff", "border": "#F28E2B"}}, "size": 10.0, "font": {"size": 0, "color": "#ffffff"}, "title": "test.mp3", "community": 11, "community_name": "Community 11", "source_file": "test.mp3", "file_type": "audio", "degree": 0}, {"id": "test_1sec_mp3", "label": "test-1sec.mp3", "color": {"background": "#E15759", "border": "#E15759", "highlight": {"background": "#ffffff", "border": "#E15759"}}, "size": 10.0, "font": {"size": 0, "color": "#ffffff"}, "title": "test-1sec.mp3", "community": 12, "community_name": "Community 12", "source_file": "test-1sec.mp3", "file_type": "audio", "degree": 0}, {"id": "action_items", "label": "Action Items", "color": {"background": "#F28E2B", "border": "#F28E2B", "highlight": {"background": "#ffffff", "border": "#F28E2B"}}, "size": 14.0, "font": {"size": 0, "color": "#ffffff"}, "title": "Action Items", "community": 1, "community_name": "API Routes", "source_file": "API.md", "file_type": "document", "degree": 2}, {"id": "key_decisions", "label": "Key Decisions", "color": {"background": "#F28E2B", "border": "#F28E2B", "highlight": {"background": "#ffffff", "border": "#F28E2B"}}, "size": 14.0, "font": {"size": 0, "color": "#ffffff"}, "title": "Key Decisions", "community": 1, "community_name": "API Routes", "source_file": "API.md", "file_type": "document", "degree": 2}, {"id": "next_steps", "label": "Next Steps", "color": {"background": "#F28E2B", "border": "#F28E2B", "highlight": {"background": "#ffffff", "border": "#F28E2B"}}, "size": 14.0, "font": {"size": 0, "color": "#ffffff"}, "title": "Next Steps", "community": 1, "community_name": "API Routes", "source_file": "API.md", "file_type": "document", "degree": 2}, {"id": "summary", "label": "Summary", "color": {"background": "#F28E2B", "border": "#F28E2B", "highlight": {"background": "#ffffff", "border": "#F28E2B"}}, "size": 14.0, "font": {"size": 0, "color": "#ffffff"}, "title": "Summary", "community": 1, "community_name": "API Routes", "source_file": "API.md", "file_type": "document", "degree": 2}, {"id": "call_record", "label": "CallRecord", "color": {"background": "#F28E2B", "border": "#F28E2B", "highlight": {"background": "#ffffff", "border": "#F28E2B"}}, "size": 18.0, "font": {"size": 12, "color": "#ffffff"}, "title": "CallRecord", "community": 1, "community_name": "API Routes", "source_file": "SPEC.md", "file_type": "document", "degree": 4}, {"id": "whisper_server", "label": "Whisper Server", "color": {"background": "#59A14F", "border": "#59A14F", "highlight": {"background": "#ffffff", "border": "#59A14F"}}, "size": 12.0, "font": {"size": 0, "color": "#ffffff"}, "title": "Whisper Server", "community": 4, "community_name": "API Routes", "source_file": "CONFIGURATION.md", "file_type": "document", "degree": 1}];
+const RAW_EDGES = [{"from": "tailwind_config", "to": "tailwindcss", "label": "imports_from", "title": "imports_from [EXTRACTED]", "dashes": false, "width": 2, "color": {"opacity": 0.7}, "confidence": "EXTRACTED"}, {"from": "layout", "to": "layout_rootlayout", "label": "contains", "title": "contains [EXTRACTED]", "dashes": false, "width": 2, "color": {"opacity": 0.7}, "confidence": "EXTRACTED"}, {"from": "page", "to": "react", "label": "imports_from", "title": "imports_from [EXTRACTED]", "dashes": false, "width": 2, "color": {"opacity": 0.7}, "confidence": "EXTRACTED"}, {"from": "page", "to": "page_formatforclipboard", "label": "contains", "title": "contains [EXTRACTED]", "dashes": false, "width": 2, "color": {"opacity": 0.7}, "confidence": "EXTRACTED"}, {"from": "page", "to": "page_savetohistory", "label": "contains", "title": "contains [EXTRACTED]", "dashes": false, "width": 2, "color": {"opacity": 0.7}, "confidence": "EXTRACTED"}, {"from": "page", "to": "page_deletefromhistory", "label": "contains", "title": "contains [EXTRACTED]", "dashes": false, "width": 2, "color": {"opacity": 0.7}, "confidence": "EXTRACTED"}, {"from": "page", "to": "page_viewhistoryitem", "label": "contains", "title": "contains [EXTRACTED]", "dashes": false, "width": 2, "color": {"opacity": 0.7}, "confidence": "EXTRACTED"}, {"from": "page", "to": "page_handlecopy", "label": "contains", "title": "contains [EXTRACTED]", "dashes": false, "width": 2, "color": {"opacity": 0.7}, "confidence": "EXTRACTED"}, {"from": "page", "to": "page_handlefilechange", "label": "contains", "title": "contains [EXTRACTED]", "dashes": false, "width": 2, "color": {"opacity": 0.7}, "confidence": "EXTRACTED"}, {"from": "page", "to": "page_startrecording", "label": "contains", "title": "contains [EXTRACTED]", "dashes": false, "width": 2, "color": {"opacity": 0.7}, "confidence": "EXTRACTED"}, {"from": "page", "to": "page_stoprecording", "label": "contains", "title": "contains [EXTRACTED]", "dashes": false, "width": 2, "color": {"opacity": 0.7}, "confidence": "EXTRACTED"}, {"from": "page", "to": "page_processcall", "label": "contains", "title": "contains [EXTRACTED]", "dashes": false, "width": 2, "color": {"opacity": 0.7}, "confidence": "EXTRACTED"}, {"from": "page_formatforclipboard", "to": "page_handlecopy", "label": "calls", "title": "calls [EXTRACTED]", "dashes": false, "width": 2, "color": {"opacity": 0.7}, "confidence": "EXTRACTED"}, {"from": "page_savetohistory", "to": "page_processcall", "label": "calls", "title": "calls [EXTRACTED]", "dashes": false, "width": 2, "color": {"opacity": 0.7}, "confidence": "EXTRACTED"}, {"from": "route", "to": "route_post", "label": "contains", "title": "contains [EXTRACTED]", "dashes": false, "width": 2, "color": {"opacity": 0.7}, "confidence": "EXTRACTED"}, {"from": "route", "to": "route_get", "label": "contains", "title": "contains [EXTRACTED]", "dashes": false, "width": 2, "color": {"opacity": 0.7}, "confidence": "EXTRACTED"}, {"from": "route", "to": "route_delete", "label": "contains", "title": "contains [EXTRACTED]", "dashes": false, "width": 2, "color": {"opacity": 0.7}, "confidence": "EXTRACTED"}, {"from": "callnote_pro", "to": "whisper", "label": "uses", "title": "uses [EXTRACTED]", "dashes": false, "width": 2, "color": {"opacity": 0.7}, "confidence": "EXTRACTED"}, {"from": "callnote_pro", "to": "ollama", "label": "uses", "title": "uses [EXTRACTED]", "dashes": false, "width": 2, "color": {"opacity": 0.7}, "confidence": "EXTRACTED"}, {"from": "callnote_pro", "to": "nextjs", "label": "uses", "title": "uses [INFERRED]", "dashes": true, "width": 1, "color": {"opacity": 0.35}, "confidence": "INFERRED"}, {"from": "callnote_pro", "to": "react", "label": "uses", "title": "uses [INFERRED]", "dashes": true, "width": 1, "color": {"opacity": 0.35}, "confidence": "INFERRED"}, {"from": "callnote_pro", "to": "tailwindcss", "label": "uses", "title": "uses [INFERRED]", "dashes": true, "width": 1, "color": {"opacity": 0.35}, "confidence": "INFERRED"}, {"from": "callnote_pro", "to": "localstorage", "label": "uses", "title": "uses [EXTRACTED]", "dashes": false, "width": 2, "color": {"opacity": 0.7}, "confidence": "EXTRACTED"}, {"from": "callnote_pro", "to": "hubspot", "label": "exports_to", "title": "exports_to [INFERRED]", "dashes": true, "width": 1, "color": {"opacity": 0.35}, "confidence": "INFERRED"}, {"from": "callnote_pro", "to": "salesforce", "label": "exports_to", "title": "exports_to [INFERRED]", "dashes": true, "width": 1, "color": {"opacity": 0.35}, "confidence": "INFERRED"}, {"from": "callnote_pro", "to": "postgresql", "label": "rationale_for", "title": "rationale_for [EXTRACTED]", "dashes": false, "width": 2, "color": {"opacity": 0.7}, "confidence": "EXTRACTED"}, {"from": "callnote_pro", "to": "prisma", "label": "rationale_for", "title": "rationale_for [EXTRACTED]", "dashes": false, "width": 2, "color": {"opacity": 0.7}, "confidence": "EXTRACTED"}, {"from": "callnote_pro", "to": "clerk", "label": "rationale_for", "title": "rationale_for [EXTRACTED]", "dashes": false, "width": 2, "color": {"opacity": 0.7}, "confidence": "EXTRACTED"}, {"from": "callnote_pro", "to": "api_transcribe", "label": "implements", "title": "implements [EXTRACTED]", "dashes": false, "width": 2, "color": {"opacity": 0.7}, "confidence": "EXTRACTED"}, {"from": "callnote_pro", "to": "api_summarize", "label": "implements", "title": "implements [EXTRACTED]", "dashes": false, "width": 2, "color": {"opacity": 0.7}, "confidence": "EXTRACTED"}, {"from": "callnote_pro", "to": "api_history", "label": "implements", "title": "implements [EXTRACTED]", "dashes": false, "width": 2, "color": {"opacity": 0.7}, "confidence": "EXTRACTED"}, {"from": "callnote_pro", "to": "api_upload", "label": "implements", "title": "implements [EXTRACTED]", "dashes": false, "width": 2, "color": {"opacity": 0.7}, "confidence": "EXTRACTED"}, {"from": "whisper", "to": "api_transcribe", "label": "uses", "title": "uses [EXTRACTED]", "dashes": false, "width": 2, "color": {"opacity": 0.7}, "confidence": "EXTRACTED"}, {"from": "whisper", "to": "ollama", "label": "semantically_similar_to", "title": "semantically_similar_to [INFERRED]", "dashes": true, "width": 1, "color": {"opacity": 0.35}, "confidence": "INFERRED"}, {"from": "whisper", "to": "whisper_server", "label": "conceptually_related_to", "title": "conceptually_related_to [INFERRED]", "dashes": true, "width": 1, "color": {"opacity": 0.35}, "confidence": "INFERRED"}, {"from": "ollama", "to": "api_summarize", "label": "uses", "title": "uses [EXTRACTED]", "dashes": false, "width": 2, "color": {"opacity": 0.7}, "confidence": "EXTRACTED"}, {"from": "nextjs", "to": "react", "label": "conceptually_related_to", "title": "conceptually_related_to [INFERRED]", "dashes": true, "width": 1, "color": {"opacity": 0.35}, "confidence": "INFERRED"}, {"from": "localstorage", "to": "api_history", "label": "shares_data_with", "title": "shares_data_with [EXTRACTED]", "dashes": false, "width": 2, "color": {"opacity": 0.7}, "confidence": "EXTRACTED"}, {"from": "hubspot", "to": "salesforce", "label": "semantically_similar_to", "title": "semantically_similar_to [INFERRED]", "dashes": true, "width": 1, "color": {"opacity": 0.35}, "confidence": "INFERRED"}, {"from": "postgresql", "to": "prisma", "label": "conceptually_related_to", "title": "conceptually_related_to [INFERRED]", "dashes": true, "width": 1, "color": {"opacity": 0.35}, "confidence": "INFERRED"}, {"from": "api_summarize", "to": "summary", "label": "produces", "title": "produces [EXTRACTED]", "dashes": false, "width": 2, "color": {"opacity": 0.7}, "confidence": "EXTRACTED"}, {"from": "api_summarize", "to": "action_items", "label": "produces", "title": "produces [EXTRACTED]", "dashes": false, "width": 2, "color": {"opacity": 0.7}, "confidence": "EXTRACTED"}, {"from": "api_summarize", "to": "key_decisions", "label": "produces", "title": "produces [EXTRACTED]", "dashes": false, "width": 2, "color": {"opacity": 0.7}, "confidence": "EXTRACTED"}, {"from": "api_summarize", "to": "next_steps", "label": "produces", "title": "produces [EXTRACTED]", "dashes": false, "width": 2, "color": {"opacity": 0.7}, "confidence": "EXTRACTED"}, {"from": "action_items", "to": "call_record", "label": "contains", "title": "contains [EXTRACTED]", "dashes": false, "width": 2, "color": {"opacity": 0.7}, "confidence": "EXTRACTED"}, {"from": "key_decisions", "to": "call_record", "label": "contains", "title": "contains [EXTRACTED]", "dashes": false, "width": 2, "color": {"opacity": 0.7}, "confidence": "EXTRACTED"}, {"from": "next_steps", "to": "call_record", "label": "contains", "title": "contains [EXTRACTED]", "dashes": false, "width": 2, "color": {"opacity": 0.7}, "confidence": "EXTRACTED"}, {"from": "summary", "to": "call_record", "label": "contains", "title": "contains [EXTRACTED]", "dashes": false, "width": 2, "color": {"opacity": 0.7}, "confidence": "EXTRACTED"}];
+const LEGEND = [{"cid": 0, "color": "#4E79A7", "label": "Community 0", "count": 10}, {"cid": 1, "color": "#F28E2B", "label": "API Routes", "count": 6}, {"cid": 2, "color": "#E15759", "label": "CRM Integration", "count": 5}, {"cid": 3, "color": "#76B7B2", "label": "Community 3", "count": 4}, {"cid": 4, "color": "#59A14F", "label": "API Routes", "count": 4}, {"cid": 5, "color": "#EDC948", "label": "Community 5", "count": 2}, {"cid": 6, "color": "#B07AA1", "label": "Community 6", "count": 2}, {"cid": 7, "color": "#FF9DA7", "label": "Storage", "count": 2}, {"cid": 8, "color": "#9C755F", "label": "Community 8", "count": 2}, {"cid": 9, "color": "#BAB0AC", "label": "Community 9", "count": 2}, {"cid": 10, "color": "#4E79A7", "label": "Community 10", "count": 1}, {"cid": 11, "color": "#F28E2B", "label": "Community 11", "count": 1}, {"cid": 12, "color": "#E15759", "label": "Community 12", "count": 1}];
+
+// HTML-escape helper — prevents XSS when injecting graph data into innerHTML
+function esc(s) {
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+}
+
+// Build vis datasets
+const nodesDS = new vis.DataSet(RAW_NODES.map(n => ({
+  id: n.id, label: n.label, color: n.color, size: n.size,
+  font: n.font, title: n.title,
+  _community: n.community, _community_name: n.community_name,
+  _source_file: n.source_file, _file_type: n.file_type, _degree: n.degree,
+})));
+
+const edgesDS = new vis.DataSet(RAW_EDGES.map((e, i) => ({
+  id: i, from: e.from, to: e.to,
+  label: '',
+  title: e.title,
+  dashes: e.dashes,
+  width: e.width,
+  color: e.color,
+  arrows: { to: { enabled: true, scaleFactor: 0.5 } },
+})));
+
+const container = document.getElementById('graph');
+const network = new vis.Network(container, { nodes: nodesDS, edges: edgesDS }, {
+  physics: {
+    enabled: true,
+    solver: 'forceAtlas2Based',
+    forceAtlas2Based: {
+      gravitationalConstant: -60,
+      centralGravity: 0.005,
+      springLength: 120,
+      springConstant: 0.08,
+      damping: 0.4,
+      avoidOverlap: 0.8,
+    },
+    stabilization: { iterations: 200, fit: true },
+  },
+  interaction: {
+    hover: true,
+    tooltipDelay: 100,
+    hideEdgesOnDrag: true,
+    navigationButtons: false,
+    keyboard: false,
+  },
+  nodes: { shape: 'dot', borderWidth: 1.5 },
+  edges: { smooth: { type: 'continuous', roundness: 0.2 }, selectionWidth: 3 },
+});
+
+network.once('stabilizationIterationsDone', () => {
+  network.setOptions({ physics: { enabled: false } });
+});
+
+function showInfo(nodeId) {
+  const n = nodesDS.get(nodeId);
+  if (!n) return;
+  const neighborIds = network.getConnectedNodes(nodeId);
+  const neighborItems = neighborIds.map(nid => {
+    const nb = nodesDS.get(nid);
+    const color = nb ? nb.color.background : '#555';
+    return `<span class="neighbor-link" style="border-left-color:${esc(color)}" onclick="focusNode(${JSON.stringify(nid)})">${esc(nb ? nb.label : nid)}</span>`;
+  }).join('');
+  document.getElementById('info-content').innerHTML = `
+    <div class="field"><b>${esc(n.label)}</b></div>
+    <div class="field">Type: ${esc(n._file_type || 'unknown')}</div>
+    <div class="field">Community: ${esc(n._community_name)}</div>
+    <div class="field">Source: ${esc(n._source_file || '-')}</div>
+    <div class="field">Degree: ${n._degree}</div>
+    ${neighborIds.length ? `<div class="field" style="margin-top:8px;color:#aaa;font-size:11px">Neighbors (${neighborIds.length})</div><div id="neighbors-list">${neighborItems}</div>` : ''}
+  `;
+}
+
+function focusNode(nodeId) {
+  network.focus(nodeId, { scale: 1.4, animation: true });
+  network.selectNodes([nodeId]);
+  showInfo(nodeId);
+}
+
+// Track hovered node — hover detection is more reliable than click params
+let hoveredNodeId = null;
+network.on('hoverNode', params => {
+  hoveredNodeId = params.node;
+  container.style.cursor = 'pointer';
+});
+network.on('blurNode', () => {
+  hoveredNodeId = null;
+  container.style.cursor = 'default';
+});
+container.addEventListener('click', () => {
+  if (hoveredNodeId !== null) {
+    showInfo(hoveredNodeId);
+    network.selectNodes([hoveredNodeId]);
+  }
+});
+network.on('click', params => {
+  if (params.nodes.length > 0) {
+    showInfo(params.nodes[0]);
+  } else if (hoveredNodeId === null) {
+    document.getElementById('info-content').innerHTML = '<span class="empty">Click a node to inspect it</span>';
+  }
+});
+
+const searchInput = document.getElementById('search');
+const searchResults = document.getElementById('search-results');
+searchInput.addEventListener('input', () => {
+  const q = searchInput.value.toLowerCase().trim();
+  searchResults.innerHTML = '';
+  if (!q) { searchResults.style.display = 'none'; return; }
+  const matches = RAW_NODES.filter(n => n.label.toLowerCase().includes(q)).slice(0, 20);
+  if (!matches.length) { searchResults.style.display = 'none'; return; }
+  searchResults.style.display = 'block';
+  matches.forEach(n => {
+    const el = document.createElement('div');
+    el.className = 'search-item';
+    el.textContent = n.label;
+    el.style.borderLeft = `3px solid ${n.color.background}`;
+    el.style.paddingLeft = '8px';
+    el.onclick = () => {
+      network.focus(n.id, { scale: 1.5, animation: true });
+      network.selectNodes([n.id]);
+      showInfo(n.id);
+      searchResults.style.display = 'none';
+      searchInput.value = '';
+    };
+    searchResults.appendChild(el);
+  });
+});
+document.addEventListener('click', e => {
+  if (!searchResults.contains(e.target) && e.target !== searchInput)
+    searchResults.style.display = 'none';
+});
+
+const hiddenCommunities = new Set();
+const legendEl = document.getElementById('legend');
+LEGEND.forEach(c => {
+  const item = document.createElement('div');
+  item.className = 'legend-item';
+  item.innerHTML = `<div class="legend-dot" style="background:${c.color}"></div>
+    <span class="legend-label">${c.label}</span>
+    <span class="legend-count">${c.count}</span>`;
+  item.onclick = () => {
+    if (hiddenCommunities.has(c.cid)) {
+      hiddenCommunities.delete(c.cid);
+      item.classList.remove('dimmed');
+    } else {
+      hiddenCommunities.add(c.cid);
+      item.classList.add('dimmed');
+    }
+    const updates = RAW_NODES
+      .filter(n => n.community === c.cid)
+      .map(n => ({ id: n.id, hidden: hiddenCommunities.has(c.cid) }));
+    nodesDS.update(updates);
+  };
+  legendEl.appendChild(item);
+});
+</script>
+<script>
+// Render hyperedges as shaded regions
+const hyperedges = [{"id": "ai_processing_pipeline", "label": "AI Processing Pipeline", "nodes": ["api_transcribe", "whisper", "api_summarize", "ollama"], "relation": "participate_in", "confidence": "EXTRACTED", "confidence_score": 1.0, "source_file": "ARCHITECTURE.md"}, {"id": "crm_export_flow", "label": "CRM Export Flow", "nodes": ["callnote_pro", "hubspot", "salesforce", "action_items", "key_decisions", "next_steps", "summary"], "relation": "participate_in", "confidence": "EXTRACTED", "confidence_score": 0.9, "source_file": "SPEC.md"}, {"id": "future_storage_stack", "label": "Future Storage Stack", "nodes": ["postgresql", "prisma", "clerk"], "relation": "form", "confidence": "EXTRACTED", "confidence_score": 1.0, "source_file": "SPEC.md"}];
+function drawHyperedges() {
+    const canvas = network.canvas.frame.canvas;
+    const ctx = canvas.getContext('2d');
+    hyperedges.forEach(h => {
+        const positions = h.nodes
+            .map(nid => network.getPositions([nid])[nid])
+            .filter(p => p !== undefined);
+        if (positions.length < 2) return;
+        // Draw convex hull as filled polygon
+        ctx.save();
+        ctx.globalAlpha = 0.12;
+        ctx.fillStyle = '#6366f1';
+        ctx.strokeStyle = '#6366f1';
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        const scale = network.getScale();
+        const offset = network.getViewPosition();
+        const toCanvas = (p) => ({
+            x: (p.x - offset.x) * scale + canvas.width / 2,
+            y: (p.y - offset.y) * scale + canvas.height / 2
+        });
+        const pts = positions.map(toCanvas);
+        // Expand hull slightly
+        const cx = pts.reduce((s, p) => s + p.x, 0) / pts.length;
+        const cy = pts.reduce((s, p) => s + p.y, 0) / pts.length;
+        const expanded = pts.map(p => ({
+            x: cx + (p.x - cx) * 1.15,
+            y: cy + (p.y - cy) * 1.15
+        }));
+        ctx.moveTo(expanded[0].x, expanded[0].y);
+        expanded.slice(1).forEach(p => ctx.lineTo(p.x, p.y));
+        ctx.closePath();
+        ctx.fill();
+        ctx.globalAlpha = 0.4;
+        ctx.stroke();
+        // Label
+        ctx.globalAlpha = 0.8;
+        ctx.fillStyle = '#4f46e5';
+        ctx.font = 'bold 11px sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText(h.label, cx, cy - 5);
+        ctx.restore();
+    });
+}
+network.on('afterDrawing', drawHyperedges);
+</script>
+</body>
+</html>
