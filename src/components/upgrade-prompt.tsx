@@ -1,7 +1,8 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useUser } from "@clerk/nextjs";
+import { initializePaddle } from "@paddle/paddle-js";
 import { Zap, Crown, Sparkles, X, Loader2, CheckCircle } from "lucide-react";
 import { FeatureId, PLANS, PlanTier } from "@/lib/plans";
 
@@ -17,8 +18,16 @@ export default function UpgradePrompt({ feature, featureName, onClose, minimal }
   const [currentPlan, setCurrentPlan] = useState<PlanTier>("free");
   const [upgrading, setUpgrading] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
+  const [paddle, setPaddle] = useState<any>(null);
 
   useEffect(() => {
+    initializePaddle({
+      environment: process.env.NODE_ENV === "production" ? "production" : "sandbox",
+      token: process.env.NEXT_PUBLIC_PADDLE_CLIENT_TOKEN || "",
+    }).then(paddleInstance => {
+      if (paddleInstance) setPaddle(paddleInstance);
+    });
+
     if (user?.id) {
       fetch(`/api/billing?userId=${user.id}`)
         .then(r => r.json())
@@ -27,16 +36,20 @@ export default function UpgradePrompt({ feature, featureName, onClose, minimal }
     }
   }, [user?.id]);
 
-  const upgrade = async (targetPlan: PlanTier) => {
-    if (!user?.id) return;
+  const openCheckout = useCallback((targetPlan: PlanTier) => {
+    if (!paddle || !user?.id) return;
+    const priceId = PLANS[targetPlan].paddlePriceId;
+    if (!priceId) return;
+
     setUpgrading(targetPlan);
-    try {
-      const res = await fetch("/api/billing", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ userId: user.id, plan: targetPlan }),
-      });
-      if (res.ok) {
+    paddle.Checkout.open({
+      items: [{ priceId, quantity: 1 }],
+      customData: { userId: user.id, feature },
+      settings: {
+        displayMode: "overlay",
+        theme: "dark",
+      },
+      onSuccess: () => {
         setSuccess(true);
         setTimeout(() => {
           setSuccess(false);
@@ -44,10 +57,12 @@ export default function UpgradePrompt({ feature, featureName, onClose, minimal }
           onClose?.();
           window.location.reload();
         }, 1500);
-      }
-    } catch {}
-    setUpgrading(null);
-  };
+      },
+      onClose: () => {
+        setUpgrading(null);
+      },
+    });
+  }, [paddle, user?.id, feature, onClose]);
 
   const neededPlan = (() => {
     for (const [tier, plan] of Object.entries(PLANS)) {
@@ -72,7 +87,7 @@ export default function UpgradePrompt({ feature, featureName, onClose, minimal }
         <p className="text-xs text-yellow-400/80 flex-1">
           {featureName} requires {neededPlan.charAt(0).toUpperCase() + neededPlan.slice(1)} plan
         </p>
-        <button onClick={() => upgrade(neededPlan)}
+        <button onClick={() => openCheckout(neededPlan)}
           disabled={upgrading !== null}
           className="px-3 py-1 bg-yellow-500 text-black rounded-full text-[10px] font-bold hover:bg-yellow-400 transition disabled:opacity-50">
           {upgrading ? <Loader2 className="w-3 h-3 animate-spin" /> : `Upgrade - $${PLANS[neededPlan].price / 100}/mo`}
@@ -108,7 +123,7 @@ export default function UpgradePrompt({ feature, featureName, onClose, minimal }
                     ? "border-linear-indigo/30 bg-linear-indigo/5"
                     : "border-white/10 bg-white/5 hover:border-white/20"
                 } ${plan.features[feature] ? "opacity-100" : "opacity-40"}`}
-                onClick={() => plan.features[feature] && upgrade(tier)}>
+                onClick={() => plan.features[feature] && openCheckout(tier)}>
                 <div className="flex items-center justify-between mb-2">
                   <div className="flex items-center gap-2">
                     <Crown className={`w-4 h-4 ${tier === "business" ? "text-yellow-400" : "text-linear-indigo"}`} />
@@ -124,7 +139,7 @@ export default function UpgradePrompt({ feature, featureName, onClose, minimal }
                 </div>
                 {plan.features[feature] && (
                   <button
-                    onClick={(e) => { e.stopPropagation(); upgrade(tier); }}
+                    onClick={(e) => { e.stopPropagation(); openCheckout(tier); }}
                     disabled={upgrading === tier}
                     className="mt-3 w-full py-2 rounded-full bg-linear-indigo text-white text-xs font-semibold hover:bg-linear-indigo/80 transition disabled:opacity-50">
                     {upgrading === tier ? <Loader2 className="w-3 h-3 animate-spin mx-auto" /> : `Choose ${plan.name}`}
@@ -136,7 +151,7 @@ export default function UpgradePrompt({ feature, featureName, onClose, minimal }
         </div>
 
         <p className="text-[11px] text-white/30 text-center">
-          No credit card required for upgrade. You can downgrade anytime.
+          Powered by Paddle. Secure payment processing.
         </p>
       </div>
     </div>

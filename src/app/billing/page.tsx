@@ -1,20 +1,31 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useUser } from "@clerk/nextjs";
+import { initializePaddle } from "@paddle/paddle-js";
 import Nav from "@/components/nav";
-import { Crown, CheckCircle, Zap, Sparkles, Loader2, ArrowRight } from "lucide-react";
+import { Crown, CheckCircle, Sparkles, Loader2 } from "lucide-react";
 import { PLANS, PlanTier } from "@/lib/plans";
-import Link from "next/link";
 
 export default function BillingPage() {
   const { user } = useUser();
   const [currentPlan, setCurrentPlan] = useState<PlanTier>("free");
   const [usage, setUsage] = useState(0);
   const [limit, setLimit] = useState<number | "unlimited">(5);
-  const [upgrading, setUpgrading] = useState<PlanTier | null>(null);
+  const [paddle, setPaddle] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    initializePaddle({
+      environment: process.env.NODE_ENV === "production" ? "production" : "sandbox",
+      token: process.env.NEXT_PUBLIC_PADDLE_CLIENT_TOKEN || "",
+    }).then(paddleInstance => {
+      if (paddleInstance) {
+        setPaddle(paddleInstance);
+      }
+      setLoading(false);
+    });
+
     if (user?.id) {
       fetch(`/api/billing?userId=${user.id}`)
         .then(r => r.json())
@@ -27,18 +38,35 @@ export default function BillingPage() {
     }
   }, [user?.id]);
 
-  const upgrade = async (plan: PlanTier) => {
-    if (!user?.id) return;
-    setUpgrading(plan);
-    await fetch("/api/billing", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ userId: user.id, plan }),
+  const openCheckout = useCallback((plan: PlanTier) => {
+    if (!paddle || !user?.id) return;
+    const priceId = PLANS[plan].paddlePriceId;
+    if (!priceId) return;
+
+    paddle.Checkout.open({
+      items: [{ priceId, quantity: 1 }],
+      customData: { userId: user.id },
+      settings: {
+        displayMode: "overlay",
+        theme: "dark",
+        showAddDiscounts: true,
+      },
+      onSuccess: () => {
+        setTimeout(() => window.location.reload(), 1000);
+      },
+      onClose: () => {
+        fetch(`/api/billing?userId=${user.id}`)
+          .then(r => r.json())
+          .then(d => {
+            if (d.plan !== "free") {
+              setCurrentPlan(d.plan);
+              setLimit(d.limit || 5);
+            }
+          })
+          .catch(() => {});
+      },
     });
-    setCurrentPlan(plan);
-    setLimit(PLANS[plan].uploadLimit);
-    setUpgrading(null);
-  };
+  }, [paddle, user?.id]);
 
   const availablePlans: PlanTier[] = ["free", "pro", "business"];
 
@@ -128,16 +156,23 @@ export default function BillingPage() {
                     Current Plan
                   </div>
                 ) : plan.price === 0 ? (
-                  <button onClick={() => upgrade("free")}
-                    disabled={upgrading !== null}
-                    className="w-full text-center py-3 rounded-full text-xs font-semibold bg-white/10 text-white hover:bg-white/20 border border-white/10 transition disabled:opacity-50">
-                    {upgrading === "free" ? <Loader2 className="w-3 h-3 animate-spin mx-auto" /> : "Downgrade"}
+                  <button onClick={async () => {
+                    if (!user?.id) return;
+                    await fetch("/api/billing", {
+                      method: "POST",
+                      headers: { "Content-Type": "application/json" },
+                      body: JSON.stringify({ userId: user.id, plan: "free" }),
+                    });
+                    window.location.reload();
+                  }}
+                    className="w-full text-center py-3 rounded-full text-xs font-semibold bg-white/10 text-white hover:bg-white/20 border border-white/10 transition">
+                    Downgrade
                   </button>
                 ) : (
-                  <button onClick={() => upgrade(tier)}
-                    disabled={upgrading !== null}
+                  <button onClick={() => openCheckout(tier)}
+                    disabled={loading || !paddle}
                     className="w-full text-center py-3 rounded-full text-xs font-semibold bg-linear-indigo text-white hover:bg-linear-indigo/80 transition disabled:opacity-50">
-                    {upgrading === tier ? <Loader2 className="w-3 h-3 animate-spin mx-auto" /> : `Upgrade - ${plan.priceLabel}/mo`}
+                    {loading ? <Loader2 className="w-3 h-3 animate-spin mx-auto" /> : `Upgrade - ${plan.priceLabel}/mo`}
                   </button>
                 )}
               </div>

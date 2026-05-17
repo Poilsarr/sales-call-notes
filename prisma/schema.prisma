@@ -8,22 +8,27 @@ datasource db {
 }
 
 model User {
-  id            String   @id @default(cuid())
-  clerkId       String   @unique
-  email         String   @unique
-  name          String?
-  avatar        String?
-  plan          String   @default("FREE")
-  credits       Int      @default(5)
-  teamId        String?
-  team          Team?    @relation("teamMembers", fields: [teamId], references: [id])
-  ownedTeams    Team[]   @relation("teamOwner")
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
+  id                  String   @id @default(cuid())
+  clerkId             String   @unique
+  email               String   @unique
+  name                String?
+  avatar              String?
+  plan                String   @default("FREE")
+  credits             Int      @default(5)
+  paddleCustomerId    String?  @unique
+  paddleSubscriptionId String?
+  subscriptionStatus  String?
+  subscriptionPlan    String?
+  teamId              String?
+  team                Team?    @relation("teamMembers", fields: [teamId], references: [id])
+  ownedTeams          Team[]   @relation("teamOwner")
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
 
   @@index([email])
   @@index([teamId])
   @@index([clerkId])
+  @@index([paddleCustomerId])
 }
 
 model Team {

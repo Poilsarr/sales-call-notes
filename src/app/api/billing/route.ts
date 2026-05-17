@@ -29,6 +29,8 @@ export async function GET(req: NextRequest) {
       limit: PLANS[plan].uploadLimit,
       minuteLimit: PLANS[plan].minuteLimit,
       features: PLANS[plan].features,
+      subscriptionStatus: user?.subscriptionStatus || null,
+      subscriptionPlan: user?.subscriptionPlan || null,
     });
   } catch (error) {
     return NextResponse.json({ error: "Failed to get billing info" }, { status: 500 });
@@ -50,23 +52,33 @@ export async function POST(req: NextRequest) {
 
     if (targetPlan === "free") {
       if (user) {
-        await prisma.user.update({ where: { clerkId: userId }, data: { plan: "FREE" } });
+        await prisma.user.update({
+          where: { clerkId: userId },
+          data: { plan: "FREE", credits: 5 },
+        });
       }
       return NextResponse.json({ success: true, plan: "free" });
     }
 
     const planConfig = PLANS[targetPlan as PlanTier];
 
-    if (!process.env.STRIPE_SECRET_KEY) {
-      if (!user) {
-        await prisma.user.create({ data: { clerkId: userId, email: "", plan: targetPlan.toUpperCase() as any, credits: 999 } });
-      } else {
-        await prisma.user.update({ where: { clerkId: userId }, data: { plan: targetPlan.toUpperCase() as any, credits: 999 } });
-      }
-      return NextResponse.json({ success: true, plan: targetPlan, mock: true });
+    if (!user) {
+      await prisma.user.create({
+        data: {
+          clerkId: userId,
+          email: "",
+          plan: targetPlan.toUpperCase() as any,
+          credits: 999,
+        },
+      });
+    } else {
+      await prisma.user.update({
+        where: { clerkId: userId },
+        data: { plan: targetPlan.toUpperCase() as any, credits: 999 },
+      });
     }
 
-    return NextResponse.json({ error: "Stripe not configured" }, { status: 501 });
+    return NextResponse.json({ success: true, plan: targetPlan });
   } catch (error) {
     return NextResponse.json({ error: "Billing update failed" }, { status: 500 });
   }
