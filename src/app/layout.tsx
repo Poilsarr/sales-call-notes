@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { ClerkProvider } from "@clerk/nextjs";
 import { Plus_Jakarta_Sans } from "next/font/google";
+import { Analytics } from "@vercel/analytics/next";
 import "./globals.css";
 
 const plusJakartaSans = Plus_Jakarta_Sans({
@@ -24,6 +25,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <div className="noise-overlay" />
         <ClerkProvider signInUrl="/sign-in" signUpUrl="/sign-up">
           {children}
+          <Analytics />
         </ClerkProvider>
       </body>
     </html>
