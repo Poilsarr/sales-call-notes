@@ -1,30 +1,36 @@
 import { Ratelimit } from "@upstash/ratelimit";
 import { Redis } from "@upstash/redis";
 
-const hasUpstashCreds = process.env.UPSTASH_REDIS_REST_URL && process.env.UPSTASH_REDIS_REST_TOKEN
-  && !process.env.UPSTASH_REDIS_REST_URL.includes("your-database-name");
-
 let ratelimitInstance: Ratelimit | null = null;
 
-if (hasUpstashCreds) {
-  const redis = new Redis({
-    url: process.env.UPSTASH_REDIS_REST_URL!,
-    token: process.env.UPSTASH_REDIS_REST_TOKEN!,
-  });
+function getRatelimit(): Ratelimit | null {
+  if (ratelimitInstance) return ratelimitInstance;
 
-  ratelimitInstance = new Ratelimit({
-    redis,
-    limiter: Ratelimit.slidingWindow(10, "1 m"),
-    analytics: true,
-  });
+  const upstashUrl = process.env.UPSTASH_REDIS_REST_URL?.trim() || "";
+  const upstashToken = process.env.UPSTASH_REDIS_REST_TOKEN?.trim() || "";
+  const hasCreds = upstashUrl && upstashToken && !upstashUrl.includes("your-database-name");
+
+  if (!hasCreds) return null;
+
+  try {
+    const redis = new Redis({ url: upstashUrl, token: upstashToken });
+    ratelimitInstance = new Ratelimit({
+      redis,
+      limiter: Ratelimit.slidingWindow(10, "1 m"),
+      analytics: true,
+    });
+    return ratelimitInstance;
+  } catch {
+    return null;
+  }
 }
 
 export async function checkRateLimit(identifier: string) {
-  if (!ratelimitInstance) {
-    return { success: true, remaining: 999, reset: 0 };
-  }
+  const rl = getRatelimit();
+  if (!rl) return { success: true, remaining: 999, reset: 0 };
+
   try {
-    const { success, remaining, reset } = await ratelimitInstance.limit(identifier);
+    const { success, remaining, reset } = await rl.limit(identifier);
     return { success, remaining, reset };
   } catch {
     return { success: true, remaining: 999, reset: 0 };
