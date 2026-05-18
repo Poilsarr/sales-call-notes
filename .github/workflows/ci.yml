@@ -45,7 +45,8 @@ jobs:
       - run: npm ci
 
       - run: npx prisma generate
-      - run: npx prisma migrate deploy
+
+      - run: npx prisma db push
         env:
           DATABASE_URL: postgresql://callnote:callnote_dev@localhost:5432/callnote_pro
 
