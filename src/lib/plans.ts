@@ -39,7 +39,7 @@ export interface PlanConfig {
   price: number;
   priceLabel: string;
   period: "month" | "year" | "once";
-  stripePriceId?: string;
+  paddlePriceId?: string;
   features: Partial<Record<FeatureId, boolean | number>>;
   uploadLimit: number | "unlimited";
   minuteLimit: number | "unlimited";
@@ -86,7 +86,7 @@ export const PLANS: Record<PlanTier, PlanConfig> = {
     price: 1200, // $12 in cents
     priceLabel: "$12",
     period: "month",
-    stripePriceId: "price_pro_monthly",
+    paddlePriceId: "pri_pro_monthly",
     uploadLimit: "unlimited",
     minuteLimit: 1200,
     callDurationLimit: 90,
@@ -122,7 +122,7 @@ export const PLANS: Record<PlanTier, PlanConfig> = {
     price: 2900,
     priceLabel: "$29",
     period: "month",
-    stripePriceId: "price_business_monthly",
+    paddlePriceId: "pri_business_monthly",
     uploadLimit: "unlimited",
     minuteLimit: 6000,
     callDurationLimit: 240,
