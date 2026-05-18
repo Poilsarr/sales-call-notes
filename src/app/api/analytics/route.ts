@@ -24,6 +24,7 @@ export async function GET(req: Request) {
         decisions: true,
         nextSteps: true,
         analytics: true,
+        insight: true,
       },
       orderBy: { createdAt: 'desc' },
     });
@@ -34,6 +35,10 @@ export async function GET(req: Request) {
       sum + c.actionItems.filter(a => a.status === "COMPLETED").length, 0);
     const avgHealthScore = calls.length > 0
       ? calls.reduce((sum, c) => sum + (c.healthScore || 0), 0) / calls.length
+      : 0;
+
+    const avgCloseProbability = calls.length > 0
+      ? calls.reduce((sum, c) => sum + (c.insight?.closeProbability || 0), 0) / calls.length
       : 0;
 
     const callsByDay: Record<string, number> = {};
@@ -60,6 +65,7 @@ export async function GET(req: Request) {
       totalActionItems,
       completionRate: totalActionItems > 0 ? completedItems / totalActionItems : 0,
       avgHealthScore: Math.round(avgHealthScore * 100),
+      avgCloseProbability: Math.round(avgCloseProbability),
       callsByDay,
       scoresByDay,
       sentimentCounts,
@@ -71,6 +77,8 @@ export async function GET(req: Request) {
         healthScore: c.healthScore,
         sentiment: c.sentiment,
         actionItemCount: c.actionItems.length,
+        closeProbability: c.insight?.closeProbability || null,
+        topObjection: (c.insight?.objections as any[])?.[0]?.type || null,
       })),
     });
   } catch (error) {

@@ -2,13 +2,14 @@
 
 import { useState, useEffect } from "react";
 import { useUser } from "@clerk/nextjs";
-import { BarChart3, TrendingUp, Target, Brain, Phone, CheckCircle, AlertTriangle, DollarSign, Calendar, Users, ArrowUp, ArrowDown } from "lucide-react";
+import { BarChart3, TrendingUp, Target, Brain, Phone, CheckCircle, AlertTriangle, DollarSign, Calendar, Users, ArrowUp, ArrowDown, Lightbulb, Shield, Zap } from "lucide-react";
 
 type AnalyticsData = {
   totalCalls: number;
   totalActionItems: number;
   completionRate: number;
   avgHealthScore: number;
+  avgCloseProbability: number;
   callsByDay: Record<string, number>;
   scoresByDay: Record<string, number>;
   sentimentCounts: { positive: number; neutral: number; negative: number };
@@ -20,6 +21,8 @@ type AnalyticsData = {
     healthScore: number | null;
     sentiment: string | null;
     actionItemCount: number;
+    closeProbability: number | null;
+    topObjection: string | null;
   }>;
 };
 
@@ -80,7 +83,7 @@ export default function DashboardPage() {
           </div>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 mb-8">
           <StatCard icon={<Phone className="w-4 h-4" />} label="Total Calls" value={data.totalCalls.toString()} />
           <StatCard icon={<Target className="w-4 h-4" />} label="Action Items" value={data.totalActionItems.toString()} />
           <StatCard
@@ -93,6 +96,12 @@ export default function DashboardPage() {
             label="Avg Health Score"
             value={`${data.avgHealthScore}%`}
             accent={data.avgHealthScore >= 60 ? "text-green-400" : data.avgHealthScore >= 40 ? "text-yellow-400" : "text-red-400"}
+          />
+          <StatCard
+            icon={<Zap className="w-4 h-4" />}
+            label="Avg Close Probability"
+            value={`${data.avgCloseProbability}%`}
+            accent={data.avgCloseProbability >= 60 ? "text-green-400" : data.avgCloseProbability >= 40 ? "text-yellow-400" : "text-red-400"}
           />
         </div>
 
@@ -115,7 +124,7 @@ export default function DashboardPage() {
           </div>
         </div>
 
-        <div className="p-6 rounded-2xl linear-surface linear-border">
+        <div className="p-6 rounded-2xl linear-surface linear-border mb-8">
           <h3 className="text-xs font-medium text-white/40 uppercase tracking-widest mb-4">Recent Calls</h3>
           <div className="space-y-2">
             {data.recentCalls.map(call => (
@@ -130,6 +139,15 @@ export default function DashboardPage() {
                     {call.healthScore ? `${Math.round(call.healthScore * 100)}%` : 'N/A'}
                   </span>
                   <span className="text-white/40">{call.actionItemCount} items</span>
+                  {call.closeProbability && (
+                    <span className="text-linear-indigo">{Math.round(call.closeProbability)}% close</span>
+                  )}
+                  {call.topObjection && (
+                    <span className="text-red-400/70 flex items-center gap-1">
+                      <AlertTriangle className="w-3 h-3" />
+                      {call.topObjection}
+                    </span>
+                  )}
                 </div>
               </div>
             ))}
