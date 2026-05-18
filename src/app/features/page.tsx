@@ -211,7 +211,7 @@ function StatsSection() {
     { value: "60s", label: "Avg. processing time", icon: Clock },
     { value: "98%", label: "Transcription accuracy", icon: Target },
     { value: "12+", label: "Languages supported", icon: Globe },
-    { value: "3", label: "CRM integrations", icon: Share2 },
+    { value: "10+", label: "CRM integrations", icon: Share2 },
   ];
 
   return (
