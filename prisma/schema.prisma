@@ -73,6 +73,7 @@ model Call {
   nextSteps     NextStep[]
   speakers      Speaker[]
   analytics     Analytics?
+  insight       CallInsight?
 
   @@index([userId])
   @@index([teamId])
@@ -170,4 +171,20 @@ model RateLimit {
   createdAt   DateTime @default(now())
 
   @@index([userId])
+}
+
+model CallInsight {
+  id               String   @id @default(cuid())
+  callId           String   @unique
+  call             Call     @relation(fields: [callId], references: [id], onDelete: Cascade)
+  sentimentScore   Float?
+  talkRatio        Json?
+  objections       Json?
+  coachingNotes    Json?
+  closeProbability Float?
+  topics           Json?
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  @@index([callId])
 }

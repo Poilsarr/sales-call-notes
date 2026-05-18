@@ -51,8 +51,23 @@ export async function POST(req: Request) {
             date: s.date || null,
           })),
         },
+        insight: {
+          create: {
+            sentimentScore: analysisResult.topics.reduce((acc, t) => {
+              if (t.sentiment === 'positive') return acc + 1;
+              if (t.sentiment === 'negative') return acc - 1;
+              return acc;
+            }, 0) / Math.max(analysisResult.topics.length, 1),
+            talkRatio: analysisResult.talkRatio,
+            objections: analysisResult.objections,
+            coachingNotes: analysisResult.coachingNotes,
+            closeProbability: analysisResult.closeProbability,
+            topics: analysisResult.topics,
+          },
+        },
       },
       include: {
+        insight: true,
         actionItems: true,
         decisions: true,
         nextSteps: true,
