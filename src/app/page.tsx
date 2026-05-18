@@ -36,13 +36,27 @@ export default function Home() {
     return () => observerRef.current?.disconnect();
   }, []);
 
+  useEffect(() => {
+    const handleMouseMove = (e: MouseEvent) => {
+      document.querySelectorAll(".group.relative").forEach((card) => {
+        const rect = card.getBoundingClientRect();
+        const x = ((e.clientX - rect.left) / rect.width) * 100;
+        const y = ((e.clientY - rect.top) / rect.height) * 100;
+        (card as HTMLElement).style.setProperty("--mouse-x", `${x}%`);
+        (card as HTMLElement).style.setProperty("--mouse-y", `${y}%`);
+      });
+    };
+    document.addEventListener("mousemove", handleMouseMove);
+    return () => document.removeEventListener("mousemove", handleMouseMove);
+  }, []);
+
   const features = [
-    { icon: <Upload strokeWidth={1} className="w-5 h-5" />, title: "Upload & Transcribe", desc: "Drop audio files. Whisper AI converts speech to text with speaker labels." },
-    { icon: <Brain strokeWidth={1} className="w-5 h-5" />, title: "AI Analysis", desc: "Extract summary, action items, decisions, and next steps automatically." },
-    { icon: <Target strokeWidth={1} className="w-5 h-5" />, title: "Action Tracking", desc: "Every task gets an owner and due date. No follow-up gets missed." },
-    { icon: <BarChart3 strokeWidth={1} className="w-5 h-5" />, title: "Call Analytics", desc: "Health scores, sentiment, talk ratios, and buying signal detection." },
-    { icon: <Share2 strokeWidth={1} className="w-5 h-5" />, title: "CRM Sync", desc: "Push notes to HubSpot, Salesforce, or Teams with one click." },
-    { icon: <History strokeWidth={1} className="w-5 h-5" />, title: "Searchable History", desc: "Full archive with search across all your calls and notes." },
+    { icon: <Upload strokeWidth={1} className="w-5 h-5" />, title: "Upload & Transcribe", desc: "Drop audio files. Whisper AI converts speech to text with speaker labels.", accent: "#5e6ad2", metric: "<60s" },
+    { icon: <Brain strokeWidth={1} className="w-5 h-5" />, title: "AI Analysis", desc: "Extract summary, action items, decisions, and next steps automatically.", accent: "#8b5cf6", metric: "98%" },
+    { icon: <Target strokeWidth={1} className="w-5 h-5" />, title: "Action Tracking", desc: "Every task gets an owner and due date. No follow-up gets missed.", accent: "#22d3a8", metric: "0 missed" },
+    { icon: <BarChart3 strokeWidth={1} className="w-5 h-5" />, title: "Call Analytics", desc: "Health scores, sentiment, talk ratios, and buying signal detection.", accent: "#f59e0b", metric: "6 metrics" },
+    { icon: <Share2 strokeWidth={1} className="w-5 h-5" />, title: "CRM Sync", desc: "Push notes to HubSpot, Salesforce, or Teams with one click.", accent: "#3b82f6", metric: "3 CRMs" },
+    { icon: <History strokeWidth={1} className="w-5 h-5" />, title: "Searchable History", desc: "Full archive with search across all your calls and notes.", accent: "#ec4899", metric: "∞ storage" },
   ];
 
   return (
@@ -113,19 +127,46 @@ export default function Home() {
               Everything an SDR needs
             </h2>
             <p className="text-white/30 max-w-xl mx-auto">From upload to CRM export in under 60 seconds. No learning curve.</p>
+            <div className="flex items-center justify-center gap-6 mt-8">
+              <div className="flex items-center gap-2 text-xs text-white/30">
+                <div className="w-1.5 h-1.5 rounded-full bg-[#5e6ad2]" />
+                <span>AI-powered</span>
+              </div>
+              <div className="flex items-center gap-2 text-xs text-white/30">
+                <div className="w-1.5 h-1.5 rounded-full bg-[#22d3a8]" />
+                <span>CRM ready</span>
+              </div>
+              <div className="flex items-center gap-2 text-xs text-white/30">
+                <div className="w-1.5 h-1.5 rounded-full bg-[#8b5cf6]" />
+                <span>Free forever</span>
+              </div>
+            </div>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {features.map((f, i) => (
-              <div key={i} className={`reveal ${i === 0 ? "md:col-span-2 md:row-span-1" : ""}`}
+              <div key={i} className={`reveal ${i === 0 ? "md:col-span-2" : ""}`}
                 style={{ transition: `all 0.8s cubic-bezier(0.25,1,0.5,1) ${0.1 + i * 0.08}s`, transform: "translateY(24px)", opacity: 0, filter: "blur(4px)" }}>
-                <div className="doppel-outer h-full group cursor-default">
-                  <div className="doppel-inner p-8 md:p-10 h-full flex flex-col">
-                    <div className={`w-10 h-10 rounded-xl bg-white/5 flex items-center justify-center mb-5 text-white/60 group-hover:text-white group-hover:bg-white/10 transition-all duration-700 ease-[cubic-bezier(0.32,0.72,0,1)] ${i === 0 ? "md:w-12 md:h-12" : ""}`}>
-                      {f.icon}
+                <div className="group relative h-full">
+                  <div className="absolute inset-0 rounded-[2rem] opacity-0 group-hover:opacity-100 transition-opacity duration-700"
+                    style={{ background: `radial-gradient(600px circle at var(--mouse-x, 50%) var(--mouse-y, 50%), ${f.accent}15, transparent 40%)` }} />
+                  <div className="doppel-outer h-full relative">
+                    <div className="absolute top-0 left-0 right-0 h-px opacity-0 group-hover:opacity-100 transition-opacity duration-700"
+                      style={{ background: `linear-gradient(90deg, transparent, ${f.accent}60, transparent)` }} />
+                    <div className="doppel-inner p-8 md:p-10 h-full flex flex-col relative">
+                      <div className="flex items-start justify-between mb-6">
+                        <div className={`w-10 h-10 rounded-xl flex items-center justify-center text-white/60 group-hover:text-white transition-all duration-700 ease-[cubic-bezier(0.32,0.72,0,1)] ${i === 0 ? "md:w-12 md:h-12" : ""}`}
+                          style={{ background: `${f.accent}15`, boxShadow: `0 0 20px ${f.accent}10` }}>
+                          {f.icon}
+                        </div>
+                        <span className="text-[10px] font-mono font-medium px-2.5 py-1 rounded-full"
+                          style={{ color: f.accent, background: `${f.accent}10` }}>
+                          {f.metric}
+                        </span>
+                      </div>
+                      <h3 className={`font-display font-semibold tracking-tight mb-3 ${i === 0 ? "text-xl md:text-2xl" : "text-lg"}`}>{f.title}</h3>
+                      <p className="text-sm text-white/40 font-[425] leading-relaxed max-w-md">{f.desc}</p>
                     </div>
-                    <h3 className={`font-display font-semibold tracking-tight mb-3 ${i === 0 ? "text-xl md:text-2xl" : "text-lg"}`}>{f.title}</h3>
-                    <p className="text-sm text-white/40 font-[425] leading-relaxed max-w-md">{f.desc}</p>
                   </div>
                 </div>
               </div>
