@@ -48,8 +48,8 @@ async function analyzeWithAI(transcript: string): Promise<any> {
   const groqKey = process.env.GROQ_API_KEY;
 
   const attempts = [
-    { name: 'OpenAI', key: openAIKey, baseURL: undefined, model: 'gpt-4o' },
     { name: 'Groq', key: groqKey, baseURL: 'https://api.groq.com/openai/v1', model: 'llama-3.3-70b-versatile' },
+    { name: 'OpenAI', key: openAIKey, baseURL: undefined, model: 'gpt-4o' },
   ];
 
   for (const a of attempts) {
@@ -71,8 +71,12 @@ async function analyzeWithAI(transcript: string): Promise<any> {
       const cleaned = raw.replace(/^```json\s*/i, '').replace(/```$/g, '').trim();
       return JSON.parse(cleaned);
     } catch (e: any) {
-      console.log(`${a.name} analysis failed:`, e?.message?.slice(0, 100));
-      if (a.name === 'Groq' && e?.message?.includes('valid JSON')) {
+      const msg = e?.message || '';
+      console.log(`${a.name} analysis failed:`, msg.slice(0, 100));
+      if (msg.includes('quota') || msg.includes('insufficient')) {
+        console.warn(`${a.name} quota exceeded, skipping to next provider`);
+      }
+      if (a.name === 'Groq' && msg.includes('valid JSON')) {
         try {
           const match = (e as any).response?.choices?.[0]?.message?.content?.match(/\{[\s\S]*\}/);
           if (match) return JSON.parse(match[0]);
@@ -106,6 +110,7 @@ async function tryAnalyzeOllama(text: string): Promise<any> {
 
 export async function POST(req: Request) {
   try {
+    console.log('Analyze route called');
     const formData = await req.formData();
     const file = formData.get('file') as File;
     const userId = formData.get('userId') as string;
@@ -113,15 +118,17 @@ export async function POST(req: Request) {
     if (!file) return NextResponse.json({ error: 'No file provided' }, { status: 400 });
     if (!userId) return NextResponse.json({ error: 'User ID required' }, { status: 400 });
 
+    console.log(`Processing file: ${file.name}, size: ${file.size}, type: ${file.type}`);
+
     // --- TRANSCRIPTION ---
     let transcript = '';
     const openAIKey = process.env.OPENAI_API_KEY;
     const groqKey = process.env.GROQ_API_KEY;
 
-    // Try OpenAI first, then Groq, then local whisper
+    // Try Groq first (OpenAI quota exhausted), then OpenAI, then local whisper
     const transcribeAttempts = [
-      { name: 'OpenAI', key: openAIKey, provider: 'openai' as const },
       { name: 'Groq', key: groqKey, provider: 'groq' as const },
+      { name: 'OpenAI', key: openAIKey, provider: 'openai' as const },
     ];
 
     let transcribed = false;
@@ -132,7 +139,11 @@ export async function POST(req: Request) {
         transcribed = true;
         break;
       } catch (e: any) {
-        console.log(`${a.name} transcription failed:`, e?.message?.slice(0, 80));
+        const msg = e?.message || '';
+        console.log(`${a.name} transcription failed:`, msg.slice(0, 100));
+        if (msg.includes('quota') || msg.includes('insufficient')) {
+          console.warn(`${a.name} quota exceeded, skipping to next provider`);
+        }
       }
     }
 
@@ -141,8 +152,11 @@ export async function POST(req: Request) {
       try {
         transcript = await transcribeLocal(file);
         transcribed = true;
-      } catch {
-        return NextResponse.json({ error: 'Transcription failed. No AI provider available. Set OPENAI_API_KEY or GROQ_API_KEY in .env.local, or install whisper: pip install openai-whisper' }, { status: 500 });
+      } catch (localErr: any) {
+        console.error('Local whisper also failed:', localErr?.message);
+        return NextResponse.json({ 
+          error: 'Transcription failed. All AI providers unavailable. Please add credits to your OpenAI account or ensure GROQ_API_KEY is set.' 
+        }, { status: 500 });
       }
     }
 
