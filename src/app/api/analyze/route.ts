@@ -5,20 +5,18 @@ const prisma = new PrismaClient();
 
 async function transcribeGroq(apiKey: string, fileBuffer: Buffer, fileName: string, mimeType: string): Promise<string> {
   const boundary = '----FormBoundary' + Math.random().toString(36).slice(2);
-  const body = [
-    `--${boundary}`,
-    `Content-Disposition: form-data; name="model"`,
-    ``,
-    `whisper-large-v3`,
-    `--${boundary}`,
-    `Content-Disposition: form-data; name="file"; filename="${fileName}"`,
-    `Content-Type: ${mimeType}`,
-    ``,
-    '',
-  ].join('\r\n');
+  const CRLF = '\r\n';
+  const parts = [
+    `--${boundary}${CRLF}`,
+    `Content-Disposition: form-data; name="model"${CRLF}${CRLF}`,
+    `whisper-large-v3${CRLF}`,
+    `--${boundary}${CRLF}`,
+    `Content-Disposition: form-data; name="file"; filename="${fileName}"${CRLF}`,
+    `Content-Type: ${mimeType}${CRLF}${CRLF}`,
+  ].join('');
 
-  const prefix = Buffer.from(body, 'utf-8');
-  const suffix = Buffer.from(`\r\n--${boundary}--\r\n`, 'utf-8');
+  const prefix = Buffer.from(parts, 'utf-8');
+  const suffix = Buffer.from(`${CRLF}--${boundary}--${CRLF}`, 'utf-8');
   const formData = Buffer.concat([prefix, fileBuffer, suffix]);
 
   const res = await fetch('https://api.groq.com/openai/v1/audio/transcriptions', {
@@ -41,20 +39,18 @@ async function transcribeGroq(apiKey: string, fileBuffer: Buffer, fileName: stri
 
 async function transcribeOpenAI(apiKey: string, fileBuffer: Buffer, fileName: string, mimeType: string): Promise<string> {
   const boundary = '----FormBoundary' + Math.random().toString(36).slice(2);
-  const body = [
-    `--${boundary}`,
-    `Content-Disposition: form-data; name="model"`,
-    ``,
-    `whisper-1`,
-    `--${boundary}`,
-    `Content-Disposition: form-data; name="file"; filename="${fileName}"`,
-    `Content-Type: ${mimeType}`,
-    ``,
-    '',
-  ].join('\r\n');
+  const CRLF = '\r\n';
+  const parts = [
+    `--${boundary}${CRLF}`,
+    `Content-Disposition: form-data; name="model"${CRLF}${CRLF}`,
+    `whisper-1${CRLF}`,
+    `--${boundary}${CRLF}`,
+    `Content-Disposition: form-data; name="file"; filename="${fileName}"${CRLF}`,
+    `Content-Type: ${mimeType}${CRLF}${CRLF}`,
+  ].join('');
 
-  const prefix = Buffer.from(body, 'utf-8');
-  const suffix = Buffer.from(`\r\n--${boundary}--\r\n`, 'utf-8');
+  const prefix = Buffer.from(parts, 'utf-8');
+  const suffix = Buffer.from(`${CRLF}--${boundary}--${CRLF}`, 'utf-8');
   const formData = Buffer.concat([prefix, fileBuffer, suffix]);
 
   const res = await fetch('https://api.openai.com/v1/audio/transcriptions', {
