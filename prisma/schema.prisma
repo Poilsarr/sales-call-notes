@@ -73,7 +73,7 @@ model Call {
   nextSteps     NextStep[]
   speakers      Speaker[]
   analytics     Analytics?
-  insight       CallInsight?
+  insight         CallInsight?
 
   @@index([userId])
   @@index([teamId])

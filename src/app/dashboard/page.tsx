@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useUser } from "@clerk/nextjs";
-import { BarChart3, TrendingUp, Target, Brain, Phone, CheckCircle, AlertTriangle, DollarSign, Calendar, Users, ArrowUp, ArrowDown, Zap } from "lucide-react";
+import { BarChart3, TrendingUp, Target, Brain, Phone, CheckCircle, AlertTriangle, DollarSign, Calendar, Users, ArrowUp, ArrowDown, Lightbulb, Shield, Zap } from "lucide-react";
 
 type AnalyticsData = {
   totalCalls: number;
@@ -124,7 +124,7 @@ export default function DashboardPage() {
           </div>
         </div>
 
-        <div className="p-6 rounded-2xl linear-surface linear-border">
+        <div className="p-6 rounded-2xl linear-surface linear-border mb-8">
           <h3 className="text-xs font-medium text-white/40 uppercase tracking-widest mb-4">Recent Calls</h3>
           <div className="space-y-2">
             {data.recentCalls.map(call => (

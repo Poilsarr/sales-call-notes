@@ -115,6 +115,86 @@ function AnimatedIcon({ Icon, color, isActive }: { Icon: any; color: string; isA
   );
 }
 
+function WaveformToText({ color, isHovered }: { color: string; isHovered: boolean }) {
+  const containerRef = useRef<HTMLDivElement>(null);
+  const barsRef = useRef<HTMLDivElement[]>([]);
+  const textRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!isHovered) {
+      barsRef.current.forEach(bar => {
+        if (bar) gsap.to(bar, { height: 4, duration: 0.3, ease: "power2.out" });
+      });
+      if (textRef.current) gsap.set(textRef.current, { opacity: 0, y: 10 });
+      return;
+    }
+
+    // Animate waveform bars
+    barsRef.current.forEach((bar, i) => {
+      if (!bar) return;
+      const h = Math.random() * 28 + 8;
+      gsap.to(bar, {
+        height: h,
+        duration: 0.15,
+        delay: i * 0.06,
+        ease: "power2.out",
+        onComplete: () => {
+          // After all bars animate, morph to text
+          if (i === barsRef.current.length - 1) {
+            gsap.to(barsRef.current.filter(Boolean), {
+              opacity: 0,
+              duration: 0.3,
+              stagger: 0.02,
+              ease: "power2.in",
+            });
+            if (textRef.current) {
+              gsap.to(textRef.current, {
+                opacity: 1,
+                y: 0,
+                duration: 0.5,
+                delay: 0.3,
+                ease: "power3.out",
+              });
+            }
+          }
+        },
+      });
+    });
+  }, [isHovered]);
+
+  const barCount = 24;
+
+  return (
+    <div ref={containerRef} className="h-16 flex items-center justify-center relative overflow-hidden rounded-xl"
+      style={{ background: `${color}06`, border: `1px solid ${color}10` }}>
+      {/* Waveform bars */}
+      <div className="flex items-center gap-[3px] absolute inset-0 justify-center">
+        {Array.from({ length: barCount }).map((_, i) => (
+          <div
+            key={i}
+            ref={el => { barsRef.current[i] = el!; }}
+            className="rounded-full"
+            style={{
+              width: 2,
+              height: 4,
+              background: color,
+              opacity: 0.6,
+            }}
+          />
+        ))}
+      </div>
+      {/* Text reveal */}
+      <div
+        ref={textRef}
+        className="relative z-10 font-mono text-[11px] tracking-wider whitespace-nowrap"
+        style={{ color, opacity: 0, transform: "translateY(10px)" }}
+      >
+        <span className="opacity-50">Speaker 1:</span> &quot;Let me walk you through...&quot;
+      </div>
+    </div>
+  );
+}
+
 function FeatureCard({ feature, index }: { feature: typeof features[0]; index: number }) {
   const cardRef = useRef<HTMLDivElement>(null);
   const glowRef = useRef<HTMLDivElement>(null);
@@ -144,6 +224,8 @@ function FeatureCard({ feature, index }: { feature: typeof features[0]; index: n
     md: "md:col-span-1",
     lg: "md:col-span-2",
   };
+
+  const isTranscription = index === 1;
 
   return (
     <div className={`${sizeClasses[feature.size]} reveal-card`}
@@ -179,7 +261,16 @@ function FeatureCard({ feature, index }: { feature: typeof features[0]; index: n
             style={{ color: isHovered ? "#fff" : "rgba(255,255,255,0.85)" }}>
             {feature.title}
           </h3>
-          <p className="text-sm text-white/35 font-[425] leading-relaxed flex-1">{feature.desc}</p>
+
+          {/* Interactive demo for transcription, description for others */}
+          {isTranscription ? (
+            <div className="flex-1 flex flex-col gap-4">
+              <p className="text-sm text-white/35 font-[425] leading-relaxed">{feature.desc}</p>
+              <WaveformToText color={feature.color} isHovered={isHovered} />
+            </div>
+          ) : (
+            <p className="text-sm text-white/35 font-[425] leading-relaxed flex-1">{feature.desc}</p>
+          )}
 
           <div className="mt-6 pt-5 border-t border-white/5 flex items-center justify-between">
             <span className="text-[10px] text-white/20 uppercase tracking-[0.15em] font-medium">Feature {String(index + 1).padStart(2, "0")}</span>
@@ -211,7 +302,7 @@ function StatsSection() {
     { value: "60s", label: "Avg. processing time", icon: Clock },
     { value: "98%", label: "Transcription accuracy", icon: Target },
     { value: "12+", label: "Languages supported", icon: Globe },
-    { value: "3", label: "CRM integrations", icon: Share2 },
+    { value: "10+", label: "CRM integrations", icon: Share2 },
   ];
 
   return (
