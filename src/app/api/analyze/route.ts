@@ -1,111 +1,138 @@
 import { NextResponse } from 'next/server';
 import { PrismaClient } from '@prisma/client';
-import { writeFile, unlink } from 'fs/promises';
-import path from 'path';
-import { spawn } from 'child_process';
 
 const prisma = new PrismaClient();
 
-async function transcribe(provider: string, apiKey: string, file: File): Promise<string> {
-  const { OpenAI } = await import('openai');
-  const baseURL = provider === 'groq' ? 'https://api.groq.com/openai/v1' : undefined;
-  const model = provider === 'groq' ? 'whisper-large-v3' : 'whisper-1';
-  const openai = new OpenAI({ apiKey, baseURL });
-  const r = await openai.audio.transcriptions.create({ file, model });
-  return r.text;
-}
+async function transcribeGroq(apiKey: string, fileBuffer: Buffer, fileName: string, mimeType: string): Promise<string> {
+  const boundary = '----FormBoundary' + Math.random().toString(36).slice(2);
+  const body = [
+    `--${boundary}`,
+    `Content-Disposition: form-data; name="model"`,
+    ``,
+    `whisper-large-v3`,
+    `--${boundary}`,
+    `Content-Disposition: form-data; name="file"; filename="${fileName}"`,
+    `Content-Type: ${mimeType}`,
+    ``,
+    '',
+  ].join('\r\n');
 
-async function transcribeLocal(file: File): Promise<string> {
-  const buffer = Buffer.from(await file.arrayBuffer());
-  const ext = file.name.split('.').pop() || 'mp3';
-  const tmp = path.join('/tmp', `audio_${Date.now()}.${ext}`);
-  await writeFile(tmp, buffer);
-  const result = await new Promise<string>((resolve, reject) => {
-    const py = spawn('python3', ['-c', `
-import sys
-try:
-    import whisper
-    m = whisper.load_model("base")
-    r = m.transcribe("${tmp.replace(/"/g, '\\"')}")
-    print(r["text"])
-except Exception as e:
-    print(f"ERROR: {e}", file=sys.stderr)
-    sys.exit(1)
-`]);
-    let out = '', err = '';
-    py.stdout.on('data', (d: Buffer) => out += d.toString());
-    py.stderr.on('data', (d: Buffer) => err += d.toString());
-    py.on('close', (code) => {
-      unlink(tmp).catch(() => {});
-      code === 0 ? resolve(out.trim()) : reject(new Error(err || 'Local whisper failed'));
-    });
-  });
-  return result;
-}
+  const prefix = Buffer.from(body, 'utf-8');
+  const suffix = Buffer.from(`\r\n--${boundary}--\r\n`, 'utf-8');
+  const formData = Buffer.concat([prefix, fileBuffer, suffix]);
 
-async function analyzeWithAI(transcript: string): Promise<any> {
-  const openAIKey = process.env.OPENAI_API_KEY;
-  const groqKey = process.env.GROQ_API_KEY;
-
-  const attempts = [
-    { name: 'Groq', key: groqKey, baseURL: 'https://api.groq.com/openai/v1', model: 'llama-3.3-70b-versatile' },
-    { name: 'OpenAI', key: openAIKey, baseURL: undefined, model: 'gpt-4o' },
-  ];
-
-  for (const a of attempts) {
-    if (!a.key) continue;
-    try {
-      const { OpenAI } = await import('openai');
-      const openai = new OpenAI({ apiKey: a.key, baseURL: a.baseURL });
-      const r = await openai.chat.completions.create({
-        model: a.model,
-        messages: [
-          { role: 'system', content: 'You are a JSON-only API. Your response must be ONLY valid JSON with no other text, no markdown, no code fences.' },
-          { role: 'user', content: `Analyze this sales transcript. Respond with ONLY this JSON structure (no other text): {"summary":"...","actionItems":[{"task":"...","owner":"...","due":"..."}],"keyDecisions":["..."],"nextSteps":[{"step":"...","date":"..."}],"healthScore":0.85}\n\nTranscript: ${transcript}` }
-        ],
-        temperature: 0.3,
-      });
-      const raw = r.choices?.[0]?.message?.content || '';
-      const jsonMatch = raw.match(/\{[\s\S]*\}/);
-      if (jsonMatch) return JSON.parse(jsonMatch[0]);
-      const cleaned = raw.replace(/^```json\s*/i, '').replace(/```$/g, '').trim();
-      return JSON.parse(cleaned);
-    } catch (e: any) {
-      const msg = e?.message || '';
-      console.log(`${a.name} analysis failed:`, msg.slice(0, 100));
-      if (msg.includes('quota') || msg.includes('insufficient')) {
-        console.warn(`${a.name} quota exceeded, skipping to next provider`);
-      }
-      if (a.name === 'Groq' && msg.includes('valid JSON')) {
-        try {
-          const match = (e as any).response?.choices?.[0]?.message?.content?.match(/\{[\s\S]*\}/);
-          if (match) return JSON.parse(match[0]);
-        } catch {}
-      }
-    }
-  }
-  throw new Error('All AI providers failed for analysis');
-}
-
-async function tryAnalyzeOllama(text: string): Promise<any> {
-  const res = await fetch('http://localhost:11434/api/chat', {
+  const res = await fetch('https://api.groq.com/openai/v1/audio/transcriptions', {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: {
+      'Authorization': `Bearer ${apiKey}`,
+      'Content-Type': `multipart/form-data; boundary=${boundary}`,
+    },
+    body: formData,
+  });
+
+  if (!res.ok) {
+    const errText = await res.text();
+    throw new Error(`Groq transcription failed: ${res.status} ${errText}`);
+  }
+
+  const data = await res.json();
+  return data.text;
+}
+
+async function transcribeOpenAI(apiKey: string, fileBuffer: Buffer, fileName: string, mimeType: string): Promise<string> {
+  const boundary = '----FormBoundary' + Math.random().toString(36).slice(2);
+  const body = [
+    `--${boundary}`,
+    `Content-Disposition: form-data; name="model"`,
+    ``,
+    `whisper-1`,
+    `--${boundary}`,
+    `Content-Disposition: form-data; name="file"; filename="${fileName}"`,
+    `Content-Type: ${mimeType}`,
+    ``,
+    '',
+  ].join('\r\n');
+
+  const prefix = Buffer.from(body, 'utf-8');
+  const suffix = Buffer.from(`\r\n--${boundary}--\r\n`, 'utf-8');
+  const formData = Buffer.concat([prefix, fileBuffer, suffix]);
+
+  const res = await fetch('https://api.openai.com/v1/audio/transcriptions', {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${apiKey}`,
+      'Content-Type': `multipart/form-data; boundary=${boundary}`,
+    },
+    body: formData,
+  });
+
+  if (!res.ok) {
+    const errText = await res.text();
+    throw new Error(`OpenAI transcription failed: ${res.status} ${errText}`);
+  }
+
+  const data = await res.json();
+  return data.text;
+}
+
+async function analyzeWithGroq(apiKey: string, transcript: string): Promise<any> {
+  const res = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${apiKey}`,
+      'Content-Type': 'application/json',
+    },
     body: JSON.stringify({
-      model: 'minimax-m2:cloud',
+      model: 'llama-3.3-70b-versatile',
       messages: [
-        { role: 'system', content: 'You respond only with valid JSON.' },
-        { role: 'user', content: `Analyze this sales transcript. Return JSON ONLY: {"summary":"...","actionItems":[{"task":"...","owner":"...","due":"..."}],"keyDecisions":["..."],"nextSteps":[{"step":"...","date":"..."}],"healthScore":0.85}\n\n${text}` },
+        { role: 'system', content: 'You are a JSON-only API. Your response must be ONLY valid JSON with no other text, no markdown, no code fences.' },
+        { role: 'user', content: `Analyze this sales transcript. Respond with ONLY this JSON structure (no other text): {"summary":"...","actionItems":[{"task":"...","owner":"...","due":"..."}],"keyDecisions":["..."],"nextSteps":[{"step":"...","date":"..."}],"healthScore":0.85}\n\nTranscript: ${transcript}` },
       ],
       temperature: 0.3,
-      stream: false,
     }),
   });
+
+  if (!res.ok) {
+    const errText = await res.text();
+    throw new Error(`Groq analysis failed: ${res.status} ${errText}`);
+  }
+
   const data = await res.json();
-  const raw = data?.message?.content || '';
-  const match = raw.match(/\{[\s\S]*\}/);
-  if (match) return JSON.parse(match[0]);
-  throw new Error('Could not parse Ollama response as JSON');
+  const raw = data.choices?.[0]?.message?.content || '';
+  const jsonMatch = raw.match(/\{[\s\S]*\}/);
+  if (jsonMatch) return JSON.parse(jsonMatch[0]);
+  const cleaned = raw.replace(/^```json\s*/i, '').replace(/```$/g, '').trim();
+  return JSON.parse(cleaned);
+}
+
+async function analyzeWithOpenAI(apiKey: string, transcript: string): Promise<any> {
+  const res = await fetch('https://api.openai.com/v1/chat/completions', {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${apiKey}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      model: 'gpt-4o',
+      messages: [
+        { role: 'system', content: 'You are a JSON-only API. Your response must be ONLY valid JSON with no other text, no markdown, no code fences.' },
+        { role: 'user', content: `Analyze this sales transcript. Respond with ONLY this JSON structure (no other text): {"summary":"...","actionItems":[{"task":"...","owner":"...","due":"..."}],"keyDecisions":["..."],"nextSteps":[{"step":"...","date":"..."}],"healthScore":0.85}\n\nTranscript: ${transcript}` },
+      ],
+      temperature: 0.3,
+    }),
+  });
+
+  if (!res.ok) {
+    const errText = await res.text();
+    throw new Error(`OpenAI analysis failed: ${res.status} ${errText}`);
+  }
+
+  const data = await res.json();
+  const raw = data.choices?.[0]?.message?.content || '';
+  const jsonMatch = raw.match(/\{[\s\S]*\}/);
+  if (jsonMatch) return JSON.parse(jsonMatch[0]);
+  const cleaned = raw.replace(/^```json\s*/i, '').replace(/```$/g, '').trim();
+  return JSON.parse(cleaned);
 }
 
 export async function POST(req: Request) {
@@ -118,66 +145,75 @@ export async function POST(req: Request) {
     if (!file) return NextResponse.json({ error: 'No file provided' }, { status: 400 });
     if (!userId) return NextResponse.json({ error: 'User ID required' }, { status: 400 });
 
-    console.log(`Processing file: ${file.name}, size: ${file.size}, type: ${file.type}`);
+    const fileBuffer = Buffer.from(await file.arrayBuffer());
+    const fileName = file.name || 'call_recording.mp3';
+    const mimeType = file.type || 'audio/mpeg';
+
+    console.log(`Processing file: ${fileName}, size: ${fileBuffer.length}, type: ${mimeType}`);
 
     // --- TRANSCRIPTION ---
     let transcript = '';
     const openAIKey = process.env.OPENAI_API_KEY;
     const groqKey = process.env.GROQ_API_KEY;
 
-    // Try Groq first (OpenAI quota exhausted), then OpenAI, then local whisper
+    // Try Groq first (OpenAI quota exhausted), then OpenAI
     const transcribeAttempts = [
-      { name: 'Groq', key: groqKey, provider: 'groq' as const },
-      { name: 'OpenAI', key: openAIKey, provider: 'openai' as const },
+      { name: 'Groq', key: groqKey, fn: transcribeGroq },
+      { name: 'OpenAI', key: openAIKey, fn: transcribeOpenAI },
     ];
 
     let transcribed = false;
     for (const a of transcribeAttempts) {
       if (!a.key) continue;
       try {
-        transcript = await transcribe(a.provider, a.key, file);
+        console.log(`Trying ${a.name} transcription...`);
+        transcript = await a.fn(a.key, fileBuffer, fileName, mimeType);
         transcribed = true;
+        console.log(`${a.name} transcription succeeded, length: ${transcript.length}`);
         break;
       } catch (e: any) {
         const msg = e?.message || '';
-        console.log(`${a.name} transcription failed:`, msg.slice(0, 100));
-        if (msg.includes('quota') || msg.includes('insufficient')) {
-          console.warn(`${a.name} quota exceeded, skipping to next provider`);
-        }
+        console.log(`${a.name} transcription failed:`, msg.slice(0, 150));
       }
     }
 
     if (!transcribed) {
-      console.log('Cloud transcription failed, trying local whisper...');
-      try {
-        transcript = await transcribeLocal(file);
-        transcribed = true;
-      } catch (localErr: any) {
-        console.error('Local whisper also failed:', localErr?.message);
-        return NextResponse.json({ 
-          error: 'Transcription failed. All AI providers unavailable. Please add credits to your OpenAI account or ensure GROQ_API_KEY is set.' 
-        }, { status: 500 });
-      }
+      return NextResponse.json({ 
+        error: 'Transcription failed. All AI providers unavailable. Please add credits to your OpenAI account or ensure GROQ_API_KEY is set.' 
+      }, { status: 500 });
     }
 
     // --- ANALYSIS ---
     let analysisResult: any;
-    try {
-      analysisResult = await analyzeWithAI(transcript);
-    } catch {
-      console.log('AI analysis failed, trying Ollama...');
+    const analyzeAttempts = [
+      { name: 'Groq', key: groqKey, fn: analyzeWithGroq },
+      { name: 'OpenAI', key: openAIKey, fn: analyzeWithOpenAI },
+    ];
+
+    let analyzed = false;
+    for (const a of analyzeAttempts) {
+      if (!a.key) continue;
       try {
-        analysisResult = await tryAnalyzeOllama(transcript);
-      } catch {
-        console.log('Ollama also failed, using raw transcript as summary');
-        analysisResult = {
-          summary: transcript.slice(0, 300),
-          actionItems: [],
-          keyDecisions: [],
-          nextSteps: [],
-          healthScore: null,
-        };
+        console.log(`Trying ${a.name} analysis...`);
+        analysisResult = await a.fn(a.key, transcript);
+        analyzed = true;
+        console.log(`${a.name} analysis succeeded`);
+        break;
+      } catch (e: any) {
+        const msg = e?.message || '';
+        console.log(`${a.name} analysis failed:`, msg.slice(0, 150));
       }
+    }
+
+    if (!analyzed) {
+      console.log('All AI analysis failed, using raw transcript as summary');
+      analysisResult = {
+        summary: transcript.slice(0, 500),
+        actionItems: [],
+        keyDecisions: [],
+        nextSteps: [],
+        healthScore: null,
+      };
     }
 
     // Normalize and save
@@ -193,17 +229,17 @@ export async function POST(req: Request) {
 
     await prisma.call.create({
       data: {
-        userId, filename: file.name || 'call_recording.mp3', transcript,
-        summary: analysisResult.summary || transcript.slice(0, 300),
+        userId, filename: fileName, transcript,
+        summary: analysisResult.summary || transcript.slice(0, 500),
         healthScore: analysisResult.healthScore || null,
         actionItems: { create: actionItems },
         decisions: { create: decisions },
         nextSteps: { create: nextSteps },
       }
-    }).catch(() => {});
+    }).catch((e) => console.error('Failed to save call:', e));
 
     return NextResponse.json({
-      summary: analysisResult.summary || transcript.slice(0, 300),
+      summary: analysisResult.summary || transcript.slice(0, 500),
       actionItems: analysisResult.actionItems || [],
       keyDecisions: analysisResult.keyDecisions || [],
       nextSteps: analysisResult.nextSteps || [],
@@ -211,6 +247,6 @@ export async function POST(req: Request) {
     });
   } catch (error: any) {
     console.error('Analyze route error:', error?.message);
-    return NextResponse.json({ error: 'Analysis failed' }, { status: 500 });
+    return NextResponse.json({ error: 'Analysis failed: ' + error?.message }, { status: 500 });
   }
 }
