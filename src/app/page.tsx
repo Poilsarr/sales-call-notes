@@ -341,20 +341,44 @@ function AppInterface({ onClose }: { onClose: () => void }) {
       setProgress("Please sign in to analyze calls.");
       return;
     }
+    if (file.size > 4 * 1024 * 1024) {
+      setState("error");
+      setProgress("File too large. Maximum size is 4MB.");
+      return;
+    }
     setState("transcribing");
     setProgress("Uploading and initiating Whisper engine...");
     try {
       const formData = new FormData();
       formData.append("file", file);
       formData.append("userId", userId);
+      console.log("Sending analyze request:", { fileName: file.name, fileSize: file.size, userId });
       const res = await fetch("/api/analyze", { method: "POST", body: formData });
+      console.log("Analyze response:", { status: res.status, ok: res.ok });
+      const responseText = await res.text();
+      console.log("Analyze response body:", responseText.slice(0, 500));
       if (res.status === 401) { setState("error"); setProgress("Please sign in to analyze calls."); return; }
-      if (!res.ok) { const err = await res.json().catch(() => ({})); throw new Error(err.error || "Analysis failed"); }
-      const data = await res.json();
+      if (res.status === 413) { setState("error"); setProgress("File too large. Maximum size is 4MB."); return; }
+      if (!res.ok) {
+        try {
+          const err = JSON.parse(responseText);
+          throw new Error(err.error || "Analysis failed");
+        } catch (e: any) {
+          if (e instanceof SyntaxError) {
+            throw new Error(`Server error: ${res.status} ${res.statusText}`);
+          }
+          throw new Error(e.message || `Server error: ${res.status}`);
+        }
+      }
+      const data = JSON.parse(responseText);
       setResult(data);
       setState("done");
       fetchHistory(userId);
-    } catch (e: any) { setState("error"); setProgress(e.message || "Analysis failed."); }
+    } catch (e: any) {
+      console.error("Analyze error:", e);
+      setState("error");
+      setProgress(e.message || "Analysis failed.");
+    }
   };
 
   const copyShareLink = () => {
