@@ -5,6 +5,7 @@ import { useUser, SignInButton } from "@clerk/nextjs";
 import Nav from "@/components/nav";
 import Link from "next/link";
 import { ProcessingState, Result, CallRecord } from "@/types";
+import { compressAudio } from "@/lib/audio-compress";
 import {
   Upload, FileAudio, History, X, Eye, Brain,
   FileText, Target, Layers, Mic, BarChart3,
@@ -342,19 +343,44 @@ function AppInterface({ onClose }: { onClose: () => void }) {
       return;
     }
     setState("transcribing");
-    setProgress("Uploading and initiating Whisper engine...");
+    setProgress("Compressing audio for upload...");
     try {
+      let uploadFile = file;
+      if (file.size > 4 * 1024 * 1024) {
+        setProgress("File too large, compressing audio...");
+        uploadFile = await compressAudio(file);
+      }
+      setProgress("Uploading and initiating Whisper engine...");
       const formData = new FormData();
-      formData.append("file", file);
+      formData.append("file", uploadFile);
       formData.append("userId", userId);
+      console.log("Sending analyze request:", { fileName: uploadFile.name, fileSize: uploadFile.size, userId });
       const res = await fetch("/api/analyze", { method: "POST", body: formData });
+      console.log("Analyze response:", { status: res.status, ok: res.ok });
+      const responseText = await res.text();
+      console.log("Analyze response body:", responseText.slice(0, 500));
       if (res.status === 401) { setState("error"); setProgress("Please sign in to analyze calls."); return; }
-      if (!res.ok) { const err = await res.json().catch(() => ({})); throw new Error(err.error || "Analysis failed"); }
-      const data = await res.json();
+      if (res.status === 413) { setState("error"); setProgress("File too large after compression."); return; }
+      if (!res.ok) {
+        try {
+          const err = JSON.parse(responseText);
+          throw new Error(err.error || "Analysis failed");
+        } catch (e: any) {
+          if (e instanceof SyntaxError) {
+            throw new Error(`Server error: ${res.status} ${res.statusText}`);
+          }
+          throw new Error(e.message || `Server error: ${res.status}`);
+        }
+      }
+      const data = JSON.parse(responseText);
       setResult(data);
       setState("done");
       fetchHistory(userId);
-    } catch (e: any) { setState("error"); setProgress(e.message || "Analysis failed."); }
+    } catch (e: any) {
+      console.error("Analyze error:", e);
+      setState("error");
+      setProgress(e.message || "Analysis failed.");
+    }
   };
 
   const copyShareLink = () => {
