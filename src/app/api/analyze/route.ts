@@ -39,7 +39,7 @@ export async function POST(req: Request) {
     try {
       const audioPreprocessing = new AudioPreprocessingService();
       const preprocessed = await audioPreprocessing.preprocess(fileBuffer);
-      buffer = preprocessed.buffer;
+      buffer = preprocessed.buffer as Buffer;
       duration = preprocessed.duration;
       model = audioPreprocessing.selectModel(duration);
       console.log(`Audio preprocessed: ${duration}s, using model: ${model}`);
