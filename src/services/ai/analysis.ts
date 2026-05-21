@@ -1,85 +1,106 @@
-import { OpenAI } from 'openai';
-import { SALES_ANALYSIS_PROMPT } from '@/lib/prompts';
-
-export interface AnalysisResult {
-  summary: string;
-  actionItems: Array<{ task: string; owner: string; due: string }>;
-  keyDecisions: string[];
-  nextSteps: Array<{ step: string; date: string }>;
-  healthScore: number;
-  closeProbability: number;
-  talkRatio: { rep: number; prospect: number };
-  objections: Array<{ type: string; quote: string; timestamp: number }>;
-  coachingNotes: { strengths: string[]; improvements: string[]; tips: string[] };
-  topics: Array<{ name: string; sentiment: string }>;
-  analysisAvailable?: boolean;
-}
+import OpenAI from 'openai';
+import { CallAnalysis, TranscriptionSegment } from '@/types';
+import fs from 'fs';
+import path from 'path';
 
 export class AnalysisService {
-  async analyze(transcript: string): Promise<AnalysisResult> {
-    const openAIKey = process.env.OPENAI_API_KEY;
-    const groqKey = process.env.GROQ_API_KEY;
+  private openai: OpenAI;
 
-    if (openAIKey) {
-      return this.analyzeWithOpenAI(transcript, openAIKey);
-    }
-    if (groqKey) {
-      return this.analyzeWithGroq(transcript, groqKey);
-    }
-
-    throw new Error('No analysis API key available. Set OPENAI_API_KEY or GROQ_API_KEY.');
+  constructor() {
+    this.openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
   }
 
-  private async analyzeWithOpenAI(transcript: string, apiKey: string): Promise<AnalysisResult> {
-    const openai = new OpenAI({ apiKey });
-    return this.analyzeWithProvider(openai, transcript, 'gpt-4o');
-  }
+  async analyze(transcript: string, segments?: TranscriptionSegment[]): Promise<CallAnalysis> {
+    const prompt = await this.loadPrompt('enrollment-calls');
 
-  private async analyzeWithGroq(transcript: string, apiKey: string): Promise<AnalysisResult> {
-    const openai = new OpenAI({ apiKey, baseURL: 'https://api.groq.com/openai/v1' });
-    return this.analyzeWithProvider(openai, transcript, 'llama-3.3-70b-versatile');
-  }
-
-  private async analyzeWithProvider(
-    openai: OpenAI,
-    transcript: string,
-    model: string
-  ): Promise<AnalysisResult> {
-    const response = await openai.chat.completions.create({
-      model,
+    const response = await this.openai.chat.completions.create({
+      model: 'gpt-4o',
       messages: [
-        { role: 'system', content: SALES_ANALYSIS_PROMPT },
-        { role: 'user', content: transcript },
+        { role: 'system', content: prompt },
+        { role: 'user', content: transcript }
       ],
-      temperature: 0.3,
       response_format: { type: 'json_object' },
+      temperature: 0.3
     });
 
-    const raw = response.choices?.[0]?.message?.content || '';
-    return this.parseAndValidate(raw);
-  }
+    const analysis = JSON.parse(response.choices[0].message.content || '{}') as Partial<CallAnalysis>;
 
-  private parseAndValidate(raw: string): AnalysisResult {
-    const cleaned = raw.replace(/^```json\s*/i, '').replace(/```$/g, '').trim();
-    const jsonMatch = cleaned.match(/\{[\s\S]*\}/);
-
-    if (!jsonMatch) {
-      throw new Error('Could not parse JSON from analysis response');
+    if (segments) {
+      analysis.sentimentTimeline = this.analyzeSentiment(segments);
+      analysis.talkRatio = this.calculateTalkRatio(segments);
     }
 
-    const parsed = JSON.parse(jsonMatch[0]);
+    return this.normalizeAnalysis(analysis);
+  }
 
+  private async loadPrompt(domain: string): Promise<string> {
+    const promptPath = path.join(process.cwd(), 'src/lib/prompts', `${domain}.md`);
+    return fs.readFileSync(promptPath, 'utf-8');
+  }
+
+  private analyzeSentiment(segments: TranscriptionSegment[]): { timestamp: number; sentiment: string }[] {
+    const positiveWords = ['great', 'perfect', 'excellent', 'yes', 'agree', 'happy', 'good'];
+    const negativeWords = ['no', 'expensive', 'problem', 'issue', 'difficult', 'concern'];
+
+    return segments.map(segment => {
+      const text = segment.text.toLowerCase();
+      const posCount = positiveWords.filter(w => text.includes(w)).length;
+      const negCount = negativeWords.filter(w => text.includes(w)).length;
+
+      let sentiment = 'neutral';
+      if (posCount > negCount) sentiment = 'positive';
+      if (negCount > posCount) sentiment = 'negative';
+
+      return { timestamp: segment.start, sentiment };
+    });
+  }
+
+  private calculateTalkRatio(segments: TranscriptionSegment[]): { rep: number; prospect: number } {
+    let repTime = 0;
+    let prospectTime = 0;
+
+    segments.forEach((segment, index) => {
+      const duration = segment.end - segment.start;
+      if (index % 2 === 0) {
+        repTime += duration;
+      } else {
+        prospectTime += duration;
+      }
+    });
+
+    const total = repTime + prospectTime;
     return {
-      summary: parsed.summary || 'No summary available',
-      actionItems: Array.isArray(parsed.actionItems) ? parsed.actionItems : [],
-      keyDecisions: Array.isArray(parsed.keyDecisions) ? parsed.keyDecisions : [],
-      nextSteps: Array.isArray(parsed.nextSteps) ? parsed.nextSteps : [],
-      healthScore: this.clamp(parsed.healthScore ?? 50, 0, 100),
-      closeProbability: this.clamp(parsed.closeProbability ?? 40, 0, 100),
-      talkRatio: parsed.talkRatio || { rep: 0.5, prospect: 0.5 },
-      objections: Array.isArray(parsed.objections) ? parsed.objections : [],
-      coachingNotes: parsed.coachingNotes || { strengths: [], improvements: [], tips: [] },
-      topics: Array.isArray(parsed.topics) ? parsed.topics : [],
+      rep: total > 0 ? Math.round((repTime / total) * 100) / 100 : 0.5,
+      prospect: total > 0 ? Math.round((prospectTime / total) * 100) / 100 : 0.5
+    };
+  }
+
+  private normalizeAnalysis(raw: Partial<CallAnalysis>): CallAnalysis {
+    return {
+      executiveSummary: raw.executiveSummary || 'No summary available',
+      callType: raw.callType || 'enrollment',
+      participants: Array.isArray(raw.participants) ? raw.participants : [],
+      keyEntities: raw.keyEntities || {},
+      salesScorecard: raw.salesScorecard || {
+        meddic: { metrics: 0, economicBuyer: 0, decisionCriteria: 0, decisionProcess: 0, identifyPain: 0, champion: 0 },
+        bant: { budget: 0, authority: 0, need: 0, timeline: 0 },
+        spin: { situation: 0, problem: 0, implication: 0, needPayoff: 0 },
+        overallScore: 0
+      },
+      stakeholderMap: raw.stakeholderMap || [],
+      painPoints: raw.painPoints || [],
+      goals: raw.goals || [],
+      objections: Array.isArray(raw.objections) ? raw.objections : [],
+      roiAnalysis: raw.roiAnalysis,
+      qualifications: raw.qualifications,
+      commitments: Array.isArray(raw.commitments) ? raw.commitments : [],
+      actionItems: Array.isArray(raw.actionItems) ? raw.actionItems : [],
+      nextSteps: Array.isArray(raw.nextSteps) ? raw.nextSteps : [],
+      coachingNotes: raw.coachingNotes || { strengths: [], improvements: [], tips: [] },
+      riskFlags: Array.isArray(raw.riskFlags) ? raw.riskFlags : [],
+      closeProbability: this.clamp(raw.closeProbability ?? 50, 0, 100),
+      talkRatio: raw.talkRatio || { rep: 0.5, prospect: 0.5 },
+      sentimentTimeline: Array.isArray(raw.sentimentTimeline) ? raw.sentimentTimeline : []
     };
   }
 

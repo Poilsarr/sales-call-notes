@@ -66,17 +66,28 @@ export async function POST(req: Request) {
       const msg = e?.message || '';
       console.log('Analysis failed:', msg.slice(0, 150));
       analysisResult = {
-        summary: correctedText.slice(0, 500),
+        executiveSummary: correctedText.slice(0, 500),
+        callType: 'enrollment',
+        participants: [],
+        keyEntities: {},
+        salesScorecard: {
+          meddic: { metrics: 0, economicBuyer: 0, decisionCriteria: 0, decisionProcess: 0, identifyPain: 0, champion: 0 },
+          bant: { budget: 0, authority: 0, need: 0, timeline: 0 },
+          spin: { situation: 0, problem: 0, implication: 0, needPayoff: 0 },
+          overallScore: 0
+        },
+        stakeholderMap: [],
+        painPoints: [],
+        goals: [],
+        objections: [],
+        commitments: [],
         actionItems: [],
-        keyDecisions: [],
         nextSteps: [],
-        healthScore: 0,
-        analysisAvailable: false,
+        coachingNotes: { strengths: [], improvements: [], tips: [] },
+        riskFlags: [],
         closeProbability: 40,
         talkRatio: { rep: 0.5, prospect: 0.5 },
-        objections: [],
-        coachingNotes: { strengths: [], improvements: [], tips: [] },
-        topics: [],
+        sentimentTimeline: []
       };
     }
 
@@ -84,8 +95,8 @@ export async function POST(req: Request) {
     const actionItems = (analysisResult.actionItems ?? []).map((item: any) => ({
       task: item.task || '', owner: item.owner || '', due: item.due || null,
     }));
-    const decisions = (analysisResult.keyDecisions ?? []).map((d: any) => ({
-      content: typeof d === 'string' ? d : d.content || '',
+    const decisions = (analysisResult.commitments ?? []).map((d: any) => ({
+      content: typeof d === 'string' ? d : d.what || '',
     }));
     const nextSteps = (analysisResult.nextSteps ?? []).map((s: any) => ({
       step: s.step || '', date: s.date || null,
@@ -94,8 +105,8 @@ export async function POST(req: Request) {
     await prisma.call.create({
       data: {
         userId, filename: fileName, transcript: correctedText,
-        summary: analysisResult.summary || correctedText.slice(0, 500),
-        healthScore: analysisResult.healthScore || null,
+        summary: analysisResult.executiveSummary || correctedText.slice(0, 500),
+        healthScore: analysisResult.salesScorecard?.overallScore || null,
         actionItems: { create: actionItems },
         decisions: { create: decisions },
         nextSteps: { create: nextSteps },
@@ -103,15 +114,15 @@ export async function POST(req: Request) {
     });
 
     return NextResponse.json({
-      summary: analysisResult.summary || correctedText.slice(0, 500),
+      summary: analysisResult.executiveSummary || correctedText.slice(0, 500),
       actionItems: analysisResult.actionItems || [],
-      keyDecisions: analysisResult.keyDecisions || [],
+      keyDecisions: analysisResult.commitments || [],
       nextSteps: analysisResult.nextSteps || [],
-      healthScore: analysisResult.healthScore || null,
+      healthScore: analysisResult.salesScorecard?.overallScore || null,
       transcript: correctedText,
       corrections,
       transcriptionConfidence: transcription.confidence,
-      analysisAvailable: analysisResult.analysisAvailable ?? true,
+      analysisAvailable: true,
     });
   } catch (error: any) {
     console.error('Analyze route error:', error?.message);
