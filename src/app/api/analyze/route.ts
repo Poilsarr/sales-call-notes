@@ -33,13 +33,13 @@ export async function POST(req: Request) {
     // --- TRANSCRIPTION PIPELINE ---
 
     // 1. Preprocess audio (optional — skip if ffmpeg unavailable on Vercel)
-    let buffer = fileBuffer;
+    let buffer: Buffer = Buffer.from(fileBuffer);
     let duration = 0;
     let model: 'whisper-1' | 'whisper-large-v3' = 'whisper-1';
     try {
       const audioPreprocessing = new AudioPreprocessingService();
       const preprocessed = await audioPreprocessing.preprocess(fileBuffer);
-      buffer = preprocessed.buffer as Buffer;
+      buffer = Buffer.from(preprocessed.buffer);
       duration = preprocessed.duration;
       model = audioPreprocessing.selectModel(duration);
       console.log(`Audio preprocessed: ${duration}s, using model: ${model}`);
