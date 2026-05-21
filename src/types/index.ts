@@ -4,7 +4,7 @@ export type ProcessingState = "idle" | "transcribing" | "analyzing" | "done" | "
 export interface Result {
   summary: string;
   actionItems: { task: string; owner: string; due: string }[];
-  keyDecisions: string[];
+  keyDecisions: (string | { who: string; what: string; by: string })[];
   nextSteps: { step: string; date: string }[];
   healthScore?: number;
 }

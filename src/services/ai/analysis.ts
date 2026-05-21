@@ -5,25 +5,66 @@ import path from 'path';
 
 export class AnalysisService {
   private openai: OpenAI;
+  private groqOpenai: OpenAI | null = null;
 
   constructor() {
     this.openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+    if (process.env.GROQ_API_KEY) {
+      this.groqOpenai = new OpenAI({
+        apiKey: process.env.GROQ_API_KEY,
+        baseURL: 'https://api.groq.com/openai/v1',
+        timeout: 60000,
+        maxRetries: 2
+      });
+    }
   }
 
   async analyze(transcript: string, segments?: TranscriptionSegment[]): Promise<CallAnalysis> {
     const prompt = await this.loadPrompt('enrollment-calls');
 
-    const response = await this.openai.chat.completions.create({
-      model: 'gpt-4o',
-      messages: [
-        { role: 'system', content: prompt },
-        { role: 'user', content: transcript }
-      ],
-      response_format: { type: 'json_object' },
-      temperature: 0.3
-    });
+    try {
+      const response = await this.openai.chat.completions.create({
+        model: 'gpt-4o',
+        messages: [
+          { role: 'system', content: prompt },
+          { role: 'user', content: transcript }
+        ],
+        response_format: { type: 'json_object' },
+        temperature: 0.3
+      });
+      return this.parseResponse(response, segments);
+    } catch (openaiError: any) {
+      console.log('OpenAI analysis failed, trying Groq:', openaiError?.message?.slice(0, 100));
 
-    const analysis = JSON.parse(response.choices[0].message.content || '{}') as Partial<CallAnalysis>;
+      if (!this.groqOpenai) {
+        throw openaiError;
+      }
+
+      const response = await this.groqOpenai.chat.completions.create({
+        model: 'llama-3.3-70b-versatile',
+        messages: [
+          { role: 'system', content: prompt },
+          { role: 'user', content: transcript }
+        ],
+        response_format: { type: 'json_object' },
+        temperature: 0.3
+      });
+      return this.parseResponse(response, segments);
+    }
+  }
+
+  private parseResponse(response: any, segments?: TranscriptionSegment[]): CallAnalysis {
+    const content = response.choices?.[0]?.message?.content;
+    if (!content) {
+      return this.normalizeAnalysis({});
+    }
+
+    let analysis: Partial<CallAnalysis>;
+    try {
+      analysis = JSON.parse(content);
+    } catch {
+      analysis = {};
+    }
 
     if (segments) {
       analysis.sentimentTimeline = this.analyzeSentiment(segments);

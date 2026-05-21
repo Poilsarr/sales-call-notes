@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { PrismaClient } from '@prisma/client';
 import { AudioPreprocessingService } from '@/services/ai/audio-preprocessing';
+import { Correction } from '@/types';
 import { TranscriptionServiceV2 } from '@/services/ai/transcription-v2';
 import { PostProcessingService } from '@/services/ai/post-processing';
 import { AnalysisService } from '@/services/ai/analysis';
@@ -65,9 +66,17 @@ export async function POST(req: Request) {
     console.log(`Transcription succeeded, length: ${transcription.text.length}, confidence: ${transcription.confidence}`);
 
     // 3. Post-process (entity correction)
-    const postProcessing = new PostProcessingService();
-    const { correctedText, corrections } = await postProcessing.correctEntities(transcription.text);
-    console.log(`Post-processing complete, ${corrections.length} corrections applied`);
+    let correctedText = transcription.text;
+    let corrections: Correction[] = [];
+    try {
+      const postProcessing = new PostProcessingService();
+      const result = await postProcessing.correctEntities(transcription.text);
+      correctedText = result.correctedText;
+      corrections = result.corrections;
+      console.log(`Post-processing complete, ${corrections.length} corrections applied`);
+    } catch (e: any) {
+      console.log(`Post-processing skipped (AI unavailable): ${e?.message}`);
+    }
 
     // --- ANALYSIS ---
     let analysisResult: Awaited<ReturnType<AnalysisService['analyze']>>;
@@ -119,7 +128,7 @@ export async function POST(req: Request) {
       data: {
         userId, filename: fileName, transcript: correctedText,
         summary: analysisResult.executiveSummary || correctedText.slice(0, 500),
-        healthScore: analysisResult.salesScorecard?.overallScore || null,
+        healthScore: typeof analysisResult.salesScorecard?.overallScore === 'number' ? analysisResult.salesScorecard.overallScore : Number(analysisResult.salesScorecard?.overallScore) || null,
         actionItems: { create: actionItems },
         decisions: { create: decisions },
         nextSteps: { create: nextSteps },
