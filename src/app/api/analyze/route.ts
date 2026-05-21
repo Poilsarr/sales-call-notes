@@ -1,135 +1,11 @@
 import { NextResponse } from 'next/server';
 import { PrismaClient } from '@prisma/client';
+import { AudioPreprocessingService } from '@/services/ai/audio-preprocessing';
+import { TranscriptionServiceV2 } from '@/services/ai/transcription-v2';
+import { PostProcessingService } from '@/services/ai/post-processing';
+import { AnalysisService } from '@/services/ai/analysis';
 
 const prisma = new PrismaClient();
-
-async function transcribeGroq(apiKey: string, fileBuffer: Buffer, fileName: string, mimeType: string): Promise<string> {
-  const boundary = '----FormBoundary' + Math.random().toString(36).slice(2);
-  const CRLF = '\r\n';
-  const parts = [
-    `--${boundary}${CRLF}`,
-    `Content-Disposition: form-data; name="model"${CRLF}${CRLF}`,
-    `whisper-large-v3${CRLF}`,
-    `--${boundary}${CRLF}`,
-    `Content-Disposition: form-data; name="file"; filename="${fileName}"${CRLF}`,
-    `Content-Type: ${mimeType}${CRLF}${CRLF}`,
-  ].join('');
-
-  const prefix = Buffer.from(parts, 'utf-8');
-  const suffix = Buffer.from(`${CRLF}--${boundary}--${CRLF}`, 'utf-8');
-  const formData = Buffer.concat([prefix, fileBuffer, suffix]);
-
-  const res = await fetch('https://api.groq.com/openai/v1/audio/transcriptions', {
-    method: 'POST',
-    headers: {
-      'Authorization': `Bearer ${apiKey}`,
-      'Content-Type': `multipart/form-data; boundary=${boundary}`,
-    },
-    body: formData,
-  });
-
-  if (!res.ok) {
-    const errText = await res.text();
-    throw new Error(`Groq transcription failed: ${res.status} ${errText}`);
-  }
-
-  const data = await res.json();
-  return data.text;
-}
-
-async function transcribeOpenAI(apiKey: string, fileBuffer: Buffer, fileName: string, mimeType: string): Promise<string> {
-  const boundary = '----FormBoundary' + Math.random().toString(36).slice(2);
-  const CRLF = '\r\n';
-  const parts = [
-    `--${boundary}${CRLF}`,
-    `Content-Disposition: form-data; name="model"${CRLF}${CRLF}`,
-    `whisper-1${CRLF}`,
-    `--${boundary}${CRLF}`,
-    `Content-Disposition: form-data; name="file"; filename="${fileName}"${CRLF}`,
-    `Content-Type: ${mimeType}${CRLF}${CRLF}`,
-  ].join('');
-
-  const prefix = Buffer.from(parts, 'utf-8');
-  const suffix = Buffer.from(`${CRLF}--${boundary}--${CRLF}`, 'utf-8');
-  const formData = Buffer.concat([prefix, fileBuffer, suffix]);
-
-  const res = await fetch('https://api.openai.com/v1/audio/transcriptions', {
-    method: 'POST',
-    headers: {
-      'Authorization': `Bearer ${apiKey}`,
-      'Content-Type': `multipart/form-data; boundary=${boundary}`,
-    },
-    body: formData,
-  });
-
-  if (!res.ok) {
-    const errText = await res.text();
-    throw new Error(`OpenAI transcription failed: ${res.status} ${errText}`);
-  }
-
-  const data = await res.json();
-  return data.text;
-}
-
-async function analyzeWithGroq(apiKey: string, transcript: string): Promise<any> {
-  const res = await fetch('https://api.groq.com/openai/v1/chat/completions', {
-    method: 'POST',
-    headers: {
-      'Authorization': `Bearer ${apiKey}`,
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({
-      model: 'llama-3.3-70b-versatile',
-      messages: [
-        { role: 'system', content: 'You are a JSON-only API. Your response must be ONLY valid JSON with no other text, no markdown, no code fences.' },
-        { role: 'user', content: `Analyze this sales transcript. Respond with ONLY this JSON structure (no other text): {"summary":"...","actionItems":[{"task":"...","owner":"...","due":"..."}],"keyDecisions":["..."],"nextSteps":[{"step":"...","date":"..."}],"healthScore":0.85}\n\nTranscript: ${transcript}` },
-      ],
-      temperature: 0.3,
-    }),
-  });
-
-  if (!res.ok) {
-    const errText = await res.text();
-    throw new Error(`Groq analysis failed: ${res.status} ${errText}`);
-  }
-
-  const data = await res.json();
-  const raw = data.choices?.[0]?.message?.content || '';
-  const jsonMatch = raw.match(/\{[\s\S]*\}/);
-  if (jsonMatch) return JSON.parse(jsonMatch[0]);
-  const cleaned = raw.replace(/^```json\s*/i, '').replace(/```$/g, '').trim();
-  return JSON.parse(cleaned);
-}
-
-async function analyzeWithOpenAI(apiKey: string, transcript: string): Promise<any> {
-  const res = await fetch('https://api.openai.com/v1/chat/completions', {
-    method: 'POST',
-    headers: {
-      'Authorization': `Bearer ${apiKey}`,
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({
-      model: 'gpt-4o',
-      messages: [
-        { role: 'system', content: 'You are a JSON-only API. Your response must be ONLY valid JSON with no other text, no markdown, no code fences.' },
-        { role: 'user', content: `Analyze this sales transcript. Respond with ONLY this JSON structure (no other text): {"summary":"...","actionItems":[{"task":"...","owner":"...","due":"..."}],"keyDecisions":["..."],"nextSteps":[{"step":"...","date":"..."}],"healthScore":0.85}\n\nTranscript: ${transcript}` },
-      ],
-      temperature: 0.3,
-    }),
-  });
-
-  if (!res.ok) {
-    const errText = await res.text();
-    throw new Error(`OpenAI analysis failed: ${res.status} ${errText}`);
-  }
-
-  const data = await res.json();
-  const raw = data.choices?.[0]?.message?.content || '';
-  const jsonMatch = raw.match(/\{[\s\S]*\}/);
-  if (jsonMatch) return JSON.parse(jsonMatch[0]);
-  const cleaned = raw.replace(/^```json\s*/i, '').replace(/```$/g, '').trim();
-  return JSON.parse(cleaned);
-}
 
 export async function POST(req: Request) {
   try {
@@ -145,70 +21,86 @@ export async function POST(req: Request) {
     const fileName = file.name || 'call_recording.mp3';
     const mimeType = file.type || 'audio/mpeg';
 
+    if (fileBuffer.length > 100 * 1024 * 1024) {
+      return NextResponse.json({ error: 'File size exceeds 100MB limit' }, { status: 400 });
+    }
+    if (!mimeType.startsWith('audio/')) {
+      return NextResponse.json({ error: 'Only audio files are supported' }, { status: 400 });
+    }
+
     console.log(`Processing file: ${fileName}, size: ${fileBuffer.length}, type: ${mimeType}`);
 
-    // --- TRANSCRIPTION ---
-    let transcript = '';
-    const openAIKey = process.env.OPENAI_API_KEY;
-    const groqKey = process.env.GROQ_API_KEY;
+    // --- TRANSCRIPTION PIPELINE ---
 
-    // Try Groq first (OpenAI quota exhausted), then OpenAI
-    const transcribeAttempts = [
-      { name: 'Groq', key: groqKey, fn: transcribeGroq },
-      { name: 'OpenAI', key: openAIKey, fn: transcribeOpenAI },
-    ];
-
-    let transcribed = false;
-    for (const a of transcribeAttempts) {
-      if (!a.key) continue;
-      try {
-        console.log(`Trying ${a.name} transcription...`);
-        transcript = await a.fn(a.key, fileBuffer, fileName, mimeType);
-        transcribed = true;
-        console.log(`${a.name} transcription succeeded, length: ${transcript.length}`);
-        break;
-      } catch (e: any) {
-        const msg = e?.message || '';
-        console.log(`${a.name} transcription failed:`, msg.slice(0, 150));
-      }
+    // 1. Preprocess audio (optional — skip if ffmpeg unavailable on Vercel)
+    let buffer: Buffer = Buffer.from(fileBuffer);
+    let duration = 0;
+    let model: 'whisper-1' | 'whisper-large-v3' = 'whisper-1';
+    try {
+      const audioPreprocessing = new AudioPreprocessingService();
+      const preprocessed = await audioPreprocessing.preprocess(fileBuffer);
+      buffer = Buffer.from(preprocessed.buffer);
+      duration = preprocessed.duration;
+      model = audioPreprocessing.selectModel(duration);
+      console.log(`Audio preprocessed: ${duration}s, using model: ${model}`);
+    } catch (e: any) {
+      console.log(`Audio preprocessing skipped (ffmpeg unavailable): ${e?.message}`);
+      // Estimate duration from file size (~128kbps MP3 ≈ 16KB/s)
+      const estimatedDuration = Math.round(fileBuffer.length / 16000);
+      model = estimatedDuration < 300 ? 'whisper-1' : 'whisper-large-v3';
+      console.log(`Using raw buffer, estimated ${estimatedDuration}s, model: ${model}`);
     }
 
-    if (!transcribed) {
-      return NextResponse.json({ 
-        error: 'Transcription failed. All AI providers unavailable. Please add credits to your OpenAI account or ensure GROQ_API_KEY is set.' 
+    // 2. Transcribe
+    const transcriptionService = new TranscriptionServiceV2();
+    let transcription;
+    try {
+      transcription = await transcriptionService.transcribe(buffer, model);
+    } catch (error) {
+      console.error('Transcription failed:', error);
+      return NextResponse.json({
+        error: 'Transcription failed. All AI providers unavailable. Please add credits to your OpenAI account or ensure GROQ_API_KEY is set.'
       }, { status: 500 });
     }
+    console.log(`Transcription succeeded, length: ${transcription.text.length}, confidence: ${transcription.confidence}`);
+
+    // 3. Post-process (entity correction)
+    const postProcessing = new PostProcessingService();
+    const { correctedText, corrections } = await postProcessing.correctEntities(transcription.text);
+    console.log(`Post-processing complete, ${corrections.length} corrections applied`);
 
     // --- ANALYSIS ---
-    let analysisResult: any;
-    const analyzeAttempts = [
-      { name: 'Groq', key: groqKey, fn: analyzeWithGroq },
-      { name: 'OpenAI', key: openAIKey, fn: analyzeWithOpenAI },
-    ];
-
-    let analyzed = false;
-    for (const a of analyzeAttempts) {
-      if (!a.key) continue;
-      try {
-        console.log(`Trying ${a.name} analysis...`);
-        analysisResult = await a.fn(a.key, transcript);
-        analyzed = true;
-        console.log(`${a.name} analysis succeeded`);
-        break;
-      } catch (e: any) {
-        const msg = e?.message || '';
-        console.log(`${a.name} analysis failed:`, msg.slice(0, 150));
-      }
-    }
-
-    if (!analyzed) {
-      console.log('All AI analysis failed, using raw transcript as summary');
+    let analysisResult: Awaited<ReturnType<AnalysisService['analyze']>>;
+    try {
+      const analysisService = new AnalysisService();
+      analysisResult = await analysisService.analyze(correctedText);
+      console.log('Analysis succeeded');
+    } catch (e: any) {
+      const msg = e?.message || '';
+      console.log('Analysis failed:', msg.slice(0, 150));
       analysisResult = {
-        summary: transcript.slice(0, 500),
+        executiveSummary: correctedText.slice(0, 500),
+        callType: 'enrollment',
+        participants: [],
+        keyEntities: {},
+        salesScorecard: {
+          meddic: { metrics: 0, economicBuyer: 0, decisionCriteria: 0, decisionProcess: 0, identifyPain: 0, champion: 0 },
+          bant: { budget: 0, authority: 0, need: 0, timeline: 0 },
+          spin: { situation: 0, problem: 0, implication: 0, needPayoff: 0 },
+          overallScore: 0
+        },
+        stakeholderMap: [],
+        painPoints: [],
+        goals: [],
+        objections: [],
+        commitments: [],
         actionItems: [],
-        keyDecisions: [],
         nextSteps: [],
-        healthScore: null,
+        coachingNotes: { strengths: [], improvements: [], tips: [] },
+        riskFlags: [],
+        closeProbability: 40,
+        talkRatio: { rep: 0.5, prospect: 0.5 },
+        sentimentTimeline: []
       };
     }
 
@@ -216,8 +108,8 @@ export async function POST(req: Request) {
     const actionItems = (analysisResult.actionItems ?? []).map((item: any) => ({
       task: item.task || '', owner: item.owner || '', due: item.due || null,
     }));
-    const decisions = (analysisResult.keyDecisions ?? []).map((d: any) => ({
-      content: typeof d === 'string' ? d : d.content || '',
+    const decisions = (analysisResult.commitments ?? []).map((d: any) => ({
+      content: typeof d === 'string' ? d : d.what || '',
     }));
     const nextSteps = (analysisResult.nextSteps ?? []).map((s: any) => ({
       step: s.step || '', date: s.date || null,
@@ -225,21 +117,25 @@ export async function POST(req: Request) {
 
     await prisma.call.create({
       data: {
-        userId, filename: fileName, transcript,
-        summary: analysisResult.summary || transcript.slice(0, 500),
-        healthScore: analysisResult.healthScore || null,
+        userId, filename: fileName, transcript: correctedText,
+        summary: analysisResult.executiveSummary || correctedText.slice(0, 500),
+        healthScore: analysisResult.salesScorecard?.overallScore || null,
         actionItems: { create: actionItems },
         decisions: { create: decisions },
         nextSteps: { create: nextSteps },
       }
-    }).catch((e) => console.error('Failed to save call:', e));
+    });
 
     return NextResponse.json({
-      summary: analysisResult.summary || transcript.slice(0, 500),
+      summary: analysisResult.executiveSummary || correctedText.slice(0, 500),
       actionItems: analysisResult.actionItems || [],
-      keyDecisions: analysisResult.keyDecisions || [],
+      keyDecisions: analysisResult.commitments || [],
       nextSteps: analysisResult.nextSteps || [],
-      healthScore: analysisResult.healthScore || null,
+      healthScore: analysisResult.salesScorecard?.overallScore || null,
+      transcript: correctedText,
+      corrections,
+      transcriptionConfidence: transcription.confidence,
+      analysisAvailable: true,
     });
   } catch (error: any) {
     console.error('Analyze route error:', error?.message);
