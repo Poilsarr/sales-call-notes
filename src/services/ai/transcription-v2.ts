@@ -1,4 +1,4 @@
-import OpenAI from 'openai';
+import OpenAI, { toFile } from 'openai';
 import { TranscriptionResult, TranscriptionSegment, WordTimestamp } from '@/types';
 
 const TRANSCRIPTION_PROMPT = `This is a sales enrollment call. A representative is enrolling a customer in an energy or insurance plan. Pay special attention to: customer names, addresses, account numbers, utility company names, plan names, rates/prices, phone numbers, email addresses, dates. Spell out numbers clearly.`;
@@ -8,19 +8,30 @@ export class TranscriptionServiceV2 {
   private groqOpenai: OpenAI;
 
   constructor() {
-    this.openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+    if (!process.env.OPENAI_API_KEY) {
+      throw new Error('OPENAI_API_KEY is required for transcription');
+    }
+    if (!process.env.GROQ_API_KEY) {
+      throw new Error('GROQ_API_KEY is required for transcription fallback');
+    }
+    this.openai = new OpenAI({
+      apiKey: process.env.OPENAI_API_KEY,
+      timeout: 60000,
+      maxRetries: 2
+    });
     this.groqOpenai = new OpenAI({
       apiKey: process.env.GROQ_API_KEY,
-      baseURL: 'https://api.groq.com/openai/v1'
+      baseURL: 'https://api.groq.com/openai/v1',
+      timeout: 60000,
+      maxRetries: 2
     });
   }
 
-  async transcribe(audioBuffer: Buffer, model: 'whisper-1' | 'whisper-large-v3' = 'whisper-1'): Promise<TranscriptionResult> {
+  async transcribe(audioBuffer: Buffer, model: 'whisper-1' | 'whisper-large-v3' = 'whisper-1', attempted: string[] = []): Promise<TranscriptionResult> {
     const client = model === 'whisper-1' ? this.openai : this.groqOpenai;
 
     try {
-      const blob = new Blob([audioBuffer as unknown as BlobPart], { type: 'audio/wav' });
-      const file = new File([blob], 'audio.wav', { type: 'audio/wav' });
+      const file = await toFile(audioBuffer, 'audio.wav', { type: 'audio/wav' });
 
       const response = await client.audio.transcriptions.create({
         file,
@@ -32,8 +43,8 @@ export class TranscriptionServiceV2 {
 
       return this.parseVerboseJson(response);
     } catch (error) {
-      if (model === 'whisper-1') {
-        return this.transcribe(audioBuffer, 'whisper-large-v3');
+      if (model === 'whisper-1' && !attempted.includes('whisper-large-v3')) {
+        return this.transcribe(audioBuffer, 'whisper-large-v3', [...attempted, model]);
       }
       throw error;
     }
