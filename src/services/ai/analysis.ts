@@ -12,6 +12,7 @@ export interface AnalysisResult {
   objections: Array<{ type: string; quote: string; timestamp: number }>;
   coachingNotes: { strengths: string[]; improvements: string[]; tips: string[] };
   topics: Array<{ name: string; sentiment: string }>;
+  analysisAvailable?: boolean;
 }
 
 export class AnalysisService {

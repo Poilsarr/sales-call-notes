@@ -21,6 +21,13 @@ export async function POST(req: Request) {
     const fileName = file.name || 'call_recording.mp3';
     const mimeType = file.type || 'audio/mpeg';
 
+    if (fileBuffer.length > 100 * 1024 * 1024) {
+      return NextResponse.json({ error: 'File size exceeds 100MB limit' }, { status: 400 });
+    }
+    if (!mimeType.startsWith('audio/')) {
+      return NextResponse.json({ error: 'Only audio files are supported' }, { status: 400 });
+    }
+
     console.log(`Processing file: ${fileName}, size: ${fileBuffer.length}, type: ${mimeType}`);
 
     // --- TRANSCRIPTION PIPELINE ---
@@ -33,7 +40,15 @@ export async function POST(req: Request) {
 
     // 2. Transcribe
     const transcriptionService = new TranscriptionServiceV2();
-    const transcription = await transcriptionService.transcribe(buffer, model);
+    let transcription;
+    try {
+      transcription = await transcriptionService.transcribe(buffer, model);
+    } catch (error) {
+      console.error('Transcription failed:', error);
+      return NextResponse.json({
+        error: 'Transcription failed. All AI providers unavailable. Please add credits to your OpenAI account or ensure GROQ_API_KEY is set.'
+      }, { status: 500 });
+    }
     console.log(`Transcription succeeded, length: ${transcription.text.length}, confidence: ${transcription.confidence}`);
 
     // 3. Post-process (entity correction)
@@ -55,7 +70,8 @@ export async function POST(req: Request) {
         actionItems: [],
         keyDecisions: [],
         nextSteps: [],
-        healthScore: 50,
+        healthScore: 0,
+        analysisAvailable: false,
         closeProbability: 40,
         talkRatio: { rep: 0.5, prospect: 0.5 },
         objections: [],
@@ -84,7 +100,7 @@ export async function POST(req: Request) {
         decisions: { create: decisions },
         nextSteps: { create: nextSteps },
       }
-    }).catch((e) => console.error('Failed to save call:', e));
+    });
 
     return NextResponse.json({
       summary: analysisResult.summary || correctedText.slice(0, 500),
@@ -95,6 +111,7 @@ export async function POST(req: Request) {
       transcript: correctedText,
       corrections,
       transcriptionConfidence: transcription.confidence,
+      analysisAvailable: analysisResult.analysisAvailable ?? true,
     });
   } catch (error: any) {
     console.error('Analyze route error:', error?.message);
