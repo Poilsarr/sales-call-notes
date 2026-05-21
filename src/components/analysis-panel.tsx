@@ -1,7 +1,7 @@
 'use client';
 
 import { motion } from 'framer-motion';
-import { CheckCircle, AlertCircle, TrendingUp } from 'lucide-react';
+import { CheckCircle, TrendingUp } from 'lucide-react';
 
 interface AnalysisPanelProps {
   analysis: {

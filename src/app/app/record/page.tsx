@@ -47,6 +47,7 @@ export default function RecordPage() {
       mediaRecorderRef.current.stop();
       setIsRecording(false);
       if (timerRef.current) clearInterval(timerRef.current);
+      setDuration(0);
       toast.success('Recording stopped');
     }
   };
@@ -63,6 +64,16 @@ export default function RecordPage() {
         error: 'Failed to process recording',
       }
     );
+  };
+
+  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (file.size > 50 * 1024 * 1024) {
+      toast.error('File size exceeds 50MB limit');
+      return;
+    }
+    uploadRecording(file);
   };
 
   const formatDuration = (seconds: number) => {
@@ -118,7 +129,7 @@ export default function RecordPage() {
             <Upload className="w-8 h-8 text-zinc-500 mb-2" />
             <span className="text-sm text-zinc-400">Click to upload or drag and drop</span>
             <span className="text-xs text-zinc-600 mt-1">MP3, WAV, M4A up to 50MB</span>
-            <input type="file" className="hidden" accept="audio/*" />
+            <input type="file" className="hidden" accept="audio/*" onChange={handleFileUpload} />
           </label>
         </div>
       </div>
