@@ -5,10 +5,17 @@ export class PostProcessingService {
   private openai: OpenAI;
 
   constructor() {
+    if (!process.env.OPENAI_API_KEY) {
+      throw new Error('OPENAI_API_KEY is required for post-processing');
+    }
     this.openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
   }
 
   async correctEntities(transcript: string): Promise<{ correctedText: string; corrections: Correction[]; confidence: number }> {
+    if (!transcript || transcript.trim().length === 0) {
+      return { correctedText: transcript, corrections: [], confidence: 1.0 };
+    }
+
     const response = await this.openai.chat.completions.create({
       model: 'gpt-4o',
       messages: [
@@ -29,7 +36,18 @@ Return JSON: { correctedText: string, corrections: [{original, corrected, type, 
       temperature: 0.1
     });
 
-    const result = JSON.parse(response.choices[0].message.content || '{}');
+    if (!response.choices?.[0]?.message?.content) {
+      return { correctedText: transcript, corrections: [], confidence: 1.0 };
+    }
+
+    let result: { correctedText?: string; corrections?: Correction[] };
+    try {
+      result = JSON.parse(response.choices[0].message.content || '{}');
+    } catch (error) {
+      console.error('Failed to parse LLM response:', error);
+      result = { correctedText: transcript, corrections: [] };
+    }
+
     return {
       correctedText: result.correctedText || transcript,
       corrections: result.corrections || [],
@@ -44,7 +62,7 @@ Return JSON: { correctedText: string, corrections: [{original, corrected, type, 
   }
 
   validateEntities(text: string): { phones: string[]; emails: string[]; zipCodes: string[] } {
-    const phones = text.match(/\b\d{3}[-.]?\d{3}[-.]?\d{4}\b/g) || [];
+    const phones = text.match(/\(?\d{3}\)?[-.\s]?\d{3}[-.\s]?\d{4}/g) || [];
     const emails = text.match(/\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b/g) || [];
     const zipCodes = text.match(/\b\d{5}\b/g) || [];
     return { phones, emails, zipCodes };
