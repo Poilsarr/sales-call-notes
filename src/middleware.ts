@@ -4,7 +4,7 @@ import type { NextRequest } from "next/server";
 import { checkRateLimit } from "@/lib/rate-limit";
 
 const isPublicApi = createRouteMatcher(["/api/analyze", "/api/transcribe", "/api/transcribe/live", "/api/summarize"]);
-const isProtectedRoute = createRouteMatcher(["/api/(.*)", "/dashboard(.*)"]);
+const isProtectedRoute = createRouteMatcher(["/api/(.*)", "/dashboard(.*)", "/app(.*)"]);
 
 export default clerkMiddleware(async (auth, req: NextRequest) => {
   if (isProtectedRoute(req) && !isPublicApi(req)) {
