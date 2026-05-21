@@ -8,9 +8,28 @@ const config: Config = {
   ],
   theme: {
     extend: {
+      fontFamily: {
+        sans: ["Geist", "sans-serif"],
+        mono: ["Geist Mono", "monospace"],
+      },
       colors: {
         background: "var(--background)",
         foreground: "var(--foreground)",
+        surface: "var(--surface)",
+        "surface-hover": "var(--surface-hover)",
+        border: "var(--border)",
+        accent: {
+          DEFAULT: "var(--accent)",
+          hover: "var(--accent-hover)",
+        },
+        text: {
+          primary: "var(--text-primary)",
+          secondary: "var(--text-secondary)",
+          muted: "var(--text-muted)",
+        },
+        danger: "var(--danger)",
+        warning: "var(--warning)",
+        success: "var(--success)",
         linear: {
           black: "#050505",
           panel: "#0a0a0b",
@@ -29,11 +48,6 @@ const config: Config = {
         wider: "0.1em",
         widest: "0.2em",
       },
-      fontFamily: {
-        sans: ["var(--font-geist-sans)", "system-ui", "sans-serif"],
-        display: ["var(--font-clash-display)", "var(--font-geist-sans)", "sans-serif"],
-        mono: ["var(--font-jetbrains-mono)", "ui-monospace", "monospace"],
-      },
       borderRadius: {
         "2xl": "1rem",
         "3xl": "1.5rem",
@@ -47,6 +61,10 @@ const config: Config = {
         "spring": "cubic-bezier(0.32, 0.72, 0, 1)",
       },
       keyframes: {
+        fadeUp: {
+          "0%": { opacity: "0", transform: "translateY(20px)" },
+          "100%": { opacity: "1", transform: "translateY(0)" },
+        },
         "fade-up": {
           "0%": { opacity: "0", transform: "translateY(24px) blur(4px)" },
           "100%": { opacity: "1", transform: "translateY(0) blur(0)" },
@@ -61,7 +79,10 @@ const config: Config = {
         },
       },
       animation: {
-        "fade-up": "fade-up 0.8s cubic-bezier(0.25, 1, 0.5, 1) forwards",
+        "fade-up": "fadeUp 0.8s ease-out forwards",
+        "stagger-1": "fadeUp 0.8s ease-out 0.1s forwards",
+        "stagger-2": "fadeUp 0.8s ease-out 0.2s forwards",
+        "stagger-3": "fadeUp 0.8s ease-out 0.3s forwards",
         "scale-in": "scale-in 0.6s cubic-bezier(0.25, 1, 0.5, 1) forwards",
         "float": "float 6s ease-in-out infinite",
       },
