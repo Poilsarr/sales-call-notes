@@ -23,6 +23,7 @@ Return ONLY valid JSON with this exact structure:
   "salesScorecard": {
     "spin": {"situation": 0-10, "problem": 0-10, "implication": 0-10, "needPayoff": 0-10},
     "bant": {"budget": 0-10, "authority": 0-10, "need": 0-10, "timeline": 0-10},
+    "meddic": {"metrics": 0-10, "economicBuyer": 0-10, "decisionCriteria": 0-10, "decisionProcess": 0-10, "identifyPain": 0-10, "champion": 0-10},
     "discoveryQuality": 0-100,
     "overallScore": 0-100
   },
