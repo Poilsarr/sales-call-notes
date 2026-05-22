@@ -5,6 +5,12 @@ import { Correction } from '@/types';
 import { TranscriptionServiceV2 } from '@/services/ai/transcription-v2';
 import { PostProcessingService } from '@/services/ai/post-processing';
 import { AnalysisService } from '@/services/ai/analysis';
+import { DiarizationService } from '@/services/ai/diarization';
+import fs from 'fs/promises';
+import path from 'path';
+import os from 'os';
+
+const prisma = new PrismaClient();
 
 const prisma = new PrismaClient();
 
@@ -65,6 +71,27 @@ export async function POST(req: Request) {
     }
     console.log(`Transcription succeeded, length: ${transcription.text.length}, confidence: ${transcription.confidence}`);
 
+    // 2.5 Diarization (Identify Speakers)
+    let speakerLabels = [];
+    try {
+      const tempPath = path.join(os.tmpdir(), `diarize_${Date.now()}.wav`);
+      await fs.writeFile(tempPath, buffer);
+      
+      const diarizationService = new DiarizationService();
+      const diarizationResult = await diarizationService.diarize(tempPath);
+      
+      // Map segments to speaker labels
+      speakerLabels = diarizationResult.speakers.map(s => ({
+        label: s.label,
+        segments: s.segments
+      }));
+      
+      await fs.unlink(tempPath);
+      console.log('Diarization complete');
+    } catch (e: any) {
+      console.log(`Diarization failed: ${e?.message}. Falling back to Speaker 1/2`);
+    }
+
     // 3. Post-process (entity correction)
     let correctedText = transcription.text;
     let corrections: Correction[] = [];
@@ -76,6 +103,24 @@ export async function POST(req: Request) {
       console.log(`Post-processing complete, ${corrections.length} corrections applied`);
     } catch (e: any) {
       console.log(`Post-processing skipped (AI unavailable): ${e?.message}`);
+    }
+
+    // Merge Diarization with Transcription
+    let finalTranscriptWithSpeakers = correctedText;
+    if (speakerLabels.length > 0 && transcription.segments) {
+      const allSegments = [...transcription.segments];
+      allSegments.sort((a, b) => a.start - b.start);
+      
+      let formattedTranscript = '';
+      for (const seg of allSegments) {
+        // Find which speaker was talking during this segment
+        const speaker = speakerLabels.find(sl => 
+          sl.segments.some(ss => ss.start <= seg.start && ss.end >= seg.end)
+        );
+        const label = speaker ? speaker.label : 'Speaker 1';
+        formattedTranscript += `${label}: ${seg.text}\n\n`;
+      }
+      finalTranscriptWithSpeakers = formattedTranscript.trim();
     }
 
     // --- ANALYSIS ---
@@ -126,7 +171,7 @@ export async function POST(req: Request) {
 
     await prisma.call.create({
       data: {
-        userId, filename: fileName, transcript: correctedText,
+        userId, filename: fileName, transcript: finalTranscriptWithSpeakers,
         summary: analysisResult.executiveSummary || correctedText.slice(0, 500),
         healthScore: typeof analysisResult.salesScorecard?.overallScore === 'number' ? analysisResult.salesScorecard.overallScore : Number(analysisResult.salesScorecard?.overallScore) || null,
         actionItems: { create: actionItems },
@@ -141,7 +186,7 @@ export async function POST(req: Request) {
       keyDecisions: analysisResult.commitments || [],
       nextSteps: analysisResult.nextSteps || [],
       healthScore: analysisResult.salesScorecard?.overallScore || null,
-      transcript: correctedText,
+      transcript: finalTranscriptWithSpeakers,
       corrections,
       transcriptionConfidence: transcription.confidence,
       analysisAvailable: true,
