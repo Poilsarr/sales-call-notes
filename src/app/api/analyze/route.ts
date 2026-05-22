@@ -70,7 +70,7 @@ export async function POST(req: Request) {
     console.log(`Transcription succeeded, length: ${transcription.text.length}, confidence: ${transcription.confidence}`);
 
     // 2.5 Diarization (Identify Speakers)
-    let speakerLabels = [];
+    let speakerLabels: Array<{ label: string; segments: Array<{ speaker: string; start: number; end: number }> }> = [];
     try {
       const tempPath = path.join(os.tmpdir(), `diarize_${Date.now()}.wav`);
       await fs.writeFile(tempPath, buffer);
