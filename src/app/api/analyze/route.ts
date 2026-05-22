@@ -12,8 +12,6 @@ import os from 'os';
 
 const prisma = new PrismaClient();
 
-const prisma = new PrismaClient();
-
 export async function POST(req: Request) {
   try {
     console.log('Analyze route called');
