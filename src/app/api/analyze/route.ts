@@ -125,18 +125,19 @@ export async function POST(req: Request) {
 
     // Merge Diarization with Transcription
     let finalTranscriptWithSpeakers = correctedText;
+    let finalSegments: Array<{ speaker: string; text: string; start: number; end: number }> = [];
     if (speakerLabels.length > 0 && transcription.segments) {
       const allSegments = [...transcription.segments];
       allSegments.sort((a, b) => a.start - b.start);
       
       let formattedTranscript = '';
       for (const seg of allSegments) {
-        // Find which speaker was talking during this segment
         const speaker = speakerLabels.find(sl => 
           sl.segments.some(ss => ss.start <= seg.start && ss.end >= seg.end)
         );
         const label = speaker ? speaker.label : 'Speaker 1';
         formattedTranscript += `${label}: ${seg.text}\n\n`;
+        finalSegments.push({ speaker: label, text: seg.text, start: seg.start, end: seg.end });
       }
       finalTranscriptWithSpeakers = formattedTranscript.trim();
     }
@@ -205,6 +206,7 @@ export async function POST(req: Request) {
       nextSteps: analysisResult.nextSteps || [],
       healthScore: analysisResult.salesScorecard?.overallScore || null,
       transcript: finalTranscriptWithSpeakers,
+      segments: finalSegments,
       corrections,
       transcriptionConfidence: transcription.confidence,
       analysisAvailable: true,

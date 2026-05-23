@@ -10,7 +10,7 @@ import {
   Upload, FileAudio, History, X, Eye, Brain,
   FileText, Target, Layers, Mic, BarChart3,
   Shield, Share2, Copy, Download, Square, ArrowRight,
-  Users, Zap
+  Users, Zap, MessageSquare
 } from "lucide-react";
 
 export default function Home() {
@@ -278,6 +278,7 @@ function AppInterface({ onClose }: { onClose: () => void }) {
   const [progress, setProgress] = useState("");
   const [history, setHistory] = useState<CallRecord[]>([]);
   const [activeTab, setActiveTab] = useState<"upload" | "history" | "record">("upload");
+  const [resultTab, setResultTab] = useState<"transcript" | "synthesis" | "actions">("transcript");
   const { user } = useUser();
   const userId = user?.id || "";
   const [recording, setRecording] = useState(false);
@@ -384,8 +385,8 @@ function AppInterface({ onClose }: { onClose: () => void }) {
   };
 
   const copyShareLink = () => {
-    if (result?.summary) {
-      const text = `CallNote Pro Summary:\n${result.summary}\n\nAction Items:\n${(result.actionItems || []).map(i => `- ${i.task} (${i.owner})`).join("\n")}`;
+    if (result?.transcript) {
+      const text = `Transcript:\n${result.transcript}\n\nSummary:\n${result.summary}\n\nAction Items:\n${(result.actionItems || []).map(i => `- ${i.task} (${i.owner})`).join("\n")}`;
       navigator.clipboard.writeText(text);
     }
   };
@@ -508,63 +509,106 @@ function AppInterface({ onClose }: { onClose: () => void }) {
 
                 {state === "done" && result && (
                   <div className="space-y-6 animate-in slide-in-from-bottom-4 duration-700">
-                    <div className="flex items-center justify-end gap-2">
-                      <button onClick={copyShareLink}
-                        className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/5 border border-white/10 text-[11px] text-white/40 hover:text-white hover:bg-white/10 transition-all duration-500">
-                        <Copy strokeWidth={1} className="w-3 h-3" /> Copy Notes
-                      </button>
-                      <button onClick={() => {
-                        const text = `Call Summary:\n${result.summary}`;
-                        const blob = new Blob([text], { type: "text/plain" });
-                        const a = document.createElement("a");
-                        a.href = URL.createObjectURL(blob);
-                        a.download = "call-notes.txt";
-                        a.click();
-                      }}
-                        className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/5 border border-white/10 text-[11px] text-white/40 hover:text-white hover:bg-white/10 transition-all duration-500">
-                        <Download strokeWidth={1} className="w-3 h-3" /> Export
-                      </button>
-                    </div>
-
-                    <div className="doppel-outer">
-                      <div className="doppel-inner p-8 md:p-10">
-                        <div className="flex items-center gap-2 text-[10px] font-medium text-[#5e6ad2] uppercase tracking-[0.15em] mb-5">
-                          <FileText strokeWidth={1} className="w-3.5 h-3.5" /> Synthesis
-                        </div>
-                        <p className="text-lg md:text-xl font-[425] leading-relaxed text-white/80">{result.summary}</p>
+                    <div className="flex items-center justify-between gap-2">
+                      <div className="flex items-center gap-1 bg-white/5 rounded-xl p-1">
+                        {([["transcript", "Transcript"], ["synthesis", "Synthesis"], ["actions", "Actions"]] as const).map(([key, label]) => (
+                          <button key={key} onClick={() => setResultTab(key)}
+                            className={`px-4 py-2 rounded-lg text-[11px] font-medium transition-all duration-300 ${resultTab === key ? "bg-[#5e6ad2] text-white" : "text-white/40 hover:text-white"}`}>
+                            {label}
+                          </button>
+                        ))}
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <button onClick={copyShareLink}
+                          className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/5 border border-white/10 text-[11px] text-white/40 hover:text-white hover:bg-white/10 transition-all duration-500">
+                          <Copy strokeWidth={1} className="w-3 h-3" /> Copy
+                        </button>
+                        <button onClick={() => {
+                          const text = resultTab === "transcript" ? result.transcript : `Summary:\n${result.summary}`;
+                          const blob = new Blob([text], { type: "text/plain" });
+                          const a = document.createElement("a");
+                          a.href = URL.createObjectURL(blob);
+                          a.download = resultTab === "transcript" ? "transcript.txt" : "call-notes.txt";
+                          a.click();
+                        }}
+                          className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/5 border border-white/10 text-[11px] text-white/40 hover:text-white hover:bg-white/10 transition-all duration-500">
+                          <Download strokeWidth={1} className="w-3 h-3" /> Export
+                        </button>
                       </div>
                     </div>
 
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <div className="doppel-outer">
-                        <div className="doppel-inner p-8">
-                          <div className="flex items-center gap-2 text-[10px] font-medium text-[#5e6ad2] uppercase tracking-[0.15em] mb-6">
-                            <Target strokeWidth={1} className="w-3.5 h-3.5" /> Action Items
-                          </div>
-                          <div className="space-y-2">{(result.actionItems || []).map((item, i) => (
-                            <div key={i} className="flex justify-between p-3 rounded-xl bg-white/5 text-xs">
-                              <span className="text-white/70">{item?.task || ""}</span>
-                              <span className="text-white/30">{item?.owner || ""}</span>
-                            </div>
-                          ))}</div>
-                        </div>
-                      </div>
-                      <div className="doppel-outer">
-                        <div className="doppel-inner p-8">
-                          <div className="flex items-center gap-2 text-[10px] font-medium text-[#5e6ad2] uppercase tracking-[0.15em] mb-6">
-                            <Layers strokeWidth={1} className="w-3.5 h-3.5" /> Key Decisions
-                          </div>
-                          <div className="space-y-2">{(result.keyDecisions || []).map((d, i) => {
-                            const decisionText = typeof d === 'string' ? d : [d.who, d.what, d.by].filter(Boolean).join(' — ');
-                            return (
-                              <div key={i} className="flex items-start gap-3 text-sm font-[425] text-white/50">
-                                <div className="w-1 h-1 rounded-full bg-[#5e6ad2] mt-2 shrink-0" />{decisionText}
+                    {resultTab === "transcript" && result.segments && result.segments.length > 0 && (
+                      <div className="space-y-1">
+                        {result.segments.map((seg, i) => (
+                          <div key={i} className="doppel-outer">
+                            <div className="doppel-inner p-5 flex gap-4">
+                              <div className="text-[11px] text-white/25 font-mono w-16 shrink-0 pt-0.5">
+                                {formatTime(seg.start)}
                               </div>
-                            );
-                          })}</div>
+                              <div className="flex-1 min-w-0">
+                                <div className="text-[11px] font-semibold mb-1.5"
+                                  style={{ color: seg.speaker.includes('00') || seg.speaker === 'SPEAKER_00' ? '#5e6ad2' : '#22d3a8' }}>
+                                  {seg.speaker === 'SPEAKER_00' || seg.speaker === 'Agent' ? 'Agent' : seg.speaker === 'SPEAKER_01' || seg.speaker === 'Prospect' ? 'Prospect' : seg.speaker}
+                                </div>
+                                <p className="text-sm text-white/80 font-[425] leading-relaxed">{seg.text}</p>
+                              </div>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+
+                    {resultTab === "transcript" && (!result.segments || result.segments.length === 0) && result.transcript && (
+                      <div className="doppel-outer">
+                        <div className="doppel-inner p-8">
+                          <pre className="text-sm text-white/70 font-[425] leading-relaxed whitespace-pre-wrap">{result.transcript}</pre>
                         </div>
                       </div>
-                    </div>
+                    )}
+
+                    {resultTab === "synthesis" && (
+                      <div className="doppel-outer">
+                        <div className="doppel-inner p-8 md:p-10">
+                          <div className="flex items-center gap-2 text-[10px] font-medium text-[#5e6ad2] uppercase tracking-[0.15em] mb-5">
+                            <FileText strokeWidth={1} className="w-3.5 h-3.5" /> Synthesis
+                          </div>
+                          <p className="text-lg md:text-xl font-[425] leading-relaxed text-white/80">{result.summary}</p>
+                        </div>
+                      </div>
+                    )}
+
+                    {resultTab === "actions" && (
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div className="doppel-outer">
+                          <div className="doppel-inner p-8">
+                            <div className="flex items-center gap-2 text-[10px] font-medium text-[#5e6ad2] uppercase tracking-[0.15em] mb-6">
+                              <Target strokeWidth={1} className="w-3.5 h-3.5" /> Action Items
+                            </div>
+                            <div className="space-y-2">{(result.actionItems || []).map((item, i) => (
+                              <div key={i} className="flex justify-between p-3 rounded-xl bg-white/5 text-xs">
+                                <span className="text-white/70">{item?.task || ""}</span>
+                                <span className="text-white/30">{item?.owner || ""}</span>
+                              </div>
+                            ))}</div>
+                          </div>
+                        </div>
+                        <div className="doppel-outer">
+                          <div className="doppel-inner p-8">
+                            <div className="flex items-center gap-2 text-[10px] font-medium text-[#5e6ad2] uppercase tracking-[0.15em] mb-6">
+                              <Layers strokeWidth={1} className="w-3.5 h-3.5" /> Key Decisions
+                            </div>
+                            <div className="space-y-2">{(result.keyDecisions || []).map((d, i) => {
+                              const decisionText = typeof d === 'string' ? d : [d.who, d.what, d.by].filter(Boolean).join(' — ');
+                              return (
+                                <div key={i} className="flex items-start gap-3 text-sm font-[425] text-white/50">
+                                  <div className="w-1 h-1 rounded-full bg-[#5e6ad2] mt-2 shrink-0" />{decisionText}
+                                </div>
+                              );
+                            })}</div>
+                          </div>
+                        </div>
+                      </div>
+                    )}
                   </div>
                 )}
 
@@ -586,13 +630,25 @@ function AppInterface({ onClose }: { onClose: () => void }) {
                     <div key={record.id}
                       className="doppel-outer group cursor-pointer"
                       onClick={() => {
+                        const segments = (record.transcript || '').split('\n\n').filter(Boolean).map((block, i) => {
+                          const [speaker, ...textParts] = block.split(': ');
+                          return {
+                            speaker: speaker || 'Unknown',
+                            text: textParts.join(': '),
+                            start: i * 10,
+                            end: (i + 1) * 10,
+                          };
+                        });
                         setResult({
+                          transcript: record.transcript || "",
+                          segments: (record as any).segments || segments,
                           summary: record.summary || "",
                           actionItems: record.actionItems || [],
                           keyDecisions: record.keyDecisions || [],
                           nextSteps: record.nextSteps || [],
                           healthScore: (record as any).healthScore,
                         });
+                        setResultTab("transcript");
                         setState("done");
                         setActiveTab("upload");
                       }}>
@@ -616,4 +672,10 @@ function AppInterface({ onClose }: { onClose: () => void }) {
       </div>
     </div>
   );
+
+  function formatTime(seconds: number): string {
+    const mins = Math.floor(seconds / 60);
+    const secs = Math.floor(seconds % 60);
+    return `${mins}:${secs.toString().padStart(2, '0')}`;
+  }
 }
