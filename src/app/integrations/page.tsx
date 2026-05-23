@@ -68,7 +68,7 @@ export default function IntegrationsPage() {
       <section className="pb-32 md:pb-44 px-6">
         <div className="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {integrations.map((int, i) => (
-            <div key={i} className="reveal"
+            <div key={int.name} className="reveal"
               style={{ transition: `all 0.8s cubic-bezier(0.25,1,0.5,1) ${0.05 + i * 0.05}s`, transform: "translateY(24px)", opacity: 0, filter: "blur(4px)" }}>
               <div className="doppel-outer h-full group">
                 <div className="doppel-inner p-6 h-full">

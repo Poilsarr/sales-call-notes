@@ -1,15 +1,19 @@
 import { NextRequest, NextResponse } from "next/server";
-import { PrismaClient } from "@prisma/client";
-
-const prisma = new PrismaClient();
+import prisma from "@/lib/prisma";
+import { auth } from "@clerk/nextjs/server";
 
 export async function POST(req: NextRequest) {
   try {
-    const { query, userId } = await req.json();
+    const { userId: sessionUserId } = await auth();
+    if (!sessionUserId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-    if (!query || !userId) {
-      return NextResponse.json({ error: "query and userId required" }, { status: 400 });
+    const { query } = await req.json();
+
+    if (!query) {
+      return NextResponse.json({ error: "query required" }, { status: 400 });
     }
+
+    const userId = sessionUserId;
 
     const calls = await prisma.call.findMany({
       where: { userId },

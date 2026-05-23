@@ -122,6 +122,7 @@ export class AnalysisService {
       callType: raw.callType || 'enrollment',
       participants: Array.isArray(raw.participants) ? raw.participants : [],
       keyEntities: raw.keyEntities || {},
+      competitorsMentioned: Array.isArray(raw.competitorsMentioned) ? raw.competitorsMentioned : [],
       salesScorecard: raw.salesScorecard || {
         meddic: { metrics: 0, economicBuyer: 0, decisionCriteria: 0, decisionProcess: 0, identifyPain: 0, champion: 0 },
         bant: { budget: 0, authority: 0, need: 0, timeline: 0 },

@@ -1,12 +1,20 @@
 import { NextRequest, NextResponse } from "next/server";
 import { WebhookService } from "@/services/webhooks";
+import { auth } from "@clerk/nextjs/server";
 
 export async function POST(req: NextRequest) {
   try {
-    const { url, userId } = await req.json();
+    const { userId } = await auth();
+    if (!userId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-    if (!url || !userId) {
-      return NextResponse.json({ error: "url and userId required" }, { status: 400 });
+    const { url } = await req.json();
+
+    if (!url) {
+      return NextResponse.json({ error: "url required" }, { status: 400 });
+    }
+
+    if (!url.startsWith("https://")) {
+      return NextResponse.json({ error: "Webhook URL must start with https://" }, { status: 400 });
     }
 
     const webhooks = new WebhookService();

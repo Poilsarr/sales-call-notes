@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { ClerkProvider } from "@clerk/nextjs";
 import { Plus_Jakarta_Sans } from "next/font/google";
 import { Analytics } from "@vercel/analytics/next";
@@ -45,9 +46,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           {children}
           <footer className="border-t border-white/5 py-6 px-6 text-center">
             <div className="max-w-6xl mx-auto flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-[11px] text-white/25">
-              <a href="/terms" className="hover:text-white/50 transition-colors">Terms of Service</a>
-              <a href="/privacy" className="hover:text-white/50 transition-colors">Privacy Notice</a>
-              <a href="/refund" className="hover:text-white/50 transition-colors">Refund Policy</a>
+              <Link href="/terms" className="hover:text-white/50 transition-colors">Terms of Service</Link>
+              <Link href="/privacy" className="hover:text-white/50 transition-colors">Privacy Notice</Link>
+              <Link href="/refund" className="hover:text-white/50 transition-colors">Refund Policy</Link>
             </div>
           </footer>
           <Analytics />

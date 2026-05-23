@@ -20,6 +20,7 @@ Return ONLY valid JSON with this exact structure:
     "accountNumber": "string",
     "utilityCompany": "string"
   },
+  "competitorsMentioned": [{"name": "competitor name", "context": "what was said about them", "sentiment": "positive|negative|neutral"}],
   "salesScorecard": {
     "meddic": {"metrics": 0-10, "economicBuyer": 0-10, "decisionCriteria": 0-10, "decisionProcess": 0-10, "identifyPain": 0-10, "champion": 0-10},
     "bant": {"budget": 0-10, "authority": 0-10, "need": 0-10, "timeline": 0-10},

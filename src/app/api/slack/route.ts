@@ -1,12 +1,14 @@
 import { NextRequest, NextResponse } from "next/server";
-import { PrismaClient } from "@prisma/client";
+import prisma from "@/lib/prisma";
+import { auth } from "@clerk/nextjs/server";
 import { SlackService } from "@/services/slack";
-
-const prisma = new PrismaClient();
 
 export async function POST(req: NextRequest) {
   try {
-    const { callId, webhookUrl } = await req.json();
+    const { userId } = await auth();
+    if (!userId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
+    const { callId } = await req.json();
 
     if (!callId) {
       return NextResponse.json({ error: "callId required" }, { status: 400 });
@@ -21,7 +23,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Call not found" }, { status: 404 });
     }
 
-    const slack = new SlackService(webhookUrl);
+    const slack = new SlackService();
     const sent = await slack.sendCallSummary({
       filename: call.filename,
       summary: call.summary || "",

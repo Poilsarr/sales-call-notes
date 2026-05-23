@@ -15,6 +15,8 @@ export type FeatureId =
   | "ai_chat"
   | "analytics_dashboard"
   | "analytics_deep"
+  | "competitive_intelligence"
+  | "competitive_alerts"
   | "team_workspace"
   | "team_members_5"
   | "team_members_unlimited"
@@ -67,6 +69,8 @@ export const PLANS: Record<PlanTier, PlanConfig> = {
       speaker_diarization: true,
       export_json: true,
       analytics_dashboard: true,
+      competitive_intelligence: true,
+      competitive_alerts: false,
       browser_recording: false,
       live_transcription: false,
       crm_sync: false,
@@ -99,6 +103,8 @@ export const PLANS: Record<PlanTier, PlanConfig> = {
       speaker_diarization: true,
       export_json: true,
       analytics_dashboard: true,
+      competitive_intelligence: true,
+      competitive_alerts: true,
       browser_recording: true,
       live_transcription: true,
       crm_sync: true,
@@ -136,6 +142,8 @@ export const PLANS: Record<PlanTier, PlanConfig> = {
       export_json: true,
       analytics_dashboard: true,
       analytics_deep: true,
+      competitive_intelligence: true,
+      competitive_alerts: true,
       browser_recording: true,
       live_transcription: true,
       crm_sync: true,
@@ -175,6 +183,8 @@ export const PLANS: Record<PlanTier, PlanConfig> = {
       export_json: true,
       analytics_dashboard: true,
       analytics_deep: true,
+      competitive_intelligence: true,
+      competitive_alerts: true,
       browser_recording: true,
       live_transcription: true,
       crm_sync: true,
@@ -207,7 +217,7 @@ export function getPlan(tier: PlanTier | string): PlanConfig {
 
 export function hasFeature(plan: PlanConfig, feature: FeatureId): boolean {
   const val = plan.features[feature];
-  return val === true || (typeof val === "number" && val > 0);
+  return val === true;
 }
 
 export function getFeatureLimit(plan: PlanConfig, feature: FeatureId): number | "unlimited" | false {

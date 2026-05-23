@@ -9,8 +9,8 @@ type SlackMessage = {
 export class SlackService {
   private webhookUrl: string;
 
-  constructor(webhookUrl?: string) {
-    this.webhookUrl = webhookUrl || process.env.SLACK_WEBHOOK_URL || "";
+  constructor() {
+    this.webhookUrl = process.env.SLACK_WEBHOOK_URL || "";
   }
 
   async sendCallSummary(message: SlackMessage): Promise<boolean> {
@@ -62,6 +62,50 @@ export class SlackService {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ text: `New call notes: ${message.filename}`, blocks, unfurl_links: false }),
+      });
+      return res.ok;
+    } catch {
+      return false;
+    }
+  }
+
+  async sendCompetitorAlert(competitors: Array<{ name: string; context: string | null; sentiment: string | null }>, filename: string, callUrl: string): Promise<boolean> {
+    if (!this.webhookUrl || competitors.length === 0) return false;
+
+    const mentions = competitors.map(c =>
+      `• *${c.name}* — ${c.sentiment === 'negative' ? '⚠️ ' : ''}"${c.context || 'mentioned in call'}"`
+    ).join("\n");
+
+    const blocks: any[] = [
+      {
+        type: "header",
+        text: { type: "plain_text", text: `🚨 Competitor Alert: ${filename}` },
+      },
+      {
+        type: "section",
+        text: { type: "mrkdwn", text: `*Competitor${competitors.length > 1 ? 's' : ''} detected in this call:*\n\n${mentions}` },
+      },
+      {
+        type: "actions",
+        elements: [
+          {
+            type: "button",
+            text: { type: "plain_text", text: "View Call" },
+            url: callUrl,
+          },
+        ],
+      },
+      {
+        type: "context",
+        elements: [{ type: "mrkdwn", text: `Sent by <${process.env.NEXT_PUBLIC_APP_URL || "https://callnotepro.com"}|CallNote Pro Intelligence>` }],
+      },
+    ];
+
+    try {
+      const res = await fetch(this.webhookUrl, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ text: `🚨 Competitor Alert: ${competitors.map(c => c.name).join(", ")}`, blocks, unfurl_links: false }),
       });
       return res.ok;
     } catch {

@@ -1,17 +1,12 @@
 
 import { NextResponse } from 'next/server';
-import { PrismaClient } from '@prisma/client';
-
-const prisma = new PrismaClient();
+import prisma from '@/lib/prisma';
+import { auth } from '@clerk/nextjs/server';
 
 export async function GET(req: Request) {
   try {
-    const { searchParams } = new URL(req.url);
-    const userId = searchParams.get('userId') || '';
-
-    if (!userId) {
-      return NextResponse.json({ error: "userId required" }, { status: 400 });
-    }
+    const { userId } = await auth();
+    if (!userId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
     const calls = await prisma.call.findMany({
       where: { userId },
@@ -41,11 +36,14 @@ export async function GET(req: Request) {
 
 export async function POST(req: Request) {
   try {
-    const body = await req.json();
-    const { userId, filename, transcript, summary, healthScore } = body;
+    const { userId } = await auth();
+    if (!userId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-    if (!userId || !filename) {
-      return NextResponse.json({ error: "userId and filename required" }, { status: 400 });
+    const body = await req.json();
+    const { filename, transcript, summary, healthScore } = body;
+
+    if (!filename) {
+      return NextResponse.json({ error: "filename required" }, { status: 400 });
     }
 
     const call = await prisma.call.create({

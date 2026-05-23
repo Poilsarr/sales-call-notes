@@ -1,8 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
-import { PrismaClient } from "@prisma/client";
+import prisma from "@/lib/prisma";
 import { getPaddleClient } from "@/lib/paddle";
-
-const prisma = new PrismaClient();
 
 export async function POST(req: NextRequest) {
   try {
@@ -41,6 +39,14 @@ export async function POST(req: NextRequest) {
         }
 
         const dbStatus = status === "active" || status === "trialing" ? "active" : status;
+
+        const existing = await prisma.user.findFirst({
+          where: { paddleSubscriptionId: subscriptionId },
+          select: { subscriptionStatus: true },
+        });
+        if (existing && existing.subscriptionStatus === dbStatus) {
+          return NextResponse.json({ received: true, deduped: true });
+        }
 
         await prisma.user.updateMany({
           where: { paddleCustomerId: customerId },

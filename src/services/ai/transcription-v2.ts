@@ -58,7 +58,7 @@ export class TranscriptionServiceV2 {
       word: w.word,
       start: w.start,
       end: w.end,
-      confidence: w.probability || 0
+      confidence: w.probability ?? w.confidence ?? 0.95
     }));
 
     const segments: TranscriptionSegment[] = (response.segments || []).map((s: any, i: number) => ({

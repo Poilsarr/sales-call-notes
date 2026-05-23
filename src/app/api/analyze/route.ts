@@ -1,16 +1,15 @@
 import { NextResponse } from 'next/server';
-import { PrismaClient } from '@prisma/client';
+import prisma from '@/lib/prisma';
 import { AudioPreprocessingService } from '@/services/ai/audio-preprocessing';
 import { Correction } from '@/types';
 import { TranscriptionServiceV2 } from '@/services/ai/transcription-v2';
 import { PostProcessingService } from '@/services/ai/post-processing';
 import { AnalysisService } from '@/services/ai/analysis';
 import { DiarizationService } from '@/services/ai/diarization';
+import { SlackService } from '@/services/slack';
 import fs from 'fs/promises';
 import path from 'path';
 import os from 'os';
-
-const prisma = new PrismaClient();
 
 export const maxDuration = 60;
 
@@ -188,7 +187,15 @@ export async function POST(req: Request) {
       step: s.step || '', date: s.date || null,
     }));
 
-    await prisma.call.create({
+    const competitors = (analysisResult.competitorsMentioned ?? []).map((c: any) => ({
+      competitor: c.name || 'Unknown competitor',
+      context: c.context || null,
+      sentiment: c.sentiment || null,
+      mentionedBy: null,
+      timestamp: null,
+    }));
+
+    const call = await prisma.call.create({
       data: {
         userId, filename: fileName, transcript: finalTranscriptWithSpeakers,
         summary: analysisResult.executiveSummary || correctedText.slice(0, 500),
@@ -196,8 +203,19 @@ export async function POST(req: Request) {
         actionItems: { create: actionItems },
         decisions: { create: decisions },
         nextSteps: { create: nextSteps },
+        competitorMentions: competitors.length > 0 ? { create: competitors } : undefined,
       }
     });
+
+    if (competitors.length > 0) {
+      const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://sales-call-notes.vercel.app';
+      const slack = new SlackService();
+      slack.sendCompetitorAlert(
+        competitors.map(c => ({ name: c.competitor, context: c.context, sentiment: c.sentiment })),
+        fileName,
+        `${appUrl}/app/calls/${call.id}`
+      ).catch(() => {});
+    }
 
     return NextResponse.json({
       summary: analysisResult.executiveSummary || correctedText.slice(0, 500),
@@ -210,6 +228,7 @@ export async function POST(req: Request) {
       corrections,
       transcriptionConfidence: transcription.confidence,
       analysisAvailable: true,
+      competitorsMentioned: competitors,
     });
   } catch (error: any) {
     console.error('Analyze route error:', error?.message);

@@ -7,8 +7,10 @@ let meetingStarted = false;
 let meetingTitle = "";
 
 function init() {
-  // Watch for the captions button and enable them
+  // Watch for the captions button and enable them (only if user has consented)
+  const autoCaptions = localStorage.getItem("callnote_auto_captions") !== "false";
   const checkCaptions = setInterval(() => {
+    if (!autoCaptions) return;
     const buttons = document.querySelectorAll('[aria-label*="captions" i], [aria-label*="Turn on" i]');
     buttons.forEach(btn => {
       if (btn.getAttribute("aria-pressed") === "false" && btn.textContent.toLowerCase().includes("captions")) {
@@ -35,13 +37,13 @@ function init() {
 }
 
 function startCaptionCapture() {
-  console.log("[CallNote Pro] Meeting detected, watching captions...");
+  console.warn("[CallNote Pro] Meeting detected, watching captions...");
+
+  const captionContainer = document.querySelector('[jsname="mq"]') ||
+    document.querySelector('.qwt') ||
+    document.querySelector('[role="region"]');
 
   captionObserver = new MutationObserver(() => {
-    const captionContainer = document.querySelector('[jsname="mq"]') ||
-      document.querySelector('.qwt') ||
-      document.querySelector('[role="region"]');
-
     if (captionContainer) {
       const textSpans = captionContainer.querySelectorAll('span');
       const newText = Array.from(textSpans).map(s => s.textContent).join(" ").trim();
@@ -51,7 +53,11 @@ function startCaptionCapture() {
     }
   });
 
-  captionObserver.observe(document.body, { childList: true, subtree: true });
+  if (captionContainer) {
+    captionObserver.observe(captionContainer, { childList: true, subtree: true, characterData: true });
+  } else {
+    captionObserver.observe(document.body, { childList: true, subtree: true });
+  }
 
   // Periodically send captions to background
   setInterval(() => {

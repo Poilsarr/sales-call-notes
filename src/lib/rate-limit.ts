@@ -16,11 +16,12 @@ function getRatelimit(): Ratelimit | null {
     const redis = new Redis({ url: upstashUrl, token: upstashToken });
     ratelimitInstance = new Ratelimit({
       redis,
-      limiter: Ratelimit.slidingWindow(10, "1 m"),
+      limiter: Ratelimit.slidingWindow(60, "1 m"),
       analytics: true,
     });
     return ratelimitInstance;
-  } catch {
+  } catch (e) {
+    console.warn("Rate limiter init failed", (e as Error)?.message || e);
     return null;
   }
 }
@@ -32,7 +33,8 @@ export async function checkRateLimit(identifier: string) {
   try {
     const { success, remaining, reset } = await rl.limit(identifier);
     return { success, remaining, reset };
-  } catch {
+  } catch (e) {
+    console.warn("Rate limiter unavailable (Redis down?), failing open", (e as Error)?.message || e);
     return { success: true, remaining: 999, reset: 0 };
   }
 }

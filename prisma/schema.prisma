@@ -21,6 +21,7 @@ model User {
   subscriptionPlan    String?
   teamId              String?
   team                Team?    @relation("teamMembers", fields: [teamId], references: [id])
+  teamRole            String   @default("MEMBER")
   ownedTeams          Team[]   @relation("teamOwner")
   createdAt           DateTime @default(now())
   updatedAt           DateTime @updatedAt
@@ -68,12 +69,13 @@ model Call {
   tags          String?
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
-  actionItems   ActionItem[]
-  decisions     Decision[]
-  nextSteps     NextStep[]
-  speakers      Speaker[]
-  analytics     Analytics?
-  insight         CallInsight?
+  actionItems        ActionItem[]
+  decisions          Decision[]
+  nextSteps          NextStep[]
+  speakers           Speaker[]
+  analytics          Analytics?
+  insight            CallInsight?
+  competitorMentions CompetitorMention[]
 
   @@index([userId])
   @@index([teamId])
@@ -171,6 +173,22 @@ model RateLimit {
   createdAt   DateTime @default(now())
 
   @@index([userId])
+}
+
+model CompetitorMention {
+  id          String   @id @default(cuid())
+  callId      String
+  call        Call     @relation(fields: [callId], references: [id], onDelete: Cascade)
+  competitor  String
+  context     String?
+  sentiment   String?
+  mentionedBy String?
+  timestamp   Float?
+  createdAt   DateTime @default(now())
+
+  @@index([callId])
+  @@index([competitor])
+  @@index([createdAt])
 }
 
 model CallInsight {

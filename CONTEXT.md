@@ -32,6 +32,8 @@ https://github.com/Poilsarr/sales-call-notes (branch main protected — 4 CI che
 - Updated vitest testing infra — 17 tests passing
 - Generated app icons + extension icons
 - Created `src/app/sitemap.ts`, `extension/background.js`, `src/services/meeting-bot.ts`
+- **Built Competitive Intelligence Engine** — Prisma model `CompetitorMention`, AI-powered competitor extraction in analysis prompt, storage in analyze pipeline, `/api/competitive-intelligence` endpoint, `/app/intelligence` frontend page with trend bars + mention feed, sidebar nav item, Slack alerts, feature flags in plans ✅
+- **Fixed confidence always 0** — Whisper probability mapping now falls back to `confidence` field or 0.95 default for non-OpenAI providers ✅
 
 ## Env Vars Configured (in Vercel + GitHub secrets)
 
@@ -55,6 +57,7 @@ https://github.com/Poilsarr/sales-call-notes (branch main protected — 4 CI che
 4. **Generate PNG icons** — run `bash public/generate-icons.sh` (needs ImageMagick, already installed)
 5. **Sentry** — error monitoring (optional)
 6. **Email notifications** — Resend (optional)
+7. **Competitive Intelligence test coverage** — add tests for `/api/competitive-intelligence` endpoint
 
 ## Key Files
 
@@ -66,6 +69,12 @@ https://github.com/Poilsarr/sales-call-notes (branch main protected — 4 CI che
 | `src/app/layout.tsx` | Root layout — metadata, icons, analytics |
 | `Makefile` | `make setup`, `make test`, `make deploy` |
 | `.github/workflows/ci.yml` | CI/CD pipeline |
+| `src/app/api/competitive-intelligence/route.ts` | GET endpoint — returns mentions + trends |
+| `src/app/app/intelligence/page.tsx` | Competitive Intelligence console UI |
+| `src/components/app-sidebar.tsx` | Sidebar nav — Intelligence item added |
+| `src/lib/prompts/enrollment-calls.md` | AI prompt — `competitorsMentioned` extraction added |
+| `src/services/slack.ts` | `sendCompetitorAlert()` method for competitor alerts |
+| `prisma/schema.prisma` | `CompetitorMention` model added |
 
 ## Commands
 

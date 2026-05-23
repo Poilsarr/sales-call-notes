@@ -55,7 +55,7 @@ export default function DashboardPage() {
   if (!data) {
     return (
       <div className="min-h-screen bg-linear-black text-white flex items-center justify-center">
-        <p className="text-white/40">Sign in to view analytics</p>
+        <p className="text-white/40">No analytics data available</p>
       </div>
     );
   }
@@ -135,8 +135,8 @@ export default function DashboardPage() {
                   <span className="text-white/30">{new Date(call.date).toLocaleDateString()}</span>
                 </div>
                 <div className="flex items-center gap-4">
-                  <span className={`${call.healthScore && call.healthScore >= 60 ? 'text-green-400' : call.healthScore && call.healthScore >= 40 ? 'text-yellow-400' : 'text-red-400'}`}>
-                    {call.healthScore ? `${Math.round(call.healthScore * 100)}%` : 'N/A'}
+                  <span className={`${call.healthScore !== null && call.healthScore !== undefined && call.healthScore >= 60 ? 'text-green-400' : call.healthScore !== null && call.healthScore !== undefined && call.healthScore >= 40 ? 'text-yellow-400' : 'text-red-400'}`}>
+                    {call.healthScore !== null && call.healthScore !== undefined ? `${Math.round(call.healthScore * 100)}%` : 'N/A'}
                   </span>
                   <span className="text-white/40">{call.actionItemCount} items</span>
                   {call.closeProbability && (

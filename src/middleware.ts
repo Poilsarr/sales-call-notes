@@ -3,11 +3,10 @@ import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import { checkRateLimit } from "@/lib/rate-limit";
 
-const isPublicApi = createRouteMatcher(["/api/analyze", "/api/transcribe", "/api/transcribe/live", "/api/summarize"]);
 const isProtectedRoute = createRouteMatcher(["/api/(.*)", "/dashboard(.*)", "/app(.*)"]);
 
 export default clerkMiddleware(async (auth, req: NextRequest) => {
-  if (isProtectedRoute(req) && !isPublicApi(req)) {
+  if (isProtectedRoute(req)) {
     const { userId } = auth();
     if (!userId) {
       if (req.nextUrl.pathname.startsWith("/api/")) {
@@ -16,8 +15,9 @@ export default clerkMiddleware(async (auth, req: NextRequest) => {
       return NextResponse.redirect(new URL("/sign-in", req.url));
     }
 
-    const ip = req.headers.get("x-forwarded-for") ?? req.headers.get("x-real-ip") ?? "anonymous";
-    const { success } = await checkRateLimit(ip);
+    const ip = req.ip ?? req.headers.get("x-real-ip") ?? "anonymous";
+    const identifier = userId ? `user:${userId}` : `ip:${ip}`;
+    const { success } = await checkRateLimit(identifier);
     if (!success) {
       return NextResponse.json({ error: "Rate limit exceeded" }, { status: 429 });
     }

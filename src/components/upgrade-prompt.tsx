@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { useUser } from "@clerk/nextjs";
 import { initializePaddle } from "@paddle/paddle-js";
 import { Zap, Crown, Sparkles, X, Loader2, CheckCircle } from "lucide-react";
@@ -19,6 +19,8 @@ export default function UpgradePrompt({ feature, featureName, onClose, minimal }
   const [upgrading, setUpgrading] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
   const [paddle, setPaddle] = useState<any>(null);
+  const [paddleError, setPaddleError] = useState(false);
+  const isProcessing = useRef(false);
 
   useEffect(() => {
     initializePaddle({
@@ -26,6 +28,9 @@ export default function UpgradePrompt({ feature, featureName, onClose, minimal }
       token: process.env.NEXT_PUBLIC_PADDLE_CLIENT_TOKEN || "",
     }).then(paddleInstance => {
       if (paddleInstance) setPaddle(paddleInstance);
+    }).catch(err => {
+      console.error("Paddle initialization failed:", err);
+      setPaddleError(true);
     });
 
     if (user?.id) {
@@ -37,10 +42,11 @@ export default function UpgradePrompt({ feature, featureName, onClose, minimal }
   }, [user?.id]);
 
   const openCheckout = useCallback((targetPlan: PlanTier) => {
-    if (!paddle || !user?.id) return;
+    if (!paddle || paddleError || !user?.id || isProcessing.current) return;
     const priceId = PLANS[targetPlan].paddlePriceId;
     if (!priceId) return;
 
+    isProcessing.current = true;
     setUpgrading(targetPlan);
     paddle.Checkout.open({
       items: [{ priceId, quantity: 1 }],
@@ -50,6 +56,7 @@ export default function UpgradePrompt({ feature, featureName, onClose, minimal }
         theme: "dark",
       },
       onSuccess: () => {
+        isProcessing.current = false;
         setSuccess(true);
         setTimeout(() => {
           setSuccess(false);
@@ -59,6 +66,7 @@ export default function UpgradePrompt({ feature, featureName, onClose, minimal }
         }, 1500);
       },
       onClose: () => {
+        isProcessing.current = false;
         setUpgrading(null);
       },
     });
@@ -88,9 +96,9 @@ export default function UpgradePrompt({ feature, featureName, onClose, minimal }
           {featureName} requires {neededPlan.charAt(0).toUpperCase() + neededPlan.slice(1)} plan
         </p>
         <button onClick={() => openCheckout(neededPlan)}
-          disabled={upgrading !== null}
+          disabled={upgrading !== null || paddleError}
           className="px-3 py-1 bg-yellow-500 text-black rounded-full text-[10px] font-bold hover:bg-yellow-400 transition disabled:opacity-50">
-          {upgrading ? <Loader2 className="w-3 h-3 animate-spin" /> : `Upgrade - $${PLANS[neededPlan].price / 100}/mo`}
+          {upgrading ? <Loader2 className="w-3 h-3 animate-spin" /> : paddleError ? "Unavailable" : `Upgrade - $${PLANS[neededPlan].price / 100}/mo`}
         </button>
       </div>
     );
@@ -150,6 +158,9 @@ export default function UpgradePrompt({ feature, featureName, onClose, minimal }
           })}
         </div>
 
+        {paddleError && (
+          <p className="text-xs text-red-400/70 text-center mb-4">Payment system unavailable. Please try again later.</p>
+        )}
         <p className="text-[11px] text-white/30 text-center">
           Powered by Paddle. Secure payment processing.
         </p>

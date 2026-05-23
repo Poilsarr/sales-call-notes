@@ -283,7 +283,6 @@ function AppInterface({ onClose }: { onClose: () => void }) {
   const userId = user?.id || "";
   const [recording, setRecording] = useState(false);
   const [mediaRecorder, setMediaRecorder] = useState<MediaRecorder | null>(null);
-  const [liveText] = useState<string[]>([]);
   const [recordingDuration, setRecordingDuration] = useState(0);
 
   useEffect(() => {
@@ -355,11 +354,8 @@ function AppInterface({ onClose }: { onClose: () => void }) {
       const formData = new FormData();
       formData.append("file", uploadFile);
       formData.append("userId", userId);
-      console.log("Sending analyze request:", { fileName: uploadFile.name, fileSize: uploadFile.size, userId });
       const res = await fetch("/api/analyze", { method: "POST", body: formData });
-      console.log("Analyze response:", { status: res.status, ok: res.ok });
       const responseText = await res.text();
-      console.log("Analyze response body:", responseText.slice(0, 500));
       if (res.status === 401) { setState("error"); setProgress("Please sign in to analyze calls."); return; }
       if (res.status === 413) { setState("error"); setProgress("File too large after compression."); return; }
       if (!res.ok) {
@@ -457,16 +453,7 @@ function AppInterface({ onClose }: { onClose: () => void }) {
                       <Square strokeWidth={1.5} className="w-4 h-4" />
                       Stop Recording
                     </button>
-                    {liveText.length > 0 && (
-                      <div className="mt-10 doppel-outer max-w-lg mx-auto">
-                        <div className="doppel-inner p-6">
-                          <div className="text-[10px] text-white/20 uppercase tracking-[0.15em] mb-3">Live</div>
-                          {liveText.slice(-3).map((t, i) => (
-                            <p key={i} className="text-sm text-white/40 font-[425] leading-relaxed">{t}</p>
-                          ))}
-                        </div>
-                      </div>
-                    )}
+                    {/* Live transcription placeholder — will be wired in a future iteration */}
                   </div>
                 )}
               </div>
