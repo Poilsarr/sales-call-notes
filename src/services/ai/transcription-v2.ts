@@ -1,7 +1,10 @@
 import OpenAI, { toFile } from 'openai';
 import { TranscriptionResult, TranscriptionSegment, WordTimestamp } from '@/types';
 
-const TRANSCRIPTION_PROMPT = `This is a sales enrollment call. A representative is enrolling a customer in an energy or insurance plan. Pay special attention to: customer names, addresses, account numbers, utility company names, plan names, rates/prices, phone numbers, email addresses, dates. Spell out numbers clearly.`;
+const TRANSCRIPTION_PROMPT = `This is a sales enrollment call. A representative is enrolling a customer in an energy or insurance plan. 
+Pay special attention to: customer names, addresses, account numbers, utility company names, plan names, rates/prices, phone numbers, email addresses, dates. 
+Spell out numbers clearly. 
+CRITICAL: Remove filler words (um, ah, uh, like, you know) and stuttering. Ensure the transcript is clean, professional, and reads like a polished record of the conversation.`;
 
 export class TranscriptionServiceV2 {
   private openai: OpenAI;

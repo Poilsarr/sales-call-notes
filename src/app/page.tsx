@@ -554,11 +554,14 @@ function AppInterface({ onClose }: { onClose: () => void }) {
                           <div className="flex items-center gap-2 text-[10px] font-medium text-[#5e6ad2] uppercase tracking-[0.15em] mb-6">
                             <Layers strokeWidth={1} className="w-3.5 h-3.5" /> Key Decisions
                           </div>
-                          <div className="space-y-2">{(result.keyDecisions || []).map((d, i) => (
-                            <div key={i} className="flex items-start gap-3 text-sm font-[425] text-white/50">
-                              <div className="w-1 h-1 rounded-full bg-[#5e6ad2] mt-2 shrink-0" />{d}
-                            </div>
-                          ))}</div>
+                          <div className="space-y-2">{(result.keyDecisions || []).map((d, i) => {
+                            const decisionText = typeof d === 'string' ? d : [d.who, d.what, d.by].filter(Boolean).join(' — ');
+                            return (
+                              <div key={i} className="flex items-start gap-3 text-sm font-[425] text-white/50">
+                                <div className="w-1 h-1 rounded-full bg-[#5e6ad2] mt-2 shrink-0" />{decisionText}
+                              </div>
+                            );
+                          })}</div>
                         </div>
                       </div>
                     </div>

@@ -1,34 +1,63 @@
 'use client';
 
+import { useEffect, useState } from 'react';
 import { TranscriptViewer } from '@/components/transcript-viewer';
 import { AnalysisPanel } from '@/components/analysis-panel';
 import { ChatSidebar } from '@/components/chat-sidebar';
 import { motion } from 'framer-motion';
 
-const mockSegments = [
-  { speaker: 'Speaker A', text: 'Hello, this is Jesus with Clean Sky Energy.', timestamp: 0 },
-  { speaker: 'Speaker B', text: 'Hi, yes this is Janine.', timestamp: 5 },
-  { speaker: 'Speaker A', text: 'I am calling about a price protected renewable electricity plan.', timestamp: 10 },
-];
-
-const mockAnalysis = {
-  executiveSummary: 'The customer, Janine Corriere, was contacted about enrolling in a 12-month renewable electricity plan with Clean Sky Energy. She qualified for the plan and provided necessary information including account number and service address.',
-  healthScore: 85,
-  actionItems: [
-    { task: 'Send welcome package', owner: 'Clean Sky Energy', priority: 'high' },
-    { task: 'Process enrollment', owner: 'System', priority: 'medium' },
-  ],
-  keyDecisions: [
-    'Customer enrolled in 12-month renewable electricity plan',
-    'Customer qualified for $50 Visa gift card incentive',
-  ],
-  nextSteps: [
-    { step: 'Send welcome package', date: 'Within 5 business days' },
-    { step: 'Follow up call', date: '30 days before contract end' },
-  ],
-};
+interface CallData {
+  id: string;
+  transcript: string;
+  summary: string;
+  healthScore: number;
+  actionItems: any[];
+  decisions: any[];
+  nextSteps: any[];
+}
 
 export default function CallDetailPage({ params }: { params: { id: string } }) {
+  const [data, setData] = useState<CallData | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    async function fetchCall() {
+      try {
+        const res = await fetch(`/api/history/${params.id}`);
+        const call = await res.json();
+        if (call.error) throw new Error(call.error);
+        
+        setData({
+          id: call.id,
+          transcript: call.transcript,
+          summary: call.summary,
+          healthScore: call.healthScore || 0,
+          actionItems: call.actionItems || [],
+          decisions: call.decisions || [],
+          nextSteps: call.nextSteps || [],
+        });
+      } catch (e) {
+        console.error('Error fetching call:', e);
+      } finally {
+        setLoading(false);
+      }
+    }
+    fetchCall();
+  }, [params.id]);
+
+  if (loading) return <div className="h-screen flex items-center justify-center text-white">Loading...</div>;
+  if (!data) return <div className="h-screen flex items-center justify-center text-white">Call not found</div>;
+
+  // Parse the speaker-labeled transcript into segments for the viewer
+  const segments = data.transcript.split('\n\n').filter(Boolean).map((text, i) => {
+    const [speaker, ...content] = text.split(': ');
+    return {
+      speaker: speaker || 'Unknown',
+      text: content.join(': ') || text,
+      timestamp: i * 10, // Approximation as timestamps aren't stored in plain text transcript
+    };
+  });
+
   return (
     <motion.div
       initial={{ opacity: 0 }}
@@ -38,13 +67,26 @@ export default function CallDetailPage({ params }: { params: { id: string } }) {
     >
       <div className="w-[40%] doppel-outer">
         <div className="doppel-inner p-6 h-full overflow-hidden flex flex-col">
-          <TranscriptViewer segments={mockSegments} />
+          <TranscriptViewer segments={segments} />
         </div>
       </div>
       
       <div className="w-[35%] doppel-outer">
         <div className="doppel-inner p-6 h-full overflow-y-auto">
-          <AnalysisPanel analysis={mockAnalysis} />
+          <AnalysisPanel analysis={{
+            executiveSummary: data.summary,
+            healthScore: data.healthScore,
+            actionItems: data.actionItems.map((item: any) => ({
+              task: item.task || item.content,
+              owner: item.owner || 'Unknown',
+              priority: item.priority || 'medium'
+            })),
+            keyDecisions: data.decisions.map((d: any) => d.content || d),
+            nextSteps: data.nextSteps.map((s: any) => ({
+              step: s.step || s.content,
+              date: s.date || 'TBD'
+            })),
+          }} />
         </div>
       </div>
       
