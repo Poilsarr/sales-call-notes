@@ -8,12 +8,12 @@ export class AnalysisService {
   private groqOpenai: OpenAI | null = null;
 
   constructor() {
-    this.openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+    this.openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY, timeout: 300000, maxRetries: 2 });
     if (process.env.GROQ_API_KEY) {
       this.groqOpenai = new OpenAI({
         apiKey: process.env.GROQ_API_KEY,
         baseURL: 'https://api.groq.com/openai/v1',
-        timeout: 60000,
+        timeout: 300000,
         maxRetries: 2
       });
     }

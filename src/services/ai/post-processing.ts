@@ -8,7 +8,7 @@ export class PostProcessingService {
     if (!process.env.OPENAI_API_KEY) {
       throw new Error('OPENAI_API_KEY is required for post-processing');
     }
-    this.openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+    this.openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY, timeout: 300000, maxRetries: 2 });
   }
 
   async correctEntities(transcript: string): Promise<{ correctedText: string; corrections: Correction[]; confidence: number }> {
