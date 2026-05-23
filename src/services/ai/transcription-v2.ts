@@ -19,13 +19,13 @@ export class TranscriptionServiceV2 {
     }
     this.openai = new OpenAI({
       apiKey: process.env.OPENAI_API_KEY,
-      timeout: 60000,
+      timeout: 300000,
       maxRetries: 2
     });
     this.groqOpenai = new OpenAI({
       apiKey: process.env.GROQ_API_KEY,
       baseURL: 'https://api.groq.com/openai/v1',
-      timeout: 60000,
+      timeout: 300000,
       maxRetries: 2
     });
   }
