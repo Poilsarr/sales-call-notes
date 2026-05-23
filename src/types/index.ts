@@ -1,8 +1,17 @@
 
 export type ProcessingState = "idle" | "transcribing" | "analyzing" | "done" | "error";
 
+export interface TranscriptSegment {
+  speaker: string;
+  text: string;
+  start: number;
+  end: number;
+}
+
 export interface Result {
   summary: string;
+  transcript: string;
+  segments: TranscriptSegment[];
   actionItems: { task: string; owner: string; due: string }[];
   keyDecisions: (string | { who: string; what: string; by: string })[];
   nextSteps: { step: string; date: string }[];
@@ -73,6 +82,8 @@ export interface CallRecord {
   id: string;
   createdAt: string;
   filename: string;
+  transcript: string;
+  segments?: TranscriptSegment[];
   summary: string;
   actionItems: Result['actionItems'];
   keyDecisions: Result['keyDecisions'];
