@@ -12,6 +12,8 @@ import os from 'os';
 
 const prisma = new PrismaClient();
 
+export const maxDuration = 60;
+
 export async function POST(req: Request) {
   try {
     console.log('Analyze route called');
@@ -72,13 +74,13 @@ export async function POST(req: Request) {
     // 2.5 Diarization (Identify Speakers)
     let speakerLabels: Array<{ label: string; segments: Array<{ speaker: string; start: number; end: number }> }> = [];
     try {
+      if (process.env.VERCEL) throw new Error('Python diarization not available on Vercel');
       const tempPath = path.join(os.tmpdir(), `diarize_${Date.now()}.wav`);
       await fs.writeFile(tempPath, buffer);
       
       const diarizationService = new DiarizationService();
       const diarizationResult = await diarizationService.diarize(tempPath);
       
-      // Map segments to speaker labels
       speakerLabels = diarizationResult.speakers.map(s => ({
         label: s.label,
         segments: s.segments
@@ -87,7 +89,25 @@ export async function POST(req: Request) {
       await fs.unlink(tempPath);
       console.log('Diarization complete');
     } catch (e: any) {
-      console.log(`Diarization failed: ${e?.message}. Falling back to Speaker 1/2`);
+      console.log(`Diarization skipped: ${e?.message}. Using Whisper pause-based speaker detection`);
+      // Fallback: use whisper segments to infer speaker changes via pause gaps
+      if (transcription.segments && transcription.segments.length > 1) {
+        let currentSpeaker = 'SPEAKER_00';
+        speakerLabels = transcription.segments.map((seg, i) => {
+          const gap = i > 0 ? seg.start - transcription.segments[i - 1].end : 0;
+          if (gap > 1.5) currentSpeaker = currentSpeaker === 'SPEAKER_00' ? 'SPEAKER_01' : 'SPEAKER_00';
+          return {
+            label: currentSpeaker,
+            segments: [{ speaker: currentSpeaker, start: seg.start, end: seg.end }]
+          };
+        }).reduce((acc: any[], s) => {
+          const existing = acc.find(a => a.label === s.label);
+          if (existing) existing.segments.push(s.segments[0]);
+          else acc.push(s);
+          return acc;
+        }, []);
+        console.log(`Fallback diarization produced ${speakerLabels.length} speakers`);
+      }
     }
 
     // 3. Post-process (entity correction)
