@@ -70,7 +70,7 @@ export default function UpgradePrompt({ feature, featureName, onClose, minimal }
         setUpgrading(null);
       },
     });
-  }, [paddle, user?.id, feature, onClose]);
+  }, [paddle, user?.id, feature, onClose, paddleError]);
 
   const neededPlan = (() => {
     for (const [tier, plan] of Object.entries(PLANS)) {

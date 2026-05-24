@@ -68,7 +68,7 @@ export default function BillingPage() {
           .catch((err) => console.error("Failed to refresh billing data:", err));
       },
     });
-  }, [paddle, user?.id]);
+  }, [paddle, user?.id, upgradeSuccess]);
 
   if (upgradeSuccess) {
     return (
