@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { auth } from '@clerk/nextjs/server';
 import prisma from '@/lib/prisma';
 import { AudioPreprocessingService } from '@/services/ai/audio-preprocessing';
 import { Correction } from '@/types';
@@ -15,13 +16,18 @@ export const maxDuration = 60;
 
 export async function POST(req: Request) {
   try {
+    const { userId: clerkUserId } = await auth();
+    if (!clerkUserId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+
     console.log('Analyze route called');
     const formData = await req.formData();
     const file = formData.get('file') as File;
-    const userId = formData.get('userId') as string;
 
     if (!file) return NextResponse.json({ error: 'No file provided' }, { status: 400 });
-    if (!userId) return NextResponse.json({ error: 'User ID required' }, { status: 400 });
+
+    const user = await prisma.user.findUnique({ where: { clerkId: clerkUserId } });
+    if (!user) return NextResponse.json({ error: 'User not found' }, { status: 404 });
+    const userId = user.id;
 
     const fileBuffer = Buffer.from(await file.arrayBuffer());
     const fileName = file.name || 'call_recording.mp3';
@@ -62,10 +68,20 @@ export async function POST(req: Request) {
     let transcription;
     try {
       transcription = await transcriptionService.transcribe(buffer, model);
-    } catch (error) {
-      console.error('Transcription failed:', error);
+    } catch (error: any) {
+      console.error('Transcription failed:', error?.message || error);
+      const msg = error?.message || '';
+      if (msg.includes('OPENAI_API_KEY') || msg.includes('GROQ_API_KEY')) {
+        return NextResponse.json({ error: msg }, { status: 500 });
+      }
+      if (msg.includes('Insufficient credits') || msg.includes('insufficient_quota') || msg.includes('429')) {
+        return NextResponse.json({ error: 'AI provider quota exceeded. Add credits to your OpenAI/Groq account.' }, { status: 429 });
+      }
+      if (msg.includes('401') || msg.includes('Unauthorized') || msg.includes('Incorrect API key')) {
+        return NextResponse.json({ error: 'AI provider API key is invalid or expired. Check OPENAI_API_KEY and GROQ_API_KEY.' }, { status: 500 });
+      }
       return NextResponse.json({
-        error: 'Transcription failed. All AI providers unavailable. Please add credits to your OpenAI account or ensure GROQ_API_KEY is set.'
+        error: 'Transcription failed: ' + msg.slice(0, 200)
       }, { status: 500 });
     }
     console.log(`Transcription succeeded, length: ${transcription.text.length}, confidence: ${transcription.confidence}`);
