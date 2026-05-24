@@ -12,7 +12,7 @@ import fs from 'fs/promises';
 import path from 'path';
 import os from 'os';
 
-export const maxDuration = 60;
+export const maxDuration = 300;
 
 export async function POST(req: Request) {
   try {
