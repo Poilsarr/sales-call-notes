@@ -1,20 +1,37 @@
 'use client';
 
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { Mic, Square, Upload } from 'lucide-react';
+import { Mic, Square, Upload, ExternalLink } from 'lucide-react';
 import { toast } from 'sonner';
+import { useRouter } from 'next/navigation';
 
 export default function RecordPage() {
+  const router = useRouter();
   const [isRecording, setIsRecording] = useState(false);
   const [duration, setDuration] = useState(0);
+  const [uploadedCallId, setUploadedCallId] = useState<string | null>(null);
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const chunksRef = useRef<Blob[]>([]);
   const timerRef = useRef<NodeJS.Timeout | null>(null);
+  const streamRef = useRef<MediaStream | null>(null);
+
+  useEffect(() => {
+    return () => {
+      if (mediaRecorderRef.current && mediaRecorderRef.current.state !== 'inactive') {
+        mediaRecorderRef.current.stop();
+      }
+      if (streamRef.current) {
+        streamRef.current.getTracks().forEach(track => track.stop());
+      }
+      if (timerRef.current) clearInterval(timerRef.current);
+    };
+  }, []);
 
   const startRecording = async () => {
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      streamRef.current = stream;
       const mediaRecorder = new MediaRecorder(stream);
       mediaRecorderRef.current = mediaRecorder;
       chunksRef.current = [];
@@ -57,11 +74,22 @@ export default function RecordPage() {
     formData.append('file', blob, 'recording.webm');
     
     toast.promise(
-      fetch('/api/analyze', { method: 'POST', body: formData }).then(res => res.json()),
+      fetch('/api/analyze', { method: 'POST', body: formData }).then(async res => {
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || 'Failed to process recording');
+        return data;
+      }),
       {
         loading: 'Processing recording...',
-        success: 'Call analyzed successfully',
-        error: 'Failed to process recording',
+        success: (data) => {
+          const callId = data?.call?.id || data?.id;
+          if (callId) {
+            setUploadedCallId(callId);
+            return 'Call analyzed successfully';
+          }
+          return 'Call analyzed successfully';
+        },
+        error: (err) => err.message || 'Failed to process recording',
       }
     );
   };
@@ -92,8 +120,8 @@ export default function RecordPage() {
       <div className="doppel-outer">
         <div className="doppel-inner p-12 flex flex-col items-center justify-center">
           <motion.div
-            animate={isRecording ? { scale: [1, 1.1, 1] } : {}}
-            transition={{ repeat: Infinity, duration: 1.5 }}
+            animate={isRecording ? { scale: [1, 1.1, 1] } : { scale: 1 }}
+            transition={{ repeat: isRecording ? Infinity : 0, duration: 1.5 }}
             className="mb-6"
           >
             <div className={`w-24 h-24 rounded-full flex items-center justify-center ${
@@ -131,6 +159,15 @@ export default function RecordPage() {
             <span className="text-xs text-zinc-600 mt-1">MP3, WAV, M4A up to 50MB</span>
             <input type="file" className="hidden" accept="audio/*" onChange={handleFileUpload} />
           </label>
+          {uploadedCallId && (
+            <a
+              href={`/app/calls/${uploadedCallId}`}
+              className="inline-flex items-center gap-2 mt-4 text-sm text-emerald-400 hover:text-emerald-300 transition-colors"
+            >
+              <ExternalLink className="w-4 h-4" />
+              View uploaded call
+            </a>
+          )}
         </div>
       </div>
     </div>

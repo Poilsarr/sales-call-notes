@@ -13,9 +13,10 @@ export async function GET(req: NextRequest) {
     const action = searchParams.get("action");
 
     if (action === "check-meetings") {
-      const accessToken = searchParams.get("accessToken");
+      const authHeader = req.headers.get("authorization");
+      const accessToken = authHeader?.startsWith("Bearer ") ? authHeader.slice(7) : null;
       if (!accessToken) {
-        return NextResponse.json({ error: "Access token required" }, { status: 400 });
+        return NextResponse.json({ error: "Access token required (Authorization: Bearer <token>)" }, { status: 400 });
       }
 
       const calendar = new CalendarService();
@@ -41,9 +42,10 @@ export async function GET(req: NextRequest) {
       });
     }
 
-    const accessToken = searchParams.get("accessToken");
+    const authHeader = req.headers.get("authorization");
+    const accessToken = authHeader?.startsWith("Bearer ") ? authHeader.slice(7) : null;
     if (!accessToken) {
-      return NextResponse.json({ error: "Access token required" }, { status: 400 });
+      return NextResponse.json({ error: "Access token required (Authorization: Bearer <token>)" }, { status: 400 });
     }
 
     const calendar = new CalendarService();

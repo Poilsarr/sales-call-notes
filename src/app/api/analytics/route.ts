@@ -1,18 +1,15 @@
 import { NextResponse } from 'next/server';
-import { PrismaClient } from '@prisma/client';
+import prisma from '@/lib/prisma';
 import { AnalyticsService } from '@/services/ai/analytics';
-
-const prisma = new PrismaClient();
+import { auth } from '@clerk/nextjs/server';
 
 export async function GET(req: Request) {
   try {
-    const { searchParams } = new URL(req.url);
-    const userId = searchParams.get('userId') || '';
-    const days = parseInt(searchParams.get('days') || '30');
+    const { userId } = await auth();
+    if (!userId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-    if (!userId) {
-      return NextResponse.json({ error: "userId required" }, { status: 400 });
-    }
+    const { searchParams } = new URL(req.url);
+    const days = parseInt(searchParams.get('days') || '30');
 
     const since = new Date();
     since.setDate(since.getDate() - days);
@@ -88,6 +85,9 @@ export async function GET(req: Request) {
 
 export async function POST(req: Request) {
   try {
+    const { userId } = await auth();
+    if (!userId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
     const { transcript, speakers, callId } = await req.json();
     if (!transcript) {
       return NextResponse.json({ error: "transcript required" }, { status: 400 });

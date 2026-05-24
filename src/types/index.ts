@@ -51,11 +51,24 @@ export interface TranscriptionResult {
   model: string;
 }
 
+export interface CompetitorMention {
+  id: string;
+  callId: string;
+  competitor: string;
+  context: string | null;
+  sentiment: string | null;
+  mentionedBy: string | null;
+  timestamp: number | null;
+  createdAt: string;
+  call?: { filename: string; createdAt: string };
+}
+
 export interface CallAnalysis {
   executiveSummary: string;
   callType: string;
   participants: Array<{ role: string; name: string; title?: string; talkTime?: number }>;
   keyEntities: Record<string, unknown>;
+  competitorsMentioned?: Array<{ name: string; context: string; sentiment: string }>;
   salesScorecard: {
     meddic?: { metrics: number; economicBuyer: number; decisionCriteria: number; decisionProcess: number; identifyPain: number; champion: number };
     bant?: { budget: number; authority: number; need: number; timeline: number };

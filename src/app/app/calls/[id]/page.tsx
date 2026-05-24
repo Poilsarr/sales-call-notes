@@ -19,6 +19,7 @@ interface CallData {
 export default function CallDetailPage({ params }: { params: { id: string } }) {
   const [data, setData] = useState<CallData | null>(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     async function fetchCall() {
@@ -37,6 +38,8 @@ export default function CallDetailPage({ params }: { params: { id: string } }) {
           nextSteps: call.nextSteps || [],
         });
       } catch (e) {
+        const message = e instanceof Error ? e.message : 'Failed to load call';
+        setError(message);
         console.error('Error fetching call:', e);
       } finally {
         setLoading(false);
@@ -45,11 +48,16 @@ export default function CallDetailPage({ params }: { params: { id: string } }) {
     fetchCall();
   }, [params.id]);
 
-  if (loading) return <div className="h-screen flex items-center justify-center text-white">Loading...</div>;
+  if (loading) return (
+    <div className="h-screen flex items-center justify-center text-white">
+      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-white" />
+    </div>
+  );
+  if (error) return <div className="h-screen flex items-center justify-center text-white">{error}</div>;
   if (!data) return <div className="h-screen flex items-center justify-center text-white">Call not found</div>;
 
   // Parse the speaker-labeled transcript into segments for the viewer
-  const segments = data.transcript.split('\n\n').filter(Boolean).map((text, i) => {
+  const segments = (data.transcript || '').split('\n\n').filter(Boolean).map((text, i) => {
     const [speaker, ...content] = text.split(': ');
     return {
       speaker: speaker || 'Unknown',
@@ -63,16 +71,16 @@ export default function CallDetailPage({ params }: { params: { id: string } }) {
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       transition={{ duration: 0.5 }}
-      className="h-[calc(100vh-4rem)] flex gap-6"
+      className="min-h-[calc(100vh-4rem)] flex flex-col lg:flex-row gap-6"
     >
-      <div className="w-[40%] doppel-outer">
-        <div className="doppel-inner p-6 h-full overflow-hidden flex flex-col">
+      <div className="w-full lg:w-[40%] doppel-outer">
+        <div className="doppel-inner p-6 lg:h-full overflow-hidden flex flex-col">
           <TranscriptViewer segments={segments} />
         </div>
       </div>
       
-      <div className="w-[35%] doppel-outer">
-        <div className="doppel-inner p-6 h-full overflow-y-auto">
+      <div className="w-full lg:w-[35%] doppel-outer">
+        <div className="doppel-inner p-6 lg:h-full overflow-y-auto">
           <AnalysisPanel analysis={{
             executiveSummary: data.summary,
             healthScore: data.healthScore,
@@ -90,8 +98,8 @@ export default function CallDetailPage({ params }: { params: { id: string } }) {
         </div>
       </div>
       
-      <div className="w-[25%] doppel-outer">
-        <div className="doppel-inner p-6 h-full overflow-hidden flex flex-col">
+      <div className="w-full lg:w-[25%] doppel-outer">
+        <div className="doppel-inner p-6 lg:h-full overflow-hidden flex flex-col">
           <ChatSidebar />
         </div>
       </div>

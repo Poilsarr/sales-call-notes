@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useUser } from "@clerk/nextjs";
 import Nav from "@/components/nav";
 import { Calendar, Link2, CheckCircle, ExternalLink, Loader2, Brain, MessageSquare, Send, FileText, ArrowRight } from "lucide-react";
+import { toast } from "sonner";
 
 export default function SettingsPage() {
   const { user } = useUser();
@@ -20,15 +21,11 @@ export default function SettingsPage() {
       const data = await res.json();
       if (data.authUrl) {
         window.open(data.authUrl, "_blank");
-        setCalendarConnected(true);
+      } else {
+        toast.error("Failed to get calendar auth URL");
       }
     } catch {
-      // For MVP, simulate connection
-      setTimeout(() => {
-        setCalendarConnected(true);
-        setConnecting(false);
-      }, 1000);
-      return;
+      toast.error("Could not connect to calendar service");
     }
     setConnecting(false);
   };
@@ -36,6 +33,7 @@ export default function SettingsPage() {
   const askChat = async () => {
     if (!chatQuery.trim() || !user?.id) return;
     setChatLoading(true);
+    setChatResult(null);
     try {
       const res = await fetch("/api/chat", {
         method: "POST",

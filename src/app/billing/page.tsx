@@ -14,6 +14,7 @@ export default function BillingPage() {
   const [limit, setLimit] = useState<number | "unlimited">(5);
   const [paddle, setPaddle] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  const [upgradeSuccess, setUpgradeSuccess] = useState(false);
 
   useEffect(() => {
     initializePaddle({
@@ -34,12 +35,12 @@ export default function BillingPage() {
           setUsage(d.usage || 0);
           setLimit(d.limit || 5);
         })
-        .catch(() => {});
+        .catch((err) => console.error("Failed to fetch billing data:", err));
     }
   }, [user?.id]);
 
   const openCheckout = useCallback((plan: PlanTier) => {
-    if (!paddle || !user?.id) return;
+    if (!paddle || !user?.id || upgradeSuccess) return;
     const priceId = PLANS[plan].paddlePriceId;
     if (!priceId) return;
 
@@ -52,7 +53,8 @@ export default function BillingPage() {
         showAddDiscounts: true,
       },
       onSuccess: () => {
-        setTimeout(() => window.location.reload(), 1000);
+        setUpgradeSuccess(true);
+        setTimeout(() => window.location.reload(), 1500);
       },
       onClose: () => {
         fetch(`/api/billing?userId=${user.id}`)
@@ -63,10 +65,21 @@ export default function BillingPage() {
               setLimit(d.limit || 5);
             }
           })
-          .catch(() => {});
+          .catch((err) => console.error("Failed to refresh billing data:", err));
       },
     });
-  }, [paddle, user?.id]);
+  }, [paddle, user?.id, upgradeSuccess]);
+
+  if (upgradeSuccess) {
+    return (
+      <main className="min-h-screen bg-linear-black text-white flex items-center justify-center">
+        <div className="text-center">
+          <CheckCircle className="w-12 h-12 text-green-400 mx-auto mb-4" />
+          <p className="text-lg font-medium">Upgrade successful! Refreshing...</p>
+        </div>
+      </main>
+    );
+  }
 
   const availablePlans: PlanTier[] = ["free", "pro", "business"];
 
@@ -157,7 +170,7 @@ export default function BillingPage() {
                   </div>
                 ) : plan.price === 0 ? (
                   <button onClick={async () => {
-                    if (!user?.id) return;
+                    if (!user?.id || currentPlan === "free") return;
                     await fetch("/api/billing", {
                       method: "POST",
                       headers: { "Content-Type": "application/json" },
@@ -165,7 +178,8 @@ export default function BillingPage() {
                     });
                     window.location.reload();
                   }}
-                    className="w-full text-center py-3 rounded-full text-xs font-semibold bg-white/10 text-white hover:bg-white/20 border border-white/10 transition">
+                    disabled={currentPlan === "free"}
+                    className="w-full text-center py-3 rounded-full text-xs font-semibold bg-white/10 text-white hover:bg-white/20 border border-white/10 transition disabled:opacity-50">
                     Downgrade
                   </button>
                 ) : (

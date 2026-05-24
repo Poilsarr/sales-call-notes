@@ -1,17 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
-import { PrismaClient } from "@prisma/client";
+import prisma from "@/lib/prisma";
 import { PLANS, PlanTier } from "@/lib/plans";
-
-const prisma = new PrismaClient();
+import { auth } from "@clerk/nextjs/server";
 
 export async function GET(req: NextRequest) {
   try {
-    const { searchParams } = new URL(req.url);
-    const userId = searchParams.get("userId");
-
-    if (!userId) {
-      return NextResponse.json({ error: "userId required" }, { status: 400 });
-    }
+    const { userId } = await auth();
+    if (!userId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
     const user = await prisma.user.findUnique({ where: { clerkId: userId } });
     const plan: PlanTier = (user?.plan as PlanTier) || "free";
@@ -39,9 +34,12 @@ export async function GET(req: NextRequest) {
 
 export async function POST(req: NextRequest) {
   try {
-    const { userId, plan: targetPlan } = await req.json();
-    if (!userId || !targetPlan) {
-      return NextResponse.json({ error: "userId and plan required" }, { status: 400 });
+    const { userId } = await auth();
+    if (!userId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
+    const { plan: targetPlan } = await req.json();
+    if (!targetPlan) {
+      return NextResponse.json({ error: "plan required" }, { status: 400 });
     }
 
     if (!PLANS[targetPlan as PlanTier]) {

@@ -1,9 +1,13 @@
 import { NextRequest, NextResponse } from "next/server";
+import { auth } from "@clerk/nextjs/server";
 import { writeFile, unlink } from "fs/promises";
 import path from "path";
 import { spawn } from "child_process";
 
 export async function POST(req: NextRequest) {
+  const { userId } = await auth();
+  if (!userId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
   let tempFilePath: string | null = null;
 
   try {
@@ -18,8 +22,10 @@ export async function POST(req: NextRequest) {
     const buffer = Buffer.from(arrayBuffer);
 
     const tempDir = process.env.TEMP || "/tmp";
-    const ext = audioFile.name.split(".").pop() || "wav";
-    const audioPath = path.join(tempDir, `audio_${Date.now()}.${ext}`);
+    const allowedExts = ['wav', 'mp3', 'm4a', 'ogg', 'webm', 'flac'];
+    const origExt = audioFile.name.split(".").pop()?.toLowerCase() || '';
+    const safeExt = allowedExts.includes(origExt) ? origExt : 'wav';
+    const audioPath = path.join(tempDir, `audio_${Date.now()}.${safeExt}`);
     tempFilePath = audioPath;
     await writeFile(audioPath, buffer);
 
@@ -30,7 +36,7 @@ sys.path.insert(0, "")
 try:
     import whisper
     model = whisper.load_model("base")
-    result = model.transcribe(r"${audioPath.replace(/"/g, '\\"')}")
+    result = model.transcribe(sys.argv[1])
     print(result["text"])
 except ImportError:
     print("WHISPER_NOT_INSTALLED")
@@ -38,7 +44,7 @@ except ImportError:
 except Exception as e:
     print(f"ERROR: {e}", file=sys.stderr)
     sys.exit(1)
-`]);
+`, audioPath]);
 
       let output = "";
       let error = "";

@@ -1,33 +1,63 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
+import { useUser } from '@clerk/nextjs';
 import { motion } from 'framer-motion';
-import { Send, MessageSquare } from 'lucide-react';
+import { Send, MessageSquare, ExternalLink } from 'lucide-react';
+import Link from 'next/link';
+
+interface ChatMessage {
+  role: 'user' | 'assistant';
+  content: string;
+  relevantCalls?: Array<{ id: string; filename: string; date: string; summary: string | null }>;
+}
 
 export function ChatSidebar() {
-  const [messages, setMessages] = useState<Array<{ role: 'user' | 'assistant'; content: string }>>([]);
+  const { user } = useUser();
+  const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const messageKeyRef = useRef(0);
+  const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }, [messages.length]);
 
   const quickQueries = [
-    'What objections were raised?',
-    'Show all commitments',
-    'What is the talk ratio?',
-    'Summarize key decisions',
+    'What objections were raised in my recent calls?',
+    'Show all commitments from last week',
+    'Which calls had budget mentioned?',
+    'Summarize key decisions across calls',
   ];
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!input.trim()) return;
+    if (!input.trim() || !user?.id) return;
 
-    setMessages(prev => [...prev, { role: 'user', content: input }]);
+    const userMsg = input;
+    setMessages(prev => [...prev, { role: 'user', content: userMsg, _key: ++messageKeyRef.current } as any]);
     setInput('');
     setIsLoading(true);
 
-    setTimeout(() => {
-      setMessages(prev => [...prev, { role: 'assistant', content: 'This is a simulated response. In production, this would call the /api/chat endpoint.' }]);
+    try {
+      const res = await fetch('/api/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ query: userMsg, userId: user.id }),
+      });
+      const data = await res.json();
+      setMessages(prev => [...prev, {
+        role: 'assistant',
+        content: data.answer || 'No response available.',
+        relevantCalls: data.relevantCalls,
+        _key: ++messageKeyRef.current,
+      } as any]);
+    } catch {
+      setMessages(prev => [...prev, { role: 'assistant', content: 'Failed to get response. Please try again.' }]);
+    } finally {
       setIsLoading(false);
-    }, 1000);
+    }
   };
 
   return (
@@ -38,9 +68,9 @@ export function ChatSidebar() {
       </div>
       
       <div className="flex-1 overflow-y-auto space-y-3 mb-4">
-        {messages.map((msg, index) => (
+        {messages.map((msg) => (
           <motion.div
-            key={index}
+            key={(msg as any)._key}
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             className={`p-3 rounded-lg text-sm ${
@@ -49,16 +79,32 @@ export function ChatSidebar() {
                 : 'bg-zinc-800 text-zinc-300 mr-8'
             }`}
           >
-            {msg.content}
+            <p>{msg.content}</p>
+            {msg.relevantCalls && msg.relevantCalls.length > 0 && (
+              <div className="mt-2 pt-2 border-t border-zinc-700">
+                <p className="text-xs text-zinc-500 mb-1">Referenced calls:</p>
+                {msg.relevantCalls.map(call => (
+                  <Link
+                    key={call.id}
+                    href={`/app/calls/${call.id}`}
+                    className="flex items-center gap-1 text-xs text-emerald-400 hover:text-emerald-300 mb-1"
+                  >
+                    <ExternalLink className="w-3 h-3 shrink-0" />
+                    <span className="truncate">{call.filename}</span>
+                  </Link>
+                ))}
+              </div>
+            )}
           </motion.div>
         ))}
         {isLoading && (
-          <div className="flex items-center gap-2 text-zinc-500 text-sm">
+          <div className="flex items-center gap-2 text-zinc-500 text-sm" aria-label="Loading response">
             <div className="w-2 h-2 bg-zinc-500 rounded-full animate-bounce" />
             <div className="w-2 h-2 bg-zinc-500 rounded-full animate-bounce" style={{ animationDelay: '0.1s' }} />
             <div className="w-2 h-2 bg-zinc-500 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }} />
           </div>
         )}
+        <div ref={messagesEndRef} />
       </div>
       
       <div className="space-y-2 mb-4">

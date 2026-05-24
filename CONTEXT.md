@@ -10,28 +10,50 @@ https://github.com/Poilsarr/sales-call-notes (branch main protected — 4 CI che
 
 ## What's Been Built (all coded)
 
-- 23 API routes (analyze, transcribe, summarize, billing, analytics, chat, calendar, slack, webhooks, CRM sync, history)
-- All frontend pages (landing, dashboard, billing, settings, team, integrations, features, pricing, sign-in/up)
-- Prisma schema — 12 models on Neon PostgreSQL
-- Services: AI (analytics, diarization), CRM (HubSpot, Salesforce, Teams), Calendar, Slack, Webhooks, BullMQ queues
+- 23 API routes (analyze, transcribe, summarize, billing, analytics, chat, calendar, slack, webhooks, CRM sync, history, team, competitive-intelligence)
+- All frontend pages (landing, dashboard, billing, settings, team, integrations, features, pricing, sign-in/up, intelligence)
+- Prisma schema — 13 models on Neon PostgreSQL
+- Services: AI (analytics, diarization), CRM (HubSpot, Salesforce, Teams), Calendar, Slack, Webhooks, BullMQ queues, Competitive Intelligence
 - Chrome extension (Manifest V3, Google Meet captions)
 - PWA manifest + favicon + app icons (192, 512)
 
-## Recent Work (this session)
+## Recent Work (session #2 — massive security + quality overhaul)
 
-- Switched SQLite → Neon PostgreSQL ✅
-- Created Google OAuth + Calendar integration ✅ (client ID + secret in Vercel)
-- Created Slack webhook integration ✅ (tested — ok response)
-- Set up Upstash Redis rate limiting ✅ (10 req/min)
-- Deployed to Vercel ✅ (connected to GitHub — auto-deploys on push)
-- Git init'd + pushed to GitHub ✅
-- Branch protection enabled (Tests, Lint, Build, Deploy must pass)
-- Vercel Analytics installed ✅
-- Created CI/CD pipeline (`.github/workflows/ci.yml`)
-- Created Makefile + `scripts/setup.sh` + `scripts/deploy.sh` + `docker-compose.yml`
-- Updated vitest testing infra — 17 tests passing
-- Generated app icons + extension icons
-- Created `src/app/sitemap.ts`, `extension/background.js`, `src/services/meeting-bot.ts`
+### Security Fixes (15 issues)
+- **Auth lockdown**: Clerk auth added to 8 unprotected API routes (chat, billing, history, analytics, slack, webhooks, transcribe, summarize) — previously any endpoint could be called with any userId
+- **Command injection (RCE)**: Fixed in transcribe route + worker.ts — filename interpolation → `sys.argv[1]` pattern
+- **SSRF prevention**: Webhook URLs validated HTTPS-only
+- **IDOR fixes**: Team DELETE verifies member belongs to same team; competitive intelligence rejects cross-team queries
+- **Data exfiltration**: Slack webhook URL no longer accepted from client
+- **Token leak**: Calendar access token moved from query param to Authorization header
+- **Rate limit hardening**: Uses `req.ip` + user-based keying instead of spoofable `x-forwarded-for`
+- **Paddle webhook idempotency**: Dedup by subscription status
+- **hasFeature logic bug**: numeric ≠ boolean true
+- **Slack competitor alert URL**: Uses real call ID, not literal `[id]`
+
+### Frontend Fixes (12 issues)
+- Sign-out button wired in app sidebar
+- Nav active state fixed for sub-routes (`startsWith` matching)
+- `aria-current="page"` on active nav links
+- `<a>` → `<Link>` in root layout
+- Error states + catch handlers on 4 pages
+- `toast.promise` false-success on 4xx fixed
+- Calendar connection no longer fakes success on failure
+- Chat sidebar auto-scroll + unique keys
+- 0 healthScore no longer renders "N/A"
+- Email validation on team invite
+- Recording cleanup on unmount
+- Landing page dead `liveText` + console.log removed
+- Billing: upgrade success screen, free plan guard
+
+### Code Quality
+- **PrismaClient singleton** (`src/lib/prisma.ts`) — prevents connection pool exhaustion in 12 route/service files
+- Non-functional `api.bodyParser` config removed from `next.config.mjs`
+- Chrome extension: MutationObserver scoped to container, storage capped at 500, sender.id verified
+- Auto-caption consent check via localStorage
+- Lint: 0 warnings, 0 errors
+- Tests: 32/32 passing across 7 files
+- Build: 36 routes, all compiling clean
 
 ## Env Vars Configured (in Vercel + GitHub secrets)
 
@@ -51,21 +73,28 @@ https://github.com/Poilsarr/sales-call-notes (branch main protected — 4 CI che
 
 1. **Switch Clerk to Production** — need a custom domain first (Clerk blocks `*.vercel.app` in production)
 2. **Buy domain** — Namecheap (e.g., callnotepro.com)
-3. **Stripe billing** — create Pro + Business plan products in Stripe, paste Price IDs into `src/lib/plans.ts`
+3. **Create Paddle products** — create Pro + Business plan products in Paddle Dashboard, paste price IDs into `src/lib/plans.ts`, merge PR #2 (Paddle billing, 571+81 lines)
 4. **Generate PNG icons** — run `bash public/generate-icons.sh` (needs ImageMagick, already installed)
-5. **Sentry** — error monitoring (optional)
-6. **Email notifications** — Resend (optional)
+5. **Chrome extension upload** — wire Google Meet caption capture to backend upload API
+6. **Live transcription frontend** — SSE endpoint at `/api/transcribe/live` exists but no UI page
+7. **Sentry** — error monitoring (optional)
+8. **Competitive Intelligence test coverage** — add tests for `/api/competitive-intelligence` endpoint
 
 ## Key Files
 
 | File | Purpose |
 |---|---|
-| `src/lib/plans.ts` | Plan definitions — update `stripePriceId` after creating Stripe products |
-| `.env.local` | Local env vars (gitignored) |
-| `.env` | `DATABASE_URL` for Prisma CLI (gitignored) |
-| `src/app/layout.tsx` | Root layout — metadata, icons, analytics |
-| `Makefile` | `make setup`, `make test`, `make deploy` |
-| `.github/workflows/ci.yml` | CI/CD pipeline |
+| `src/lib/plans.ts` | Plan definitions — update `paddlePriceId` after creating Paddle products |
+| `src/lib/prisma.ts` | PrismaClient singleton (used by all routes) |
+| `src/middleware.ts` | Clerk auth middleware + rate limiting (no more public API bypass) |
+| `src/app/api/team/route.ts` | Team CRUD (list, invite, remove members) |
+| `src/app/api/competitive-intelligence/route.ts` | GET endpoint — returns mentions + trends (scoped to user's team) |
+| `src/app/app/intelligence/page.tsx` | Competitive Intelligence console UI |
+| `src/components/app-sidebar.tsx` | Sidebar nav — Team + Intelligence items added |
+| `src/lib/prompts/enrollment-calls.md` | AI prompt — `competitorsMentioned` extraction |
+| `src/services/slack.ts` | Slack alerts (no longer accepts client webhook URL) |
+| `prisma/schema.prisma` | 13 models — added `CompetitorMention`, `teamRole` on User |
+| `next.config.mjs` | Clean config (bodyParser removed) |
 
 ## Commands
 
@@ -73,12 +102,12 @@ https://github.com/Poilsarr/sales-call-notes (branch main protected — 4 CI che
 # Local dev
 npm run dev
 
-# Deploy
-git push                          # triggers CI/CD → auto-deploys
-vercel --prod --yes               # manual deploy
+# Deploy (via PR)
+git checkout -b feature-branch && git push origin feature-branch
+gh pr create --base main --head feature-branch
 
-# Test
-npx vitest run
+# Test + lint + build (CI does this)
+npx vitest run && npx next lint && npx next build
 
 # Generate icons (after ImageMagick install)
 bash public/generate-icons.sh

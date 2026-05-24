@@ -1,10 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
-import { PrismaClient } from "@prisma/client";
+import prisma from "@/lib/prisma";
 import { HubSpotService } from "@/services/crm/hubspot";
 import { SalesforceService } from "@/services/crm/salesforce";
 import { TeamsService } from "@/services/crm/teams";
-
-const prisma = new PrismaClient();
 
 export async function POST(
   req: NextRequest,

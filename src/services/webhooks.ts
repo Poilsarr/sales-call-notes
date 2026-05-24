@@ -1,6 +1,4 @@
-import { PrismaClient } from "@prisma/client";
-
-const prisma = new PrismaClient();
+import prisma from "@/lib/prisma";
 
 export interface WebhookPayload {
   event: "call.created" | "call.analyzed" | "call.deleted";
@@ -22,6 +20,10 @@ export class WebhookService {
           : integration.config;
         const url = config?.url;
         if (!url) return;
+        if (!url.startsWith("https://")) {
+          console.warn(`Blocked SSRF attempt: non-HTTPS webhook URL: ${url.slice(0, 100)}`);
+          return;
+        }
 
         await fetch(url, {
           method: "POST",
@@ -39,13 +41,11 @@ export class WebhookService {
   }
 
   async registerWebhook(userId: string, url: string, teamId?: string): Promise<void> {
-    await prisma.integration.create({
-      data: {
-        teamId: teamId || "",
-        provider: "webhook",
-        config: JSON.stringify({ url }),
-        enabled: true,
-      },
-    });
+    if (!url.startsWith("https://")) {
+      throw new Error("Only HTTPS webhook URLs are allowed");
+    }
+    const data: any = { provider: "webhook", config: JSON.stringify({ url }), enabled: true };
+    if (teamId) data.teamId = teamId;
+    await prisma.integration.create({ data });
   }
 }

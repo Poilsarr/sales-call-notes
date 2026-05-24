@@ -18,9 +18,9 @@ const transcriptionWorker = new Worker("transcription", async (job) => {
 import sys
 import whisper
 model = whisper.load_model("base")
-result = model.transcribe("${filePath}")
+result = model.transcribe(sys.argv[1])
 print(result["text"])
-`]);
+`, filePath]);
     let output = "";
     python.stdout.on("data", (d: Buffer) => { output += d.toString(); });
     python.stderr.on("data", (d: Buffer) => { console.error(d.toString()); });

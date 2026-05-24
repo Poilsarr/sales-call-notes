@@ -1,7 +1,5 @@
-import { PrismaClient } from "@prisma/client";
+import prisma from "@/lib/prisma";
 import { PlanTier, FeatureId, PLANS, getPlan, hasFeature } from "./plans";
-
-const prisma = new PrismaClient();
 
 export type EntitlementResult = {
   allowed: boolean;
