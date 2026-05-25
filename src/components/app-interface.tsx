@@ -37,6 +37,7 @@ export default function AppInterface({ onClose }: { onClose: () => void }) {
   const { user } = useUser();
   const userId = user?.id || "";
   const [selectedLanguage, setSelectedLanguage] = useState("auto");
+  const [removeFillers, setRemoveFillers] = useState(true);
   const [recording, setRecording] = useState(false);
   const [mediaRecorder, setMediaRecorder] = useState<MediaRecorder | null>(null);
   const [recordingDuration, setRecordingDuration] = useState(0);
@@ -76,6 +77,7 @@ export default function AppInterface({ onClose }: { onClose: () => void }) {
         const fd = new FormData();
         fd.append("file", recordedFile);
         fd.append("userId", userId);
+        fd.append("removeFillers", String(removeFillers));
         try {
           const res = await fetch("/api/analyze", { method: "POST", body: fd });
           if (res.status === 401) { setState("error"); setProgress("Please sign in."); return; }
@@ -111,6 +113,7 @@ export default function AppInterface({ onClose }: { onClose: () => void }) {
       formData.append("file", uploadFile);
       formData.append("userId", userId);
       formData.append("language", selectedLanguage);
+      formData.append("removeFillers", String(removeFillers));
       const res = await fetch("/api/analyze", { method: "POST", body: formData });
       const responseText = await res.text();
       if (res.status === 401) { setState("error"); setProgress("Please sign in to analyze calls."); return; }
@@ -190,6 +193,15 @@ export default function AppInterface({ onClose }: { onClose: () => void }) {
                     </div>
                     <h3 className="font-display text-2xl font-semibold tracking-tight mb-3">Record a call</h3>
                     <p className="text-sm text-white/30 mb-10 max-w-md mx-auto">Record directly from your browser. The recording will be transcribed and analyzed automatically.</p>
+                    <label className="flex items-center justify-center gap-3 text-xs text-white/55 mb-8">
+                      <input
+                        type="checkbox"
+                        checked={removeFillers}
+                        onChange={(e) => setRemoveFillers(e.target.checked)}
+                        className="h-4 w-4 rounded border border-white/15 bg-white/5 accent-[#5e6ad2]"
+                      />
+                      Polish transcript by removing filler words
+                    </label>
                     <button onClick={startRecording}
                       className="btn-island flex items-center gap-3 bg-red-500/80 text-white hover:bg-red-500 mx-auto px-8 py-4">
                       <span className="w-2 h-2 rounded-full bg-white animate-pulse" />
@@ -243,6 +255,15 @@ export default function AppInterface({ onClose }: { onClose: () => void }) {
                             ))}
                           </select>
                         </div>
+                        <label className="flex items-center gap-3 text-xs text-white/55 mb-6">
+                          <input
+                            type="checkbox"
+                            checked={removeFillers}
+                            onChange={(e) => setRemoveFillers(e.target.checked)}
+                            className="h-4 w-4 rounded border border-white/15 bg-white/5 accent-[#5e6ad2]"
+                          />
+                          Polish transcript by removing filler words
+                        </label>
                         <span className="px-6 py-2.5 bg-white/10 text-white rounded-full text-[11px] font-medium hover:bg-white/20 transition-all duration-500">Select File</span>
                       </div>
                     </div>

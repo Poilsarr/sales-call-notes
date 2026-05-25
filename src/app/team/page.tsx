@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { useUser } from "@clerk/nextjs";
 import Nav from "@/components/nav";
+import Link from "next/link";
 import { Users, Plus, X, Mail, Crown, Shield, UserPlus, Loader2, CheckCircle, AlertCircle } from "lucide-react";
 
 interface Member {
@@ -13,11 +14,28 @@ interface Member {
   avatar: string | null;
 }
 
+interface SharedCall {
+  id: string;
+  filename: string;
+  createdAt: string;
+  healthScore: number | null;
+  ownerName: string | null;
+  assigneeName: string | null;
+  commentCount: number;
+}
+
 export default function TeamPage() {
   const { user } = useUser();
   const [members, setMembers] = useState<Member[]>([]);
   const [teamName, setTeamName] = useState<string | null>(null);
   const [inviteEmail, setInviteEmail] = useState("");
+  const [sharedCalls, setSharedCalls] = useState<SharedCall[]>([]);
+  const [teamAnalytics, setTeamAnalytics] = useState({
+    sharedCalls: 0,
+    avgHealthScore: 0,
+    openActionItems: 0,
+    assignedCalls: 0,
+  });
   const [loading, setLoading] = useState(true);
   const [inviting, setInviting] = useState(false);
   const [removing, setRemoving] = useState<string | null>(null);
@@ -35,6 +53,13 @@ export default function TeamPage() {
       if (res.ok) {
         setMembers(data.members ?? []);
         setTeamName(data.teamName);
+        setSharedCalls(data.sharedCalls ?? []);
+        setTeamAnalytics(data.teamAnalytics ?? {
+          sharedCalls: 0,
+          avgHealthScore: 0,
+          openActionItems: 0,
+          assignedCalls: 0,
+        });
       } else {
         setError(data.error);
       }
@@ -172,6 +197,13 @@ export default function TeamPage() {
           </div>
         )}
 
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+          <SummaryCard label="Shared calls" value={teamAnalytics.sharedCalls} />
+          <SummaryCard label="Avg health" value={`${teamAnalytics.avgHealthScore}%`} />
+          <SummaryCard label="Open actions" value={teamAnalytics.openActionItems} />
+          <SummaryCard label="Assigned calls" value={teamAnalytics.assignedCalls} />
+        </div>
+
         <div className="p-6 rounded-2xl linear-surface linear-border">
           <h2 className="text-sm font-medium mb-4">Members</h2>
           <div className="space-y-2">
@@ -232,7 +264,46 @@ export default function TeamPage() {
             )}
           </div>
         </div>
+
+        <div className="p-6 rounded-2xl linear-surface linear-border mt-6">
+          <h2 className="text-sm font-medium mb-4">Shared Calls</h2>
+          <div className="space-y-3">
+            {sharedCalls.length === 0 ? (
+              <p className="text-sm text-white/30">No shared calls yet. Shared call summaries and assignments will appear here.</p>
+            ) : (
+              sharedCalls.map((call) => (
+                <Link
+                  key={call.id}
+                  href={`/app/calls/${call.id}`}
+                  className="flex items-center justify-between rounded-xl bg-white/5 border border-white/5 px-4 py-3 hover:bg-white/10 transition"
+                >
+                  <div>
+                    <p className="text-sm font-medium text-white">{call.filename}</p>
+                    <p className="text-[11px] text-white/40">
+                      {call.ownerName ? `Owner: ${call.ownerName}` : 'Owner unavailable'}
+                      {call.assigneeName ? ` · Assigned: ${call.assigneeName}` : ''}
+                      {` · ${call.commentCount} comments`}
+                    </p>
+                  </div>
+                  <div className="text-right">
+                    <div className="text-sm text-emerald-400">{call.healthScore ? `${Math.round(call.healthScore)}%` : 'N/A'}</div>
+                    <div className="text-[11px] text-white/30">{new Date(call.createdAt).toLocaleDateString()}</div>
+                  </div>
+                </Link>
+              ))
+            )}
+          </div>
+        </div>
       </div>
     </main>
+  );
+}
+
+function SummaryCard({ label, value }: { label: string; value: string | number }) {
+  return (
+    <div className="rounded-2xl linear-surface linear-border px-4 py-5">
+      <div className="text-[11px] uppercase tracking-widest text-white/35 mb-2">{label}</div>
+      <div className="text-2xl font-semibold text-white">{value}</div>
+    </div>
   );
 }

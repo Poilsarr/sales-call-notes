@@ -8,6 +8,8 @@ import { PostProcessingService } from '@/services/ai/post-processing';
 import { AnalysisService } from '@/services/ai/analysis';
 import { DiarizationService } from '@/services/ai/diarization';
 import { SlackService } from '@/services/slack';
+import { parseRemoveFillers } from '@/lib/transcription-options';
+import { AnalyticsService } from '@/services/ai/analytics';
 import fs from 'fs/promises';
 import path from 'path';
 import os from 'os';
@@ -30,6 +32,7 @@ export async function POST(req: Request) {
     const formData = await req.formData();
     const file = formData.get('file') as File;
     const requestedLanguage = normalizeLanguage(formData.get('language'));
+    const removeFillers = parseRemoveFillers(formData.get('removeFillers'));
 
     if (!file) return NextResponse.json({ error: 'No file provided' }, { status: 400 });
 
@@ -75,7 +78,9 @@ export async function POST(req: Request) {
     const transcriptionService = new TranscriptionServiceV2();
     let transcription;
     try {
-      transcription = await transcriptionService.transcribe(buffer, model, requestedLanguage);
+      transcription = await transcriptionService.transcribe(buffer, model, requestedLanguage, {
+        removeFillers,
+      });
     } catch (error: any) {
       console.error('Transcription failed:', error?.message || error);
       const msg = error?.message || '';
@@ -200,6 +205,24 @@ export async function POST(req: Request) {
       };
     }
 
+    const speakerRecords = speakerLabels.map((speaker) => ({
+      label: speaker.label,
+      duration: speaker.segments.reduce((sum, segment) => sum + (segment.end - segment.start), 0),
+      segments: speaker.segments,
+    }));
+
+    const analyticsService = new AnalyticsService();
+    const callAnalytics = await analyticsService.analyzeCall(
+      correctedText,
+      speakerRecords,
+      finalSegments.map((segment) => ({
+        speaker: segment.speaker,
+        text: segment.text,
+        start: segment.start,
+        end: segment.end,
+      })),
+    );
+
     // Normalize and save
     const actionItems = (analysisResult.actionItems ?? []).map((item: any) => ({
       task: item.task || '', owner: item.owner || '', due: item.due || null,
@@ -221,13 +244,39 @@ export async function POST(req: Request) {
 
     const call = await prisma.call.create({
       data: {
-        userId, filename: fileName, transcript: finalTranscriptWithSpeakers,
+        userId,
+        teamId: user.teamId,
+        sharedWithTeam: Boolean(user.teamId),
+        filename: fileName,
+        transcript: finalTranscriptWithSpeakers,
         language: transcription.language || requestedLanguage || 'en',
         summary: analysisResult.executiveSummary || correctedText.slice(0, 500),
         healthScore: typeof analysisResult.salesScorecard?.overallScore === 'number' ? analysisResult.salesScorecard.overallScore : Number(analysisResult.salesScorecard?.overallScore) || null,
+        sentiment: callAnalytics.sentiment,
         actionItems: { create: actionItems },
         decisions: { create: decisions },
         nextSteps: { create: nextSteps },
+        speakers: speakerRecords.length > 0 ? {
+          create: speakerRecords.map((speaker) => ({
+            label: speaker.label,
+            segments: JSON.stringify(speaker.segments),
+            duration: Math.round(speaker.duration),
+          })),
+        } : undefined,
+        analytics: {
+          create: {
+            talkRatio: JSON.stringify(callAnalytics.talkRatio),
+            speakerMetrics: callAnalytics.speakerMetrics,
+            sentimentTimeline: callAnalytics.sentimentTimeline,
+            interruptions: callAnalytics.interruptions,
+            questionsAsked: callAnalytics.questionsAsked,
+            objections: JSON.stringify(callAnalytics.objections),
+            budgetMentioned: callAnalytics.budgetMentioned,
+            timelineMentioned: callAnalytics.timelineMentioned,
+            decisionMakerPresent: callAnalytics.decisionMakerPresent,
+            competitorMentioned: callAnalytics.competitorMentioned,
+          },
+        },
         competitorMentions: competitors.length > 0 ? { create: competitors } : undefined,
       }
     });
@@ -243,6 +292,7 @@ export async function POST(req: Request) {
     }
 
     return NextResponse.json({
+      id: call.id,
       summary: analysisResult.executiveSummary || correctedText.slice(0, 500),
       actionItems: analysisResult.actionItems || [],
       keyDecisions: analysisResult.commitments || [],
@@ -255,6 +305,9 @@ export async function POST(req: Request) {
       transcriptionConfidence: transcription.confidence,
       analysisAvailable: true,
       competitorsMentioned: competitors,
+      speakerMetrics: callAnalytics.speakerMetrics,
+      interruptions: callAnalytics.interruptions,
+      questionsAsked: callAnalytics.questionsAsked,
     });
   } catch (error: any) {
     console.error('Analyze route error:', error?.message);

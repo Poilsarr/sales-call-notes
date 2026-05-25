@@ -1,7 +1,8 @@
 'use client';
 
 import { motion } from 'framer-motion';
-import { CheckCircle, TrendingUp } from 'lucide-react';
+import { CheckCircle, MessageSquareText, TrendingUp, Users2 } from 'lucide-react';
+import type { SpeakerMetric } from '@/types';
 
 interface AnalysisPanelProps {
   analysis: {
@@ -10,6 +11,9 @@ interface AnalysisPanelProps {
     actionItems: Array<{ task: string; owner: string; priority: string }>;
     keyDecisions: string[];
     nextSteps: Array<{ step: string; date: string }>;
+    interruptions?: number;
+    questionsAsked?: number;
+    speakerMetrics?: SpeakerMetric[];
   };
 }
 
@@ -37,6 +41,48 @@ export function AnalysisPanel({ analysis }: AnalysisPanelProps) {
           </div>
         </div>
       </div>
+
+      <div className="grid grid-cols-2 gap-3">
+        <div className="doppel-outer">
+          <div className="doppel-inner p-4">
+            <div className="flex items-center gap-2 text-zinc-400 text-sm mb-1">
+              <Users2 className="w-4 h-4" />
+              Interruptions
+            </div>
+            <div className="text-2xl font-semibold text-white">{analysis.interruptions ?? 0}</div>
+          </div>
+        </div>
+        <div className="doppel-outer">
+          <div className="doppel-inner p-4">
+            <div className="flex items-center gap-2 text-zinc-400 text-sm mb-1">
+              <MessageSquareText className="w-4 h-4" />
+              Questions Asked
+            </div>
+            <div className="text-2xl font-semibold text-white">{analysis.questionsAsked ?? 0}</div>
+          </div>
+        </div>
+      </div>
+
+      {analysis.speakerMetrics && analysis.speakerMetrics.length > 0 && (
+        <div>
+          <h3 className="text-sm font-medium text-white mb-3">Speaker Analytics</h3>
+          <div className="space-y-2">
+            {analysis.speakerMetrics.map((speaker) => (
+              <div key={speaker.speaker} className="rounded-lg bg-zinc-800/50 px-3 py-3">
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-sm text-white">{speaker.speaker}</span>
+                  <span className="text-xs text-zinc-400">{Math.round(speaker.talkRatio * 100)}% talk ratio</span>
+                </div>
+                <div className="grid grid-cols-3 gap-2 text-xs text-zinc-400">
+                  <span>{speaker.questionsAsked} questions</span>
+                  <span>{speaker.interruptions} interruptions</span>
+                  <span className="capitalize">{speaker.sentiment}</span>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
       
       <div>
         <h3 className="text-sm font-medium text-white mb-3 flex items-center gap-2">

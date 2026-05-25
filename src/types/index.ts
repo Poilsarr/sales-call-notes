@@ -18,6 +18,27 @@ export interface Result {
   healthScore?: number;
   detectedLanguage?: string;
   transcriptionConfidence?: number;
+  id?: string;
+}
+
+export interface SpeakerMetric {
+  speaker: string;
+  talkRatio: number;
+  sentiment: 'positive' | 'neutral' | 'negative';
+  questionsAsked: number;
+  interruptions: number;
+  turns: number;
+}
+
+export interface CollaborationComment {
+  id: string;
+  body: string;
+  createdAt: string;
+  author: {
+    id: string;
+    name: string | null;
+    email: string;
+  };
 }
 
 export interface Correction {
@@ -105,4 +126,7 @@ export interface CallRecord {
   keyDecisions: Result['keyDecisions'];
   nextSteps: Result['nextSteps'];
   healthScore?: number;
+  sharedWithTeam?: boolean;
+  ownerName?: string | null;
+  assigneeName?: string | null;
 }

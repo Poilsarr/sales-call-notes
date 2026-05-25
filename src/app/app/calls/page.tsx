@@ -16,6 +16,9 @@ interface CallEntry {
   sentiment: string | null;
   summary: string | null;
   actionItems: Array<{ task: string; owner: string; due: string | null }>;
+  sharedWithTeam?: boolean;
+  ownerName?: string | null;
+  assigneeName?: string | null;
 }
 
 export default function CallsPage() {
@@ -118,10 +121,21 @@ export default function CallsPage() {
                         <p className="text-sm text-zinc-500">
                           {new Date(call.createdAt).toLocaleDateString(undefined, { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}
                           {call.actionItems.length > 0 && ` · ${call.actionItems.length} action items`}
+                          {call.ownerName && ` · Owner: ${call.ownerName}`}
                         </p>
                       </div>
                     </div>
                     <div className="flex items-center gap-3">
+                      {call.sharedWithTeam && (
+                        <span className="px-3 py-1 rounded-full text-sm bg-blue-500/10 text-blue-300">
+                          Shared
+                        </span>
+                      )}
+                      {call.assigneeName && (
+                        <span className="px-3 py-1 rounded-full text-sm bg-violet-500/10 text-violet-300">
+                          {call.assigneeName}
+                        </span>
+                      )}
                       {call.healthScore !== null && (
                         <span className={`px-3 py-1 rounded-full text-sm ${
                           call.healthScore >= 80 ? 'bg-emerald-500/10 text-emerald-400' :

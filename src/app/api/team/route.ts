@@ -1,8 +1,6 @@
 import { NextResponse } from 'next/server';
-import { PrismaClient } from '@prisma/client';
 import { auth } from '@clerk/nextjs/server';
-
-const prisma = new PrismaClient();
+import prisma from '@/lib/prisma';
 
 export async function GET() {
   try {
@@ -27,7 +25,61 @@ export async function GET() {
     const teamName = user.team?.name ?? null;
     const slug = user.team?.slug ?? null;
 
-    return NextResponse.json({ members, teamName, slug });
+    let sharedCalls: Array<{
+      id: string;
+      filename: string;
+      createdAt: Date;
+      healthScore: number | null;
+      ownerName: string | null;
+      assigneeName: string | null;
+      commentCount: number;
+    }> = [];
+
+    let teamAnalytics = {
+      sharedCalls: 0,
+      avgHealthScore: 0,
+      openActionItems: 0,
+      assignedCalls: 0,
+    };
+
+    if (user.teamId) {
+      const teamCalls = await prisma.call.findMany({
+        where: { teamId: user.teamId, sharedWithTeam: true },
+        include: {
+          actionItems: true,
+          comments: true,
+          user: { select: { name: true } },
+          assignee: { select: { name: true } },
+        } as any,
+        orderBy: { createdAt: 'desc' },
+        take: 8,
+      });
+
+      sharedCalls = teamCalls.map((call) => ({
+        id: call.id,
+        filename: call.filename,
+        createdAt: call.createdAt,
+        healthScore: call.healthScore,
+        ownerName: (call as any).user?.name || null,
+        assigneeName: (call as any).assignee?.name || null,
+        commentCount: (call as any).comments?.length || 0,
+      }));
+
+      const totalHealth = teamCalls.reduce((sum, call) => sum + (call.healthScore || 0), 0);
+      const openActionItems = teamCalls.reduce(
+        (sum, call) => sum + (call.actionItems as any[]).filter((item: any) => item.status !== 'COMPLETED').length,
+        0,
+      );
+
+      teamAnalytics = {
+        sharedCalls: teamCalls.length,
+        avgHealthScore: teamCalls.length > 0 ? Math.round(totalHealth / teamCalls.length) : 0,
+        openActionItems,
+        assignedCalls: teamCalls.filter((call) => Boolean((call as any).assignee)).length,
+      };
+    }
+
+    return NextResponse.json({ members, teamName, slug, sharedCalls, teamAnalytics });
   } catch (error: any) {
     console.error('Team GET error:', error?.message);
     return NextResponse.json({ error: 'Failed to fetch team' }, { status: 500 });
