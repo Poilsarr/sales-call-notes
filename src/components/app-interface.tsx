@@ -11,6 +11,21 @@ import {
   Users, Zap, MessageSquare
 } from "lucide-react";
 
+const LANGUAGE_OPTIONS = [
+  { value: "auto", label: "Auto detect" },
+  { value: "en", label: "English" },
+  { value: "es", label: "Spanish" },
+  { value: "fr", label: "French" },
+  { value: "de", label: "German" },
+  { value: "pt", label: "Portuguese" },
+  { value: "it", label: "Italian" },
+  { value: "nl", label: "Dutch" },
+  { value: "hi", label: "Hindi" },
+  { value: "ja", label: "Japanese" },
+  { value: "ko", label: "Korean" },
+  { value: "zh", label: "Chinese" },
+];
+
 export default function AppInterface({ onClose }: { onClose: () => void }) {
   const [file, setFile] = useState<File | null>(null);
   const [state, setState] = useState<ProcessingState>("idle");
@@ -21,6 +36,7 @@ export default function AppInterface({ onClose }: { onClose: () => void }) {
   const [resultTab, setResultTab] = useState<"transcript" | "synthesis" | "actions">("transcript");
   const { user } = useUser();
   const userId = user?.id || "";
+  const [selectedLanguage, setSelectedLanguage] = useState("auto");
   const [recording, setRecording] = useState(false);
   const [mediaRecorder, setMediaRecorder] = useState<MediaRecorder | null>(null);
   const [recordingDuration, setRecordingDuration] = useState(0);
@@ -94,6 +110,7 @@ export default function AppInterface({ onClose }: { onClose: () => void }) {
       const formData = new FormData();
       formData.append("file", uploadFile);
       formData.append("userId", userId);
+      formData.append("language", selectedLanguage);
       const res = await fetch("/api/analyze", { method: "POST", body: formData });
       const responseText = await res.text();
       if (res.status === 401) { setState("error"); setProgress("Please sign in to analyze calls."); return; }
@@ -209,6 +226,23 @@ export default function AppInterface({ onClose }: { onClose: () => void }) {
                         <h3 className="font-display text-lg font-semibold tracking-tight mb-2">Drop your call recording</h3>
                         <p className="text-xs text-white/30 mb-6">MP3, WAV, M4A, WebM supported</p>
                         <input type="file" id="fu" hidden onChange={(e) => setFile(e.target.files?.[0] || null)} accept="audio/*" />
+                        <div className="w-full max-w-xs mb-6">
+                          <label htmlFor="language-select" className="block text-[11px] uppercase tracking-[0.18em] text-white/35 mb-2">
+                            Transcription language
+                          </label>
+                          <select
+                            id="language-select"
+                            value={selectedLanguage}
+                            onChange={(e) => setSelectedLanguage(e.target.value)}
+                            className="w-full rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-white outline-none transition-all focus:border-[#5e6ad2]/60"
+                          >
+                            {LANGUAGE_OPTIONS.map((option) => (
+                              <option key={option.value} value={option.value} className="bg-[#050505] text-white">
+                                {option.label}
+                              </option>
+                            ))}
+                          </select>
+                        </div>
                         <span className="px-6 py-2.5 bg-white/10 text-white rounded-full text-[11px] font-medium hover:bg-white/20 transition-all duration-500">Select File</span>
                       </div>
                     </div>
@@ -262,6 +296,15 @@ export default function AppInterface({ onClose }: { onClose: () => void }) {
                         </button>
                       </div>
                     </div>
+
+                    {result.detectedLanguage && (
+                      <div className="flex items-center gap-2 text-[11px] text-white/45">
+                        <Shield strokeWidth={1} className="w-3.5 h-3.5" />
+                        <span>
+                          Detected language: {formatLanguageLabel(result.detectedLanguage)}
+                        </span>
+                      </div>
+                    )}
 
                     {resultTab === "transcript" && result.segments && result.segments.length > 0 && (
                       <div className="space-y-1">
@@ -367,6 +410,7 @@ export default function AppInterface({ onClose }: { onClose: () => void }) {
                         });
                         setResult({
                           transcript: record.transcript || "",
+                          detectedLanguage: record.language,
                           segments: (record as any).segments || segments,
                           summary: record.summary || "",
                           actionItems: record.actionItems || [],
@@ -403,5 +447,11 @@ export default function AppInterface({ onClose }: { onClose: () => void }) {
     const mins = Math.floor(seconds / 60);
     const secs = Math.floor(seconds % 60);
     return `${mins}:${secs.toString().padStart(2, '0')}`;
+  }
+
+  function formatLanguageLabel(languageCode: string) {
+    const normalized = languageCode.toLowerCase();
+    const match = LANGUAGE_OPTIONS.find((option) => option.value === normalized);
+    return match ? `${match.label} (${languageCode})` : languageCode.toUpperCase();
   }
 }

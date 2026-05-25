@@ -30,7 +30,12 @@ export class TranscriptionServiceV2 {
     });
   }
 
-  async transcribe(audioBuffer: Buffer, model: 'whisper-1' | 'whisper-large-v3' = 'whisper-1', attempted: string[] = []): Promise<TranscriptionResult> {
+  async transcribe(
+    audioBuffer: Buffer,
+    model: 'whisper-1' | 'whisper-large-v3' = 'whisper-1',
+    language?: string,
+    attempted: string[] = [],
+  ): Promise<TranscriptionResult> {
     const client = model === 'whisper-1' ? this.openai : this.groqOpenai;
 
     try {
@@ -39,6 +44,7 @@ export class TranscriptionServiceV2 {
       const response = await client.audio.transcriptions.create({
         file,
         model,
+        ...(language ? { language } : {}),
         prompt: TRANSCRIPTION_PROMPT,
         response_format: 'verbose_json',
         timestamp_granularities: ['segment']
@@ -47,7 +53,7 @@ export class TranscriptionServiceV2 {
       return this.parseVerboseJson(response);
     } catch (error) {
       if (model === 'whisper-1' && !attempted.includes('whisper-large-v3')) {
-        return this.transcribe(audioBuffer, 'whisper-large-v3', [...attempted, model]);
+        return this.transcribe(audioBuffer, 'whisper-large-v3', language, [...attempted, model]);
       }
       throw error;
     }

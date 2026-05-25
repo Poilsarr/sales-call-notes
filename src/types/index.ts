@@ -16,6 +16,8 @@ export interface Result {
   keyDecisions: (string | { who: string; what: string; by: string })[];
   nextSteps: { step: string; date: string }[];
   healthScore?: number;
+  detectedLanguage?: string;
+  transcriptionConfidence?: number;
 }
 
 export interface Correction {
@@ -96,6 +98,7 @@ export interface CallRecord {
   createdAt: string;
   filename: string;
   transcript: string;
+  language?: string;
   segments?: TranscriptSegment[];
   summary: string;
   actionItems: Result['actionItems'];

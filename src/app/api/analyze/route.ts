@@ -14,6 +14,13 @@ import os from 'os';
 
 export const maxDuration = 300;
 
+function normalizeLanguage(rawLanguage: FormDataEntryValue | null) {
+  if (typeof rawLanguage !== 'string') return undefined;
+  const value = rawLanguage.trim().toLowerCase();
+  if (!value || value === 'auto') return undefined;
+  return value;
+}
+
 export async function POST(req: Request) {
   try {
     const { userId: clerkUserId } = await auth();
@@ -22,6 +29,7 @@ export async function POST(req: Request) {
     console.log('Analyze route called');
     const formData = await req.formData();
     const file = formData.get('file') as File;
+    const requestedLanguage = normalizeLanguage(formData.get('language'));
 
     if (!file) return NextResponse.json({ error: 'No file provided' }, { status: 400 });
 
@@ -67,7 +75,7 @@ export async function POST(req: Request) {
     const transcriptionService = new TranscriptionServiceV2();
     let transcription;
     try {
-      transcription = await transcriptionService.transcribe(buffer, model);
+      transcription = await transcriptionService.transcribe(buffer, model, requestedLanguage);
     } catch (error: any) {
       console.error('Transcription failed:', error?.message || error);
       const msg = error?.message || '';
@@ -214,6 +222,7 @@ export async function POST(req: Request) {
     const call = await prisma.call.create({
       data: {
         userId, filename: fileName, transcript: finalTranscriptWithSpeakers,
+        language: transcription.language || requestedLanguage || 'en',
         summary: analysisResult.executiveSummary || correctedText.slice(0, 500),
         healthScore: typeof analysisResult.salesScorecard?.overallScore === 'number' ? analysisResult.salesScorecard.overallScore : Number(analysisResult.salesScorecard?.overallScore) || null,
         actionItems: { create: actionItems },
@@ -242,6 +251,7 @@ export async function POST(req: Request) {
       transcript: finalTranscriptWithSpeakers,
       segments: finalSegments,
       corrections,
+      detectedLanguage: transcription.language,
       transcriptionConfidence: transcription.confidence,
       analysisAvailable: true,
       competitorsMentioned: competitors,

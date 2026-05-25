@@ -19,6 +19,7 @@ export async function GET(req: Request) {
       userId: c.userId,
       filename: c.filename,
       transcript: c.transcript,
+      language: c.language,
       summary: c.summary,
       healthScore: c.healthScore,
       sentiment: c.sentiment,
