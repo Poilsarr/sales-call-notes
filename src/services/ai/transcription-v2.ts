@@ -41,7 +41,7 @@ export class TranscriptionServiceV2 {
         model,
         prompt: TRANSCRIPTION_PROMPT,
         response_format: 'verbose_json',
-        timestamp_granularities: ['word']
+        timestamp_granularities: ['segment']
       } as any);
 
       return this.parseVerboseJson(response);
@@ -54,20 +54,20 @@ export class TranscriptionServiceV2 {
   }
 
   private parseVerboseJson(response: any): TranscriptionResult {
-    const words: WordTimestamp[] = (response.words || []).map((w: any) => ({
-      word: w.word,
-      start: w.start,
-      end: w.end,
-      confidence: w.probability ?? w.confidence ?? 0.95
-    }));
-
     const segments: TranscriptionSegment[] = (response.segments || []).map((s: any, i: number) => ({
       id: i,
       text: s.text,
       start: s.start,
       end: s.end,
-      words: words.filter(w => w.start >= s.start && w.end <= s.end)
+      words: (s.words || []).map((w: any) => ({
+        word: w.word,
+        start: w.start,
+        end: w.end,
+        confidence: w.probability ?? w.confidence ?? 0.95
+      }))
     }));
+
+    const words: WordTimestamp[] = segments.flatMap(s => s.words ?? []);
 
     return {
       text: response.text,
