@@ -1,14 +1,17 @@
 import { NextResponse } from 'next/server';
 import { auth } from '@clerk/nextjs/server';
 import prisma from '@/lib/prisma';
+import { getUserByClerkId } from '@/lib/get-user';
 
 export async function GET() {
   try {
     const { userId } = await auth();
     if (!userId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
-    const user = await prisma.user.findUnique({
+    const user = await prisma.user.upsert({
       where: { clerkId: userId },
+      update: {},
+      create: { clerkId: userId, email: `${userId}@placeholder.dev`, name: '' },
       include: {
         team: {
           include: {
@@ -19,7 +22,6 @@ export async function GET() {
         },
       },
     });
-    if (!user) return NextResponse.json({ error: 'User not found' }, { status: 404 });
 
     const members = user.team?.members ?? [];
     const teamName = user.team?.name ?? null;
@@ -94,8 +96,7 @@ export async function POST(req: Request) {
     const { email } = await req.json();
     if (!email) return NextResponse.json({ error: 'Email is required' }, { status: 400 });
 
-    const inviter = await prisma.user.findUnique({ where: { clerkId: userId } });
-    if (!inviter) return NextResponse.json({ error: 'User not found' }, { status: 404 });
+    const inviter = await getUserByClerkId(userId);
 
     if (inviter.teamRole !== 'ADMIN') {
       return NextResponse.json({ error: 'Only admins can invite members' }, { status: 403 });
@@ -162,8 +163,7 @@ export async function DELETE(req: Request) {
     const { memberId } = await req.json();
     if (!memberId) return NextResponse.json({ error: 'memberId is required' }, { status: 400 });
 
-    const user = await prisma.user.findUnique({ where: { clerkId: userId } });
-    if (!user) return NextResponse.json({ error: 'User not found' }, { status: 404 });
+    const user = await getUserByClerkId(userId);
 
     if (user.teamRole !== 'ADMIN') {
       return NextResponse.json({ error: 'Only admins can remove members' }, { status: 403 });

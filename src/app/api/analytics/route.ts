@@ -2,14 +2,14 @@ import { NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
 import { AnalyticsService } from '@/services/ai/analytics';
 import { auth } from '@clerk/nextjs/server';
+import { getUserByClerkId } from '@/lib/get-user';
 
 export async function GET(req: Request) {
   try {
     const { userId: clerkUserId } = await auth();
     if (!clerkUserId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-    const user = await prisma.user.findUnique({ where: { clerkId: clerkUserId } });
-    if (!user) return NextResponse.json({ error: "User not found" }, { status: 404 });
+    const user = await getUserByClerkId(clerkUserId);
 
     const { searchParams } = new URL(req.url);
     const days = parseInt(searchParams.get('days') || '30');

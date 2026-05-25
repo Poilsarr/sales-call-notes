@@ -2,14 +2,14 @@ import { NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
 import { auth } from '@clerk/nextjs/server';
 import { canAccessCall, canManageCall } from '@/lib/call-access';
+import { getUserByClerkId } from '@/lib/get-user';
 
 export async function GET(req: Request, { params }: { params: { id: string } }) {
   try {
     const { userId: clerkUserId } = await auth();
     if (!clerkUserId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
-    const viewer = await prisma.user.findUnique({ where: { clerkId: clerkUserId } });
-    if (!viewer) return NextResponse.json({ error: 'User not found' }, { status: 404 });
+    const viewer = await getUserByClerkId(clerkUserId);
 
     const call = await prisma.call.findUnique({
       where: { id: params.id },
@@ -65,8 +65,7 @@ export async function POST(req: Request, { params }: { params: { id: string } })
     const { userId: clerkUserId } = await auth();
     if (!clerkUserId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
-    const viewer = await prisma.user.findUnique({ where: { clerkId: clerkUserId } });
-    if (!viewer) return NextResponse.json({ error: 'User not found' }, { status: 404 });
+    const viewer = await getUserByClerkId(clerkUserId);
 
     const call = await prisma.call.findUnique({
       where: { id: params.id },
@@ -111,8 +110,7 @@ export async function PATCH(req: Request, { params }: { params: { id: string } }
     const { userId: clerkUserId } = await auth();
     if (!clerkUserId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
-    const viewer = await prisma.user.findUnique({ where: { clerkId: clerkUserId } });
-    if (!viewer) return NextResponse.json({ error: 'User not found' }, { status: 404 });
+    const viewer = await getUserByClerkId(clerkUserId);
 
     const call = await prisma.call.findUnique({
       where: { id: params.id },
@@ -165,8 +163,7 @@ export async function DELETE(req: Request, { params }: { params: { id: string } 
     const { userId: clerkUserId } = await auth();
     if (!clerkUserId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
-    const viewer = await prisma.user.findUnique({ where: { clerkId: clerkUserId } });
-    if (!viewer) return NextResponse.json({ error: 'User not found' }, { status: 404 });
+    const viewer = await getUserByClerkId(clerkUserId);
 
     const call = await prisma.call.findUnique({
       where: { id: params.id },

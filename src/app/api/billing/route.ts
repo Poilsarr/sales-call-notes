@@ -2,13 +2,14 @@ import { NextRequest, NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
 import { PLANS, PlanTier } from "@/lib/plans";
 import { auth } from "@clerk/nextjs/server";
+import { getUserByClerkId } from '@/lib/get-user';
 
 export async function GET(req: NextRequest) {
   try {
     const { userId } = await auth();
     if (!userId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-    const user = await prisma.user.findUnique({ where: { clerkId: userId } });
+    const user = await getUserByClerkId(userId);
     const plan: PlanTier = (user?.plan as PlanTier) || "free";
 
     const startOfMonth = new Date();
@@ -46,7 +47,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Invalid plan" }, { status: 400 });
     }
 
-    let user = await prisma.user.findUnique({ where: { clerkId: userId } });
+    let user = await getUserByClerkId(userId);
 
     if (targetPlan === "free") {
       if (user) {

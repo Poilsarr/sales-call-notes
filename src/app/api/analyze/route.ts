@@ -9,6 +9,7 @@ import { AnalysisService } from '@/services/ai/analysis';
 import { DiarizationService } from '@/services/ai/diarization';
 import { SlackService } from '@/services/slack';
 import { parseRemoveFillers } from '@/lib/transcription-options';
+import { getUserByClerkId } from '@/lib/get-user';
 import { AnalyticsService } from '@/services/ai/analytics';
 import fs from 'fs/promises';
 import path from 'path';
@@ -36,8 +37,7 @@ export async function POST(req: Request) {
 
     if (!file) return NextResponse.json({ error: 'No file provided' }, { status: 400 });
 
-    const user = await prisma.user.findUnique({ where: { clerkId: clerkUserId } });
-    if (!user) return NextResponse.json({ error: 'User not found' }, { status: 404 });
+    const user = await getUserByClerkId(clerkUserId);
     const userId = user.id;
 
     const fileBuffer = Buffer.from(await file.arrayBuffer());

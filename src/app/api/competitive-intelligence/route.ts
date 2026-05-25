@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
 import { auth } from '@clerk/nextjs/server';
+import { getUserByClerkId } from '@/lib/get-user';
 
 export const dynamic = 'force-dynamic';
 
@@ -17,8 +18,7 @@ export async function GET(req: Request) {
     const since = new Date();
     since.setDate(since.getDate() - days);
 
-    const user = await prisma.user.findUnique({ where: { clerkId: userId } });
-    if (!user) return NextResponse.json({ error: 'User not found' }, { status: 404 });
+    const user = await getUserByClerkId(userId);
 
     if (teamId && user.teamId !== teamId) {
       return NextResponse.json({ error: 'Access denied' }, { status: 403 });
