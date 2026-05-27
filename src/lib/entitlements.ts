@@ -1,5 +1,6 @@
 import prisma from "@/lib/prisma";
 import { PlanTier, FeatureId, PLANS, getPlan, hasFeature } from "./plans";
+import { getUserByClerkId } from "./get-user";
 
 export type EntitlementResult = {
   allowed: boolean;
@@ -13,7 +14,7 @@ export async function checkFeatureAccess(
   feature: FeatureId,
   metadata?: { currentUsage?: number }
 ): Promise<EntitlementResult> {
-  const user = await prisma.user.findUnique({ where: { clerkId: userId } });
+  const user = await getUserByClerkId(userId);
   const planTier: PlanTier = (user?.plan as PlanTier) || "free";
   const plan = getPlan(planTier);
 
@@ -65,9 +66,9 @@ export async function getUsageCount(userId: string): Promise<number> {
 }
 
 export async function getUserPlan(userId: string): Promise<{ tier: PlanTier; usage: number; limit: number | "unlimited" }> {
-  const user = await prisma.user.findUnique({ where: { clerkId: userId } });
+  const user = await getUserByClerkId(userId);
   const tier: PlanTier = (user?.plan as PlanTier) || "free";
   const plan = getPlan(tier);
-  const usage = await getUsageCount(userId);
+  const usage = await getUsageCount(user.id);
   return { tier, usage, limit: plan.uploadLimit === "unlimited" ? "unlimited" : plan.uploadLimit as number };
 }

@@ -2,6 +2,7 @@ import { auth } from "@clerk/nextjs/server";
 import { NextRequest, NextResponse } from "next/server";
 
 import prisma from "@/lib/prisma";
+import { getUserByClerkId } from "@/lib/get-user";
 
 type SupportedProvider = "hubspot" | "salesforce" | "teams";
 
@@ -57,9 +58,7 @@ async function getCurrentUser() {
     return null;
   }
 
-  return prisma.user.findUnique({
-    where: { clerkId: userId },
-  });
+  return getUserByClerkId(userId);
 }
 
 async function ensureTeamId(user: { id: string; email: string; name: string | null; teamId: string | null }) {
