@@ -2,12 +2,12 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 const {
   authMock,
-  findUniqueMock,
+  upsertMock,
   findManyMock,
   groupByMock,
 } = vi.hoisted(() => ({
   authMock: vi.fn(),
-  findUniqueMock: vi.fn(),
+  upsertMock: vi.fn(),
   findManyMock: vi.fn(),
   groupByMock: vi.fn(),
 }));
@@ -19,7 +19,7 @@ vi.mock('@clerk/nextjs/server', () => ({
 vi.mock('@/lib/prisma', () => ({
   default: {
     user: {
-      findUnique: findUniqueMock,
+      upsert: upsertMock,
     },
     competitorMention: {
       findMany: findManyMock,
@@ -42,12 +42,12 @@ describe('GET /api/competitive-intelligence', () => {
 
     expect(response.status).toBe(401);
     await expect(response.json()).resolves.toEqual({ error: 'Unauthorized' });
-    expect(findUniqueMock).not.toHaveBeenCalled();
+    expect(upsertMock).not.toHaveBeenCalled();
   });
 
   it('returns 403 when a caller requests another team', async () => {
     authMock.mockResolvedValue({ userId: 'clerk_user_1' });
-    findUniqueMock.mockResolvedValue({ id: 'user_1', teamId: 'team_a' });
+    upsertMock.mockResolvedValue({ id: 'user_1', teamId: 'team_a' });
 
     const response = await GET(
       new Request('http://localhost/api/competitive-intelligence?teamId=team_b'),
@@ -61,7 +61,7 @@ describe('GET /api/competitive-intelligence', () => {
 
   it('applies competitor and team filters consistently to mentions and trend aggregation', async () => {
     authMock.mockResolvedValue({ userId: 'clerk_user_1' });
-    findUniqueMock.mockResolvedValue({ id: 'user_1', teamId: 'team_a' });
+    upsertMock.mockResolvedValue({ id: 'user_1', teamId: 'team_a' });
     findManyMock.mockResolvedValue([
       {
         id: 'mention_1',
