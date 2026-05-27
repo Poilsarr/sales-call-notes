@@ -10,7 +10,7 @@ function getLangfuse(): Langfuse | null {
     _langfuse = new Langfuse({
       secretKey,
       publicKey,
-      baseUrl: process.env.LANGFUSE_HOST || "https://cloud.langfuse.com",
+      baseUrl: process.env.LANGFUSE_BASE_URL || process.env.LANGFUSE_HOST || "https://cloud.langfuse.com",
     });
   }
   return _langfuse;
