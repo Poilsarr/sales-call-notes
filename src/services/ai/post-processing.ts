@@ -1,5 +1,6 @@
 import OpenAI from 'openai';
 import { Correction } from '@/types';
+import { getLangfuseHandler, flushLangfuse } from '@/lib/langfuse';
 
 export class PostProcessingService {
   private openai: OpenAI;
@@ -34,6 +35,8 @@ Return JSON: { correctedText: string, corrections: [{original, corrected, type, 
       ],
       response_format: { type: 'json_object' },
       temperature: 0.1
+    }, {
+      callbacks: [getLangfuseHandler()].filter(Boolean)
     });
 
     if (!response.choices?.[0]?.message?.content) {
@@ -59,6 +62,10 @@ Return JSON: { correctedText: string, corrections: [{original, corrected, type, 
     if (corrections.length === 0) return 1;
     const avg = corrections.reduce((sum, c) => sum + (c.confidence || 0.8), 0) / corrections.length;
     return Math.round(avg * 100) / 100;
+  }
+
+  async shutdown(): Promise<void> {
+    await flushLangfuse();
   }
 
   validateEntities(text: string): { phones: string[]; emails: string[]; zipCodes: string[] } {

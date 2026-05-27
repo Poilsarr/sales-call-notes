@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
 import { auth } from "@clerk/nextjs/server";
+import { getLangfuseHandler, flushLangfuse } from "@/lib/langfuse";
 
 export async function POST(req: NextRequest) {
   try {
@@ -59,6 +60,8 @@ Respond concisely in plain text.`;
         { role: "user", content: prompt },
       ],
       temperature: 0.3,
+    }, {
+      callbacks: [getLangfuseHandler()].filter(Boolean)
     });
 
     const answer = completion.choices[0]?.message?.content || "I couldn't find an answer based on the available meeting data.";
@@ -81,5 +84,7 @@ Respond concisely in plain text.`;
     });
   } catch (error) {
     return NextResponse.json({ error: "Chat query failed" }, { status: 500 });
+  } finally {
+    await flushLangfuse();
   }
 }

@@ -2,6 +2,7 @@ import OpenAI from 'openai';
 import { CallAnalysis, TranscriptionSegment } from '@/types';
 import fs from 'fs';
 import path from 'path';
+import { getLangfuseHandler, flushLangfuse } from '@/lib/langfuse';
 
 export class AnalysisService {
   private openai: OpenAI;
@@ -31,6 +32,8 @@ export class AnalysisService {
         ],
         response_format: { type: 'json_object' },
         temperature: 0.3
+      }, {
+        callbacks: [getLangfuseHandler()].filter(Boolean)
       });
       return this.parseResponse(response, segments);
     } catch (openaiError: any) {
@@ -48,6 +51,8 @@ export class AnalysisService {
         ],
         response_format: { type: 'json_object' },
         temperature: 0.3
+      }, {
+        callbacks: [getLangfuseHandler()].filter(Boolean)
       });
       return this.parseResponse(response, segments);
     }
@@ -144,6 +149,10 @@ export class AnalysisService {
       talkRatio: raw.talkRatio || { rep: 0.5, prospect: 0.5 },
       sentimentTimeline: Array.isArray(raw.sentimentTimeline) ? raw.sentimentTimeline : []
     };
+  }
+
+  async shutdown(): Promise<void> {
+    await flushLangfuse();
   }
 
   private clamp(value: number, min: number, max: number): number {

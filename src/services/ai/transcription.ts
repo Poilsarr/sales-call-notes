@@ -1,4 +1,5 @@
 import { OpenAI } from 'openai';
+import { getLangfuseHandler, flushLangfuse } from '@/lib/langfuse';
 
 export interface TranscriptionSegment {
   speaker: string;
@@ -39,6 +40,10 @@ export class TranscriptionService {
     return this.transcribeWithProvider(openai, file, 'whisper-large-v3');
   }
 
+  async shutdown(): Promise<void> {
+    await flushLangfuse();
+  }
+
   private async transcribeWithProvider(
     openai: OpenAI,
     file: File,
@@ -49,6 +54,8 @@ export class TranscriptionService {
       model,
       response_format: 'verbose_json',
       timestamp_granularities: ['word'],
+    }, {
+      callbacks: [getLangfuseHandler()].filter(Boolean)
     });
 
     const text = response.text || '';

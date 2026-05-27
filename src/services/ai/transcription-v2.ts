@@ -1,6 +1,7 @@
 import OpenAI, { toFile } from 'openai';
 import { TranscriptionResult, TranscriptionSegment, WordTimestamp } from '@/types';
 import { buildTranscriptionPrompt } from '@/lib/transcription-options';
+import { getLangfuseHandler, flushLangfuse } from '@/lib/langfuse';
 
 export class TranscriptionServiceV2 {
   private openai: OpenAI;
@@ -45,7 +46,9 @@ export class TranscriptionServiceV2 {
         prompt: buildTranscriptionPrompt(options.removeFillers ?? true),
         response_format: 'verbose_json',
         timestamp_granularities: ['segment']
-      } as any);
+      } as any, {
+        callbacks: [getLangfuseHandler()].filter(Boolean)
+      });
 
       return this.parseVerboseJson(response);
     } catch (error) {
@@ -87,5 +90,9 @@ export class TranscriptionServiceV2 {
     if (words.length === 0) return 0;
     const avg = words.reduce((sum, w) => sum + w.confidence, 0) / words.length;
     return Math.round(avg * 100) / 100;
+  }
+
+  async shutdown(): Promise<void> {
+    await flushLangfuse();
   }
 }
