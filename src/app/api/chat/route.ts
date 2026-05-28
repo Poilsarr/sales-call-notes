@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
 import { auth } from "@clerk/nextjs/server";
-import { getLangfuseHandler, flushLangfuse } from "@/lib/langfuse";
+import { wrapClient } from "@/lib/langfuse";
 
 export async function POST(req: NextRequest) {
   try {
@@ -23,7 +23,7 @@ export async function POST(req: NextRequest) {
     });
 
     const { OpenAI } = await import("openai");
-    const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+    const openai = wrapClient(new OpenAI({ apiKey: process.env.OPENAI_API_KEY }));
 
     const callContext = calls.map(c => ({
       filename: c.filename,
@@ -53,7 +53,6 @@ ${JSON.stringify(callContext, null, 2)}
 
 Respond concisely in plain text.`;
 
-    const lfHandler = await getLangfuseHandler();
     const completion = await openai.chat.completions.create({
       model: "gpt-4o",
       messages: [
@@ -61,9 +60,7 @@ Respond concisely in plain text.`;
         { role: "user", content: prompt },
       ],
       temperature: 0.3,
-    }, {
-      ...(lfHandler ? { callbacks: [lfHandler] } : {})
-    } as any);
+    });
 
     const answer = completion.choices[0]?.message?.content || "I couldn't find an answer based on the available meeting data.";
 
@@ -85,7 +82,5 @@ Respond concisely in plain text.`;
     });
   } catch (error) {
     return NextResponse.json({ error: "Chat query failed" }, { status: 500 });
-  } finally {
-    await flushLangfuse();
   }
 }

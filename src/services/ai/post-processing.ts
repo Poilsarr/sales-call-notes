@@ -1,6 +1,6 @@
 import OpenAI from 'openai';
 import { Correction } from '@/types';
-import { getLangfuseHandler, flushLangfuse } from '@/lib/langfuse';
+import { wrapClient } from '@/lib/langfuse';
 
 export class PostProcessingService {
   private openai: OpenAI;
@@ -9,7 +9,7 @@ export class PostProcessingService {
     if (!process.env.OPENAI_API_KEY) {
       throw new Error('OPENAI_API_KEY is required for post-processing');
     }
-    this.openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY, timeout: 300000, maxRetries: 2 });
+    this.openai = wrapClient(new OpenAI({ apiKey: process.env.OPENAI_API_KEY, timeout: 300000, maxRetries: 2 }));
   }
 
   async correctEntities(transcript: string): Promise<{ correctedText: string; corrections: Correction[]; confidence: number }> {
@@ -17,7 +17,6 @@ export class PostProcessingService {
       return { correctedText: transcript, corrections: [], confidence: 1.0 };
     }
 
-    const lfHandler = await getLangfuseHandler();
     const response = await this.openai.chat.completions.create({
       model: 'gpt-4o',
       messages: [
@@ -36,9 +35,7 @@ Return JSON: { correctedText: string, corrections: [{original, corrected, type, 
       ],
       response_format: { type: 'json_object' },
       temperature: 0.1
-    }, {
-      ...(lfHandler ? { callbacks: [lfHandler] } : {})
-    } as any);
+    });
 
     if (!response.choices?.[0]?.message?.content) {
       return { correctedText: transcript, corrections: [], confidence: 1.0 };
@@ -63,10 +60,6 @@ Return JSON: { correctedText: string, corrections: [{original, corrected, type, 
     if (corrections.length === 0) return 1;
     const avg = corrections.reduce((sum, c) => sum + (c.confidence || 0.8), 0) / corrections.length;
     return Math.round(avg * 100) / 100;
-  }
-
-  async shutdown(): Promise<void> {
-    await flushLangfuse();
   }
 
   validateEntities(text: string): { phones: string[]; emails: string[]; zipCodes: string[] } {

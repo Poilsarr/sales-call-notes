@@ -1,7 +1,7 @@
 import OpenAI, { toFile } from 'openai';
 import { TranscriptionResult, TranscriptionSegment, WordTimestamp } from '@/types';
 import { buildTranscriptionPrompt } from '@/lib/transcription-options';
-import { getLangfuseHandler, flushLangfuse } from '@/lib/langfuse';
+import { wrapClient } from '@/lib/langfuse';
 
 export class TranscriptionServiceV2 {
   private openai: OpenAI;
@@ -14,17 +14,17 @@ export class TranscriptionServiceV2 {
     if (!process.env.GROQ_API_KEY) {
       throw new Error('GROQ_API_KEY is required for transcription fallback');
     }
-    this.openai = new OpenAI({
+    this.openai = wrapClient(new OpenAI({
       apiKey: process.env.OPENAI_API_KEY,
       timeout: 300000,
       maxRetries: 2
-    });
-    this.groqOpenai = new OpenAI({
+    }));
+    this.groqOpenai = wrapClient(new OpenAI({
       apiKey: process.env.GROQ_API_KEY,
       baseURL: 'https://api.groq.com/openai/v1',
       timeout: 300000,
       maxRetries: 2
-    });
+    }));
   }
 
   async transcribe(
@@ -36,7 +36,6 @@ export class TranscriptionServiceV2 {
   ): Promise<TranscriptionResult> {
     const client = model === 'whisper-1' ? this.openai : this.groqOpenai;
 
-    const lfHandler = await getLangfuseHandler();
     try {
       const file = await toFile(audioBuffer, 'audio.wav', { type: 'audio/wav' });
 
@@ -47,8 +46,6 @@ export class TranscriptionServiceV2 {
         prompt: buildTranscriptionPrompt(options.removeFillers ?? true),
         response_format: 'verbose_json',
         timestamp_granularities: ['segment']
-      } as any, {
-        ...(lfHandler ? { callbacks: [lfHandler] } : {})
       } as any);
 
       return this.parseVerboseJson(response);
@@ -91,9 +88,5 @@ export class TranscriptionServiceV2 {
     if (words.length === 0) return 0;
     const avg = words.reduce((sum, w) => sum + w.confidence, 0) / words.length;
     return Math.round(avg * 100) / 100;
-  }
-
-  async shutdown(): Promise<void> {
-    await flushLangfuse();
   }
 }

@@ -2,27 +2,26 @@ import OpenAI from 'openai';
 import { CallAnalysis, TranscriptionSegment } from '@/types';
 import fs from 'fs';
 import path from 'path';
-import { getLangfuseHandler, flushLangfuse } from '@/lib/langfuse';
+import { wrapClient } from '@/lib/langfuse';
 
 export class AnalysisService {
   private openai: OpenAI;
   private groqOpenai: OpenAI | null = null;
 
   constructor() {
-    this.openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY, timeout: 300000, maxRetries: 2 });
+    this.openai = wrapClient(new OpenAI({ apiKey: process.env.OPENAI_API_KEY, timeout: 300000, maxRetries: 2 }));
     if (process.env.GROQ_API_KEY) {
-      this.groqOpenai = new OpenAI({
+      this.groqOpenai = wrapClient(new OpenAI({
         apiKey: process.env.GROQ_API_KEY,
         baseURL: 'https://api.groq.com/openai/v1',
         timeout: 300000,
         maxRetries: 2
-      });
+      }));
     }
   }
 
   async analyze(transcript: string, segments?: TranscriptionSegment[]): Promise<CallAnalysis> {
     const prompt = await this.loadPrompt('enrollment-calls');
-    const lfHandler = await getLangfuseHandler();
 
     try {
       const response = await this.openai.chat.completions.create({
@@ -33,9 +32,7 @@ export class AnalysisService {
         ],
         response_format: { type: 'json_object' },
         temperature: 0.3
-      }, {
-        ...(lfHandler ? { callbacks: [lfHandler] } : {})
-      } as any);
+      });
       return this.parseResponse(response, segments);
     } catch (openaiError: any) {
       console.log('OpenAI analysis failed, trying Groq:', openaiError?.message?.slice(0, 100));
@@ -52,9 +49,7 @@ export class AnalysisService {
         ],
         response_format: { type: 'json_object' },
         temperature: 0.3
-      }, {
-        ...(lfHandler ? { callbacks: [lfHandler] } : {})
-      } as any);
+      });
       return this.parseResponse(response, segments);
     }
   }
@@ -150,10 +145,6 @@ export class AnalysisService {
       talkRatio: raw.talkRatio || { rep: 0.5, prospect: 0.5 },
       sentimentTimeline: Array.isArray(raw.sentimentTimeline) ? raw.sentimentTimeline : []
     };
-  }
-
-  async shutdown(): Promise<void> {
-    await flushLangfuse();
   }
 
   private clamp(value: number, min: number, max: number): number {

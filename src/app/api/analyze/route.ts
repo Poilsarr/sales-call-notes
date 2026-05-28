@@ -11,7 +11,6 @@ import { SlackService } from '@/services/slack';
 import { parseRemoveFillers } from '@/lib/transcription-options';
 import { getUserByClerkId } from '@/lib/get-user';
 import { AnalyticsService } from '@/services/ai/analytics';
-import { flushLangfuse } from '@/lib/langfuse';
 import fs from 'fs/promises';
 import path from 'path';
 import os from 'os';
@@ -313,7 +312,5 @@ export async function POST(req: Request) {
   } catch (error: any) {
     console.error('Analyze route error:', error?.message);
     return NextResponse.json({ error: 'Analysis failed: ' + error?.message }, { status: 500 });
-  } finally {
-    await flushLangfuse();
   }
 }

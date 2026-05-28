@@ -1,5 +1,5 @@
 import { OpenAI } from 'openai';
-import { getLangfuseHandler, flushLangfuse } from '@/lib/langfuse';
+import { wrapClient } from '@/lib/langfuse';
 
 export interface TranscriptionSegment {
   speaker: string;
@@ -31,17 +31,13 @@ export class TranscriptionService {
   }
 
   private async transcribeWithOpenAI(file: File, apiKey: string): Promise<TranscriptionResult> {
-    const openai = new OpenAI({ apiKey });
+    const openai = wrapClient(new OpenAI({ apiKey }));
     return this.transcribeWithProvider(openai, file, 'whisper-1');
   }
 
   private async transcribeWithGroq(file: File, apiKey: string): Promise<TranscriptionResult> {
-    const openai = new OpenAI({ apiKey, baseURL: 'https://api.groq.com/openai/v1' });
+    const openai = wrapClient(new OpenAI({ apiKey, baseURL: 'https://api.groq.com/openai/v1' }));
     return this.transcribeWithProvider(openai, file, 'whisper-large-v3');
-  }
-
-  async shutdown(): Promise<void> {
-    await flushLangfuse();
   }
 
   private async transcribeWithProvider(
@@ -49,15 +45,12 @@ export class TranscriptionService {
     file: File,
     model: string
   ): Promise<TranscriptionResult> {
-    const lfHandler = await getLangfuseHandler();
     const response = await openai.audio.transcriptions.create({
       file,
       model,
       response_format: 'verbose_json',
       timestamp_granularities: ['word'],
-    }, {
-      ...(lfHandler ? { callbacks: [lfHandler] } : {})
-    } as any);
+    });
 
     const text = response.text || '';
     const words = (response as any).words || [];
