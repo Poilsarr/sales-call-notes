@@ -22,6 +22,7 @@ export class AnalysisService {
 
   async analyze(transcript: string, segments?: TranscriptionSegment[]): Promise<CallAnalysis> {
     const prompt = await this.loadPrompt('enrollment-calls');
+    const lfHandler = await getLangfuseHandler();
 
     try {
       const response = await this.openai.chat.completions.create({
@@ -33,7 +34,7 @@ export class AnalysisService {
         response_format: { type: 'json_object' },
         temperature: 0.3
       }, {
-        callbacks: [getLangfuseHandler()].filter(Boolean)
+        ...(lfHandler ? { callbacks: [lfHandler] } : {})
       } as any);
       return this.parseResponse(response, segments);
     } catch (openaiError: any) {
@@ -52,7 +53,7 @@ export class AnalysisService {
         response_format: { type: 'json_object' },
         temperature: 0.3
       }, {
-        callbacks: [getLangfuseHandler()].filter(Boolean)
+        ...(lfHandler ? { callbacks: [lfHandler] } : {})
       } as any);
       return this.parseResponse(response, segments);
     }

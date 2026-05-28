@@ -53,6 +53,7 @@ ${JSON.stringify(callContext, null, 2)}
 
 Respond concisely in plain text.`;
 
+    const lfHandler = await getLangfuseHandler();
     const completion = await openai.chat.completions.create({
       model: "gpt-4o",
       messages: [
@@ -61,7 +62,7 @@ Respond concisely in plain text.`;
       ],
       temperature: 0.3,
     }, {
-      callbacks: [getLangfuseHandler()].filter(Boolean)
+      ...(lfHandler ? { callbacks: [lfHandler] } : {})
     } as any);
 
     const answer = completion.choices[0]?.message?.content || "I couldn't find an answer based on the available meeting data.";

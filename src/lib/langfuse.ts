@@ -1,29 +1,31 @@
-import Langfuse from "langfuse";
+let _langfuse: any = null;
 
-let _langfuse: Langfuse | null = null;
-
-function getLangfuse(): Langfuse | null {
+async function getLangfuse(): Promise<any | null> {
   const secretKey = process.env.LANGFUSE_SECRET_KEY;
   const publicKey = process.env.LANGFUSE_PUBLIC_KEY;
   if (!secretKey || !publicKey) return null;
-  if (!_langfuse) {
+  if (_langfuse) return _langfuse;
+  try {
+    const { default: Langfuse } = await import("langfuse");
     _langfuse = new Langfuse({
       secretKey,
       publicKey,
       baseUrl: process.env.LANGFUSE_BASE_URL || process.env.LANGFUSE_HOST || "https://cloud.langfuse.com",
     });
+    return _langfuse;
+  } catch {
+    return null;
   }
-  return _langfuse;
 }
 
-export function getLangfuseHandler() {
-  const langfuse = getLangfuse();
+export async function getLangfuseHandler() {
+  const langfuse = await getLangfuse();
   if (!langfuse) return undefined;
   return langfuse.getLangfuseHandler();
 }
 
 export async function flushLangfuse() {
-  const langfuse = getLangfuse();
+  const langfuse = await getLangfuse();
   if (langfuse) {
     await langfuse.flushAsync();
   }

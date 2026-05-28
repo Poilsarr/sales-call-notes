@@ -49,13 +49,14 @@ export class TranscriptionService {
     file: File,
     model: string
   ): Promise<TranscriptionResult> {
+    const lfHandler = await getLangfuseHandler();
     const response = await openai.audio.transcriptions.create({
       file,
       model,
       response_format: 'verbose_json',
       timestamp_granularities: ['word'],
     }, {
-      callbacks: [getLangfuseHandler()].filter(Boolean)
+      ...(lfHandler ? { callbacks: [lfHandler] } : {})
     } as any);
 
     const text = response.text || '';

@@ -36,6 +36,7 @@ export class TranscriptionServiceV2 {
   ): Promise<TranscriptionResult> {
     const client = model === 'whisper-1' ? this.openai : this.groqOpenai;
 
+    const lfHandler = await getLangfuseHandler();
     try {
       const file = await toFile(audioBuffer, 'audio.wav', { type: 'audio/wav' });
 
@@ -47,7 +48,7 @@ export class TranscriptionServiceV2 {
         response_format: 'verbose_json',
         timestamp_granularities: ['segment']
       } as any, {
-        callbacks: [getLangfuseHandler()].filter(Boolean)
+        ...(lfHandler ? { callbacks: [lfHandler] } : {})
       } as any);
 
       return this.parseVerboseJson(response);

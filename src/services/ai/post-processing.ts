@@ -17,6 +17,7 @@ export class PostProcessingService {
       return { correctedText: transcript, corrections: [], confidence: 1.0 };
     }
 
+    const lfHandler = await getLangfuseHandler();
     const response = await this.openai.chat.completions.create({
       model: 'gpt-4o',
       messages: [
@@ -36,7 +37,7 @@ Return JSON: { correctedText: string, corrections: [{original, corrected, type, 
       response_format: { type: 'json_object' },
       temperature: 0.1
     }, {
-      callbacks: [getLangfuseHandler()].filter(Boolean)
+      ...(lfHandler ? { callbacks: [lfHandler] } : {})
     } as any);
 
     if (!response.choices?.[0]?.message?.content) {
