@@ -62,7 +62,7 @@ Respond concisely in plain text.`;
       temperature: 0.3,
     }, {
       callbacks: [getLangfuseHandler()].filter(Boolean)
-    });
+    } as any);
 
     const answer = completion.choices[0]?.message?.content || "I couldn't find an answer based on the available meeting data.";
 

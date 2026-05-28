@@ -34,7 +34,7 @@ export class AnalysisService {
         temperature: 0.3
       }, {
         callbacks: [getLangfuseHandler()].filter(Boolean)
-      });
+      } as any);
       return this.parseResponse(response, segments);
     } catch (openaiError: any) {
       console.log('OpenAI analysis failed, trying Groq:', openaiError?.message?.slice(0, 100));
@@ -53,7 +53,7 @@ export class AnalysisService {
         temperature: 0.3
       }, {
         callbacks: [getLangfuseHandler()].filter(Boolean)
-      });
+      } as any);
       return this.parseResponse(response, segments);
     }
   }

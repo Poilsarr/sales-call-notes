@@ -37,7 +37,7 @@ Return JSON: { correctedText: string, corrections: [{original, corrected, type, 
       temperature: 0.1
     }, {
       callbacks: [getLangfuseHandler()].filter(Boolean)
-    });
+    } as any);
 
     if (!response.choices?.[0]?.message?.content) {
       return { correctedText: transcript, corrections: [], confidence: 1.0 };

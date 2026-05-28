@@ -56,7 +56,7 @@ export class TranscriptionService {
       timestamp_granularities: ['word'],
     }, {
       callbacks: [getLangfuseHandler()].filter(Boolean)
-    });
+    } as any);
 
     const text = response.text || '';
     const words = (response as any).words || [];

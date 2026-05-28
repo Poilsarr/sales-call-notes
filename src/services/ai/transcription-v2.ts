@@ -48,7 +48,7 @@ export class TranscriptionServiceV2 {
         timestamp_granularities: ['segment']
       } as any, {
         callbacks: [getLangfuseHandler()].filter(Boolean)
-      });
+      } as any);
 
       return this.parseVerboseJson(response);
     } catch (error) {
