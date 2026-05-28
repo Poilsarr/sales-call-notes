@@ -18,11 +18,11 @@ function getLangfuseConfig() {
   return _config as Record<string, string>;
 }
 
-export function wrapClient<T>(client: T): T {
+export function wrapClient<T extends object>(client: T): T {
   const cfg = getLangfuseConfig();
   if (!cfg) return client;
   try {
-    return observeOpenAI(client, cfg);
+    return observeOpenAI(client, cfg) as T;
   } catch {
     return client;
   }
