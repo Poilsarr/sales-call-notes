@@ -26,7 +26,8 @@ describe('TranscriptionService', () => {
 
     expect(result.text).toBe('Hello world transcript');
     expect(mockCreate).toHaveBeenCalledWith(
-      expect.objectContaining({ model: 'whisper-1', timestamp_granularities: ['word'] })
+      expect.objectContaining({ model: 'whisper-1', timestamp_granularities: ['word'] }),
+      expect.anything()
     );
   });
 
@@ -47,7 +48,8 @@ describe('TranscriptionService', () => {
 
     expect(result.text).toBe('Groq transcript');
     expect(mockCreate).toHaveBeenCalledWith(
-      expect.objectContaining({ model: 'whisper-large-v3' })
+      expect.objectContaining({ model: 'whisper-large-v3' }),
+      expect.anything()
     );
   });
 
