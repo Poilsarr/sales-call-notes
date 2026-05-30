@@ -35,12 +35,12 @@ export default function Home() {
   }, []);
 
   const features = [
-    { icon: <Upload strokeWidth={1} className="w-5 h-5" />, title: "Upload & Transcribe", desc: "Drop audio files. Whisper AI converts speech to text with speaker labels.", accent: "#5e6ad2", metric: "<60s" },
-    { icon: <Brain strokeWidth={1} className="w-5 h-5" />, title: "AI Analysis", desc: "Extract summary, action items, decisions, and next steps automatically.", accent: "#8b5cf6", metric: "98%" },
-    { icon: <Target strokeWidth={1} className="w-5 h-5" />, title: "Action Tracking", desc: "Every task gets an owner and due date. No follow-up gets missed.", accent: "#22d3a8", metric: "0 missed" },
-    { icon: <BarChart3 strokeWidth={1} className="w-5 h-5" />, title: "Call Analytics", desc: "Health scores, sentiment, talk ratios, and buying signal detection.", accent: "#f59e0b", metric: "6 metrics" },
-    { icon: <Share2 strokeWidth={1} className="w-5 h-5" />, title: "CRM Sync", desc: "Push notes to HubSpot, Salesforce, or Teams with one click.", accent: "#3b82f6", metric: "3 CRMs" },
-    { icon: <History strokeWidth={1} className="w-5 h-5" />, title: "Searchable History", desc: "Full archive with search across all your calls and notes.", accent: "#ec4899", metric: "∞ storage" },
+    { icon: <Upload strokeWidth={1} className="w-5 h-5" />, title: "Local-First Privacy", desc: "Audio processed locally. Your data never leaves your control. Maximum compliance, zero leaks.", accent: "#5e6ad2", metric: "Private" },
+    { icon: <Brain strokeWidth={1} className="w-5 h-5" />, title: "Precision Diarization", desc: "Clean speaker separation. No more guessing who said what. Accurate labels for every turn.", accent: "#8b5cf6", metric: "99% Acc" },
+    { icon: <Target strokeWidth={1} className="w-5 h-5" />, title: "Knowledge Graph", desc: "Surface patterns across 100s of calls. Find common objections and winning triggers automatically.", accent: "#22d3a8", metric: "Semantic" },
+    { icon: <BarChart3 strokeWidth={1} className="w-5 h-5" />, title: "Hyper-Personalization", desc: "AI-generated follow-up hooks based on emotional cues and specific quotes from the call.", accent: "#f59e0b", metric: "10x Reply" },
+    { icon: <Share2 strokeWidth={1} className="w-5 h-5" />, title: "CRM Sync", desc: "Push MEDDIC/BANT summaries to HubSpot, Salesforce, or Teams with one click.", accent: "#3b82f6", metric: "3 CRMs" },
+    { icon: <History strokeWidth={1} className="w-5 h-s_ la h-5" />, title: "Searchable History", desc: "Full archive with semantic search across all your calls and insights.", accent: "#ec4899", metric: "∞ storage" },
   ];
 
   return (
@@ -54,7 +54,7 @@ export default function Home() {
         <div className="relative z-10 max-w-5xl mx-auto text-center">
           <div className="eyebrow inline-flex items-center gap-2 mb-8 motion-safe:animate-fade-up motion-safe:[animation-delay:100ms]">
             <span className="w-1.5 h-1.5 rounded-full bg-[#22d3a8] animate-pulse" />
-            AI processed locally — Free for SDRs
+            Privacy-First AI — Local Processing for SDRs
           </div>
 
           <h1 className="font-display text-6xl md:text-8xl lg:text-9xl font-semibold tracking-tighter leading-[0.85] mb-8 motion-safe:animate-fade-up motion-safe:[animation-delay:200ms]">

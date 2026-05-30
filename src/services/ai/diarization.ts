@@ -20,34 +20,10 @@ export interface DiarizationResult {
 
 export class DiarizationService {
   async diarize(audioPath: string): Promise<DiarizationResult> {
+    const scriptPath = path.join(process.cwd(), 'src/services/ai/scripts/diarize.py');
+
     const result = await new Promise<DiarizationResult>((resolve, reject) => {
-      const python = spawn("python3", ["-c", `
-import sys
-try:
-    from pyannote.audio import Pipeline
-    import torch
-
-    pipeline = Pipeline.from_pretrained("pyannote/speaker-diarization-3.1")
-    pipeline.to(torch.device("cpu"))
-
-    diarization = pipeline("${audioPath}")
-
-    speakers = {}
-    for turn, _, speaker in diarization.itertracks(yield_label=True):
-        if speaker not in speakers:
-            speakers[speaker] = []
-        speakers[speaker].append({
-            "speaker": speaker,
-            "start": turn.start,
-            "end": turn.end
-        })
-
-    import json
-    print(json.dumps({"speakers": list(speakers.values())}))
-except Exception as e:
-    print(f"ERROR: {e}", file=sys.stderr)
-    sys.exit(1)
-`]);
+      const python = spawn("python3", [scriptPath, audioPath]);
 
       let output = "";
       let error = "";
@@ -62,9 +38,9 @@ except Exception as e:
             const data = JSON.parse(output.trim());
             resolve({
               speakers: data.speakers.map((s: any) => ({
-                label: s[0]?.speaker || "Unknown",
-                segments: s,
-                duration: s.reduce((acc: number, seg: any) => acc + (seg.end - seg.start), 0),
+                label: s.label,
+                segments: s.segments,
+                duration: s.segments.reduce((acc: number, seg: any) => acc + (seg.end - seg.start), 0),
               })),
               transcript: "",
             });
@@ -79,19 +55,10 @@ except Exception as e:
   }
 
   async detectLanguage(audioPath: string): Promise<string> {
+    const scriptPath = path.join(process.cwd(), 'src/services/ai/scripts/detect_lang.py');
+
     const result = await new Promise<string>((resolve, reject) => {
-      const python = spawn("python3", ["-c", `
-import sys
-try:
-    import whisper
-    model = whisper.load_model("base")
-    audio = whisper.load_audio("${audioPath}")
-    result = model.transcribe(audio, language=None)
-    print(result.get("language", "en"))
-except Exception as e:
-    print(f"ERROR: {e}", file=sys.stderr)
-    sys.exit(1)
-`]);
+      const python = spawn("python3", [scriptPath, audioPath]);
 
       let output = "";
       let error = "";

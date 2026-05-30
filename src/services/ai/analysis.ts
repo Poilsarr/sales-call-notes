@@ -125,9 +125,26 @@ export class AnalysisService {
       keyEntities: raw.keyEntities || {},
       competitorsMentioned: Array.isArray(raw.competitorsMentioned) ? raw.competitorsMentioned : [],
       salesScorecard: raw.salesScorecard || {
-        meddic: { metrics: 0, economicBuyer: 0, decisionCriteria: 0, decisionProcess: 0, identifyPain: 0, champion: 0 },
-        bant: { budget: 0, authority: 0, need: 0, timeline: 0 },
-        spin: { situation: 0, problem: 0, implication: 0, needPayoff: 0 },
+        meddic: {
+          metrics: { score: 0, evidence: '' },
+          economicBuyer: { score: 0, evidence: '' },
+          decisionCriteria: { score: 0, evidence: '' },
+          decisionProcess: { score: 0, evidence: '' },
+          identifyPain: { score: 0, evidence: '' },
+          champion: { score: 0, evidence: '' }
+        },
+        bant: {
+          budget: { score: 0, evidence: '' },
+          authority: { score: 0, evidence: '' },
+          need: { score: 0, evidence: '' },
+          timeline: { score: 0, evidence: '' }
+        },
+        spin: {
+          situation: { score: 0, evidence: '' },
+          problem: { score: 0, evidence: '' },
+          implication: { score: 0, evidence: '' },
+          needPayoff: { score: 0, evidence: '' }
+        },
         overallScore: 0
       },
       stakeholderMap: raw.stakeholderMap || [],

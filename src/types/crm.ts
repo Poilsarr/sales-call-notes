@@ -19,4 +19,5 @@ export type CRMCall = {
     step: string;
     date: string | null;
   }>;
+  salesScorecard?: any;
 };

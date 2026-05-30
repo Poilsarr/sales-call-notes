@@ -11,9 +11,16 @@ import { SlackService } from '@/services/slack';
 import { parseRemoveFillers } from '@/lib/transcription-options';
 import { getUserByClerkId } from '@/lib/get-user';
 import { AnalyticsService } from '@/services/ai/analytics';
+import { PIIRedactorService } from '@/services/ai/pii-redactor';
+import { KnowledgeGraphService } from '@/services/ai/knowledge-graph';
+import { PersonalizationService } from '@/services/ai/personalization';
+import { FileValidationService } from '@/services/validation/file-validation';
 import fs from 'fs/promises';
 import path from 'path';
 import os from 'os';
+import { fileTypeFromBuffer } from 'file-type';
+
+export const maxDuration = 300;
 
 export const maxDuration = 300;
 
@@ -42,16 +49,14 @@ export async function POST(req: Request) {
 
     const fileBuffer = Buffer.from(await file.arrayBuffer());
     const fileName = file.name || 'call_recording.mp3';
-    const mimeType = file.type || 'audio/mpeg';
 
-    if (fileBuffer.length > 100 * 1024 * 1024) {
-      return NextResponse.json({ error: 'File size exceeds 100MB limit' }, { status: 400 });
-    }
-    if (!mimeType.startsWith('audio/')) {
-      return NextResponse.json({ error: 'Only audio files are supported' }, { status: 400 });
+    const validator = new FileValidationService();
+    const validation = await validator.validate(fileBuffer, fileName);
+    if (!validation.isValid) {
+      return NextResponse.json({ error: validation.error }, { status: 400 });
     }
 
-    console.log(`Processing file: ${fileName}, size: ${fileBuffer.length}, type: ${mimeType}`);
+    console.log(`Processing file: ${fileName}, size: ${fileBuffer.length}`);
 
     // --- TRANSCRIPTION PIPELINE ---
 
@@ -157,10 +162,10 @@ export async function POST(req: Request) {
     if (speakerLabels.length > 0 && transcription.segments) {
       const allSegments = [...transcription.segments];
       allSegments.sort((a, b) => a.start - b.start);
-      
+
       let formattedTranscript = '';
       for (const seg of allSegments) {
-        const speaker = speakerLabels.find(sl => 
+        const speaker = speakerLabels.find(sl =>
           sl.segments.some(ss => ss.start <= seg.start && ss.end >= seg.end)
         );
         const label = speaker ? speaker.label : 'Speaker 1';
@@ -169,6 +174,11 @@ export async function POST(req: Request) {
       }
       finalTranscriptWithSpeakers = formattedTranscript.trim();
     }
+
+    // PII Redaction
+    const piiRedactor = new PIIRedactorService();
+    const { redactedText } = piiRedactor.redact(finalTranscriptWithSpeakers);
+    finalTranscriptWithSpeakers = redactedText;
 
     // --- ANALYSIS ---
     let analysisResult: Awaited<ReturnType<AnalysisService['analyze']>>;
@@ -281,6 +291,42 @@ export async function POST(req: Request) {
       }
     });
 
+    // Index for semantic search
+    try {
+      const kgService = new KnowledgeGraphService();
+      await kgService.indexCall(call.id);
+      console.log(`Call ${call.id} indexed in knowledge graph`);
+    } catch (e) {
+      console.log('Knowledge graph indexing failed:', e);
+    }
+
+    // Generate personalized hooks
+    let personalization = { hooks: [] };
+    try {
+      const personalService = new PersonalizationService();
+      personalization = await personalService.generatePersonalizedHooks(correctedText, analysisResult);
+      console.log('Personalization hooks generated');
+    } catch (e) {
+      console.log('Personalization failed:', e);
+    }
+
+    await prisma.callInsight.upsert({
+      where: { callId: call.id },
+      update: {
+        salesScorecard: analysisResult.salesScorecard,
+        closeProbability: analysisResult.closeProbability,
+        coachingNotes: analysisResult.coachingNotes,
+        personalization: personalization,
+      },
+      create: {
+        callId: call.id,
+        salesScorecard: analysisResult.salesScorecard,
+        closeProbability: analysisResult.closeProbability,
+        coachingNotes: analysisResult.coachingNotes,
+        personalization: personalization,
+      }
+    });
+
     if (competitors.length > 0) {
       const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://sales-call-notes.vercel.app';
       const slack = new SlackService();
@@ -308,6 +354,7 @@ export async function POST(req: Request) {
       speakerMetrics: callAnalytics.speakerMetrics,
       interruptions: callAnalytics.interruptions,
       questionsAsked: callAnalytics.questionsAsked,
+      personalizationHooks: personalization.hooks,
     });
   } catch (error: any) {
     console.error('Analyze route error:', error?.message);

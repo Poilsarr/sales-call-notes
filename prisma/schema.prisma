@@ -74,6 +74,7 @@ model Call {
   crmRecordId   String?
   source        String   @default("upload")
   tags          String?
+  embedding       Float[]
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
   actionItems        ActionItem[]
@@ -211,7 +212,9 @@ model CallInsight {
   objections       Json?
   coachingNotes    Json?
   closeProbability Float?
+  salesScorecard   Json?
   topics           Json?
+  personalization  Json?
   createdAt        DateTime @default(now())
   updatedAt        DateTime @updatedAt
 

@@ -1,10 +1,52 @@
 'use client';
 
 import { motion } from 'framer-motion';
-import { CheckCircle, MessageSquareText, TrendingUp, Users2 } from 'lucide-react';
+import { CheckCircle, MessageSquareText, TrendingUp, Users2, Target } from 'lucide-react';
 import type { SpeakerMetric } from '@/types';
 
+interface Metric {
+  score: number;
+  evidence: string;
+}
+
+function MetricRow({ name, metric }: { name: string; metric: Metric }) {
+  const percentage = (metric.score / 10) * 100;
+  return (
+    <div className="space-y-1">
+      <div className="flex items-center justify-between text-xs">
+        <span className="text-zinc-400">{name}</span>
+        <span className="text-white font-medium">{metric.score}/10</span>
+      </div>
+      <div className="h-1 bg-zinc-800 rounded-full overflow-hidden">
+        <motion.div
+          initial={{ width: 0 }}
+          animate={{ width: `${percentage}%` }}
+          className={`h-full ${percentage > 70 ? 'bg-emerald-500' : percentage > 40 ? 'bg-amber-500' : 'bg-red-500'}`}
+        />
+      </div>
+      <p className="text-[11px] text-zinc-500 italic leading-tight">{metric.evidence || 'No evidence found'}</p>
+    </div>
+  );
+}
+
+function FrameworkGroup({ title, metrics }: { title: string; metrics: Record<string, Metric> }) {
+  return (
+    <div className="space-y-4">
+      <h4 className="text-xs font-bold text-zinc-300 uppercase tracking-wider flex items-center gap-2">
+        <div className="w-1 h-1 rounded-full bg-emerald-500" />
+        {title}
+      </h4>
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-4">
+        {Object.entries(metrics).map(([name, metric]) => (
+          <MetricRow key={name} name={name} metric={metric} />
+        ))}
+      </div>
+    </div>
+  );
+}
+
 interface AnalysisPanelProps {
+
   analysis: {
     executiveSummary: string;
     healthScore: number;
@@ -14,6 +56,7 @@ interface AnalysisPanelProps {
     interruptions?: number;
     questionsAsked?: number;
     speakerMetrics?: SpeakerMetric[];
+    salesScorecard?: any;
   };
 }
 
@@ -24,7 +67,45 @@ export function AnalysisPanel({ analysis }: AnalysisPanelProps) {
         <h2 className="text-lg font-medium text-white mb-3">Executive Summary</h2>
         <p className="text-sm text-zinc-400 leading-relaxed">{analysis.executiveSummary}</p>
       </div>
-      
+
+      {analysis.salesScorecard && (
+        <div className="doppel-outer">
+          <div className="doppel-inner p-6 space-y-6">
+            <div className="flex items-center justify-between mb-2">
+              <h2 className="text-lg font-medium text-white flex items-center gap-2">
+                <Target className="w-4 h-4 text-emerald-400" />
+                Sales Qualification
+              </h2>
+              <div className="text-right">
+                <span className="text-xs text-zinc-500 block uppercase font-bold">Overall Score</span>
+                <span className="text-2xl font-bold text-emerald-400">{analysis.salesScorecard.overallScore}%</span>
+              </div>
+            </div>
+
+            <div className="space-y-8">
+              {analysis.salesScorecard.meddic && (
+                <FrameworkGroup
+                  title="MEDDIC"
+                  metrics={analysis.salesScorecard.meddic}
+                />
+              )}
+              {analysis.salesScorecard.bant && (
+                <FrameworkGroup
+                  title="BANT"
+                  metrics={analysis.salesScorecard.bant}
+                />
+              )}
+              {analysis.salesScorecard.spin && (
+                <FrameworkGroup
+                  title="SPIN"
+                  metrics={analysis.salesScorecard.spin}
+                />
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
       <div className="doppel-outer">
         <div className="doppel-inner p-4">
           <div className="flex items-center justify-between">

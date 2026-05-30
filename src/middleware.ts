@@ -1,11 +1,15 @@
 import { clerkMiddleware, createRouteMatcher } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
+import { rateLimitMiddleware } from "./middleware-rate-limit";
 
 const isPublicApi = createRouteMatcher(["/api/analyze"]);
 const isProtectedRoute = createRouteMatcher(["/api/(.*)", "/dashboard(.*)", "/app(.*)"]);
 
 export default clerkMiddleware(async (auth, req: NextRequest) => {
+  const rateLimitResponse = await rateLimitMiddleware(req);
+  if (rateLimitResponse) return rateLimitResponse;
+
   if (isProtectedRoute(req) && !isPublicApi(req)) {
     const { userId } = auth();
     if (!userId) {

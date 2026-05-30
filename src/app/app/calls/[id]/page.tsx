@@ -33,6 +33,7 @@ interface CallData {
     questionsAsked?: number | null;
     speakerMetrics?: SpeakerMetric[] | null;
   } | null;
+  salesScorecard?: any;
 }
 
 export default function CallDetailPage({ params }: { params: { id: string } }) {
@@ -69,6 +70,7 @@ export default function CallDetailPage({ params }: { params: { id: string } }) {
           comments: call.comments || [],
           canManageCollaboration: call.canManageCollaboration || false,
           analytics: call.analytics || null,
+          salesScorecard: call.insight?.salesScorecard,
         });
         setTeamMembers(team.members || []);
       } catch (e) {
@@ -196,6 +198,7 @@ export default function CallDetailPage({ params }: { params: { id: string } }) {
                   step: s.step || s.content,
                   date: s.date || 'TBD',
                 })),
+                salesScorecard: data.salesScorecard,
                 interruptions: data.analytics?.interruptions || 0,
                 questionsAsked: data.analytics?.questionsAsked || 0,
                 speakerMetrics: data.analytics?.speakerMetrics || [],

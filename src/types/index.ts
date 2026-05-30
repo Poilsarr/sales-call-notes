@@ -93,9 +93,26 @@ export interface CallAnalysis {
   keyEntities: Record<string, unknown>;
   competitorsMentioned?: Array<{ name: string; context: string; sentiment: string }>;
   salesScorecard: {
-    meddic?: { metrics: number; economicBuyer: number; decisionCriteria: number; decisionProcess: number; identifyPain: number; champion: number };
-    bant?: { budget: number; authority: number; need: number; timeline: number };
-    spin?: { situation: number; problem: number; implication: number; needPayoff: number };
+    meddic?: {
+      metrics: { score: number; evidence: string };
+      economicBuyer: { score: number; evidence: string };
+      decisionCriteria: { score: number; evidence: string };
+      decisionProcess: { score: number; evidence: string };
+      identifyPain: { score: number; evidence: string };
+      champion: { score: number; evidence: string };
+    };
+    bant?: {
+      budget: { score: number; evidence: string };
+      authority: { score: number; evidence: string };
+      need: { score: number; evidence: string };
+      timeline: { score: number; evidence: string };
+    };
+    spin?: {
+      situation: { score: number; evidence: string };
+      problem: { score: number; evidence: string };
+      implication: { score: number; evidence: string };
+      needPayoff: { score: number; evidence: string };
+    };
     overallScore: number;
   };
   stakeholderMap?: Array<{ name: string; role: string; influence: string; sentiment: string; concerns: string[] }>;
