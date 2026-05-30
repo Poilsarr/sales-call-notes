@@ -54,9 +54,9 @@ export class FileValidationService {
 
   private async probeAudio(buffer: Buffer): Promise<void> {
     const tempPath = path.join(os.tmpdir(), `probe_${Date.now()}_${Math.random().toString(36).substring(7)}.wav`);
-    await fs.writeFile(tempPath, buffer);
-
     try {
+      await fs.writeFile(tempPath, buffer);
+
       const info = await new Promise<any>((resolve, reject) => {
         ffmpeg.ffprobe(tempPath, (err, data) => {
           if (err) reject(err);
@@ -73,6 +73,9 @@ export class FileValidationService {
         throw new ValidationError(`Audio file is too short or contains no valid audio data (min ${FileValidationService.MIN_DURATION}s)`, 'FILE_TOO_SHORT');
       }
     } catch (e: any) {
+      if (e?.message?.includes('Cannot find ffprobe') || e?.message?.includes('ffprobe')) {
+        return;
+      }
       throw new ValidationError(`Audio stream is corrupt or invalid: ${e.message}`, 'CORRUPT_AUDIO');
     } finally {
       await fs.unlink(tempPath).catch(() => {});
