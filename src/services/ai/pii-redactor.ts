@@ -1,9 +1,6 @@
-import { execFile } from 'child_process';
-import { promisify } from 'util';
+import { spawn } from 'child_process';
 import path from 'path';
 import os from 'os';
-
-const execFilePromise = promisify(execFile);
 
 export class PIIRedactorService {
   private patterns = {
@@ -15,20 +12,36 @@ export class PIIRedactorService {
 
   async redact(text: string): Promise<{ redactedText: string; replacements: Array<{ original: string; replacement: string; type: string }> }> {
     try {
-      // Attempt ML-based redaction via Python script
-      const scriptPath = path.join(process.cwd(), 'src/services/ai/scripts/redact_pii.py');
+      // Use absolute path for script to avoid process.cwd() fragility
+      const scriptPath = path.resolve(process.cwd(), 'src/services/ai/scripts/redact_pii.py');
 
-      // Sanitize text for shell argument passing (simple escape)
-      const sanitizedText = text.replace(/"/g, '\\"');
+      const result = await new Promise<{ stdout: string; stderr: string }>((resolve, reject) => {
+        const pyProcess = spawn('python3', [scriptPath]);
+        let stdoutData = '';
+        let stderrData = '';
 
-      const { stdout } = await execFilePromise('python3', [scriptPath, sanitizedText]);
-      const result = JSON.parse(stdout);
+        pyProcess.stdout.on('data', (data) => { stdoutData += data; });
+        pyProcess.stderr.on('data', (data) => { stderrData += data; });
 
-      if (result.error) throw new Error(result.error);
+        pyProcess.on('close', (code) => {
+          if (code === 0) resolve({ stdout: stdoutData, stderr: stderrData });
+          else reject(new Error(`Python process exited with code ${code}: ${stderrData}`));
+        });
+
+        pyProcess.on('error', (err) => reject(err));
+
+        // Pipe text to stdin to prevent shell injection and arg length limits
+        pyProcess.stdin.write(text);
+        pyProcess.stdin.end();
+      });
+
+      const parsed = JSON.parse(result.stdout);
+
+      if (parsed.error) throw new Error(parsed.error);
 
       return {
-        redactedText: result.redactedText,
-        replacements: result.replacements,
+        redactedText: parsed.redactedText,
+        replacements: parsed.replacements,
       };
     } catch (e) {
       console.log(`ML PII redaction failed, falling back to regex: ${e}`);

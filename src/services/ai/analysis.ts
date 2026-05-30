@@ -76,7 +76,7 @@ export class AnalysisService {
   }
 
   private async loadPrompt(domain: string): Promise<string> {
-    const promptPath = path.join(process.cwd(), 'src/lib/prompts', `${domain}.md`);
+    const promptPath = path.resolve(process.cwd(), 'src/lib/prompts', `${domain}.md`);
     return fs.readFileSync(promptPath, 'utf-8');
   }
 

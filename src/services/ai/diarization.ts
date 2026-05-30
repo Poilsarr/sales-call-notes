@@ -20,7 +20,7 @@ export interface DiarizationResult {
 
 export class DiarizationService {
   async diarize(audioPath: string): Promise<DiarizationResult> {
-    const scriptPath = path.join(process.cwd(), 'src/services/ai/scripts/diarize.py');
+    const scriptPath = path.resolve(process.cwd(), 'src/services/ai/scripts/diarize.py');
 
     const result = await new Promise<DiarizationResult>((resolve, reject) => {
       const python = spawn("python3", [scriptPath, audioPath]);
@@ -55,7 +55,7 @@ export class DiarizationService {
   }
 
   async detectLanguage(audioPath: string): Promise<string> {
-    const scriptPath = path.join(process.cwd(), 'src/services/ai/scripts/detect_lang.py');
+    const scriptPath = path.resolve(process.cwd(), 'src/services/ai/scripts/detect_lang.py');
 
     const result = await new Promise<string>((resolve, reject) => {
       const python = spawn("python3", [scriptPath, audioPath]);

@@ -5,11 +5,12 @@ from presidio_anonymizer import AnonymizerEngine
 from presidio_anonymizer.entities import AnonymizerDefinition
 
 def main():
-    if len(sys.argv) < 2:
-        print(json.dumps({"error": "No text provided"}))
-        sys.exit(1)
+    # Read text from stdin
+    text = sys.stdin.read()
 
-    text = sys.argv[1]
+    if not text:
+        print(json.dumps({"error": "No text provided in stdin"}))
+        sys.exit(1)
 
     try:
         # Initialize engines
