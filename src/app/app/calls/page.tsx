@@ -38,7 +38,7 @@ export default function CallsPage() {
   }, [user?.id]);
 
   const filteredCalls = calls.filter(call =>
-    call.filename.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    (call.filename || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
     (call.summary && call.summary.toLowerCase().includes(searchQuery.toLowerCase()))
   );
 
