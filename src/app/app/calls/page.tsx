@@ -136,7 +136,7 @@ export default function CallsPage() {
                           {call.assigneeName}
                         </span>
                       )}
-                      {call.healthScore !== null && (
+                      {call.healthScore != null && (
                         <span className={`px-3 py-1 rounded-full text-sm ${
                           call.healthScore >= 80 ? 'bg-emerald-500/10 text-emerald-400' :
                           call.healthScore >= 60 ? 'bg-amber-500/10 text-amber-400' :

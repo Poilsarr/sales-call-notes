@@ -26,11 +26,11 @@ export async function GET(req: Request) {
         nextSteps: true,
         assignee: { select: { name: true } },
         user: { select: { name: true } },
-      } as any,
+      },
       orderBy: { createdAt: 'desc' }
     });
 
-    const normalized = (calls as any[]).map(c => ({
+    const normalized = calls.map(c => ({
       id: c.id,
       userId: c.userId,
       filename: c.filename,
@@ -40,12 +40,12 @@ export async function GET(req: Request) {
       healthScore: c.healthScore,
       sentiment: c.sentiment,
       createdAt: c.createdAt,
-      sharedWithTeam: (c as any).sharedWithTeam,
-      ownerName: (c as any).user?.name || null,
-      assigneeName: (c as any).assignee?.name || null,
-      actionItems: (c.actionItems as any[]).map((a: any) => ({ task: a.task, owner: a.owner, due: a.due })),
-      keyDecisions: (c.decisions as any[]).map((d: any) => d.content),
-      nextSteps: (c.nextSteps as any[]).map((n: any) => ({ step: n.step, date: n.date })),
+      sharedWithTeam: c.sharedWithTeam,
+      ownerName: c.user?.name || null,
+      assigneeName: c.assignee?.name || null,
+      actionItems: c.actionItems.map(a => ({ task: a.task, owner: a.owner, due: a.due })),
+      keyDecisions: c.decisions.map(d => d.content),
+      nextSteps: c.nextSteps.map(n => ({ step: n.step, date: n.date })),
     }));
 
     return NextResponse.json(normalized);

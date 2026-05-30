@@ -56,7 +56,7 @@ export default function AppInterface({ onClose }: { onClose: () => void }) {
     try {
       const res = await fetch(`/api/history?userId=${id}`);
       const data = await res.json();
-      setHistory(data);
+      setHistory(Array.isArray(data) ? data : []);
     } catch { console.error("History fetch failed"); }
   }
 
