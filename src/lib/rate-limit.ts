@@ -1,9 +1,9 @@
-import { Ratelimit } from "@upstash/ratelimit";
+import { Ratelimit, type Duration } from "@upstash/ratelimit";
 import { Redis } from "@upstash/redis/cloudflare";
 
 type LimitConfig = {
   tokens: number;
-  window: string;
+  window: Duration;
 };
 
 const LIMITS: Record<string, LimitConfig> = {

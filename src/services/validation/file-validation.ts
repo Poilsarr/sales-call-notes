@@ -1,4 +1,4 @@
-import { fileTypeFromBuffer } from 'file-type';
+import { detectAudioType } from '@/lib/audio-types';
 import ffmpeg from 'fluent-ffmpeg';
 import fs from 'fs/promises';
 import path from 'path';
@@ -35,7 +35,7 @@ export class FileValidationService {
       }
 
       // 2. Magic Byte Check
-      const type = await fileTypeFromBuffer(fileBuffer);
+      const type = detectAudioType(fileBuffer);
       if (!type || !FileValidationService.ALLOWED_MIME_TYPES.includes(type.mime)) {
         throw new ValidationError('Invalid audio file format. Please upload a valid audio file.', 'INVALID_FORMAT');
       }

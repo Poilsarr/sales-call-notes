@@ -3,7 +3,7 @@ import { auth } from "@clerk/nextjs/server";
 import { writeFile, unlink } from "fs/promises";
 import path from "path";
 import { spawn } from "child_process";
-import { fileTypeFromBuffer } from "file-type";
+import { detectAudioType } from "@/lib/audio-types";
 
 export async function POST(req: NextRequest) {
   const { userId } = await auth();
@@ -22,7 +22,7 @@ export async function POST(req: NextRequest) {
     const arrayBuffer = await audioFile.arrayBuffer();
     const buffer = Buffer.from(arrayBuffer);
 
-    const type = await fileTypeFromBuffer(buffer);
+    const type = detectAudioType(buffer);
     const allowedMimeTypes = ['audio/mpeg', 'audio/wav', 'audio/x-wav', 'audio/ogg', 'audio/flac', 'audio/mp4', 'audio/aac'];
     if (!type || !allowedMimeTypes.includes(type.mime)) {
       return NextResponse.json({ error: 'Invalid audio file format. Please upload a valid audio file.' }, { status: 400 });

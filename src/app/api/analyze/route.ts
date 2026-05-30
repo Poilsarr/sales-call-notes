@@ -18,9 +18,7 @@ import { FileValidationService } from '@/services/validation/file-validation';
 import fs from 'fs/promises';
 import path from 'path';
 import os from 'os';
-import { fileTypeFromBuffer } from 'file-type';
-
-export const maxDuration = 300;
+import { detectAudioType } from '@/lib/audio-types';
 
 export const maxDuration = 300;
 
@@ -177,7 +175,7 @@ export async function POST(req: Request) {
 
     // PII Redaction
     const piiRedactor = new PIIRedactorService();
-    const { redactedText } = piiRedactor.redact(finalTranscriptWithSpeakers);
+    const { redactedText } = await piiRedactor.redact(finalTranscriptWithSpeakers);
     finalTranscriptWithSpeakers = redactedText;
 
     // --- ANALYSIS ---
@@ -195,9 +193,9 @@ export async function POST(req: Request) {
         participants: [],
         keyEntities: {},
         salesScorecard: {
-          meddic: { metrics: 0, economicBuyer: 0, decisionCriteria: 0, decisionProcess: 0, identifyPain: 0, champion: 0 },
-          bant: { budget: 0, authority: 0, need: 0, timeline: 0 },
-          spin: { situation: 0, problem: 0, implication: 0, needPayoff: 0 },
+          meddic: { metrics: { score: 0, evidence: '' }, economicBuyer: { score: 0, evidence: '' }, decisionCriteria: { score: 0, evidence: '' }, decisionProcess: { score: 0, evidence: '' }, identifyPain: { score: 0, evidence: '' }, champion: { score: 0, evidence: '' } },
+          bant: { budget: { score: 0, evidence: '' }, authority: { score: 0, evidence: '' }, need: { score: 0, evidence: '' }, timeline: { score: 0, evidence: '' } },
+          spin: { situation: { score: 0, evidence: '' }, problem: { score: 0, evidence: '' }, implication: { score: 0, evidence: '' }, needPayoff: { score: 0, evidence: '' } },
           overallScore: 0
         },
         stakeholderMap: [],

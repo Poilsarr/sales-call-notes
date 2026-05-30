@@ -64,8 +64,10 @@ export class KnowledgeGraphService {
 
     const allCalls = await prisma.call.findMany({
       where: {
-        NOT: { id: callId },
-        NOT: { embedding: { equals: [] } }
+        AND: [
+          { NOT: { id: callId } },
+          { NOT: { embedding: { equals: [] } } }
+        ]
       },
       select: { id: true, embedding: true, summary: true }
     });

@@ -93,7 +93,7 @@ ${call.salesScorecard ? `
 **Overall Score: ${call.salesScorecard.overallScore}%**
 
 ${Object.entries(call.salesScorecard).filter(([k]) => k !== 'overallScore').map(([key, value]) => {
-  return `### ${key.toUpperCase()}\n${Object.entries(value).map(([m, d]: [string, any]) => `- **${m}**: ${typeof d === 'object' ? d.score : d}/10 ${typeof d === 'object' && d.evidence ? `("${d.evidence}")` : ''}`).join('\n')}`;
+  return `### ${key.toUpperCase()}\n${Object.entries(value as Record<string, any>).map(([m, d]: [string, any]) => `- **${m}**: ${typeof d === 'object' ? d.score : d}/10 ${typeof d === 'object' && d.evidence ? `("${d.evidence}")` : ''}`).join('\n')}`;
 }).join('\n\n')}
 ` : ''}
 

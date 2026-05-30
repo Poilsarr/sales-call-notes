@@ -25,13 +25,7 @@ export async function GET(
     }
 
     const formatter = new CRMFormatterService();
-    let formattedText;
-
-    if (provider === "salesforce") {
-      formattedText = formatter.formatForSalesforce(call);
-    } else {
-      formattedText = formatter.formatForHubSpot(call);
-    }
+    const formattedText = formatter.formatNote(call, provider as 'hubspot' | 'salesforce');
 
     return NextResponse.json({ formattedText });
   } catch (error) {
