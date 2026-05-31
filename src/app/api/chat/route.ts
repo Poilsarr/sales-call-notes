@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
 import { auth } from "@clerk/nextjs/server";
 import { wrapClient } from "@/lib/langfuse";
+import { getSecret } from "@/lib/secrets";
 
 export async function POST(req: NextRequest) {
   try {
@@ -23,7 +24,7 @@ export async function POST(req: NextRequest) {
     });
 
     const { OpenAI } = await import("openai");
-    const openai = wrapClient(new OpenAI({ apiKey: process.env.OPENAI_API_KEY }));
+    const openai = wrapClient(new OpenAI({ apiKey: getSecret("OPENAI_API_KEY") }));
 
     const callContext = calls.map(c => ({
       filename: c.filename,

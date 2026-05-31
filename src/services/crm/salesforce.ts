@@ -1,8 +1,9 @@
 import { CRMCall } from "@/types/crm";
 import { CRMFormatterService } from "./formatter";
+import { getSecret } from "@/lib/secrets";
 
 export class SalesforceService {
-  private baseUrl = process.env.SF_INSTANCE_URL || "https://login.salesforce.com";
+  private baseUrl = getSecret("SF_INSTANCE_URL") || "https://login.salesforce.com";
   private formatter = new CRMFormatterService();
 
   async syncCall(call: CRMCall, accessToken: string) {

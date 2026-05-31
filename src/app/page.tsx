@@ -1,248 +1,225 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { useUser, SignInButton } from "@clerk/nextjs";
+import { useState } from "react";
+import { ArrowRight, Clock, Menu, X } from "lucide-react";
 import dynamic from "next/dynamic";
+import { useUser, SignInButton } from "@clerk/nextjs";
 import Nav from "@/components/nav";
 import Link from "next/link";
-import {
-  Upload, Brain, Target, BarChart3,
-  Share2, History, ArrowRight,
-} from "lucide-react";
 
 const AppInterface = dynamic(() => import("@/components/app-interface"), { ssr: false });
 
-export default function Home() {
-  const [showApp, setShowApp] = useState(false);
+function HeroSection() {
   const { user } = useUser();
-
-  useEffect(() => {
-    let rafId: number;
-    const handleMouseMove = (e: MouseEvent) => {
-      cancelAnimationFrame(rafId);
-      rafId = requestAnimationFrame(() => {
-        document.querySelectorAll(".group.relative").forEach((card) => {
-          const rect = card.getBoundingClientRect();
-          const x = ((e.clientX - rect.left) / rect.width) * 100;
-          const y = ((e.clientY - rect.top) / rect.height) * 100;
-          (card as HTMLElement).style.setProperty("--mouse-x", `${x}%`);
-          (card as HTMLElement).style.setProperty("--mouse-y", `${y}%`);
-        });
-      });
-    };
-    document.addEventListener("mousemove", handleMouseMove);
-    return () => { document.removeEventListener("mousemove", handleMouseMove); cancelAnimationFrame(rafId); };
-  }, []);
-
-  const features = [
-    { icon: <Upload strokeWidth={1} className="w-5 h-5" />, title: "Local-First Privacy", desc: "Audio processed locally. Your data never leaves your control. Maximum compliance, zero leaks.", accent: "#5e6ad2", metric: "Private" },
-    { icon: <Brain strokeWidth={1} className="w-5 h-5" />, title: "Precision Diarization", desc: "Clean speaker separation. No more guessing who said what. Accurate labels for every turn.", accent: "#8b5cf6", metric: "99% Acc" },
-    { icon: <Target strokeWidth={1} className="w-5 h-5" />, title: "Knowledge Graph", desc: "Surface patterns across 100s of calls. Find common objections and winning triggers automatically.", accent: "#22d3a8", metric: "Semantic" },
-    { icon: <BarChart3 strokeWidth={1} className="w-5 h-5" />, title: "Hyper-Personalization", desc: "AI-generated follow-up hooks based on emotional cues and specific quotes from the call.", accent: "#f59e0b", metric: "10x Reply" },
-    { icon: <Share2 strokeWidth={1} className="w-5 h-5" />, title: "CRM Sync", desc: "Push MEDDIC/BANT summaries to HubSpot, Salesforce, or Teams with one click.", accent: "#3b82f6", metric: "3 CRMs" },
-    { icon: <History strokeWidth={1} className="w-5 h-s_ la h-5" />, title: "Searchable History", desc: "Full archive with semantic search across all your calls and insights.", accent: "#ec4899", metric: "∞ storage" },
-  ];
+  const [showApp, setShowApp] = useState(false);
 
   return (
-    <main className="min-h-screen bg-[#050505] text-white overflow-hidden selection:bg-[#5e6ad2]/30">
-      <Nav />
-
-      <section className="relative min-h-[100dvh] flex flex-col items-center justify-center px-6 pt-24 pb-32 overflow-hidden mesh-bg">
-        <div className="radial-glow top-[-10%] left-[-5%] bg-[#5e6ad2]" />
-        <div className="radial-glow bottom-[-20%] right-[-10%] bg-[#22d3a8]" />
-
-        <div className="relative z-10 max-w-5xl mx-auto text-center">
-          <div className="eyebrow inline-flex items-center gap-2 mb-8 motion-safe:animate-fade-up motion-safe:[animation-delay:100ms]">
-            <span className="w-1.5 h-1.5 rounded-full bg-[#22d3a8] animate-pulse" />
-            Privacy-First AI — Local Processing for SDRs
-          </div>
-
-          <h1 className="font-display text-6xl md:text-8xl lg:text-9xl font-semibold tracking-tighter leading-[0.85] mb-8 motion-safe:animate-fade-up motion-safe:[animation-delay:200ms]">
-            Sales call notes,<br />
-            <span className="text-white/20">rendered instant.</span>
-          </h1>
-
-          <p className="text-base md:text-lg text-white/30 max-w-2xl mx-auto mb-12 font-[425] leading-relaxed motion-safe:animate-fade-up motion-safe:[animation-delay:300ms]">
-            Upload your call recording. Get summary, action items, and CRM-ready notes in seconds.
-            Built for the modern SDR. No bots, no complex setup.
+    <section className="relative h-screen bg-[#EFEFEF] overflow-hidden flex flex-col">
+      <div className="relative z-20 flex-1 flex flex-col">
+        <div className="flex-1" />
+        <div className="max-w-[1440px] mx-auto w-full px-5 sm:px-8 lg:px-12 pb-14 sm:pb-16 lg:pb-20">
+          <p className="text-[13px] leading-[14px] text-gray-900 tracking-wide mb-5 sm:mb-8">
+            Axion Studio
           </p>
-
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-4 motion-safe:animate-fade-up motion-safe:[animation-delay:400ms]">
-            {user ? (
-              <button onClick={() => setShowApp(true)}
-                className="btn-island flex items-center gap-3 bg-white text-[#050505] hover:bg-white/90 group px-8 py-4">
-                Open App
-                <span className="icon-wrap bg-[#050505]/10 group-hover:bg-[#050505]/15">
-                  <ArrowRight strokeWidth={1.5} className="w-3.5 h-3.5" />
-                </span>
-              </button>
-            ) : (
-              <SignInButton mode="modal">
-                <button className="btn-island flex items-center gap-3 bg-white text-[#050505] hover:bg-white/90 group px-8 py-4">
-                  Get Started Free
-                  <span className="icon-wrap bg-[#050505]/10 group-hover:bg-[#050505]/15">
-                    <ArrowRight strokeWidth={1.5} className="w-3.5 h-3.5" />
+          <h1
+            className="font-medium leading-[1.08] tracking-[-0.03em] text-gray-900"
+            style={{ fontSize: "clamp(1.75rem,7vw,4.2rem)" }}
+          >
+            <span className="sm:hidden">
+              We craft digital experiences for brands ready to dominate their category online.
+            </span>
+            <span className="hidden sm:inline" style={{ fontSize: "clamp(2.5rem,5vw,4.2rem)" }}>
+              We craft digital experiences<br />for brands ready to dominate<br />their category online.
+            </span>
+          </h1>
+          <div className="mt-8 sm:mt-12 flex flex-col sm:flex-row gap-4 sm:gap-5">
+            {/* Orange CTA */}
+            <div className="flex flex-col sm:flex-row gap-4 sm:gap-5">
+              <Link
+                href={user ? "#" : "/sign-up"}
+                onClick={(e) => { if (user) { e.preventDefault(); setShowApp(true); } }}
+                className="group bg-[#F26522] hover:bg-[#e05a1a] text-white rounded-full pl-5 sm:pl-6 pr-2 py-2 inline-flex items-center gap-1.5 text-[13px] sm:text-[14px] transition-colors duration-300 w-fit"
+              >
+                <span className="flex flex-col overflow-hidden h-[20px]">
+                  <span className="transition-transform duration-500 ease-[cubic-bezier(0.25,0.1,0.25,1)] group-hover:-translate-y-1/2 leading-[20px]">
+                    Start a project
                   </span>
-                </button>
-              </SignInButton>
-            )}
-            <button onClick={() => setShowApp(true)}
-              className="btn-island flex items-center gap-2 bg-white/5 text-white/60 hover:bg-white/10 hover:text-white border border-white/10 px-8 py-4">
-              View Demo
-            </button>
-          </div>
-        </div>
-
-        <div className="absolute bottom-8 left-1/2 -translate-x-1/2 animate-float">
-          <svg className="w-5 h-5 text-white/20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1">
-            <path d="M12 5v14M5 12l7 7 7-7" />
-          </svg>
-        </div>
-      </section>
-
-      <section className="py-32 md:py-44 px-6">
-        <div className="max-w-6xl mx-auto">
-          <div className="text-center mb-20 motion-safe:animate-fade-up">
-            <div className="eyebrow inline-flex mb-6">Capabilities</div>
-            <h2 className="font-display text-4xl md:text-6xl font-semibold tracking-tighter leading-[0.9] mb-4">
-              Everything an SDR needs
-            </h2>
-            <p className="text-white/30 max-w-xl mx-auto">From upload to CRM export in under 60 seconds. No learning curve.</p>
-            <div className="flex items-center justify-center gap-6 mt-8">
-              <div className="flex items-center gap-2 text-xs text-white/30">
-                <div className="w-1.5 h-1.5 rounded-full bg-[#5e6ad2]" />
-                <span>AI-powered</span>
-              </div>
-              <div className="flex items-center gap-2 text-xs text-white/30">
-                <div className="w-1.5 h-1.5 rounded-full bg-[#22d3a8]" />
-                <span>CRM ready</span>
-              </div>
-              <div className="flex items-center gap-2 text-xs text-white/30">
-                <div className="w-1.5 h-1.5 rounded-full bg-[#8b5cf6]" />
-                <span>Free forever</span>
-              </div>
-            </div>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {features.map((f, i) => (
-              <div key={i} className={`motion-safe:animate-fade-up ${i === 0 ? "md:col-span-2" : ""}`}
-                style={{ animationDelay: `${0.1 + i * 0.08}s` }}>
-                <div className="group relative h-full">
-                  <div className="absolute inset-0 rounded-[2rem] opacity-0 group-hover:opacity-100 transition-opacity duration-700"
-                    style={{ background: `radial-gradient(600px circle at var(--mouse-x, 50%) var(--mouse-y, 50%), ${f.accent}15, transparent 40%)` }} />
-                  <div className="doppel-outer h-full relative">
-                    <div className="absolute top-0 left-0 right-0 h-px opacity-0 group-hover:opacity-100 transition-opacity duration-700"
-                      style={{ background: `linear-gradient(90deg, transparent, ${f.accent}60, transparent)` }} />
-                    <div className="doppel-inner p-8 md:p-10 h-full flex flex-col relative">
-                      <div className="flex items-start justify-between mb-6">
-                        <div className={`w-10 h-10 rounded-xl flex items-center justify-center text-white/60 group-hover:text-white transition-all duration-700 ease-[cubic-bezier(0.32,0.72,0,1)] ${i === 0 ? "md:w-12 md:h-12" : ""}`}
-                          style={{ background: `${f.accent}15`, boxShadow: `0 0 20px ${f.accent}10` }}>
-                          {f.icon}
-                        </div>
-                        <span className="text-[10px] font-mono font-medium px-2.5 py-1 rounded-full"
-                          style={{ color: f.accent, background: `${f.accent}10` }}>
-                          {f.metric}
-                        </span>
-                      </div>
-                      <h3 className={`font-display font-semibold tracking-tight mb-3 ${i === 0 ? "text-xl md:text-2xl" : "text-lg"}`}>{f.title}</h3>
-                      <p className="text-sm text-white/40 font-[425] leading-relaxed max-w-md">{f.desc}</p>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-
-          <div className="text-center mt-10 motion-safe:animate-fade-up" style={{ animationDelay: "0.6s" }}>
-            <Link href="/features"
-              className="inline-flex items-center gap-2 text-xs text-white/30 hover:text-white transition-all duration-500 px-6 py-3 rounded-full border border-white/5 hover:border-white/20">
-              View all features
-              <ArrowRight strokeWidth={1} className="w-3 h-3" />
-            </Link>
-          </div>
-        </div>
-      </section>
-
-      <section className="py-32 md:py-44 px-6 bg-white/[0.02]">
-        <div className="max-w-6xl mx-auto">
-          <div className="text-center mb-20 motion-safe:animate-fade-up">
-            <div className="eyebrow inline-flex mb-6">Testimonials</div>
-            <h2 className="font-display text-4xl md:text-6xl font-semibold tracking-tighter leading-[0.9]">
-              Trusted by SDR teams
-            </h2>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            {[
-              { quote: "I easily save hours per week, without a doubt. That's an exponential amount of time savings.", name: "Matt S.", role: "Marketing Manager", initials: "MS" },
-              { quote: "Just being conservative — our team is getting 33% time back from manual note-taking.", name: "Laura B.", role: "VP of Sales", initials: "LB" },
-              { quote: "Cut my post-call documentation from 15 minutes to 30 seconds. It's a superpower.", name: "Brandon S.", role: "Sales Enablement", initials: "BS" },
-            ].map((t, i) => (
-              <div key={i} className="motion-safe:animate-fade-up" style={{ animationDelay: `${0.1 + i * 0.1}s` }}>
-                <div className="doppel-outer h-full">
-                  <div className="doppel-inner p-8 h-full flex flex-col">
-                    <div className="flex gap-1 mb-5">
-                      {[...Array(5)].map((_, j) => (
-                        <svg key={j} className="w-3.5 h-3.5 text-[#5e6ad2]" viewBox="0 0 24 24" fill="currentColor">
-                          <path d="M12 2l3.1 6.3 6.9 1-5 4.9 1.2 6.8L12 17.8l-6.2 3.2L7 14.2 2 9.3l6.9-1L12 2z" />
-                        </svg>
-                      ))}
-                    </div>
-                    <p className="text-sm text-white/60 font-[425] leading-relaxed flex-1 mb-6">&ldquo;{t.quote}&rdquo;</p>
-                    <div className="flex items-center gap-3">
-                      <div className="w-8 h-8 rounded-full bg-white/5 flex items-center justify-center text-[11px] font-semibold text-white/40">{t.initials}</div>
-                      <div>
-                        <div className="text-xs font-medium">{t.name}</div>
-                        <div className="text-[11px] text-white/30">{t.role}</div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      <section className="py-32 md:py-44 px-6">
-        <div className="max-w-4xl mx-auto text-center motion-safe:animate-fade-up">
-          <div className="doppel-outer">
-            <div className="doppel-inner p-12 md:p-20 relative overflow-hidden">
-              <div className="radial-glow top-[-30%] left-1/2 -translate-x-1/2 bg-[#5e6ad2]" />
-              <div className="relative z-10">
-                <h2 className="font-display text-3xl md:text-5xl font-semibold tracking-tighter leading-[0.9] mb-4">
-                  Stop taking notes.<br />
-                  <span className="text-white/20">Start selling.</span>
-                </h2>
-                <p className="text-white/30 mb-10 max-w-md mx-auto text-sm">
-                  Join thousands of SDRs who eliminated manual note-taking. Free forever. No credit card.
-                </p>
-                {user ? (
-                  <button onClick={() => setShowApp(true)}
-                    className="btn-island flex items-center gap-3 bg-white text-[#050505] hover:bg-white/90 group mx-auto px-8 py-4">
-                    Open App
-                    <span className="icon-wrap bg-[#050505]/10 group-hover:bg-[#050505]/15">
-                      <ArrowRight strokeWidth={1.5} className="w-3.5 h-3.5" />
-                    </span>
-                  </button>
-                ) : (
-                  <SignInButton mode="modal">
-                    <button className="btn-island flex items-center gap-3 bg-white text-[#050505] hover:bg-white/90 group mx-auto px-8 py-4">
-                      Get Started Free
-                      <span className="icon-wrap bg-[#050505]/10 group-hover:bg-[#050505]/15">
-                        <ArrowRight strokeWidth={1.5} className="w-3.5 h-3.5" />
-                      </span>
-                    </button>
-                  </SignInButton>
-                )}
-              </div>
+                  <span className="leading-[20px]">Start a project</span>
+                </span>
+                <span className="w-7 h-7 sm:w-8 sm:h-8 bg-white rounded-full flex items-center justify-center transition-transform duration-500 ease-[cubic-bezier(0.25,0.1,0.25,1)] group-hover:-rotate-45">
+                  <ArrowRight size={16} className="text-[#F26522]" />
+                </span>
+              </Link>
+              {/* Partner Badge */}
+              <Link href="/integrations" className="group flex items-center gap-2 sm:gap-3 bg-white rounded-[4px] px-3 sm:px-4 py-2 sm:py-2.5 shadow-[0_2px_8px_rgba(0,0,0,0.08)] hover:shadow-[0_4px_16px_rgba(0,0,0,0.12)] transition-shadow duration-300 w-fit">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" className="w-5 h-5 sm:w-6 sm:h-6 fill-current text-[#E8704E] flex-shrink-0">
+                  <path d="m19.6 66.5 19.7-11 .3-1-.3-.5h-1l-3.3-.2-11.2-.3L14 53l-9.5-.5-2.4-.5L0 49l.2-1.5 2-1.3 2.9.2 6.3.5 9.5.6 6.9.4L38 49.1h1.6l.2-.7-.5-.4-.4-.4L29 41l-10.6-7-5.6-4.1-3-2-1.5-2-.6-4.2 2.7-3 3.7.3.9.2 3.7 2.9 8 6.1L37 36l1.5 1.2.6-.4.1-.3-.7-1.1L33 25l-6-10.4-2.7-4.3-.7-2.6c-.3-1-.4-2-.4-3l3-4.2L28 0l4.2.6L33.8 2l2.6 6 4.1 9.3L47 29.9l2 3.8 1 3.4.3 1h.7v-.5l.5-7.2 1-8.7 1-11.2.3-3.2 1.6-3.8 3-2L61 2.6l2 2.9-.3 1.8-1.1 7.7L59 27.1l-1.5 8.2h.9l1-1.1 4.1-5.4 6.9-8.6 3-3.5L77 13l2.3-1.8h4.3l3.1 4.7-1.4 4.9-4.4 5.6-3.7 4.7-5.3 7.1-3.2 5.7.3.4h.7l12-2.6 6.4-1.1 7.6-1.3 3.5 1.6.4 1.6-1.4 3.4-8.2 2-9.6 2-14.3 3.3-.2.1.2.3 6.4.6 2.8.2h6.8l12.6 1 3.3 2 1.9 2.7-.3 2-5.1 2.6-6.8-1.6-16-3.8-5.4-1.3h-.8v.4l4.6 4.5 8.3 7.5L89 80.1l.5 2.4-1.3 2-1.4-.2-9.2-7-3.6-3-8-6.8h-.5v.7l1.8 2.7 9.8 14.7.5 4.5-.7 1.4-2.6 1-2.7-.6-5.8-8-6-9-4.7-8.2-.5.4-2.9 30.2-1.3 1.5-3 1.2-2.5-2-1.4-3 1.4-6.2 1.6-8 1.3-6.4 1.2-7.9.7-2.6v-.2H49L43 72l-9 12.3-7.2 7.6-1.7.7-3-1.5.3-2.8L24 86l10-12.8 6-7.9 4-4.6-.1-.5h-.3L17.2 77.4l-4.7.6-2-2 .2-3 1-1 8-5.5Z" />
+                </svg>
+                <span className="text-[13px] sm:text-[14px] font-medium text-gray-900">Certified Partner</span>
+                <span className="text-[10px] sm:text-[11px] bg-gray-900 text-white px-1.5 sm:px-2 py-0.5 rounded font-medium">Featured</span>
+              </Link>
             </div>
           </div>
         </div>
-      </section>
-
+      </div>
       {showApp && <AppInterface onClose={() => setShowApp(false)} />}
+    </section>
+  );
+}
+
+function AboutSection() {
+  return (
+    <section className="bg-white pt-16 sm:pt-20 lg:pt-32 pb-12 sm:pb-16 lg:pb-24 overflow-hidden">
+      <div className="max-w-[1440px] mx-auto">
+        <div className="px-5 sm:px-8 lg:px-12">
+          <div className="flex items-center gap-3 mb-6 sm:mb-8">
+            <div className="w-6 h-6 sm:w-7 sm:h-7 rounded-full bg-gray-900 text-white flex items-center justify-center text-[11px] sm:text-[12px] font-semibold">1</div>
+            <span className="text-[12px] sm:text-[13px] font-medium border border-gray-200 rounded-full px-3 sm:px-4 py-1 sm:py-1.5">Introducing Axion</span>
+          </div>
+          <h2 className="font-medium leading-[1.12] tracking-[-0.02em] text-gray-900 mb-12 sm:mb-16 lg:mb-28"
+            style={{ fontSize: "clamp(1.5rem,4vw,3.2rem)" }}>
+            Strategy-led creatives, delivering<br />results in digital and beyond.
+          </h2>
+        </div>
+
+        {/* Mobile/Tablet */}
+        <div className="lg:hidden px-5 sm:px-8 lg:px-12">
+          <p className="text-[15px] leading-[1.6] font-medium text-gray-900 mb-6">
+            Through research, creative thinking and iteration we help growing brands realize their digital full potential.
+          </p>
+          <Link href="/features" className="group bg-[#F26522] hover:bg-[#e05a1a] text-white rounded-full pl-5 pr-2 py-2 inline-flex items-center gap-1.5 text-[13px] font-medium transition-colors duration-300 w-fit mb-6 sm:mb-8">
+            <span className="flex flex-col overflow-hidden h-[20px]">
+              <span className="transition-transform duration-500 ease-[cubic-bezier(0.25,0.1,0.25,1)] group-hover:-translate-y-1/2 leading-[20px]">About our studio</span>
+              <span className="leading-[20px]">About our studio</span>
+            </span>
+            <span className="w-7 h-7 bg-white rounded-full flex items-center justify-center transition-transform duration-500 ease-[cubic-bezier(0.25,0.1,0.25,1)] group-hover:-rotate-45">
+              <ArrowRight size={14} className="text-[#F26522]" />
+            </span>
+          </Link>
+          <div className="flex flex-col sm:flex-row gap-4 sm:gap-5">
+            <img
+              src="https://images.higgs.ai/?default=1&output=webp&url=https%3A%2F%2Fd8j0ntlcm91z4.cloudfront.net%2Fuser_38xzZboKViGWJOttwIXH07lWA1P%2Fhf_20260516_090123_74be96d4-9c1b-40cf-932a-96f4f4babed3.png&w=1280&q=85"
+              alt="Axion Studio workspace"
+              className="sm:w-[45%] aspect-[438/346] rounded-xl sm:rounded-2xl object-cover"
+            />
+            <img
+              src="https://images.higgs.ai/?default=1&output=webp&url=https%3A%2F%2Fd8j0ntlcm91z4.cloudfront.net%2Fuser_38xzZboKViGWJOttwIXH07lWA1P%2Fhf_20260516_090133_c157d30b-a99a-4477-bec1-a446149ec3f2.png&w=1280&q=85"
+              alt="Axion Studio creative work"
+              className="sm:w-[55%] aspect-[900/600] rounded-xl sm:rounded-2xl object-cover"
+            />
+          </div>
+        </div>
+
+        {/* Desktop */}
+        <div className="hidden lg:grid grid-cols-[26%_1fr_48%] items-end gap-6 xl:gap-8 px-5 sm:px-8 lg:px-12">
+          <div className="self-end">
+            <img
+              src="https://images.higgs.ai/?default=1&output=webp&url=https%3A%2F%2Fd8j0ntlcm91z4.cloudfront.net%2Fuser_38xzZboKViGWJOttwIXH07lWA1P%2Fhf_20260516_090123_74be96d4-9c1b-40cf-932a-96f4f4babed3.png&w=1280&q=85"
+              alt="Axion Studio workspace"
+              className="aspect-[438/346] rounded-2xl object-cover w-full"
+            />
+          </div>
+          <div className="self-start flex justify-end">
+            <div>
+              <p className="text-[16px] leading-[1.65] font-medium text-gray-900 whitespace-nowrap">
+                Through research, creative thinking<br />and iteration we help growing<br />brands realize their digital<br />full potential.
+              </p>
+              <Link href="/features" className="group bg-[#F26522] hover:bg-[#e05a1a] text-white rounded-full pl-5 pr-2 py-2 inline-flex items-center gap-1.5 text-[13px] font-medium transition-colors duration-300 w-fit mt-6">
+                <span className="flex flex-col overflow-hidden h-[20px]">
+                  <span className="transition-transform duration-500 ease-[cubic-bezier(0.25,0.1,0.25,1)] group-hover:-translate-y-1/2 leading-[20px]">About our studio</span>
+                  <span className="leading-[20px]">About our studio</span>
+                </span>
+                <span className="w-7 h-7 bg-white rounded-full flex items-center justify-center transition-transform duration-500 ease-[cubic-bezier(0.25,0.1,0.25,1)] group-hover:-rotate-45">
+                  <ArrowRight size={14} className="text-[#F26522]" />
+                </span>
+              </Link>
+            </div>
+          </div>
+          <div className="self-end">
+            <img
+              src="https://images.higgs.ai/?default=1&output=webp&url=https%3A%2F%2Fd8j0ntlcm91z4.cloudfront.net%2Fuser_38xzZboKViGWJOttwIXH07lWA1P%2Fhf_20260516_090133_c157d30b-a99a-4477-bec1-a446149ec3f2.png&w=1280&q=85"
+              alt="Axion Studio creative work"
+              className="aspect-[3/2] rounded-2xl object-cover w-full"
+            />
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function CaseStudiesSection() {
+  return (
+    <section className="bg-[#F5F5F5] pt-16 sm:pt-20 lg:pt-28 pb-16 sm:pb-20 lg:pb-28">
+      <div className="max-w-[1440px] mx-auto">
+        <div className="px-5 sm:px-8 lg:px-12">
+          <div className="flex items-center gap-3 mb-6 sm:mb-8">
+            <div className="w-6 h-6 sm:w-7 sm:h-7 rounded-full bg-gray-900 text-white flex items-center justify-center text-[11px] sm:text-[12px] font-semibold">2</div>
+            <span className="text-[12px] sm:text-[13px] font-medium border border-gray-300 rounded-full px-3 sm:px-4 py-1 sm:py-1.5">Featured client work</span>
+          </div>
+          <h2 className="font-medium leading-[1.08] tracking-[-0.03em] text-gray-900 mb-10 sm:mb-14 lg:mb-16"
+            style={{ fontSize: "clamp(1.75rem,7vw,4.2rem)" }}>
+            <span className="sm:hidden">Our projects</span>
+            <span className="hidden sm:inline" style={{ fontSize: "clamp(2.5rem,5vw,4.2rem)" }}>Our projects</span>
+          </h2>
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-5 sm:gap-6 lg:gap-7 px-5 sm:px-8 lg:px-12">
+          {/* Narrativ */}
+          <div className="group cursor-pointer">
+            <div className="relative aspect-[329/246] rounded-2xl overflow-hidden bg-[#1a1d2e]">
+              <video
+                src="https://d8j0ntlcm91z4.cloudfront.net/user_38xzZboKViGWJOttwIXH07lWA1P/hf_20260516_122702_390f5305-8719-41d5-ae80-d23ab3796c28.mp4"
+                autoPlay muted loop playsInline
+                className="w-full h-full object-cover"
+              />
+              <div className="absolute bottom-4 left-4">
+                <div className="h-9 w-9 group-hover:w-[148px] bg-white rounded-full flex items-center justify-start gap-2 px-2.5 transition-all duration-300 ease-in-out overflow-hidden">
+                  <span className="text-[13px] font-medium text-gray-900 whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-200 delay-100">Learn more</span>
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-[14px] h-[14px] text-gray-900 flex-shrink-0 -rotate-45 group-hover:rotate-0 transition-transform duration-300 ease-in-out">
+                    <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" />
+                    <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" />
+                  </svg>
+                </div>
+              </div>
+            </div>
+            <p className="text-[13px] leading-[14px] text-gray-600 mt-4">
+              Winner of Site of the Month 2025 - an interactive 3D showcase driving record engagement
+            </p>
+            <h3 className="text-[14px] sm:text-[15px] font-semibold text-gray-900 mt-1">Narrativ</h3>
+          </div>
+          {/* Luminar */}
+          <div className="group cursor-pointer">
+            <div className="relative aspect-square rounded-2xl overflow-hidden bg-[#6b6b6b]">
+              <video
+                src="https://d8j0ntlcm91z4.cloudfront.net/user_38xzZboKViGWJOttwIXH07lWA1P/hf_20260516_123323_f909c2b8-ff6c-4edf-882b-8ebcdbe389b5.mp4"
+                autoPlay muted loop playsInline
+                className="w-full h-full object-cover"
+              />
+              <div className="absolute bottom-4 left-4">
+                <div className="h-9 w-9 group-hover:w-[168px] bg-gray-900 rounded-full flex items-center justify-start gap-2 px-2.5 transition-all duration-300 ease-in-out overflow-hidden">
+                  <span className="text-[13px] font-medium text-white whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-200 delay-100">View case study</span>
+                  <ArrowRight size={14} className="text-white flex-shrink-0 -rotate-45 group-hover:rotate-0 transition-transform duration-300 ease-in-out" />
+                </div>
+              </div>
+            </div>
+            <p className="text-[13px] leading-[14px] text-gray-600 mt-4">
+              Transforming a dated platform into a conversion-focused brand experience
+            </p>
+            <h3 className="text-[14px] sm:text-[15px] font-semibold text-gray-900 mt-1">Luminar</h3>
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+export default function Home() {
+  return (
+    <main>
+      <Nav />
+      <HeroSection />
+      <AboutSection />
+      <CaseStudiesSection />
     </main>
   );
 }

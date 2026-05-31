@@ -3,6 +3,7 @@ import prisma from '@/lib/prisma';
 import { auth } from '@clerk/nextjs/server';
 import { canAccessCall, canManageCall } from '@/lib/call-access';
 import { getUserByClerkId } from '@/lib/get-user';
+import { logAuditAction } from '@/lib/audit-logger';
 
 export async function GET(req: Request, { params }: { params: { id: string } }) {
   try {
@@ -182,6 +183,11 @@ export async function DELETE(req: Request, { params }: { params: { id: string } 
     await prisma.speaker.deleteMany({ where: { callId: params.id } });
     await prisma.analytics.deleteMany({ where: { callId: params.id } });
     await prisma.call.delete({ where: { id: params.id } });
+
+    await logAuditAction(viewer.id, 'DELETE_CALL', params.id, 'Call', {
+      userId: call.userId,
+      teamId: call.teamId,
+    });
 
     return NextResponse.json({ success: true });
   } catch (error) {

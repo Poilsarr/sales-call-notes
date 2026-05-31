@@ -1,11 +1,12 @@
 import { observeOpenAI } from "langfuse";
+import { getSecret } from "@/lib/secrets";
 
 let _config: Record<string, string> | false | null = null;
 
 function getLangfuseConfig() {
   if (_config !== null) return _config;
-  const secretKey = process.env.LANGFUSE_SECRET_KEY;
-  const publicKey = process.env.LANGFUSE_PUBLIC_KEY;
+  const secretKey = getSecret("LANGFUSE_SECRET_KEY");
+  const publicKey = getSecret("LANGFUSE_PUBLIC_KEY");
   if (!secretKey || !publicKey) {
     _config = false;
     return null;
@@ -13,7 +14,7 @@ function getLangfuseConfig() {
   _config = {
     secretKey,
     publicKey,
-    baseUrl: process.env.LANGFUSE_BASE_URL || process.env.LANGFUSE_HOST || "https://cloud.langfuse.com",
+    baseUrl: getSecret("LANGFUSE_BASE_URL") || getSecret("LANGFUSE_HOST") || "https://cloud.langfuse.com",
   };
   return _config as Record<string, string>;
 }

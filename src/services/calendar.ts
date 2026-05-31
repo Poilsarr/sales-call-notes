@@ -12,6 +12,8 @@ export interface CalendarEvent {
   attendees?: string[];
 }
 
+import { getSecret } from "@/lib/secrets";
+
 export class CalendarService {
   private baseUrl = "https://www.googleapis.com/calendar/v3";
 
@@ -51,8 +53,8 @@ export class CalendarService {
   }
 
   async getAuthUrl() {
-    const clientId = process.env.GOOGLE_CLIENT_ID;
-    const redirectUri = `${process.env.NEXT_PUBLIC_APP_URL}/api/calendar/callback`;
+    const clientId = getSecret("GOOGLE_CLIENT_ID");
+    const redirectUri = `${getSecret("NEXT_PUBLIC_APP_URL")}/api/calendar/callback`;
     const scope = "https://www.googleapis.com/auth/calendar.events.readonly";
     return `https://accounts.google.com/o/oauth2/v2/auth?client_id=${clientId}&redirect_uri=${redirectUri}&response_type=code&scope=${scope}&access_type=offline`;
   }
@@ -63,9 +65,9 @@ export class CalendarService {
       headers: { "Content-Type": "application/x-www-form-urlencoded" },
       body: new URLSearchParams({
         code,
-        client_id: process.env.GOOGLE_CLIENT_ID!,
-        client_secret: process.env.GOOGLE_CLIENT_SECRET!,
-        redirect_uri: `${process.env.NEXT_PUBLIC_APP_URL}/api/calendar/callback`,
+        client_id: getSecret("GOOGLE_CLIENT_ID")!,
+        client_secret: getSecret("GOOGLE_CLIENT_SECRET")!,
+        redirect_uri: `${getSecret("NEXT_PUBLIC_APP_URL")}/api/calendar/callback`,
         grant_type: "authorization_code",
       }),
     });

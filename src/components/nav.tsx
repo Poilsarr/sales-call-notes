@@ -5,12 +5,42 @@ import { usePathname } from "next/navigation";
 import { useUser, SignInButton, UserButton } from "@clerk/nextjs";
 import { Show } from "@/components/show";
 import { useState, useEffect } from "react";
+import { ArrowRight, Clock, Menu, X } from "lucide-react";
 
 const links = [
-  { href: "/features", label: "Features" },
-  { href: "/integrations", label: "Integrations" },
+  { href: "/features", label: "Services" },
+  { href: "/integrations", label: "Tools" },
   { href: "/pricing", label: "Pricing" },
 ];
+
+function LiveClock() {
+  const [time, setTime] = useState("");
+
+  useEffect(() => {
+    function update() {
+      const now = new Date();
+      const london = now.toLocaleString("en-GB", {
+        timeZone: "Europe/London",
+        hour: "2-digit",
+        minute: "2-digit",
+        hour12: false,
+      });
+      setTime(london);
+    }
+    update();
+    const id = setInterval(update, 1000);
+    return () => clearInterval(id);
+  }, []);
+
+  if (!time) return null;
+
+  return (
+    <span className="hidden lg:inline-flex items-center gap-1 text-[13px] text-gray-600">
+      <Clock size={14} />
+      {time} in London
+    </span>
+  );
+}
 
 export default function Nav() {
   const pathname = usePathname();
@@ -20,103 +50,125 @@ export default function Nav() {
 
   useEffect(() => setMounted(true), []);
 
-  const toggle = () => setOpen((v) => !v);
-
   return (
     <>
-      <nav className="fixed top-0 left-0 right-0 z-40 flex justify-center px-4 pt-5">
-        <div className="fluid-island h-12 px-2 pl-5 flex items-center justify-between rounded-full w-full max-w-5xl transition-all duration-700 ease-[cubic-bezier(0.32,0.72,0,1)]">
-          <Link href="/" className="flex items-center gap-2.5 group cursor-pointer shrink-0">
-            <div className="w-6 h-6 rounded-lg bg-[#5e6ad2] rotate-45 flex items-center justify-center group-hover:rotate-[135deg] transition-all duration-700 ease-[cubic-bezier(0.32,0.72,0,1)]">
-              <svg className="w-3 h-3 text-white -rotate-45 group-hover:rotate-0 transition-all duration-700" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z" />
-              </svg>
-            </div>
-            <span className="font-display text-sm font-semibold tracking-tight">CallNote<span className="text-white/40 font-medium">Pro</span></span>
-          </Link>
-
-          <div className="hidden md:flex items-center gap-1">
-            {links.map((link) => (
-              <Link
-                key={link.href}
-                href={link.href}
-                className={`px-3.5 py-1.5 rounded-full text-[11px] font-medium tracking-wide transition-all duration-500 ease-[cubic-bezier(0.32,0.72,0,1)] ${
-                  pathname === link.href ? "text-white bg-white/10" : "text-white/40 hover:text-white hover:bg-white/5"
-                }`}
-              >
-                {link.label}
-              </Link>
-            ))}
-          </div>
-
-          <div className="hidden md:flex items-center gap-2">
-            <Show when="signed-out">
-              <SignInButton mode="modal">
-                <button className="px-3.5 py-1.5 rounded-full text-[11px] font-medium tracking-wide text-white/40 hover:text-white transition-all duration-500">Sign In</button>
-              </SignInButton>
-            </Show>
-            <Show when="signed-in">
-              <Link href="/dashboard" className="px-3.5 py-1.5 rounded-full text-[11px] font-medium tracking-wide text-white/40 hover:text-white transition-all duration-500">Dashboard</Link>
-              <Link href="/billing" className="px-3.5 py-1.5 rounded-full text-[11px] font-medium tracking-wide text-white/40 hover:text-white transition-all duration-500">Billing</Link>
-              <UserButton />
-            </Show>
-            <Link href="/" className="btn-island flex items-center gap-2 bg-white text-[#050505] hover:bg-white/90 group">
-              Launch App
-              <span className="icon-wrap bg-[#050505]/10 group-hover:bg-[#050505]/15">
-                <svg className="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
-                  <path d="M5 12h14M12 5l7 7-7 7" />
-                </svg>
-              </span>
+      <nav className="fixed top-0 left-0 right-0 z-40 flex justify-center px-3 sm:px-4 pt-4 sm:pt-5">
+        <div className="bg-white rounded-full p-[5px] flex items-center justify-between w-full max-w-[1440px] shadow-sm">
+          {/* Left */}
+          <div className="flex items-center gap-6">
+            <Link href="/" className="w-9 h-9 sm:w-10 sm:h-10 bg-gray-900 rounded-full flex items-center justify-center flex-shrink-0">
+              <span className="text-white font-bold tracking-tight" style={{ fontSize: "10px" }}>AX</span>
             </Link>
+            <div className="hidden md:flex items-center gap-6">
+              {links.map((link) => (
+                <Link
+                  key={link.href}
+                  href={link.href}
+                  className={`text-[14px] transition-colors duration-300 ${
+                    pathname === link.href ? "text-gray-900" : "text-gray-900 hover:text-gray-500"
+                  }`}
+                >
+                  {link.label}
+                </Link>
+              ))}
+            </div>
           </div>
 
-          <button onClick={toggle} className="md:hidden relative w-8 h-8 flex items-center justify-center">
-            <div className="relative w-5 h-4">
-              <span className={`absolute left-0 top-0 w-full h-[2px] bg-white/70 rounded-full transition-all duration-500 ease-[cubic-bezier(0.32,0.72,0,1)] ${open ? "top-1/2 -translate-y-1/2 rotate-45" : ""}`} />
-              <span className={`absolute left-0 top-1/2 -translate-y-1/2 w-full h-[2px] bg-white/70 rounded-full transition-all duration-300 ${open ? "opacity-0 scale-x-0" : "opacity-100"}`} />
-              <span className={`absolute left-0 bottom-0 w-full h-[2px] bg-white/70 rounded-full transition-all duration-500 ease-[cubic-bezier(0.32,0.72,0,1)] ${open ? "top-1/2 -translate-y-1/2 -rotate-45" : ""}`} />
-            </div>
-          </button>
-        </div>
-      </nav>
-
-      {mounted && (
-        <div
-          className={`fixed inset-0 z-30 transition-all duration-700 ease-[cubic-bezier(0.32,0.72,0,1)] ${
-            open ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none"
-          }`}
-        >
-          <div className="absolute inset-0 bg-[#050505]/90 backdrop-blur-3xl" onClick={() => setOpen(false)} />
-          <div className="relative z-10 flex flex-col items-center justify-center min-h-[100dvh] gap-6 px-6">
-            {links.map((link, i) => (
-              <Link
-                key={link.href}
-                href={link.href}
-                onClick={() => setOpen(false)}
-                className={`text-3xl font-display font-semibold tracking-tight transition-all duration-700 ease-[cubic-bezier(0.32,0.72,0,1)] ${
-                  open ? "translate-y-0 opacity-100" : "translate-y-12 opacity-0"
-                } ${pathname === link.href ? "text-white" : "text-white/30 hover:text-white/60"}`}
-                style={{ transitionDelay: `${150 + i * 100}ms` }}
-              >
-                {link.label}
-              </Link>
-            ))}
-            <div className={`h-px w-16 bg-white/10 my-4 transition-all duration-700 delay-400 ${open ? "opacity-100" : "opacity-0"}`} />
+          {/* Right Desktop */}
+          <div className="hidden md:flex items-center gap-4">
+            <span className="hidden lg:inline text-[13px] text-gray-600">Taking on projects for Q1 2026</span>
+            <LiveClock />
             <Show when="signed-out">
               <SignInButton mode="modal">
-                <button onClick={() => setOpen(false)}
-                  className={`text-sm text-white/40 hover:text-white transition-all duration-700 delay-[500ms] ${
-                    open ? "translate-y-0 opacity-100" : "translate-y-8 opacity-0"
-                  }`}>
+                <button className="text-[13px] text-gray-600 hover:text-gray-900 transition-colors duration-300 font-medium">
                   Sign In
                 </button>
               </SignInButton>
             </Show>
             <Show when="signed-in">
-              <Link href="/dashboard" onClick={() => setOpen(false)}
-                className={`text-sm text-white/40 hover:text-white transition-all duration-700 delay-[500ms] ${
-                  open ? "translate-y-0 opacity-100" : "translate-y-8 opacity-0"
-                }`}>
+              <Link href="/app" className="text-[13px] text-gray-600 hover:text-gray-900 transition-colors duration-300 font-medium">
+                Dashboard
+              </Link>
+              <UserButton />
+            </Show>
+            <Link href="/" className="group bg-gray-900 text-white text-[13px] font-medium rounded-full pl-5 pr-2 py-2 inline-flex items-center gap-1.5 transition-all duration-300">
+              <span className="flex flex-col overflow-hidden h-[20px]">
+                <span className="transition-transform duration-500 ease-[cubic-bezier(0.25,0.1,0.25,1)] group-hover:-translate-y-1/2 leading-[20px]">
+                  Start a project
+                </span>
+                <span className="leading-[20px]">Start a project</span>
+              </span>
+              <span className="w-6 h-6 bg-white rounded-full flex items-center justify-center transition-transform duration-500 ease-[cubic-bezier(0.25,0.1,0.25,1)] group-hover:-rotate-45">
+                <ArrowRight size={14} className="text-gray-900" />
+              </span>
+            </Link>
+          </div>
+
+          {/* Mobile Toggle */}
+          <button
+            onClick={() => setOpen(!open)}
+            className="md:hidden bg-gray-900 rounded-full p-2 text-white"
+            aria-label={open ? "Close menu" : "Open menu"}
+          >
+            {open ? <X size={18} /> : <Menu size={18} />}
+          </button>
+        </div>
+      </nav>
+
+      {/* Mobile Menu Overlay */}
+      {mounted && (
+        <div
+          className={`fixed inset-0 z-50 flex flex-col justify-end transition-opacity duration-500 ease-[cubic-bezier(0.32,0.72,0,1)] ${
+            open ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none"
+          }`}
+        >
+          <div className="absolute inset-0 bg-black/60" onClick={() => setOpen(false)} />
+          <div
+            className={`relative bg-white rounded-2xl mx-3 mb-3 p-6 transition-transform duration-500 ease-[cubic-bezier(0.32,0.72,0,1)] ${
+              open ? "translate-y-0" : "translate-y-full"
+            }`}
+          >
+            <div className="mb-6">
+              <span className="inline-flex items-center gap-1 text-[13px] text-gray-600">
+                <Clock size={14} />
+                <span id="mobile-clock" />
+              </span>
+            </div>
+            <nav className="flex flex-col gap-4 mb-8">
+              {links.map((link) => (
+                <Link
+                  key={link.href}
+                  href={link.href}
+                  onClick={() => setOpen(false)}
+                  className="text-[28px] leading-[32px] font-medium text-gray-900"
+                >
+                  {link.label}
+                </Link>
+              ))}
+              <Link href="/" onClick={() => setOpen(false)} className="text-[28px] leading-[32px] font-medium text-gray-900">
+                Blog
+              </Link>
+              <Link href="/" onClick={() => setOpen(false)} className="text-[28px] leading-[32px] font-medium text-gray-900">
+                Contact
+              </Link>
+            </nav>
+            <Link
+              href="/"
+              onClick={() => setOpen(false)}
+              className="group bg-gray-900 text-white rounded-full pl-5 pr-2 py-2 inline-flex items-center gap-1.5 text-[13px] font-medium"
+            >
+              <span className="flex flex-col overflow-hidden h-[20px]">
+                <span className="transition-transform duration-500 ease-[cubic-bezier(0.25,0.1,0.25,1)] group-hover:-translate-y-1/2 leading-[20px]">
+                  Start a project
+                </span>
+                <span className="leading-[20px]">Start a project</span>
+              </span>
+              <span className="w-6 h-6 bg-white rounded-full flex items-center justify-center transition-transform duration-500 ease-[cubic-bezier(0.25,0.1,0.25,1)] group-hover:-rotate-45">
+                <ArrowRight size={14} className="text-gray-900" />
+              </span>
+            </Link>
+            <Show when="signed-in">
+              <Link href="/app" onClick={() => setOpen(false)} className="block mt-4 text-[13px] text-gray-600 font-medium">
                 Dashboard
               </Link>
             </Show>

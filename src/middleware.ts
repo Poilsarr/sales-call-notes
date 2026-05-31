@@ -19,7 +19,24 @@ export default clerkMiddleware(async (auth, req: NextRequest) => {
       return NextResponse.redirect(new URL("/sign-in", req.url));
     }
   }
-  return NextResponse.next();
+
+  const response = NextResponse.next();
+
+  // Dynamic CSP: allow-list core services
+  const csp = [
+    "default-src 'self'",
+    "script-src 'self' 'unsafe-inline' 'unsafe-eval' *.clerk.com",
+    "style-src 'self' 'unsafe-inline'",
+    "img-src 'self' data: *.clerk.com *.paddle.com images.higgs.ai",
+    "media-src 'self' *.cloudfront.net",
+    "connect-src 'self' *.clerk.com *.openai.com *.groq.com *.paddle.com",
+    "frame-ancestors 'none'",
+    "form-action 'self'",
+  ].join('; ');
+
+  response.headers.set('Content-Security-Policy', csp);
+
+  return response;
 });
 
 export const config = {

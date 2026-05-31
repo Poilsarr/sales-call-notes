@@ -1,12 +1,14 @@
 import { NextRequest, NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
 import { getPaddleClient } from "@/lib/paddle";
+import { getSecret } from "@/lib/secrets";
+import { logAuditAction } from "@/lib/audit-logger";
 
 export async function POST(req: NextRequest) {
   try {
     const rawBody = await req.text();
     const signature = req.headers.get("paddle-signature") || "";
-    const secret = process.env.PADDLE_WEBHOOK_SECRET || "";
+    const secret = getSecret("PADDLE_WEBHOOK_SECRET") || "";
 
     const paddle = getPaddleClient();
     let event: any;
@@ -59,6 +61,13 @@ export async function POST(req: NextRequest) {
           },
         });
 
+        await logAuditAction("SYSTEM", "PADDLE_WEBHOOK_SYNC", customerId, "User", {
+          eventType,
+          subscriptionId,
+          plan,
+          status: dbStatus
+        });
+
         break;
       }
 
@@ -72,6 +81,7 @@ export async function POST(req: NextRequest) {
             credits: 5,
           },
         });
+        await logAuditAction("SYSTEM", "PADDLE_WEBHOOK_CANCEL", subscriptionId, "User", { eventType });
         break;
       }
 
@@ -84,6 +94,7 @@ export async function POST(req: NextRequest) {
             where: { paddleCustomerId: customerId },
             data: { credits: 999 },
           });
+          await logAuditAction("SYSTEM", "PADDLE_TRANSACTION_CREDITS", customerId, "User", { eventType });
         }
         break;
       }

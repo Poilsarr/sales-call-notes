@@ -1,80 +1,27 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef } from "react";
 import Link from "next/link";
-import { useRouter, useSearchParams } from "next/navigation";
 import Nav from "@/components/nav";
-import {
-  Sparkles,
-  Building2,
-  BarChart3,
-  MessageSquare,
-  Calendar,
-  Globe,
-  Code,
-  Layers,
-  Share2,
-  Users,
-  Download,
-  ArrowRight,
-  CheckCircle2,
-  Loader2,
-  Link2,
-  Unplug,
-} from "lucide-react";
-import { toast } from "sonner";
+import { ArrowRight, Sparkles, Figma, Globe, Code, ShoppingCart, MessageSquare, BarChart3, Database, Zap, Layout, PenTool, Monitor } from "lucide-react";
 
-type SupportedProvider = "hubspot" | "salesforce" | "teams";
-
-type ProviderStatus = {
-  connected: boolean;
-  enabled: boolean;
-  syncedAt: string | null;
-};
-
-const integrations = [
-  { icon: <Building2 strokeWidth={1} className="w-6 h-6" />, name: "HubSpot", desc: "Sync call notes and action items directly to HubSpot CRM deals and contacts.", status: "Live", provider: "hubspot" as const },
-  { icon: <BarChart3 strokeWidth={1} className="w-6 h-6" />, name: "Salesforce", desc: "Push transcripts, summaries, and tasks to Salesforce opportunities.", status: "Live", provider: "salesforce" as const },
-  { icon: <MessageSquare strokeWidth={1} className="w-6 h-6" />, name: "Microsoft Teams", desc: "Create Planner tasks and send channel messages with call summaries.", status: "Live", provider: "teams" as const },
-  { icon: <Calendar strokeWidth={1} className="w-6 h-6" />, name: "Google Calendar", desc: "Auto-join meetings and transcribe from your calendar events.", status: "Coming Soon" },
-  { icon: <Calendar strokeWidth={1} className="w-6 h-6" />, name: "Outlook Calendar", desc: "Sync meetings from Microsoft 365 calendar for automatic capture.", status: "Coming Soon" },
-  { icon: <Globe strokeWidth={1} className="w-6 h-6" />, name: "Zoom", desc: "Record and transcribe Zoom meetings directly from the platform.", status: "Coming Soon" },
-  { icon: <Globe strokeWidth={1} className="w-6 h-6" />, name: "Google Meet", desc: "Live transcription and note-taking for Google Meet calls.", status: "Coming Soon" },
-  { icon: <Layers strokeWidth={1} className="w-6 h-6" />, name: "Slack", desc: "Post call summaries and action items to Slack channels automatically.", status: "Coming Soon" },
-  { icon: <Share2 strokeWidth={1} className="w-6 h-6" />, name: "Zapier", desc: "Connect CallNote Pro to 5,000+ apps via Zapier workflows.", status: "Coming Soon" },
-  { icon: <Code strokeWidth={1} className="w-6 h-6" />, name: "REST API", desc: "Build custom integrations with our full-featured REST API.", status: "Business+" },
-  { icon: <Download strokeWidth={1} className="w-6 h-6" />, name: "Webhooks", desc: "Receive real-time events when calls are transcribed and analyzed.", status: "Business+" },
-  { icon: <Users strokeWidth={1} className="w-6 h-6" />, name: "SSO / SAML 2.0", desc: "Enterprise single sign-on via SAML 2.0, Google, or Microsoft.", status: "Enterprise" },
+const tools = [
+  { icon: Figma, name: "Figma", desc: "Industry-standard design tool for UI/UX, prototyping, and design systems collaboration.", status: "Expert", color: "#a855f7" },
+  { icon: Globe, name: "Webflow", desc: "Visual web development platform for building responsive, CMS-powered websites without code.", status: "Expert", color: "#2563eb" },
+  { icon: Code, name: "Next.js", desc: "React framework for production-grade web applications with SSR, SSG, and optimal performance.", status: "Preferred", color: "#111111" },
+  { icon: ShoppingCart, name: "Shopify", desc: "Leading e-commerce platform — we design and build custom storefronts for maximum conversion.", status: "Expert", color: "#059669" },
+  { icon: PenTool, name: "Framer", desc: "Design-to-code platform for interactive prototypes and production-ready landing pages.", status: "Expert", color: "#2563eb" },
+  { icon: MessageSquare, name: "Slack", desc: "Real-time client communication, project updates, and feedback loops built into our workflow.", status: "Tool", color: "#7c3aed" },
+  { icon: BarChart3, name: "Hotjar", desc: "Heat mapping, session recording, and user feedback tools for data-informed design decisions.", status: "Tool", color: "#ea580c" },
+  { icon: Database, name: "Sanity", desc: "Headless CMS for structured content management with real-time collaboration features.", status: "Preferred", color: "#dc2626" },
+  { icon: Layout, name: "Tailwind CSS", desc: "Utility-first CSS framework for rapid, consistent, and responsive interface development.", status: "Preferred", color: "#0891b2" },
+  { icon: Zap, name: "Vercel", desc: "Deployment platform with edge functions, analytics, and instant rollbacks for web projects.", status: "Tool", color: "#111111" },
+  { icon: Monitor, name: "After Effects", desc: "Motion graphics and visual effects for brand films, product demos, and animated content.", status: "Expert", color: "#6366f1" },
+  { icon: Layout, name: "Framer Motion", desc: "Production-ready animation library for React — micro-interactions, page transitions, and gestures.", status: "Preferred", color: "#ca8a04" },
 ];
 
 export default function IntegrationsPage() {
   const observerRef = useRef<IntersectionObserver | null>(null);
-  const handledCallbackRef = useRef(false);
-  const router = useRouter();
-  const searchParams = useSearchParams();
-  const [providerStates, setProviderStates] = useState<Record<SupportedProvider, ProviderStatus>>({
-    hubspot: { connected: false, enabled: false, syncedAt: null },
-    salesforce: { connected: false, enabled: false, syncedAt: null },
-    teams: { connected: false, enabled: false, syncedAt: null },
-  });
-  const [providerLoading, setProviderLoading] = useState<Record<SupportedProvider, boolean>>({
-    hubspot: false,
-    salesforce: false,
-    teams: false,
-  });
-
-  const loadProviderStates = async () => {
-    try {
-      const response = await fetch("/api/integrations", { cache: "no-store" });
-      const data = await response.json();
-      if (!response.ok) {
-        throw new Error(data.error || "Failed to load integrations");
-      }
-      setProviderStates(data.integrations);
-    } catch (error) {
-      toast.error(error instanceof Error ? error.message : "Could not load integrations");
-    }
-  };
 
   useEffect(() => {
     observerRef.current = new IntersectionObserver(
@@ -94,211 +41,73 @@ export default function IntegrationsPage() {
     return () => observerRef.current?.disconnect();
   }, []);
 
-  useEffect(() => {
-    void loadProviderStates();
-  }, []);
-
-  useEffect(() => {
-    const code = searchParams.get("code");
-    const provider = searchParams.get("state");
-    const error = searchParams.get("error");
-    const errorDescription = searchParams.get("error_description");
-
-    if (handledCallbackRef.current) {
-      return;
-    }
-
-    if (error) {
-      handledCallbackRef.current = true;
-      toast.error(errorDescription || `Connection failed: ${error}`);
-      router.replace("/integrations");
-      return;
-    }
-
-    if (!code || (provider !== "hubspot" && provider !== "salesforce" && provider !== "teams")) {
-      return;
-    }
-
-    handledCallbackRef.current = true;
-    setProviderLoading((current) => ({ ...current, [provider]: true }));
-
-    void (async () => {
-      try {
-        const response = await fetch("/api/integrations", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ provider, code }),
-        });
-        const data = await response.json();
-        if (!response.ok) {
-          throw new Error(data.error || "Failed to save integration");
-        }
-        await loadProviderStates();
-        toast.success(`${integrations.find((item) => item.provider === provider)?.name || "Provider"} connected`);
-      } catch (callbackError) {
-        toast.error(callbackError instanceof Error ? callbackError.message : "Could not complete connection");
-      } finally {
-        setProviderLoading((current) => ({ ...current, [provider]: false }));
-        router.replace("/integrations");
-      }
-    })();
-  }, [router, searchParams]);
-
-  const connectProvider = async (provider: SupportedProvider) => {
-    setProviderLoading((current) => ({ ...current, [provider]: true }));
-    try {
-      const response = await fetch(`/api/integrations?action=auth-url&provider=${provider}`);
-      const data = await response.json();
-      if (!response.ok) {
-        throw new Error(data.error || "Failed to start OAuth flow");
-      }
-      window.location.assign(data.authUrl);
-    } catch (error) {
-      toast.error(error instanceof Error ? error.message : "Could not start OAuth flow");
-      setProviderLoading((current) => ({ ...current, [provider]: false }));
-    }
-  };
-
-  const disconnectProvider = async (provider: SupportedProvider) => {
-    setProviderLoading((current) => ({ ...current, [provider]: true }));
-    try {
-      const response = await fetch("/api/integrations", {
-        method: "DELETE",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ provider }),
-      });
-      const data = await response.json();
-      if (!response.ok) {
-        throw new Error(data.error || "Failed to disconnect integration");
-      }
-      await loadProviderStates();
-      toast.success(`${integrations.find((item) => item.provider === provider)?.name || "Provider"} disconnected`);
-    } catch (error) {
-      toast.error(error instanceof Error ? error.message : "Could not disconnect integration");
-    } finally {
-      setProviderLoading((current) => ({ ...current, [provider]: false }));
-    }
-  };
-
   return (
-    <main className="min-h-screen bg-[#050505] text-white overflow-hidden selection:bg-[#5e6ad2]/30">
+    <main className="min-h-screen bg-white text-gray-900">
       <Nav />
 
-      <section className="relative min-h-[60dvh] flex flex-col items-center justify-center px-6 pt-32 pb-24 mesh-bg">
-        <div className="radial-glow top-[-10%] left-[-5%] bg-[#5e6ad2]" />
-        <div className="radial-glow bottom-[-20%] right-[-10%] bg-[#22d3a8]" />
-        <div className="relative z-10 max-w-4xl mx-auto text-center">
-          <div className="eyebrow inline-flex items-center gap-2 mb-8 reveal"
-            style={{ transition: "all 0.8s cubic-bezier(0.25,1,0.5,1) 0.1s", transform: "translateY(16px)", opacity: 0, filter: "blur(4px)" }}>
-            <Sparkles strokeWidth={1} className="w-3 h-3" /> Connect your stack
+      <section className="pt-36 sm:pt-40 pb-20 sm:pb-28 px-5 sm:px-8 lg:px-12">
+        <div className="max-w-[1440px] mx-auto">
+          <div className="max-w-3xl">
+            <div className="flex items-center gap-3 mb-6 sm:mb-8 reveal"
+              style={{ transition: "all 0.8s cubic-bezier(0.25,1,0.5,1) 0.1s", transform: "translateY(16px)", opacity: 0, filter: "blur(4px)" }}>
+              <div className="w-6 h-6 sm:w-7 sm:h-7 rounded-full bg-gray-900 text-white flex items-center justify-center text-[11px] sm:text-[12px] font-semibold">4</div>
+              <span className="text-[12px] sm:text-[13px] font-medium border border-gray-200 rounded-full px-3 sm:px-4 py-1 sm:py-1.5">Our toolkit</span>
+            </div>
+            <h1 className="font-medium leading-[1.08] tracking-[-0.03em] text-gray-900 mb-6 reveal"
+              style={{ fontSize: "clamp(2rem,5vw,4.2rem)", transition: "all 0.8s cubic-bezier(0.25,1,0.5,1) 0.2s", transform: "translateY(24px)", opacity: 0, filter: "blur(6px)" }}>
+              Tools we use to<br />bring ideas to life.
+            </h1>
+            <p className="text-[16px] sm:text-[17px] leading-[1.6] text-gray-500 max-w-xl reveal"
+              style={{ transition: "all 0.8s cubic-bezier(0.25,1,0.5,1) 0.3s", transform: "translateY(16px)", opacity: 0 }}>
+              We select the best tools for every project — from design to deployment, we use technology that delivers.
+            </p>
           </div>
-          <h1 className="font-display text-5xl md:text-7xl lg:text-8xl font-semibold tracking-tighter leading-[0.85] mb-6 reveal"
-            style={{ transition: "all 0.8s cubic-bezier(0.25,1,0.5,1) 0.2s", transform: "translateY(24px)", opacity: 0, filter: "blur(6px)" }}>
-            Works where<br />
-            <span className="text-white/20">you already work</span>
-          </h1>
-          <p className="text-white/30 max-w-xl mx-auto text-sm reveal"
-            style={{ transition: "all 0.8s cubic-bezier(0.25,1,0.5,1) 0.3s", transform: "translateY(16px)", opacity: 0 }}>
-            CallNote Pro integrates with your CRM, calendar, and communication tools.
-          </p>
         </div>
       </section>
 
-      <section className="pb-32 md:pb-44 px-6">
-        <div className="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {integrations.map((int, i) => (
-            <div key={int.name} className="reveal"
+      <section className="pb-24 sm:pb-32 px-5 sm:px-8 lg:px-12">
+        <div className="max-w-[1440px] mx-auto grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5">
+          {tools.map((tool, i) => (
+            <div key={tool.name} className="reveal"
               style={{ transition: `all 0.8s cubic-bezier(0.25,1,0.5,1) ${0.05 + i * 0.05}s`, transform: "translateY(24px)", opacity: 0, filter: "blur(4px)" }}>
-              <div className="doppel-outer h-full group">
-                <div className="doppel-inner p-6 h-full flex flex-col">
-                  <div className="flex items-start justify-between mb-4">
-                    <div className="w-11 h-11 rounded-xl bg-white/5 flex items-center justify-center text-white/40 group-hover:text-white group-hover:bg-white/10 transition-all duration-700">{int.icon}</div>
-                    <span className={`text-[10px] font-medium px-2.5 py-0.5 rounded-full ${
-                      int.status === "Live" ? "bg-green-500/10 text-green-400" :
-                      int.status === "Coming Soon" ? "bg-yellow-500/10 text-yellow-400" :
-                      int.status === "Business+" ? "bg-[#5e6ad2]/10 text-[#5e6ad2]" :
-                      "bg-white/10 text-white/50"
-                    }`}>{int.status}</span>
+              <div className="bg-white rounded-2xl p-6 sm:p-7 border border-gray-100 hover:border-gray-200 hover:shadow-lg transition-all duration-500 h-full flex flex-col group">
+                <div className="flex items-start justify-between mb-4">
+                  <div className="w-11 h-11 rounded-xl flex items-center justify-center" style={{ background: `${tool.color}10` }}>
+                    <tool.icon strokeWidth={1.5} className="w-5 h-5" style={{ color: tool.color }} />
                   </div>
-                  <h3 className="font-display font-semibold tracking-tight text-base mb-2">{int.name}</h3>
-                  <p className="text-sm text-white/40 font-[425] leading-relaxed">{int.desc}</p>
-                  {int.provider ? (
-                    <div className="mt-6 pt-5 border-t border-white/5 flex items-center justify-between gap-3">
-                      <div className="min-w-0">
-                        {providerStates[int.provider].connected ? (
-                          <>
-                            <div className="flex items-center gap-2 text-sm text-green-400">
-                              <CheckCircle2 className="w-4 h-4" />
-                              <span>Connected ✓</span>
-                            </div>
-                            <p className="text-[11px] text-white/30 mt-1">
-                              {providerStates[int.provider].syncedAt
-                                ? `Updated ${new Date(providerStates[int.provider].syncedAt as string).toLocaleDateString()}`
-                                : "Credentials saved"}
-                            </p>
-                          </>
-                        ) : (
-                          <>
-                            <div className="flex items-center gap-2 text-sm text-white/70">
-                              <Link2 className="w-4 h-4" />
-                              <span>OAuth required</span>
-                            </div>
-                            <p className="text-[11px] text-white/30 mt-1">
-                              Connect to save access tokens in your team integration settings.
-                            </p>
-                          </>
-                        )}
-                      </div>
-
-                      {providerStates[int.provider].connected ? (
-                        <button
-                          onClick={() => disconnectProvider(int.provider)}
-                          disabled={providerLoading[int.provider]}
-                          className="shrink-0 inline-flex items-center gap-2 px-4 py-2 rounded-full border border-white/10 text-[11px] font-medium text-white/70 hover:text-white hover:bg-white/5 transition-all disabled:opacity-50"
-                        >
-                          {providerLoading[int.provider] ? (
-                            <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                          ) : (
-                            <Unplug className="w-3.5 h-3.5" />
-                          )}
-                          Disconnect
-                        </button>
-                      ) : (
-                        <button
-                          onClick={() => connectProvider(int.provider)}
-                          disabled={providerLoading[int.provider]}
-                          className="shrink-0 inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white text-[#050505] text-[11px] font-semibold hover:bg-white/90 transition-all disabled:opacity-50"
-                        >
-                          {providerLoading[int.provider] ? (
-                            <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                          ) : (
-                            <ArrowRight className="w-3.5 h-3.5" />
-                          )}
-                          Connect
-                        </button>
-                      )}
-                    </div>
-                  ) : null}
+                  <span className={`text-[10px] font-medium px-2.5 py-0.5 rounded-full ${
+                    tool.status === "Expert" ? "bg-[#F26522]/10 text-[#F26522]" :
+                    tool.status === "Preferred" ? "bg-blue-50 text-blue-600" :
+                    "bg-gray-100 text-gray-500"
+                  }`}>{tool.status}</span>
                 </div>
+                <h3 className="text-[15px] font-semibold text-gray-900 mb-2">{tool.name}</h3>
+                <p className="text-[13px] leading-[1.5] text-gray-500 flex-1">{tool.desc}</p>
               </div>
             </div>
           ))}
         </div>
+      </section>
 
-        <div className="max-w-4xl mx-auto mt-16 text-center reveal"
-          style={{ transition: "all 0.8s cubic-bezier(0.25,1,0.5,1) 0.6s", transform: "translateY(16px)", opacity: 0 }}>
-          <div className="doppel-outer">
-            <div className="doppel-inner p-12 md:p-16">
-              <h2 className="font-display text-2xl md:text-3xl font-semibold tracking-tight mb-4">Need a custom integration?</h2>
-              <p className="text-white/30 mb-8 text-sm">We support custom integrations via our REST API and webhooks.</p>
-              <Link href="/"
-                className="btn-island inline-flex items-center gap-3 bg-white text-[#050505] hover:bg-white/90 group">
-                Get Started Free
-                <span className="icon-wrap bg-[#050505]/10 group-hover:bg-[#050505]/15">
-                  <ArrowRight strokeWidth={1.5} className="w-3.5 h-3.5" />
-                </span>
-              </Link>
-            </div>
+      <section className="bg-[#F5F5F5] py-20 sm:py-28 px-5 sm:px-8 lg:px-12">
+        <div className="max-w-[1440px] mx-auto">
+          <div className="max-w-4xl mx-auto text-center">
+            <h2 className="font-medium leading-[1.12] tracking-[-0.02em] text-gray-900 mb-4"
+              style={{ fontSize: "clamp(1.5rem,4vw,2.8rem)" }}>
+              Have a tool we should add?
+            </h2>
+            <p className="text-[15px] leading-[1.6] text-gray-500 mb-8 max-w-lg mx-auto">
+              We&apos;re always exploring new tools. If your stack uses something we haven&apos;t listed, let&apos;s talk.
+            </p>
+            <Link href="/" className="group bg-[#F26522] hover:bg-[#e05a1a] text-white rounded-full pl-5 pr-2 py-2 inline-flex items-center gap-1.5 text-[13px] font-medium transition-colors duration-300">
+              <span className="flex flex-col overflow-hidden h-[20px]">
+                <span className="transition-transform duration-500 ease-[cubic-bezier(0.25,0.1,0.25,1)] group-hover:-translate-y-1/2 leading-[20px]">Start a project</span>
+                <span className="leading-[20px]">Start a project</span>
+              </span>
+              <span className="w-7 h-7 bg-white rounded-full flex items-center justify-center transition-transform duration-500 ease-[cubic-bezier(0.25,0.1,0.25,1)] group-hover:-rotate-45">
+                <ArrowRight size={14} className="text-[#F26522]" />
+              </span>
+            </Link>
           </div>
         </div>
       </section>

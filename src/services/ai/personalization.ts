@@ -1,13 +1,14 @@
 import OpenAI from 'openai';
 import { CallAnalysis } from '@/types';
 import { wrapClient } from '@/lib/langfuse';
+import { getSecret } from '@/lib/secrets';
 
 export class PersonalizationService {
   private openai: OpenAI;
 
   constructor() {
     this.openai = wrapClient(new OpenAI({
-      apiKey: process.env.OPENAI_API_KEY,
+      apiKey: getSecret("OPENAI_API_KEY"),
       timeout: 300000,
       maxRetries: 2
     }));

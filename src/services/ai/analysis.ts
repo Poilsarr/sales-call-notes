@@ -3,16 +3,17 @@ import { CallAnalysis, TranscriptionSegment } from '@/types';
 import fs from 'fs';
 import path from 'path';
 import { wrapClient } from '@/lib/langfuse';
+import { getSecret } from '@/lib/secrets';
 
 export class AnalysisService {
   private openai: OpenAI;
   private groqOpenai: OpenAI | null = null;
 
   constructor() {
-    this.openai = wrapClient(new OpenAI({ apiKey: process.env.OPENAI_API_KEY, timeout: 300000, maxRetries: 2 }));
-    if (process.env.GROQ_API_KEY) {
+    this.openai = wrapClient(new OpenAI({ apiKey: getSecret("OPENAI_API_KEY"), timeout: 300000, maxRetries: 2 }));
+    if (getSecret("GROQ_API_KEY")) {
       this.groqOpenai = wrapClient(new OpenAI({
-        apiKey: process.env.GROQ_API_KEY,
+        apiKey: getSecret("GROQ_API_KEY"),
         baseURL: 'https://api.groq.com/openai/v1',
         timeout: 300000,
         maxRetries: 2

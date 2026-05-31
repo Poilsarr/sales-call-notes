@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { auth } from '@clerk/nextjs/server';
 import prisma from '@/lib/prisma';
 import { getUserByClerkId } from '@/lib/get-user';
+import { logAuditAction } from '@/lib/audit-logger';
 
 export async function GET() {
   try {
@@ -134,6 +135,8 @@ export async function POST(req: Request) {
       data: { teamId: team.id, teamRole: 'MEMBER' },
     });
 
+    await logAuditAction(inviter.id, 'INVITE_MEMBER', targetUser.id, 'User', { teamId: team.id, email: email });
+
     const updatedTeam = await prisma.team.findUnique({
       where: { id: team.id },
       include: {
@@ -182,6 +185,8 @@ export async function DELETE(req: Request) {
       where: { id: memberId },
       data: { teamId: null, teamRole: 'MEMBER' },
     });
+
+    await logAuditAction(user.id, 'REMOVE_MEMBER', memberId, 'User', { teamId: user.teamId });
 
     return NextResponse.json({ message: 'Member removed' });
   } catch (error: any) {

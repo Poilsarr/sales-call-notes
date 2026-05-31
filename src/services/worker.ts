@@ -1,9 +1,10 @@
 import { Worker } from "bullmq";
 import IORedis from "ioredis";
+import { getSecret } from "@/lib/secrets";
 
 const connection = new IORedis({
-  host: process.env.REDIS_HOST || "localhost",
-  port: Number(process.env.REDIS_PORT) || 6379,
+  host: getSecret("REDIS_HOST") || "localhost",
+  port: Number(getSecret("REDIS_PORT")) || 6379,
   maxRetriesPerRequest: null,
 });
 
@@ -51,7 +52,7 @@ const analysisWorker = new Worker("analysis", async (job) => {
 
 const crmSyncWorker = new Worker("crm-sync", async (job) => {
   const { callId, provider, accessToken } = job.data;
-  const response = await fetch(`${process.env.NEXT_PUBLIC_APP_URL}/api/calls/${callId}/sync-crm`, {
+  const response = await fetch(`${getSecret("NEXT_PUBLIC_APP_URL")}/api/calls/${callId}/sync-crm`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ provider, accessToken }),

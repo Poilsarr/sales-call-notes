@@ -26,6 +26,7 @@ model User {
   calls               Call[]
   assignedCalls       Call[]   @relation("callAssignments")
   comments            CallComment[]
+  auditLogs           AuditLog[]
   createdAt           DateTime @default(now())
   updatedAt           DateTime @updatedAt
 
@@ -233,5 +234,20 @@ model CallComment {
 
   @@index([callId])
   @@index([userId])
+  @@index([createdAt])
+}
+
+model AuditLog {
+  id         String   @id @default(cuid())
+  userId     String
+  user       User     @relation(fields: [userId], references: [id], onDelete: SetNull)
+  action     String
+  entityId   String?
+  entityType String?
+  metadata   Json?
+  createdAt  DateTime @default(now())
+
+  @@index([userId])
+  @@index([action])
   @@index([createdAt])
 }

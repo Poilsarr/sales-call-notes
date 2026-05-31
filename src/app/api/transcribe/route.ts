@@ -4,6 +4,7 @@ import { writeFile, unlink } from "fs/promises";
 import path from "path";
 import { spawn } from "child_process";
 import { detectAudioType } from "@/lib/audio-types";
+import { getSecret } from "@/lib/secrets";
 
 export async function POST(req: NextRequest) {
   const { userId } = await auth();
@@ -28,7 +29,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Invalid audio file format. Please upload a valid audio file.' }, { status: 400 });
     }
 
-    const tempDir = process.env.TEMP || "/tmp";
+    const tempDir = getSecret("TEMP") || "/tmp";
     const origExt = audioFile.name.split(".").pop()?.toLowerCase() || '';
     const safeExt = ['wav', 'mp3', 'm4a', 'ogg', 'webm', 'flac'].includes(origExt) ? origExt : 'wav';
     const audioPath = path.join(tempDir, `audio_${Date.now()}.${safeExt}`);

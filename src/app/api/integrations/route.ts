@@ -3,6 +3,7 @@ import { NextRequest, NextResponse } from "next/server";
 
 import prisma from "@/lib/prisma";
 import { getUserByClerkId } from "@/lib/get-user";
+import { getSecret } from "@/lib/secrets";
 
 type SupportedProvider = "hubspot" | "salesforce" | "teams";
 
@@ -37,7 +38,7 @@ function isSupportedProvider(value: string | null): value is SupportedProvider {
 }
 
 function getAppUrl(req: NextRequest) {
-  return (process.env.NEXT_PUBLIC_APP_URL || req.nextUrl.origin).replace(/\/$/, "");
+  return (getSecret("NEXT_PUBLIC_APP_URL") || req.nextUrl.origin).replace(/\/$/, "");
 }
 
 function getRedirectUri(req: NextRequest) {
@@ -45,11 +46,11 @@ function getRedirectUri(req: NextRequest) {
 }
 
 function getSalesforceAuthBase() {
-  return (process.env.SALESFORCE_AUTH_URL || "https://login.salesforce.com").replace(/\/$/, "");
+  return (getSecret("SALESFORCE_AUTH_URL") || "https://login.salesforce.com").replace(/\/$/, "");
 }
 
 function getMicrosoftTenant() {
-  return process.env.MICROSOFT_TENANT_ID || process.env.TEAMS_TENANT_ID || "common";
+  return getSecret("MICROSOFT_TENANT_ID") || getSecret("TEAMS_TENANT_ID") || "common";
 }
 
 async function getCurrentUser() {
@@ -114,7 +115,7 @@ function serializeStatuses(
 }
 
 function buildHubSpotAuthUrl(req: NextRequest) {
-  const clientId = process.env.HUBSPOT_CLIENT_ID;
+  const clientId = getSecret("HUBSPOT_CLIENT_ID");
   if (!clientId) {
     throw new Error("Missing HUBSPOT_CLIENT_ID");
   }
@@ -131,7 +132,7 @@ function buildHubSpotAuthUrl(req: NextRequest) {
 }
 
 function buildSalesforceAuthUrl(req: NextRequest) {
-  const clientId = process.env.SALESFORCE_CLIENT_ID;
+  const clientId = getSecret("SALESFORCE_CLIENT_ID");
   if (!clientId) {
     throw new Error("Missing SALESFORCE_CLIENT_ID");
   }
@@ -148,7 +149,7 @@ function buildSalesforceAuthUrl(req: NextRequest) {
 }
 
 function buildTeamsAuthUrl(req: NextRequest) {
-  const clientId = process.env.TEAMS_CLIENT_ID || process.env.MICROSOFT_CLIENT_ID;
+  const clientId = getSecret("TEAMS_CLIENT_ID") || getSecret("MICROSOFT_CLIENT_ID");
   if (!clientId) {
     throw new Error("Missing TEAMS_CLIENT_ID or MICROSOFT_CLIENT_ID");
   }
@@ -166,8 +167,8 @@ function buildTeamsAuthUrl(req: NextRequest) {
 }
 
 async function exchangeHubSpotCode(code: string, req: NextRequest) {
-  const clientId = process.env.HUBSPOT_CLIENT_ID;
-  const clientSecret = process.env.HUBSPOT_CLIENT_SECRET;
+  const clientId = getSecret("HUBSPOT_CLIENT_ID");
+  const clientSecret = getSecret("HUBSPOT_CLIENT_SECRET");
   if (!clientId || !clientSecret) {
     throw new Error("Missing HubSpot OAuth credentials");
   }
@@ -209,8 +210,8 @@ async function exchangeHubSpotCode(code: string, req: NextRequest) {
 }
 
 async function exchangeSalesforceCode(code: string, req: NextRequest) {
-  const clientId = process.env.SALESFORCE_CLIENT_ID;
-  const clientSecret = process.env.SALESFORCE_CLIENT_SECRET;
+  const clientId = getSecret("SALESFORCE_CLIENT_ID");
+  const clientSecret = getSecret("SALESFORCE_CLIENT_SECRET");
   if (!clientId || !clientSecret) {
     throw new Error("Missing Salesforce OAuth credentials");
   }
@@ -252,8 +253,8 @@ async function exchangeSalesforceCode(code: string, req: NextRequest) {
 }
 
 async function exchangeTeamsCode(code: string, req: NextRequest) {
-  const clientId = process.env.TEAMS_CLIENT_ID || process.env.MICROSOFT_CLIENT_ID;
-  const clientSecret = process.env.TEAMS_CLIENT_SECRET || process.env.MICROSOFT_CLIENT_SECRET;
+  const clientId = getSecret("TEAMS_CLIENT_ID") || getSecret("MICROSOFT_CLIENT_ID");
+  const clientSecret = getSecret("TEAMS_CLIENT_SECRET") || getSecret("MICROSOFT_CLIENT_SECRET");
   if (!clientId || !clientSecret) {
     throw new Error("Missing Microsoft Teams OAuth credentials");
   }

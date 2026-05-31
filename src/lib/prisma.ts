@@ -1,19 +1,20 @@
 import { PrismaClient } from '@prisma/client';
+import { getSecret } from './secrets';
 
 const assembleDbUrl = () => {
-  const user = process.env.DB_USER;
-  const password = process.env.DB_PASSWORD;
-  const host = process.env.DB_HOST;
-  const name = process.env.DB_NAME;
-  const port = process.env.DB_PORT || '5432';
+  const user = getSecret('DB_USER');
+  const password = getSecret('DB_PASSWORD');
+  const host = getSecret('DB_HOST');
+  const name = getSecret('DB_NAME');
+  const port = getSecret('DB_PORT') || '5432';
 
   if (user && password && host && name) {
     return `postgresql://${user}:${password}@${host}:${port}/${name}?sslmode=require`;
   }
-  return process.env.DATABASE_URL;
+  return getSecret('DATABASE_URL');
 };
 
-if (process.env.DB_USER && process.env.DB_PASSWORD) {
+if (getSecret('DB_USER') && getSecret('DB_PASSWORD')) {
   process.env.DATABASE_URL = assembleDbUrl() || '';
 }
 

@@ -1,5 +1,6 @@
 import { OpenAI } from 'openai';
 import { wrapClient } from '@/lib/langfuse';
+import { getSecret } from '@/lib/secrets';
 
 export interface TranscriptionSegment {
   speaker: string;
@@ -17,8 +18,8 @@ export interface TranscriptionResult {
 
 export class TranscriptionService {
   async transcribe(file: File): Promise<TranscriptionResult> {
-    const openAIKey = process.env.OPENAI_API_KEY;
-    const groqKey = process.env.GROQ_API_KEY;
+    const openAIKey = getSecret("OPENAI_API_KEY");
+    const groqKey = getSecret("GROQ_API_KEY");
 
     if (openAIKey) {
       return this.transcribeWithOpenAI(file, openAIKey);
