@@ -35,9 +35,9 @@ export function AppSidebar() {
       <div className="p-6">
         <Link href="/" className="flex items-center gap-2.5">
           <div className="w-8 h-8 bg-gray-900 rounded-full flex items-center justify-center">
-            <span className="text-white font-bold text-[9px] tracking-tight">AX</span>
+            <span className="text-white font-bold text-[9px] tracking-tight">CP</span>
           </div>
-          <span className="text-[15px] font-semibold tracking-tight text-gray-900">Axion Studio</span>
+          <span className="text-[15px] font-semibold tracking-tight text-gray-900">CallNote Pro</span>
         </Link>
       </div>
       

@@ -2,37 +2,35 @@ import { SignUp } from "@clerk/nextjs";
 
 export default function SignUpPage() {
   return (
-    <div className="min-h-screen bg-linear-black flex items-center justify-center p-6">
-      <div className="w-full max-w-md">
-        <div className="text-center mb-10">
-          <div className="w-10 h-10 bg-linear-indigo rounded-lg rotate-45 mx-auto mb-4 flex items-center justify-center">
-            <div className="w-4 h-4 bg-white rounded-sm -rotate-45" />
+    <main className="min-h-screen bg-[#EFEFEF] flex items-center justify-center px-4 py-20">
+      <div className="w-full max-w-[400px]">
+        <div className="text-center mb-8">
+          <div className="w-10 h-10 bg-gray-900 rounded-full flex items-center justify-center mx-auto mb-4">
+            <span className="text-white text-[11px] font-bold tracking-tight">CP</span>
           </div>
-          <h1 className="text-2xl font-medium tracking-tight text-white">Create account</h1>
-          <p className="text-white/40 text-sm mt-1">Free for SDRs. No credit card required.</p>
+          <h1 className="text-[20px] font-semibold tracking-tight text-gray-900">Create your account</h1>
+          <p className="text-[13px] text-gray-500 mt-1">Start your free trial — no credit card needed</p>
         </div>
         <SignUp
           appearance={{
             elements: {
               rootBox: "w-full",
-              card: "bg-white/5 backdrop-blur-xl border border-white/10 shadow-2xl rounded-2xl",
-              headerTitle: "text-white text-lg",
-              headerSubtitle: "text-white/40",
-              socialButtonsBlockButton: "bg-white/10 border border-white/20 text-white hover:bg-white/20 rounded-xl py-3",
-              socialButtonsBlockButtonText: "text-white font-medium",
-              dividerLine: "bg-white/10",
-              dividerText: "text-white/40",
-              formFieldLabel: "text-white/60",
-              formFieldInput: "bg-white/5 border-white/10 text-white rounded-xl",
-              footerActionText: "text-white/40",
-              footerActionLink: "text-linear-indigo",
-              formButtonPrimary: "bg-linear-indigo hover:bg-linear-indigo/80 text-white rounded-xl",
+              card: "shadow-none bg-white rounded-2xl border border-gray-200 p-6",
+              headerTitle: "hidden",
+              headerSubtitle: "hidden",
+              socialButtonsBlockButton: "bg-white border border-gray-200 hover:bg-gray-50 text-gray-900 text-[13px] font-medium rounded-full h-10",
+              socialButtonsBlockButtonText: "text-gray-900",
+              dividerLine: "bg-gray-200",
+              dividerText: "text-gray-400 text-[11px]",
+              formFieldLabel: "text-gray-700 text-[12px] font-medium",
+              formFieldInput: "bg-white border border-gray-200 rounded-xl text-[13px] text-gray-900 h-10 px-4 focus:border-[#F26522] focus:ring-1 focus:ring-[#F26522]",
+              formButtonPrimary: "bg-[#F26522] hover:bg-[#e05a1a] text-white rounded-full text-[13px] font-medium h-10",
+              footerActionLink: "text-[#F26522] hover:text-[#e05a1a] text-[12px]",
+              footerActionText: "text-gray-500 text-[12px]",
             },
           }}
-          signInUrl="/sign-in"
-          afterSignUpUrl="/"
         />
       </div>
-    </div>
+    </main>
   );
 }
