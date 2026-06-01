@@ -8,8 +8,8 @@ import { useState, useEffect } from "react";
 import { ArrowRight, Clock, Menu, X } from "lucide-react";
 
 const links = [
-  { href: "/features", label: "Services" },
-  { href: "/integrations", label: "Tools" },
+  { href: "/features", label: "Features" },
+  { href: "/integrations", label: "Integrations" },
   { href: "/pricing", label: "Pricing" },
 ];
 
@@ -57,7 +57,7 @@ export default function Nav() {
           {/* Left */}
           <div className="flex items-center gap-6">
             <Link href="/" className="w-9 h-9 sm:w-10 sm:h-10 bg-gray-900 rounded-full flex items-center justify-center flex-shrink-0">
-              <span className="text-white font-bold tracking-tight" style={{ fontSize: "10px" }}>AX</span>
+              <span className="text-white font-bold tracking-tight" style={{ fontSize: "10px" }}>CP</span>
             </Link>
             <div className="hidden md:flex items-center gap-6">
               {links.map((link) => (
@@ -76,7 +76,7 @@ export default function Nav() {
 
           {/* Right Desktop */}
           <div className="hidden md:flex items-center gap-4">
-            <span className="hidden lg:inline text-[13px] text-gray-600">Taking on projects for Q1 2026</span>
+            <span className="hidden lg:inline text-[13px] text-gray-600">Serving 500+ SDR teams</span>
             <LiveClock />
             <Show when="signed-out">
               <SignInButton mode="modal">
@@ -91,12 +91,12 @@ export default function Nav() {
               </Link>
               <UserButton />
             </Show>
-            <Link href="/" className="group bg-gray-900 text-white text-[13px] font-medium rounded-full pl-5 pr-2 py-2 inline-flex items-center gap-1.5 transition-all duration-300">
+            <Link href="/sign-up" className="group bg-gray-900 text-white text-[13px] font-medium rounded-full pl-5 pr-2 py-2 inline-flex items-center gap-1.5 transition-all duration-300">
               <span className="flex flex-col overflow-hidden h-[20px]">
                 <span className="transition-transform duration-500 ease-[cubic-bezier(0.25,0.1,0.25,1)] group-hover:-translate-y-1/2 leading-[20px]">
-                  Start a project
+                  Start free trial
                 </span>
-                <span className="leading-[20px]">Start a project</span>
+                <span className="leading-[20px]">Start free trial</span>
               </span>
               <span className="w-6 h-6 bg-white rounded-full flex items-center justify-center transition-transform duration-500 ease-[cubic-bezier(0.25,0.1,0.25,1)] group-hover:-rotate-45">
                 <ArrowRight size={14} className="text-gray-900" />
@@ -145,23 +145,23 @@ export default function Nav() {
                   {link.label}
                 </Link>
               ))}
-              <Link href="/" onClick={() => setOpen(false)} className="text-[28px] leading-[32px] font-medium text-gray-900">
-                Blog
+              <Link href="/features" onClick={() => setOpen(false)} className="text-[28px] leading-[32px] font-medium text-gray-900">
+                Features
               </Link>
-              <Link href="/" onClick={() => setOpen(false)} className="text-[28px] leading-[32px] font-medium text-gray-900">
-                Contact
+              <Link href="/integrations" onClick={() => setOpen(false)} className="text-[28px] leading-[32px] font-medium text-gray-900">
+                Integrations
               </Link>
             </nav>
             <Link
-              href="/"
+              href="/sign-up"
               onClick={() => setOpen(false)}
               className="group bg-gray-900 text-white rounded-full pl-5 pr-2 py-2 inline-flex items-center gap-1.5 text-[13px] font-medium"
             >
               <span className="flex flex-col overflow-hidden h-[20px]">
                 <span className="transition-transform duration-500 ease-[cubic-bezier(0.25,0.1,0.25,1)] group-hover:-translate-y-1/2 leading-[20px]">
-                  Start a project
+                  Start free trial
                 </span>
-                <span className="leading-[20px]">Start a project</span>
+                <span className="leading-[20px]">Start free trial</span>
               </span>
               <span className="w-6 h-6 bg-white rounded-full flex items-center justify-center transition-transform duration-500 ease-[cubic-bezier(0.25,0.1,0.25,1)] group-hover:-rotate-45">
                 <ArrowRight size={14} className="text-gray-900" />

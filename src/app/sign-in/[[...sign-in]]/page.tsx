@@ -2,35 +2,35 @@ import { SignIn } from "@clerk/nextjs";
 
 export default function SignInPage() {
   return (
-    <div className="min-h-screen bg-gray-50 flex items-center justify-center p-6">
+    <div className="min-h-screen bg-linear-black flex items-center justify-center p-6">
       <div className="w-full max-w-md">
         <div className="text-center mb-10">
-          <div className="w-10 h-10 bg-gray-900 rounded-full mx-auto mb-4 flex items-center justify-center">
-            <span className="text-white font-bold text-[10px] tracking-tight">AX</span>
+          <div className="w-10 h-10 bg-linear-indigo rounded-lg rotate-45 mx-auto mb-4 flex items-center justify-center">
+            <div className="w-4 h-4 bg-white rounded-sm -rotate-45" />
           </div>
-          <h1 className="text-2xl font-medium tracking-tight text-gray-900">Welcome back</h1>
-          <p className="text-gray-400 text-sm mt-1">Sign in to Axion Studio</p>
+          <h1 className="text-2xl font-medium tracking-tight text-white">Welcome back</h1>
+          <p className="text-white/40 text-sm mt-1">Sign in to CallNote Pro</p>
         </div>
         <SignIn
           appearance={{
             elements: {
               rootBox: "w-full",
-              card: "bg-white border border-gray-200 shadow-lg rounded-2xl",
-              headerTitle: "text-gray-900 text-lg",
-              headerSubtitle: "text-gray-400",
-              socialButtonsBlockButton: "bg-white border border-gray-200 text-gray-700 hover:bg-gray-50 rounded-xl py-3",
-              socialButtonsBlockButtonText: "text-gray-700 font-medium",
-              dividerLine: "bg-gray-200",
-              dividerText: "text-gray-400",
-              formFieldLabel: "text-gray-600",
-              formFieldInput: "bg-white border-gray-200 text-gray-900 rounded-xl",
-              footerActionText: "text-gray-400",
-              footerActionLink: "text-[#F26522]",
-              formButtonPrimary: "bg-gray-900 hover:bg-gray-800 text-white rounded-xl",
+              card: "bg-white/5 backdrop-blur-xl border border-white/10 shadow-2xl rounded-2xl",
+              headerTitle: "text-white text-lg",
+              headerSubtitle: "text-white/40",
+              socialButtonsBlockButton: "bg-white/10 border border-white/20 text-white hover:bg-white/20 rounded-xl py-3",
+              socialButtonsBlockButtonText: "text-white font-medium",
+              dividerLine: "bg-white/10",
+              dividerText: "text-white/40",
+              formFieldLabel: "text-white/60",
+              formFieldInput: "bg-white/5 border-white/10 text-white rounded-xl",
+              footerActionText: "text-white/40",
+              footerActionLink: "text-linear-indigo",
+              formButtonPrimary: "bg-linear-indigo hover:bg-linear-indigo/80 text-white rounded-xl",
             },
           }}
           signUpUrl="/sign-up"
-          afterSignInUrl="/app"
+          afterSignInUrl="/"
         />
       </div>
     </div>

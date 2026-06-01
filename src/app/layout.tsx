@@ -19,8 +19,8 @@ const geistMono = localFont({
 });
 
 export const metadata: Metadata = {
-  title: "Axion Studio — Digital Design Agency",
-  description: "Strategy-led creatives crafting digital experiences for brands ready to dominate their category online.",
+  title: "CallNote Pro — AI Sales Call Notes for SDRs",
+  description: "Upload your call recording. Get summary, action items, and CRM-ready notes in seconds. Built for the modern SDR.",
   manifest: "/manifest.json",
   icons: {
     icon: [
@@ -33,13 +33,13 @@ export const metadata: Metadata = {
     ],
   },
   openGraph: {
-    title: "Axion Studio — Digital Design Agency",
-    description: "Strategy-led creatives crafting digital experiences for brands ready to dominate their category online.",
-    siteName: "Axion Studio",
+    title: "CallNote Pro — AI Sales Call Notes for SDRs",
+    description: "Upload your call recording. Get summary, action items, and CRM-ready notes in seconds. Built for the modern SDR.",
+    siteName: "CallNote Pro",
     type: "website",
     locale: "en_US",
   },
-  appleWebApp: { capable: true, title: "Axion Studio", statusBarStyle: "default" },
+  appleWebApp: { capable: true, title: "CallNote Pro", statusBarStyle: "default" },
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
