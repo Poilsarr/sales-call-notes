@@ -27,9 +27,9 @@ export default clerkMiddleware(async (auth, req: NextRequest) => {
     "default-src 'self'",
     "script-src 'self' 'unsafe-inline' 'unsafe-eval' *.clerk.com",
     "style-src 'self' 'unsafe-inline'",
-    "img-src 'self' data: *.clerk.com *.paddle.com images.higgs.ai",
+    "img-src 'self' data: *.clerk.com *.paddle.com",
     "media-src 'self' *.cloudfront.net",
-    "connect-src 'self' *.clerk.com *.openai.com *.groq.com *.paddle.com",
+    "connect-src 'self' *.clerk.com *.openai.com *.groq.com *.paddle.com *.vercel.com vitals.vercel-insights.com",
     "frame-ancestors 'none'",
     "form-action 'self'",
   ].join('; ');

@@ -178,7 +178,7 @@ export default function TeamPage() {
         )}
 
         {isAdmin && (
-          <div className="p-6 rounded-2xl linear-surface linear-border mb-6">
+          <div className="p-6 rounded-2xl bg-linear-surface border border-linear-secondary mb-6">
             <h2 className="text-sm font-medium mb-4">Invite member</h2>
             <div className="flex gap-2">
               <input
@@ -204,7 +204,7 @@ export default function TeamPage() {
           <SummaryCard label="Assigned calls" value={teamAnalytics.assignedCalls} />
         </div>
 
-        <div className="p-6 rounded-2xl linear-surface linear-border">
+        <div className="p-6 rounded-2xl bg-linear-surface border border-linear-secondary">
           <h2 className="text-sm font-medium mb-4">Members</h2>
           <div className="space-y-2">
             {currentUserMember && (
@@ -265,7 +265,7 @@ export default function TeamPage() {
           </div>
         </div>
 
-        <div className="p-6 rounded-2xl linear-surface linear-border mt-6">
+        <div className="p-6 rounded-2xl bg-linear-surface border border-linear-secondary mt-6">
           <h2 className="text-sm font-medium mb-4">Shared Calls</h2>
           <div className="space-y-3">
             {sharedCalls.length === 0 ? (
@@ -301,7 +301,7 @@ export default function TeamPage() {
 
 function SummaryCard({ label, value }: { label: string; value: string | number }) {
   return (
-    <div className="rounded-2xl linear-surface linear-border px-4 py-5">
+    <div className="rounded-2xl bg-linear-surface border border-linear-secondary px-4 py-5">
       <div className="text-[11px] uppercase tracking-widest text-white/35 mb-2">{label}</div>
       <div className="text-2xl font-semibold text-white">{value}</div>
     </div>

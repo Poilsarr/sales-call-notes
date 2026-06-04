@@ -55,7 +55,7 @@ export default function SettingsPage() {
         <h1 className="text-3xl font-medium tracking-tight mb-10">Settings</h1>
 
         <div className="space-y-6">
-          <div className="p-6 rounded-2xl linear-surface linear-border">
+          <div className="p-6 rounded-2xl bg-linear-surface border border-linear-secondary">
             <div className="flex items-start justify-between mb-6">
               <div>
                 <div className="flex items-center gap-3 mb-2">
@@ -90,7 +90,7 @@ export default function SettingsPage() {
             )}
           </div>
 
-          <div className="p-6 rounded-2xl linear-surface linear-border">
+          <div className="p-6 rounded-2xl bg-linear-surface border border-linear-secondary">
             <div className="flex items-center gap-3 mb-4">
               <Brain className="w-5 h-5 text-linear-indigo" />
               <h2 className="text-lg font-medium">AI Meeting Assistant</h2>
@@ -136,7 +136,7 @@ export default function SettingsPage() {
             )}
           </div>
 
-          <div className="p-6 rounded-2xl linear-surface linear-border">
+          <div className="p-6 rounded-2xl bg-linear-surface border border-linear-secondary">
             <div className="flex items-center gap-3 mb-4">
               <Link2 className="w-5 h-5 text-linear-indigo" />
               <h2 className="text-lg font-medium">Integrations</h2>

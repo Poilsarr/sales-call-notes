@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect } from "react";
 import { useUser, SignInButton } from "@clerk/nextjs";
 import dynamic from "next/dynamic";
 import Nav from "@/components/nav";

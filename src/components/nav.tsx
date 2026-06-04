@@ -13,7 +13,7 @@ const links = [
   { href: "/pricing", label: "Pricing" },
 ];
 
-function LiveClock() {
+function LiveClock({ mobileId }: { mobileId?: string }) {
   const [time, setTime] = useState("");
 
   useEffect(() => {
@@ -26,11 +26,15 @@ function LiveClock() {
         hour12: false,
       });
       setTime(london);
+      if (mobileId) {
+        const el = document.getElementById(mobileId);
+        if (el) el.textContent = london;
+      }
     }
     update();
     const id = setInterval(update, 1000);
     return () => clearInterval(id);
-  }, []);
+  }, [mobileId]);
 
   if (!time) return null;
 
@@ -145,12 +149,6 @@ export default function Nav() {
                   {link.label}
                 </Link>
               ))}
-              <Link href="/features" onClick={() => setOpen(false)} className="text-[28px] leading-[32px] font-medium text-gray-900">
-                Features
-              </Link>
-              <Link href="/integrations" onClick={() => setOpen(false)} className="text-[28px] leading-[32px] font-medium text-gray-900">
-                Integrations
-              </Link>
             </nav>
             <Link
               href="/sign-up"
@@ -171,6 +169,13 @@ export default function Nav() {
               <Link href="/app" onClick={() => setOpen(false)} className="block mt-4 text-[13px] text-gray-600 font-medium">
                 Dashboard
               </Link>
+            </Show>
+            <Show when="signed-out">
+              <SignInButton mode="modal">
+                <button className="block mt-4 text-[13px] text-gray-600 font-medium">
+                  Sign In
+                </button>
+              </SignInButton>
             </Show>
           </div>
         </div>

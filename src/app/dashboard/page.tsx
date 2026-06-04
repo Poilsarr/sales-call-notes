@@ -169,7 +169,7 @@ export default function DashboardPage() {
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
-          <div className="lg:col-span-2 p-6 rounded-2xl linear-surface linear-border">
+          <div className="lg:col-span-2 p-6 rounded-2xl bg-linear-surface border border-linear-secondary">
             <h3 className="text-xs font-medium text-white/40 uppercase tracking-widest mb-4">Call Signals</h3>
             <div className="grid grid-cols-3 gap-4">
               <SignalBar label="Budget" count={data.signals.budgetSignals} total={data.totalCalls} icon={<DollarSign className="w-3.5 h-3.5" />} />
@@ -177,7 +177,7 @@ export default function DashboardPage() {
               <SignalBar label="Decision Maker" count={data.signals.dmSignals} total={data.totalCalls} icon={<Users className="w-3.5 h-3.5" />} />
             </div>
           </div>
-          <div className="p-6 rounded-2xl linear-surface linear-border">
+          <div className="p-6 rounded-2xl bg-linear-surface border border-linear-secondary">
             <h3 className="text-xs font-medium text-white/40 uppercase tracking-widest mb-4">Sentiment</h3>
             <div className="space-y-3">
               <SentimentRow label="Positive" count={data.sentimentCounts.positive} color="text-green-400" icon={<ArrowUp className="w-3 h-3" />} />
@@ -188,14 +188,14 @@ export default function DashboardPage() {
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
-          <div className="p-6 rounded-2xl linear-surface linear-border">
+          <div className="p-6 rounded-2xl bg-linear-surface border border-linear-secondary">
             <h3 className="text-xs font-medium text-white/40 uppercase tracking-widest mb-4">Conversation Flow</h3>
             <div className="grid grid-cols-2 gap-4">
               <StatCard icon={<AlertTriangle className="w-4 h-4" />} label="Interruptions" value={String(data.conversationSignals.totalInterruptions)} />
               <StatCard icon={<Lightbulb className="w-4 h-4" />} label="Questions Asked" value={String(data.conversationSignals.totalQuestionsAsked)} />
             </div>
           </div>
-          <div className="p-6 rounded-2xl linear-surface linear-border">
+          <div className="p-6 rounded-2xl bg-linear-surface border border-linear-secondary">
             <h3 className="text-xs font-medium text-white/40 uppercase tracking-widest mb-4">Speaker Leaderboard</h3>
             <div className="space-y-3">
               {data.speakerLeaderboard.length === 0 ? (
@@ -218,7 +218,7 @@ export default function DashboardPage() {
           </div>
         </div>
 
-        <div className="p-6 rounded-2xl linear-surface linear-border mb-8">
+        <div className="p-6 rounded-2xl bg-linear-surface border border-linear-secondary mb-8">
           <h3 className="text-xs font-medium text-white/40 uppercase tracking-widest mb-4">Recent Calls</h3>
           <div className="space-y-2">
             {data.recentCalls.map(call => (
@@ -256,7 +256,7 @@ export default function DashboardPage() {
 
 function StatCard({ icon, label, value, accent }: { icon: React.ReactNode; label: string; value: string; accent?: string }) {
   return (
-    <div className="p-5 rounded-2xl linear-surface linear-border">
+    <div className="p-5 rounded-2xl bg-linear-surface border border-linear-secondary">
       <div className="flex items-center gap-2 mb-3">
         <span className="text-white/40">{icon}</span>
         <span className="text-[11px] font-medium text-white/40 uppercase tracking-wider">{label}</span>
