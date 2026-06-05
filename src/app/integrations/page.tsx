@@ -17,6 +17,7 @@ type ProviderStatus = {
   connected: boolean;
   enabled: boolean;
   syncedAt: string | null;
+  configured: boolean;
   error?: string;
 };
 
@@ -41,9 +42,9 @@ function IntegrationsContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [providerStates, setProviderStates] = useState<Record<SupportedProvider, ProviderStatus>>({
-    hubspot: { connected: false, enabled: false, syncedAt: null },
-    salesforce: { connected: false, enabled: false, syncedAt: null },
-    teams: { connected: false, enabled: false, syncedAt: null },
+    hubspot: { connected: false, enabled: false, syncedAt: null, configured: false },
+    salesforce: { connected: false, enabled: false, syncedAt: null, configured: false },
+    teams: { connected: false, enabled: false, syncedAt: null, configured: false },
   });
   const [providerLoading, setProviderLoading] = useState<Record<SupportedProvider, boolean>>({
     hubspot: false,
@@ -138,6 +139,10 @@ function IntegrationsContent() {
   }, [router, code, providerParam, searchParams]);
 
   const connectProvider = async (provider: SupportedProvider) => {
+    if (!providerStates[provider].configured) {
+      toast.error("OAuth credentials are not configured for this provider yet.");
+      return;
+    }
     setProviderLoading((current) => ({ ...current, [provider]: true }));
     setProviderStates((prev) => ({
       ...prev,
@@ -171,7 +176,7 @@ function IntegrationsContent() {
       if (!response.ok) throw new Error(data.error || "Failed to disconnect integration");
       setProviderStates((prev) => ({
         ...prev,
-        [provider]: { connected: false, enabled: false, syncedAt: null, error: undefined },
+        [provider]: { ...prev[provider], connected: false, enabled: false, syncedAt: null, error: undefined },
       }));
       toast.success(`${integrations.find((item) => item.provider === provider)?.name || "Provider"} disconnected`);
     } catch (error) {
@@ -209,89 +214,107 @@ function IntegrationsContent() {
       {/* Integrations Grid */}
       <section className="py-12 sm:py-16 lg:py-20 px-5 sm:px-8 lg:px-12">
         <div className="max-w-[1440px] mx-auto grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {integrations.map((int, i) => (
-            <div key={int.name} className="reveal" style={{ transitionDelay: `${i * 0.04}s` }}>
-              <div className="doppel-outer h-full group">
-                <div className="doppel-inner p-6 h-full flex flex-col">
-                  <div className="flex items-start justify-between mb-4">
-                    <div className="w-11 h-11 rounded-xl bg-gray-100 flex items-center justify-center text-gray-500 group-hover:text-gray-900 group-hover:bg-gray-200 transition-all duration-500">
-                      {int.icon}
+          {integrations.map((int, i) => {
+            const isConfigured = int.provider ? providerStates[int.provider].configured : true;
+            const badgeText = int.provider
+              ? isConfigured
+                ? int.status
+                : "Setup Required"
+              : int.status;
+            const badgeClass = int.provider && !isConfigured
+              ? "bg-amber-100 text-amber-700"
+              : int.status === "Live" ? "bg-green-100 text-green-700"
+              : int.status === "Coming Soon" ? "bg-yellow-100 text-yellow-700"
+              : int.status === "Business+" ? "bg-[#F26522]/10 text-[#F26522]"
+              : "bg-gray-100 text-gray-500";
+            return (
+              <div key={int.name} className="reveal" style={{ transitionDelay: `${i * 0.04}s` }}>
+                <div className="doppel-outer h-full group">
+                  <div className="doppel-inner p-6 h-full flex flex-col">
+                    <div className="flex items-start justify-between mb-4">
+                      <div className="w-11 h-11 rounded-xl bg-gray-100 flex items-center justify-center text-gray-500 group-hover:text-gray-900 group-hover:bg-gray-200 transition-all duration-500">
+                        {int.icon}
+                      </div>
+                      <span className={`text-[10px] font-medium px-2.5 py-0.5 rounded-full ${badgeClass}`}>{badgeText}</span>
                     </div>
-                    <span className={`text-[10px] font-medium px-2.5 py-0.5 rounded-full ${
-                      int.status === "Live" ? "bg-green-100 text-green-700" :
-                      int.status === "Coming Soon" ? "bg-yellow-100 text-yellow-700" :
-                      int.status === "Business+" ? "bg-[#F26522]/10 text-[#F26522]" :
-                      "bg-gray-100 text-gray-500"
-                    }`}>{int.status}</span>
-                  </div>
-                  <h3 className="text-[14px] font-semibold tracking-tight mb-1.5">{int.name}</h3>
-                  <p className="text-[13px] text-gray-500 leading-relaxed flex-1">{int.desc}</p>
-                  {int.provider ? (
-                    <div className="mt-5 pt-4 border-t border-gray-100">
-                      {providerStates[int.provider].error && (
-                        <div className="flex items-start gap-2 mb-3 text-[12px] text-red-600 bg-red-50 px-3 py-2 rounded-lg">
-                          <AlertCircle size={14} className="shrink-0 mt-0.5" />
-                          <span>{providerStates[int.provider].error}</span>
-                        </div>
-                      )}
-                      <div className="flex items-center justify-between gap-3">
-                        <div className="min-w-0">
+                    <h3 className="text-[14px] font-semibold tracking-tight mb-1.5">{int.name}</h3>
+                    <p className="text-[13px] text-gray-500 leading-relaxed flex-1">{int.desc}</p>
+                    {int.provider ? (
+                      <div className="mt-5 pt-4 border-t border-gray-100">
+                        {providerStates[int.provider].error && (
+                          <div className="flex items-start gap-2 mb-3 text-[12px] text-red-600 bg-red-50 px-3 py-2 rounded-lg">
+                            <AlertCircle size={14} className="shrink-0 mt-0.5" />
+                            <span>{providerStates[int.provider].error}</span>
+                          </div>
+                        )}
+                        <div className="flex items-center justify-between gap-3">
+                          <div className="min-w-0">
+                            {providerStates[int.provider].connected ? (
+                              <>
+                                <div className="flex items-center gap-2 text-[13px] text-green-600">
+                                  <CheckCircle2 size={15} />
+                                  <span>Connected</span>
+                                </div>
+                                {providerStates[int.provider].syncedAt && (
+                                  <p className="text-[11px] text-gray-400 mt-0.5">
+                                    Updated {new Date(providerStates[int.provider].syncedAt as string).toLocaleDateString()}
+                                  </p>
+                                )}
+                              </>
+                            ) : isConfigured ? (
+                              <>
+                                <div className="flex items-center gap-2 text-[13px] text-gray-600">
+                                  <Link2 size={15} />
+                                  <span>OAuth required</span>
+                                </div>
+                                <p className="text-[11px] text-gray-400 mt-0.5">Connect to save access tokens.</p>
+                              </>
+                            ) : (
+                              <>
+                                <div className="flex items-center gap-2 text-[13px] text-gray-600">
+                                  <AlertCircle size={15} />
+                                  <span>Credentials not set</span>
+                                </div>
+                                <p className="text-[11px] text-gray-400 mt-0.5">Add OAuth env vars to enable.</p>
+                              </>
+                            )}
+                          </div>
                           {providerStates[int.provider].connected ? (
-                            <>
-                              <div className="flex items-center gap-2 text-[13px] text-green-600">
-                                <CheckCircle2 size={15} />
-                                <span>Connected</span>
-                              </div>
-                              {providerStates[int.provider].syncedAt && (
-                                <p className="text-[11px] text-gray-400 mt-0.5">
-                                  Updated {new Date(providerStates[int.provider].syncedAt as string).toLocaleDateString()}
-                                </p>
+                            <button
+                              onClick={() => disconnectProvider(int.provider)}
+                              disabled={providerLoading[int.provider]}
+                              className="shrink-0 inline-flex items-center gap-2 px-4 py-2 rounded-full border border-gray-200 text-[11px] font-medium text-gray-600 hover:text-gray-900 hover:bg-gray-50 transition-all disabled:opacity-50"
+                            >
+                              {providerLoading[int.provider] ? (
+                                <Loader2 size={14} className="animate-spin" />
+                              ) : (
+                                <Unplug size={14} />
                               )}
-                            </>
+                              Disconnect
+                            </button>
                           ) : (
-                            <>
-                              <div className="flex items-center gap-2 text-[13px] text-gray-600">
-                                <Link2 size={15} />
-                                <span>OAuth required</span>
-                              </div>
-                              <p className="text-[11px] text-gray-400 mt-0.5">Connect to save access tokens.</p>
-                            </>
+                            <button
+                              onClick={() => connectProvider(int.provider)}
+                              disabled={providerLoading[int.provider] || !isConfigured}
+                              title={!isConfigured ? "OAuth credentials not configured" : undefined}
+                              className="shrink-0 inline-flex items-center gap-2 px-4 py-2 rounded-full bg-[#F26522] text-white text-[11px] font-semibold hover:bg-[#e05a1a] transition-all disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-[#F26522]"
+                            >
+                              {providerLoading[int.provider] ? (
+                                <Loader2 size={14} className="animate-spin" />
+                              ) : (
+                                <ArrowRight size={14} />
+                              )}
+                              Connect
+                            </button>
                           )}
                         </div>
-                        {providerStates[int.provider].connected ? (
-                          <button
-                            onClick={() => disconnectProvider(int.provider)}
-                            disabled={providerLoading[int.provider]}
-                            className="shrink-0 inline-flex items-center gap-2 px-4 py-2 rounded-full border border-gray-200 text-[11px] font-medium text-gray-600 hover:text-gray-900 hover:bg-gray-50 transition-all disabled:opacity-50"
-                          >
-                            {providerLoading[int.provider] ? (
-                              <Loader2 size={14} className="animate-spin" />
-                            ) : (
-                              <Unplug size={14} />
-                            )}
-                            Disconnect
-                          </button>
-                        ) : (
-                          <button
-                            onClick={() => connectProvider(int.provider)}
-                            disabled={providerLoading[int.provider]}
-                            className="shrink-0 inline-flex items-center gap-2 px-4 py-2 rounded-full bg-[#F26522] text-white text-[11px] font-semibold hover:bg-[#e05a1a] transition-all disabled:opacity-50"
-                          >
-                            {providerLoading[int.provider] ? (
-                              <Loader2 size={14} className="animate-spin" />
-                            ) : (
-                              <ArrowRight size={14} />
-                            )}
-                            Connect
-                          </button>
-                        )}
                       </div>
-                    </div>
-                  ) : null}
+                    ) : null}
+                  </div>
                 </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
 
         {/* CTA */}
