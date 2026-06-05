@@ -6,6 +6,7 @@ import Nav from "@/components/nav";
 import { useGSAP } from "@gsap/react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
+import { useUser, SignInButton } from "@clerk/nextjs";
 import {
   Mic, Brain, Target, Share2, BarChart3,
   Upload, Layers, Shield, Globe, Download, Search,
@@ -566,6 +567,7 @@ function WorkflowSection() {
 }
 
 export default function FeaturesPage() {
+  const { isSignedIn } = useUser();
   const heroRef = useRef<HTMLDivElement>(null);
 
   useGSAP(() => {
@@ -697,18 +699,34 @@ export default function FeaturesPage() {
                   Ready to save hours every week?
                 </h2>
                 <p className="text-gray-500 mb-8 text-[14px]">Join SDRs who cut their note-taking time by 80%.</p>
-                <Link href="/sign-up"
-                  className="group inline-flex items-center gap-2 bg-[#F26522] hover:bg-[#e05a1a] text-white text-[13px] rounded-full pl-5 pr-2 py-2 transition-colors duration-300">
-                  <span className="flex flex-col overflow-hidden h-[20px]">
-                    <span className="transition-transform duration-500 ease-[cubic-bezier(0.25,0.1,0.25,1)] group-hover:-translate-y-1/2 leading-[20px]">
-                      Get Started Free
+                {isSignedIn ? (
+                  <Link href="/app"
+                    className="group inline-flex items-center gap-2 bg-[#F26522] hover:bg-[#e05a1a] text-white text-[13px] rounded-full pl-5 pr-2 py-2 transition-colors duration-300">
+                    <span className="flex flex-col overflow-hidden h-[20px]">
+                      <span className="transition-transform duration-500 ease-[cubic-bezier(0.25,0.1,0.25,1)] group-hover:-translate-y-1/2 leading-[20px]">
+                        Open Dashboard
+                      </span>
+                      <span className="leading-[20px]">Open Dashboard</span>
                     </span>
-                    <span className="leading-[20px]">Get Started Free</span>
-                  </span>
-                  <span className="w-7 h-7 bg-white rounded-full flex items-center justify-center transition-transform duration-500 ease-[cubic-bezier(0.25,0.1,0.25,1)] group-hover:-rotate-45">
-                    <ArrowRight size={14} className="text-[#F26522]" />
-                  </span>
-                </Link>
+                    <span className="w-7 h-7 bg-white rounded-full flex items-center justify-center transition-transform duration-500 ease-[cubic-bezier(0.25,0.1,0.25,1)] group-hover:-rotate-45">
+                      <ArrowRight size={14} className="text-[#F26522]" />
+                    </span>
+                  </Link>
+                ) : (
+                  <SignInButton mode="modal">
+                    <button className="group inline-flex items-center gap-2 bg-[#F26522] hover:bg-[#e05a1a] text-white text-[13px] rounded-full pl-5 pr-2 py-2 transition-colors duration-300 cursor-pointer">
+                      <span className="flex flex-col overflow-hidden h-[20px]">
+                        <span className="transition-transform duration-500 ease-[cubic-bezier(0.25,0.1,0.25,1)] group-hover:-translate-y-1/2 leading-[20px]">
+                          Get Started Free
+                        </span>
+                        <span className="leading-[20px]">Get Started Free</span>
+                      </span>
+                      <span className="w-7 h-7 bg-white rounded-full flex items-center justify-center transition-transform duration-500 ease-[cubic-bezier(0.25,0.1,0.25,1)] group-hover:-rotate-45">
+                        <ArrowRight size={14} className="text-[#F26522]" />
+                      </span>
+                    </button>
+                  </SignInButton>
+                )}
               </div>
             </div>
           </div>
