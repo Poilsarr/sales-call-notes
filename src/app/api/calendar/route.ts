@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { auth } from "@clerk/nextjs/server";
 import { CalendarService } from "@/services/calendar";
 import {
   detectUpcomingMeetings,
@@ -9,6 +10,11 @@ import {
 
 export async function GET(req: NextRequest) {
   try {
+    const { userId } = await auth();
+    if (!userId) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
     const { searchParams } = new URL(req.url);
     const action = searchParams.get("action");
 
@@ -59,6 +65,11 @@ export async function GET(req: NextRequest) {
 
 export async function POST(req: NextRequest) {
   try {
+    const { userId } = await auth();
+    if (!userId) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
     const { code } = await req.json();
     if (!code) {
       return NextResponse.json({ error: "Authorization code required" }, { status: 400 });

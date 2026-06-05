@@ -154,7 +154,7 @@ export default function AppInterface({ onClose }: { onClose: () => void }) {
       <aside className="w-64 border-r border-white/5 flex flex-col shrink-0 bg-[#0a0a0b]">
         <div className="p-6 flex items-center gap-2.5">
           <div className="w-5 h-5 rounded-lg bg-[#5e6ad2] rotate-45" />
-          <span className="font-display text-sm font-semibold tracking-tight">CallNote<span className="text-white/40 font-medium">Pro</span></span>
+          <span className="font-sans text-sm font-semibold tracking-tight">CallNote<span className="text-white/40 font-medium">Pro</span></span>
         </div>
         <div className="flex-1 px-3 space-y-1 mt-4">
           {[
@@ -191,7 +191,7 @@ export default function AppInterface({ onClose }: { onClose: () => void }) {
                         <Mic strokeWidth={1} className="w-10 h-10 text-red-400/60" />
                       </div>
                     </div>
-                    <h3 className="font-display text-2xl font-semibold tracking-tight mb-3">Record a call</h3>
+                    <h3 className="font-sans text-2xl font-semibold tracking-tight mb-3">Record a call</h3>
                     <p className="text-sm text-white/30 mb-10 max-w-md mx-auto">Record directly from your browser. The recording will be transcribed and analyzed automatically.</p>
                     <label className="flex items-center justify-center gap-3 text-xs text-white/55 mb-8">
                       <input
@@ -235,7 +235,7 @@ export default function AppInterface({ onClose }: { onClose: () => void }) {
                       className="doppel-outer w-full max-w-xl cursor-pointer group">
                       <div className="doppel-inner p-12 md:p-16 flex flex-col items-center justify-center text-center min-h-[280px] group-hover:bg-white/[0.03] transition-all duration-700">
                         <Upload strokeWidth={1} className="w-6 h-6 text-white/20 group-hover:text-[#5e6ad2] transition-all duration-700 mb-5" />
-                        <h3 className="font-display text-lg font-semibold tracking-tight mb-2">Drop your call recording</h3>
+                        <h3 className="font-sans text-lg font-semibold tracking-tight mb-2">Drop your call recording</h3>
                         <p className="text-xs text-white/30 mb-6">MP3, WAV, M4A, WebM supported</p>
                         <input type="file" id="fu" hidden onChange={(e) => setFile(e.target.files?.[0] || null)} accept="audio/*" />
                         <div className="w-full max-w-xs mb-6">

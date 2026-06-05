@@ -1,13 +1,13 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { Suspense, useEffect, useRef, useState, useCallback } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import Nav from "@/components/nav";
 import {
   Sparkles, Building2, BarChart3, MessageSquare, Calendar, Globe,
   Code, Layers, Share2, Users, Download, ArrowRight,
-  CheckCircle2, Loader2, Link2, Unplug, Zap,
+  CheckCircle2, Loader2, Link2, Unplug, Zap, AlertCircle,
 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -17,6 +17,7 @@ type ProviderStatus = {
   connected: boolean;
   enabled: boolean;
   syncedAt: string | null;
+  error?: string;
 };
 
 const integrations = [
@@ -34,7 +35,7 @@ const integrations = [
   { icon: <Users size={22} />, name: "SSO / SAML 2.0", desc: "Enterprise single sign-on via SAML 2.0, Google, or Microsoft.", status: "Enterprise" },
 ];
 
-export default function IntegrationsPage() {
+function IntegrationsContent() {
   const observerRef = useRef<IntersectionObserver | null>(null);
   const handledCallbackRef = useRef(false);
   const router = useRouter();
@@ -49,8 +50,9 @@ export default function IntegrationsPage() {
     salesforce: false,
     teams: false,
   });
+  const [initialLoadDone, setInitialLoadDone] = useState(false);
 
-  const loadProviderStates = async () => {
+  const loadProviderStates = useCallback(async () => {
     try {
       const response = await fetch("/api/integrations", { cache: "no-store" });
       const data = await response.json();
@@ -60,8 +62,10 @@ export default function IntegrationsPage() {
       setProviderStates(data.integrations);
     } catch (error) {
       toast.error(error instanceof Error ? error.message : "Could not load integrations");
+    } finally {
+      setInitialLoadDone(true);
     }
-  };
+  }, []);
 
   useEffect(() => {
     observerRef.current = new IntersectionObserver(
@@ -80,15 +84,18 @@ export default function IntegrationsPage() {
 
   useEffect(() => {
     void loadProviderStates();
-  }, []);
+  }, [loadProviderStates]);
+
+  const code = searchParams.get("code");
+  const providerParam = searchParams.get("state");
 
   useEffect(() => {
-    const code = searchParams.get("code");
-    const provider = searchParams.get("state");
-    const error = searchParams.get("error");
-    const errorDescription = searchParams.get("error_description");
+    const provider = providerParam;
 
     if (handledCallbackRef.current) return;
+
+    const error = searchParams.get("error");
+    const errorDescription = searchParams.get("error_description");
 
     if (error) {
       handledCallbackRef.current = true;
@@ -111,26 +118,43 @@ export default function IntegrationsPage() {
         });
         const data = await response.json();
         if (!response.ok) throw new Error(data.error || "Failed to save integration");
-        await loadProviderStates();
+        setProviderStates((prev) => ({
+          ...prev,
+          [provider]: { ...prev[provider], connected: true, enabled: true, syncedAt: new Date().toISOString(), error: undefined },
+        }));
         toast.success(`${integrations.find((item) => item.provider === provider)?.name || "Provider"} connected`);
       } catch (callbackError) {
-        toast.error(callbackError instanceof Error ? callbackError.message : "Could not complete connection");
+        const msg = callbackError instanceof Error ? callbackError.message : "Could not complete connection";
+        setProviderStates((prev) => ({
+          ...prev,
+          [provider]: { ...prev[provider], error: msg },
+        }));
+        toast.error(msg);
       } finally {
         setProviderLoading((current) => ({ ...current, [provider]: false }));
         router.replace("/integrations");
       }
     })();
-  }, [router, searchParams]);
+  }, [router, code, providerParam, searchParams]);
 
   const connectProvider = async (provider: SupportedProvider) => {
     setProviderLoading((current) => ({ ...current, [provider]: true }));
+    setProviderStates((prev) => ({
+      ...prev,
+      [provider]: { ...prev[provider], error: undefined },
+    }));
     try {
       const response = await fetch(`/api/integrations?action=auth-url&provider=${provider}`);
       const data = await response.json();
       if (!response.ok) throw new Error(data.error || "Failed to start OAuth flow");
       window.location.assign(data.authUrl);
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : "Could not start OAuth flow");
+      const msg = error instanceof Error ? error.message : "Could not start OAuth flow";
+      setProviderStates((prev) => ({
+        ...prev,
+        [provider]: { ...prev[provider], error: msg },
+      }));
+      toast.error(msg);
       setProviderLoading((current) => ({ ...current, [provider]: false }));
     }
   };
@@ -145,10 +169,18 @@ export default function IntegrationsPage() {
       });
       const data = await response.json();
       if (!response.ok) throw new Error(data.error || "Failed to disconnect integration");
-      await loadProviderStates();
+      setProviderStates((prev) => ({
+        ...prev,
+        [provider]: { connected: false, enabled: false, syncedAt: null, error: undefined },
+      }));
       toast.success(`${integrations.find((item) => item.provider === provider)?.name || "Provider"} disconnected`);
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : "Could not disconnect integration");
+      const msg = error instanceof Error ? error.message : "Could not disconnect integration";
+      setProviderStates((prev) => ({
+        ...prev,
+        [provider]: { ...prev[provider], error: msg },
+      }));
+      toast.error(msg);
     } finally {
       setProviderLoading((current) => ({ ...current, [provider]: false }));
     }
@@ -195,57 +227,65 @@ export default function IntegrationsPage() {
                   <h3 className="text-[14px] font-semibold tracking-tight mb-1.5">{int.name}</h3>
                   <p className="text-[13px] text-gray-500 leading-relaxed flex-1">{int.desc}</p>
                   {int.provider ? (
-                    <div className="mt-5 pt-4 border-t border-gray-100 flex items-center justify-between gap-3">
-                      <div className="min-w-0">
+                    <div className="mt-5 pt-4 border-t border-gray-100">
+                      {providerStates[int.provider].error && (
+                        <div className="flex items-start gap-2 mb-3 text-[12px] text-red-600 bg-red-50 px-3 py-2 rounded-lg">
+                          <AlertCircle size={14} className="shrink-0 mt-0.5" />
+                          <span>{providerStates[int.provider].error}</span>
+                        </div>
+                      )}
+                      <div className="flex items-center justify-between gap-3">
+                        <div className="min-w-0">
+                          {providerStates[int.provider].connected ? (
+                            <>
+                              <div className="flex items-center gap-2 text-[13px] text-green-600">
+                                <CheckCircle2 size={15} />
+                                <span>Connected</span>
+                              </div>
+                              {providerStates[int.provider].syncedAt && (
+                                <p className="text-[11px] text-gray-400 mt-0.5">
+                                  Updated {new Date(providerStates[int.provider].syncedAt as string).toLocaleDateString()}
+                                </p>
+                              )}
+                            </>
+                          ) : (
+                            <>
+                              <div className="flex items-center gap-2 text-[13px] text-gray-600">
+                                <Link2 size={15} />
+                                <span>OAuth required</span>
+                              </div>
+                              <p className="text-[11px] text-gray-400 mt-0.5">Connect to save access tokens.</p>
+                            </>
+                          )}
+                        </div>
                         {providerStates[int.provider].connected ? (
-                          <>
-                            <div className="flex items-center gap-2 text-[13px] text-green-600">
-                              <CheckCircle2 size={15} />
-                              <span>Connected</span>
-                            </div>
-                            {providerStates[int.provider].syncedAt && (
-                              <p className="text-[11px] text-gray-400 mt-0.5">
-                                Updated {new Date(providerStates[int.provider].syncedAt as string).toLocaleDateString()}
-                              </p>
+                          <button
+                            onClick={() => disconnectProvider(int.provider)}
+                            disabled={providerLoading[int.provider]}
+                            className="shrink-0 inline-flex items-center gap-2 px-4 py-2 rounded-full border border-gray-200 text-[11px] font-medium text-gray-600 hover:text-gray-900 hover:bg-gray-50 transition-all disabled:opacity-50"
+                          >
+                            {providerLoading[int.provider] ? (
+                              <Loader2 size={14} className="animate-spin" />
+                            ) : (
+                              <Unplug size={14} />
                             )}
-                          </>
+                            Disconnect
+                          </button>
                         ) : (
-                          <>
-                            <div className="flex items-center gap-2 text-[13px] text-gray-600">
-                              <Link2 size={15} />
-                              <span>OAuth required</span>
-                            </div>
-                            <p className="text-[11px] text-gray-400 mt-0.5">Connect to save access tokens.</p>
-                          </>
+                          <button
+                            onClick={() => connectProvider(int.provider)}
+                            disabled={providerLoading[int.provider]}
+                            className="shrink-0 inline-flex items-center gap-2 px-4 py-2 rounded-full bg-[#F26522] text-white text-[11px] font-semibold hover:bg-[#e05a1a] transition-all disabled:opacity-50"
+                          >
+                            {providerLoading[int.provider] ? (
+                              <Loader2 size={14} className="animate-spin" />
+                            ) : (
+                              <ArrowRight size={14} />
+                            )}
+                            Connect
+                          </button>
                         )}
                       </div>
-                      {providerStates[int.provider].connected ? (
-                        <button
-                          onClick={() => disconnectProvider(int.provider)}
-                          disabled={providerLoading[int.provider]}
-                          className="shrink-0 inline-flex items-center gap-2 px-4 py-2 rounded-full border border-gray-200 text-[11px] font-medium text-gray-600 hover:text-gray-900 hover:bg-gray-50 transition-all disabled:opacity-50"
-                        >
-                          {providerLoading[int.provider] ? (
-                            <Loader2 size={14} className="animate-spin" />
-                          ) : (
-                            <Unplug size={14} />
-                          )}
-                          Disconnect
-                        </button>
-                      ) : (
-                        <button
-                          onClick={() => connectProvider(int.provider)}
-                          disabled={providerLoading[int.provider]}
-                          className="shrink-0 inline-flex items-center gap-2 px-4 py-2 rounded-full bg-[#F26522] text-white text-[11px] font-semibold hover:bg-[#e05a1a] transition-all disabled:opacity-50"
-                        >
-                          {providerLoading[int.provider] ? (
-                            <Loader2 size={14} className="animate-spin" />
-                          ) : (
-                            <ArrowRight size={14} />
-                          )}
-                          Connect
-                        </button>
-                      )}
                     </div>
                   ) : null}
                 </div>
@@ -283,5 +323,17 @@ export default function IntegrationsPage() {
         </div>
       </section>
     </main>
+  );
+}
+
+export default function IntegrationsPage() {
+  return (
+    <Suspense fallback={
+      <main className="min-h-screen bg-white text-gray-900 flex items-center justify-center">
+        <Loader2 size={24} className="animate-spin text-gray-400" />
+      </main>
+    }>
+      <IntegrationsContent />
+    </Suspense>
   );
 }

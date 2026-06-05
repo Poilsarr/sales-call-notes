@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useUser } from "@clerk/nextjs";
+import Nav from "@/components/nav";
 import { BarChart3, TrendingUp, Target, Brain, Phone, CheckCircle, AlertTriangle, DollarSign, Calendar, Users, ArrowUp, ArrowDown, Lightbulb, Shield, Zap } from "lucide-react";
 
 type AnalyticsData = {
@@ -114,6 +115,7 @@ export default function DashboardPage() {
 
   return (
     <div className="min-h-screen bg-linear-black text-white">
+      <Nav />
       <div className="max-w-7xl mx-auto px-6 py-12">
         <div className="flex items-center justify-between mb-10">
           <div>

@@ -64,6 +64,11 @@
     @apply rounded-[calc(2rem-0.375rem)] bg-white shadow-[inset_0_1px_1px_rgba(0,0,0,0.04)];
   }
 
+  .btn-island {
+    @apply rounded-full px-6 py-3 font-medium transition-all duration-300;
+    @apply inline-flex items-center gap-3;
+  }
+
   .btn-primary {
     @apply rounded-full px-6 py-3 bg-[#F26522] hover:bg-[#e05a1a] text-white font-medium transition-all duration-300 ease-spring active:scale-[0.98];
   }

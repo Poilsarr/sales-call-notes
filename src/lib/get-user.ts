@@ -4,6 +4,10 @@ export async function getUserByClerkId(clerkId: string) {
   return prisma.user.upsert({
     where: { clerkId },
     update: {},
-    create: { clerkId, email: `${clerkId}@placeholder.dev`, name: '' },
+    create: {
+      clerkId,
+      email: `${clerkId}@placeholder.dev`,
+      name: `User ${clerkId.slice(0, 8)}`,
+    },
   });
 }

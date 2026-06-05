@@ -3,7 +3,7 @@ import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 
 export async function rateLimitMiddleware(req: NextRequest) {
-  const ip = req.headers.get("x-forwarded-for") ?? req.headers.get("x-real-ip") ?? "anonymous";
+  const ip = req.ip ?? req.headers.get("x-forwarded-for") ?? req.headers.get("x-real-ip") ?? "anonymous";
   const url = req.nextUrl.pathname;
 
   let type = 'default';

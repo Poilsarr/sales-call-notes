@@ -1,4 +1,5 @@
-import { NextRequest } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
+import { auth } from "@clerk/nextjs/server";
 
 import {
   publishLiveTranscriptionEvent,
@@ -9,6 +10,11 @@ export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
 export async function GET(req: NextRequest) {
+  const { userId } = await auth();
+  if (!userId) {
+    return new NextResponse(JSON.stringify({ error: "Unauthorized" }), { status: 401, headers: { "Content-Type": "application/json" } });
+  }
+
   const { searchParams } = new URL(req.url);
   const sessionId = searchParams.get("sessionId") || "default";
 
@@ -47,10 +53,15 @@ export async function GET(req: NextRequest) {
 
 export async function POST(req: NextRequest) {
   try {
+    const { userId } = await auth();
+    if (!userId) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
     const { text, sessionId, isFinal } = await req.json();
 
     if (!text) {
-      return new Response(JSON.stringify({ error: "text required" }), { status: 400 });
+      return NextResponse.json({ error: "text required" }, { status: 400 });
     }
 
     const resolvedSessionId = sessionId || "default";
@@ -64,13 +75,13 @@ export async function POST(req: NextRequest) {
 
     publishLiveTranscriptionEvent(resolvedSessionId, event);
 
-    return new Response(JSON.stringify({
+    return NextResponse.json({
       success: true,
       sessionId: resolvedSessionId,
       words: text.split(" ").length,
       isFinal: Boolean(isFinal),
-    }));
+    });
   } catch (error) {
-    return new Response(JSON.stringify({ error: "Live transcription failed" }), { status: 500 });
+    return NextResponse.json({ error: "Live transcription failed" }, { status: 500 });
   }
 }

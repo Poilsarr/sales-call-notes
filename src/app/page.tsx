@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useUser, SignInButton } from "@clerk/nextjs";
+import { useRouter } from "next/navigation";
 import dynamic from "next/dynamic";
 import Nav from "@/components/nav";
 import Link from "next/link";
@@ -29,6 +30,7 @@ const testimonials = [
 ];
 
 export default function Home() {
+  const router = useRouter();
   const [showApp, setShowApp] = useState(false);
   const [mounted, setMounted] = useState(false);
   const { user } = useUser();
@@ -77,7 +79,7 @@ export default function Home() {
 
           <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 sm:gap-5 motion-safe:animate-fade-up motion-safe:[animation-delay:300ms]">
             {user ? (
-              <button onClick={() => setShowApp(true)}
+              <Link href="/app"
                 className="group inline-flex items-center gap-2 bg-[#F26522] hover:bg-[#e05a1a] text-white text-[13px] sm:text-[14px] rounded-full pl-5 sm:pl-6 pr-2 py-2 transition-colors duration-300">
                 <span className="flex flex-col overflow-hidden h-[20px]">
                   <span className="transition-transform duration-500 ease-[cubic-bezier(0.25,0.1,0.25,1)] group-hover:-translate-y-1/2 leading-[20px]">
@@ -88,7 +90,7 @@ export default function Home() {
                 <span className="w-7 h-7 sm:w-8 sm:h-8 bg-white rounded-full flex items-center justify-center transition-transform duration-500 ease-[cubic-bezier(0.25,0.1,0.25,1)] group-hover:-rotate-45">
                   <ArrowRight size={14} className="text-[#F26522]" />
                 </span>
-              </button>
+              </Link>
             ) : (
               <SignInButton mode="modal">
                 <button className="group inline-flex items-center gap-2 bg-[#F26522] hover:bg-[#e05a1a] text-white text-[13px] sm:text-[14px] rounded-full pl-5 sm:pl-6 pr-2 py-2 transition-colors duration-300">
@@ -104,7 +106,7 @@ export default function Home() {
                 </button>
               </SignInButton>
             )}
-            <button onClick={() => setShowApp(true)}
+            <Link href="/features"
               className="group inline-flex items-center gap-2 bg-white text-gray-600 hover:text-gray-900 text-[13px] rounded-full pl-5 pr-2 py-2 border border-gray-200 hover:border-gray-300 transition-all duration-300">
               <span className="flex flex-col overflow-hidden h-[20px]">
                 <span className="transition-transform duration-500 ease-[cubic-bezier(0.25,0.1,0.25,1)] group-hover:-translate-y-1/2 leading-[20px]">
@@ -115,7 +117,7 @@ export default function Home() {
               <span className="w-7 h-7 bg-gray-100 rounded-full flex items-center justify-center transition-transform duration-500 ease-[cubic-bezier(0.25,0.1,0.25,1)] group-hover:-rotate-45">
                 <ArrowRight size={14} className="text-gray-500" />
               </span>
-            </button>
+            </Link>
           </div>
         </div>
 
@@ -244,7 +246,7 @@ export default function Home() {
                 <p className="text-gray-500 mb-8 text-[14px]">Join thousands of SDRs who eliminated manual note-taking. Free forever. No credit card.</p>
                 <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
                   {user ? (
-                    <button onClick={() => setShowApp(true)}
+                    <Link href="/app"
                       className="group inline-flex items-center gap-2 bg-[#F26522] hover:bg-[#e05a1a] text-white text-[13px] rounded-full pl-5 pr-2 py-2 transition-colors duration-300">
                       <span className="flex flex-col overflow-hidden h-[20px]">
                         <span className="transition-transform duration-500 ease-[cubic-bezier(0.25,0.1,0.25,1)] group-hover:-translate-y-1/2 leading-[20px]">
@@ -255,7 +257,7 @@ export default function Home() {
                       <span className="w-7 h-7 bg-white rounded-full flex items-center justify-center transition-transform duration-500 ease-[cubic-bezier(0.25,0.1,0.25,1)] group-hover:-rotate-45">
                         <ArrowRight size={14} className="text-[#F26522]" />
                       </span>
-                    </button>
+                    </Link>
                   ) : (
                     <SignInButton mode="modal">
                       <button className="group inline-flex items-center gap-2 bg-[#F26522] hover:bg-[#e05a1a] text-white text-[13px] rounded-full pl-5 pr-2 py-2 transition-colors duration-300">
