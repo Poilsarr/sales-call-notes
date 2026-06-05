@@ -11,9 +11,23 @@ type IntegrationStatus = {
   connected: boolean;
   enabled: boolean;
   syncedAt: string | null;
+  configured: boolean;
 };
 
 const SUPPORTED_PROVIDERS: SupportedProvider[] = ["hubspot", "salesforce", "teams"];
+
+function isProviderConfigured(provider: SupportedProvider): boolean {
+  if (provider === "hubspot") {
+    return Boolean(getSecret("HUBSPOT_CLIENT_ID") && getSecret("HUBSPOT_CLIENT_SECRET"));
+  }
+  if (provider === "salesforce") {
+    return Boolean(getSecret("SALESFORCE_CLIENT_ID") && getSecret("SALESFORCE_CLIENT_SECRET"));
+  }
+  return Boolean(
+    (getSecret("TEAMS_CLIENT_ID") || getSecret("MICROSOFT_CLIENT_ID")) &&
+    (getSecret("TEAMS_CLIENT_SECRET") || getSecret("MICROSOFT_CLIENT_SECRET")),
+  );
+}
 
 const HUBSPOT_SCOPES = [
   "crm.objects.contacts.read",
@@ -107,6 +121,7 @@ function serializeStatuses(
         connected: Boolean(record?.enabled && hasAccessToken),
         enabled: Boolean(record?.enabled),
         syncedAt: record?.syncedAt?.toISOString() ?? null,
+        configured: isProviderConfigured(provider),
       };
       return acc;
     },
