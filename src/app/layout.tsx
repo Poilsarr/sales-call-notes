@@ -24,12 +24,20 @@ export const metadata: Metadata = {
   manifest: "/manifest.json",
   icons: {
     icon: [
-      { url: "/favicon.png", sizes: "16x16", type: "image/png" },
-      { url: "/favicon32.png", sizes: "32x32", type: "image/png" },
+      { url: "/favicon-16.png", sizes: "16x16", type: "image/png" },
+      { url: "/favicon-32.png", sizes: "32x32", type: "image/png" },
+      { url: "/icon-72.png", sizes: "72x72", type: "image/png" },
+      { url: "/icon-96.png", sizes: "96x96", type: "image/png" },
+      { url: "/icon-128.png", sizes: "128x128", type: "image/png" },
+      { url: "/icon-144.png", sizes: "144x144", type: "image/png" },
+      { url: "/icon-152.png", sizes: "152x152", type: "image/png" },
+      { url: "/icon-192.png", sizes: "192x192", type: "image/png" },
+      { url: "/icon-384.png", sizes: "384x384", type: "image/png" },
+      { url: "/icon-512.png", sizes: "512x512", type: "image/png" },
     ],
     apple: [
-      { url: "/icon192.png", sizes: "192x192", type: "image/png" },
-      { url: "/icon512.png", sizes: "512x512", type: "image/png" },
+      { url: "/apple-touch-icon.png", sizes: "180x180", type: "image/png" },
+      { url: "/icon-192.png", sizes: "192x192", type: "image/png" },
     ],
   },
   openGraph: {
