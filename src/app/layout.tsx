@@ -19,8 +19,8 @@ const geistMono = localFont({
 });
 
 export const metadata: Metadata = {
-  title: "CallNote Pro — Sales Call Notes, Instant",
-  description: "Turn sales call recordings into actionable notes in seconds. Free for SDRs.",
+  title: "CallNote Pro — AI Sales Call Notes for SDRs",
+  description: "Upload your call recording. Get summary, action items, and CRM-ready notes in seconds. Built for the modern SDR.",
   manifest: "/manifest.json",
   icons: {
     icon: [
@@ -33,27 +33,27 @@ export const metadata: Metadata = {
     ],
   },
   openGraph: {
-    title: "CallNote Pro — Sales Call Notes, Instant",
-    description: "Turn sales call recordings into actionable notes in seconds. Free for SDRs.",
+    title: "CallNote Pro — AI Sales Call Notes for SDRs",
+    description: "Upload your call recording. Get summary, action items, and CRM-ready notes in seconds. Built for the modern SDR.",
     siteName: "CallNote Pro",
     type: "website",
     locale: "en_US",
   },
-  appleWebApp: { capable: true, title: "CallNote Pro", statusBarStyle: "black-translucent" },
+  appleWebApp: { capable: true, title: "CallNote Pro", statusBarStyle: "default" },
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" className="dark">
-      <body className={`${geistSans.variable} ${geistMono.variable} font-sans antialiased bg-[#050505] text-[#fafafa]`}>
+    <html lang="en">
+      <body className={`${geistSans.variable} ${geistMono.variable} font-sans antialiased bg-white text-gray-900`}>
         <div className="noise-overlay" />
         <ClerkProvider signInUrl="/sign-in" signUpUrl="/sign-up">
           {children}
-          <footer className="border-t border-white/5 py-6 px-6 text-center">
-            <div className="max-w-6xl mx-auto flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-[11px] text-white/25">
-              <Link href="/terms" className="hover:text-white/50 transition-colors">Terms of Service</Link>
-              <Link href="/privacy" className="hover:text-white/50 transition-colors">Privacy Notice</Link>
-              <Link href="/refund" className="hover:text-white/50 transition-colors">Refund Policy</Link>
+          <footer className="border-t border-gray-200 py-6 px-6 text-center">
+            <div className="max-w-[1440px] mx-auto flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-[11px] text-gray-400">
+              <Link href="/terms" className="hover:text-gray-700 transition-colors">Terms of Service</Link>
+              <Link href="/privacy" className="hover:text-gray-700 transition-colors">Privacy Notice</Link>
+              <Link href="/refund" className="hover:text-gray-700 transition-colors">Refund Policy</Link>
             </div>
           </footer>
           <Analytics />

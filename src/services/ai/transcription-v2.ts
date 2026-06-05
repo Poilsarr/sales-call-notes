@@ -1,36 +1,40 @@
 import OpenAI, { toFile } from 'openai';
 import { TranscriptionResult, TranscriptionSegment, WordTimestamp } from '@/types';
-
-const TRANSCRIPTION_PROMPT = `This is a sales enrollment call. A representative is enrolling a customer in an energy or insurance plan. 
-Pay special attention to: customer names, addresses, account numbers, utility company names, plan names, rates/prices, phone numbers, email addresses, dates. 
-Spell out numbers clearly. 
-CRITICAL: Remove filler words (um, ah, uh, like, you know) and stuttering. Ensure the transcript is clean, professional, and reads like a polished record of the conversation.`;
+import { buildTranscriptionPrompt } from '@/lib/transcription-options';
+import { wrapClient } from '@/lib/langfuse';
+import { getSecret } from '@/lib/secrets';
 
 export class TranscriptionServiceV2 {
   private openai: OpenAI;
   private groqOpenai: OpenAI;
 
   constructor() {
-    if (!process.env.OPENAI_API_KEY) {
+    if (!getSecret("OPENAI_API_KEY")) {
       throw new Error('OPENAI_API_KEY is required for transcription');
     }
-    if (!process.env.GROQ_API_KEY) {
+    if (!getSecret("GROQ_API_KEY")) {
       throw new Error('GROQ_API_KEY is required for transcription fallback');
     }
-    this.openai = new OpenAI({
-      apiKey: process.env.OPENAI_API_KEY,
+    this.openai = wrapClient(new OpenAI({
+      apiKey: getSecret("OPENAI_API_KEY"),
       timeout: 300000,
       maxRetries: 2
-    });
-    this.groqOpenai = new OpenAI({
-      apiKey: process.env.GROQ_API_KEY,
+    }));
+    this.groqOpenai = wrapClient(new OpenAI({
+      apiKey: getSecret("GROQ_API_KEY"),
       baseURL: 'https://api.groq.com/openai/v1',
       timeout: 300000,
       maxRetries: 2
-    });
+    }));
   }
 
-  async transcribe(audioBuffer: Buffer, model: 'whisper-1' | 'whisper-large-v3' = 'whisper-1', attempted: string[] = []): Promise<TranscriptionResult> {
+  async transcribe(
+    audioBuffer: Buffer,
+    model: 'whisper-1' | 'whisper-large-v3' = 'whisper-1',
+    language?: string,
+    options: { removeFillers?: boolean } = {},
+    attempted: string[] = [],
+  ): Promise<TranscriptionResult> {
     const client = model === 'whisper-1' ? this.openai : this.groqOpenai;
 
     try {
@@ -39,7 +43,8 @@ export class TranscriptionServiceV2 {
       const response = await client.audio.transcriptions.create({
         file,
         model,
-        prompt: TRANSCRIPTION_PROMPT,
+        ...(language ? { language } : {}),
+        prompt: buildTranscriptionPrompt(options.removeFillers ?? true),
         response_format: 'verbose_json',
         timestamp_granularities: ['segment']
       } as any);
@@ -47,7 +52,7 @@ export class TranscriptionServiceV2 {
       return this.parseVerboseJson(response);
     } catch (error) {
       if (model === 'whisper-1' && !attempted.includes('whisper-large-v3')) {
-        return this.transcribe(audioBuffer, 'whisper-large-v3', [...attempted, model]);
+        return this.transcribe(audioBuffer, 'whisper-large-v3', language, options, [...attempted, model]);
       }
       throw error;
     }

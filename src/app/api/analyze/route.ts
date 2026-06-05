@@ -8,11 +8,26 @@ import { PostProcessingService } from '@/services/ai/post-processing';
 import { AnalysisService } from '@/services/ai/analysis';
 import { DiarizationService } from '@/services/ai/diarization';
 import { SlackService } from '@/services/slack';
+import { parseRemoveFillers } from '@/lib/transcription-options';
+import { getUserByClerkId } from '@/lib/get-user';
+import { AnalyticsService } from '@/services/ai/analytics';
+import { PIIRedactorService } from '@/services/ai/pii-redactor';
+import { KnowledgeGraphService } from '@/services/ai/knowledge-graph';
+import { PersonalizationService } from '@/services/ai/personalization';
+import { FileValidationService } from '@/services/validation/file-validation';
 import fs from 'fs/promises';
 import path from 'path';
 import os from 'os';
+import { detectAudioType } from '@/lib/audio-types';
 
 export const maxDuration = 300;
+
+function normalizeLanguage(rawLanguage: FormDataEntryValue | null) {
+  if (typeof rawLanguage !== 'string') return undefined;
+  const value = rawLanguage.trim().toLowerCase();
+  if (!value || value === 'auto') return undefined;
+  return value;
+}
 
 export async function POST(req: Request) {
   try {
@@ -22,30 +37,29 @@ export async function POST(req: Request) {
     console.log('Analyze route called');
     const formData = await req.formData();
     const file = formData.get('file') as File;
+    const requestedLanguage = normalizeLanguage(formData.get('language'));
+    const removeFillers = parseRemoveFillers(formData.get('removeFillers'));
 
     if (!file) return NextResponse.json({ error: 'No file provided' }, { status: 400 });
 
-    const user = await prisma.user.findUnique({ where: { clerkId: clerkUserId } });
-    if (!user) return NextResponse.json({ error: 'User not found' }, { status: 404 });
+    const user = await getUserByClerkId(clerkUserId);
     const userId = user.id;
 
     const fileBuffer = Buffer.from(await file.arrayBuffer());
     const fileName = file.name || 'call_recording.mp3';
-    const mimeType = file.type || 'audio/mpeg';
 
-    if (fileBuffer.length > 100 * 1024 * 1024) {
-      return NextResponse.json({ error: 'File size exceeds 100MB limit' }, { status: 400 });
-    }
-    if (!mimeType.startsWith('audio/')) {
-      return NextResponse.json({ error: 'Only audio files are supported' }, { status: 400 });
+    const validator = new FileValidationService();
+    const validation = await validator.validate(fileBuffer, fileName);
+    if (!validation.isValid) {
+      return NextResponse.json({ error: validation.error }, { status: 400 });
     }
 
-    console.log(`Processing file: ${fileName}, size: ${fileBuffer.length}, type: ${mimeType}`);
+    console.log(`Processing file: ${fileName}, size: ${fileBuffer.length}`);
 
     // --- TRANSCRIPTION PIPELINE ---
 
     // 1. Preprocess audio (optional — skip if ffmpeg unavailable on Vercel)
-    let buffer: Buffer = Buffer.from(fileBuffer);
+    let buffer = Buffer.from(fileBuffer);
     let duration = 0;
     let model: 'whisper-1' | 'whisper-large-v3' = 'whisper-1';
     try {
@@ -67,7 +81,9 @@ export async function POST(req: Request) {
     const transcriptionService = new TranscriptionServiceV2();
     let transcription;
     try {
-      transcription = await transcriptionService.transcribe(buffer, model);
+      transcription = await transcriptionService.transcribe(buffer, model, requestedLanguage, {
+        removeFillers,
+      });
     } catch (error: any) {
       console.error('Transcription failed:', error?.message || error);
       const msg = error?.message || '';
@@ -144,10 +160,10 @@ export async function POST(req: Request) {
     if (speakerLabels.length > 0 && transcription.segments) {
       const allSegments = [...transcription.segments];
       allSegments.sort((a, b) => a.start - b.start);
-      
+
       let formattedTranscript = '';
       for (const seg of allSegments) {
-        const speaker = speakerLabels.find(sl => 
+        const speaker = speakerLabels.find(sl =>
           sl.segments.some(ss => ss.start <= seg.start && ss.end >= seg.end)
         );
         const label = speaker ? speaker.label : 'Speaker 1';
@@ -156,6 +172,11 @@ export async function POST(req: Request) {
       }
       finalTranscriptWithSpeakers = formattedTranscript.trim();
     }
+
+    // PII Redaction
+    const piiRedactor = new PIIRedactorService();
+    const { redactedText } = await piiRedactor.redact(finalTranscriptWithSpeakers);
+    finalTranscriptWithSpeakers = redactedText;
 
     // --- ANALYSIS ---
     let analysisResult: Awaited<ReturnType<AnalysisService['analyze']>>;
@@ -172,9 +193,9 @@ export async function POST(req: Request) {
         participants: [],
         keyEntities: {},
         salesScorecard: {
-          meddic: { metrics: 0, economicBuyer: 0, decisionCriteria: 0, decisionProcess: 0, identifyPain: 0, champion: 0 },
-          bant: { budget: 0, authority: 0, need: 0, timeline: 0 },
-          spin: { situation: 0, problem: 0, implication: 0, needPayoff: 0 },
+          meddic: { metrics: { score: 0, evidence: '' }, economicBuyer: { score: 0, evidence: '' }, decisionCriteria: { score: 0, evidence: '' }, decisionProcess: { score: 0, evidence: '' }, identifyPain: { score: 0, evidence: '' }, champion: { score: 0, evidence: '' } },
+          bant: { budget: { score: 0, evidence: '' }, authority: { score: 0, evidence: '' }, need: { score: 0, evidence: '' }, timeline: { score: 0, evidence: '' } },
+          spin: { situation: { score: 0, evidence: '' }, problem: { score: 0, evidence: '' }, implication: { score: 0, evidence: '' }, needPayoff: { score: 0, evidence: '' } },
           overallScore: 0
         },
         stakeholderMap: [],
@@ -191,6 +212,24 @@ export async function POST(req: Request) {
         sentimentTimeline: []
       };
     }
+
+    const speakerRecords = speakerLabels.map((speaker) => ({
+      label: speaker.label,
+      duration: speaker.segments.reduce((sum, segment) => sum + (segment.end - segment.start), 0),
+      segments: speaker.segments,
+    }));
+
+    const analyticsService = new AnalyticsService();
+    const callAnalytics = await analyticsService.analyzeCall(
+      correctedText,
+      speakerRecords,
+      finalSegments.map((segment) => ({
+        speaker: segment.speaker,
+        text: segment.text,
+        start: segment.start,
+        end: segment.end,
+      })),
+    );
 
     // Normalize and save
     const actionItems = (analysisResult.actionItems ?? []).map((item: any) => ({
@@ -213,13 +252,76 @@ export async function POST(req: Request) {
 
     const call = await prisma.call.create({
       data: {
-        userId, filename: fileName, transcript: finalTranscriptWithSpeakers,
+        userId,
+        teamId: user.teamId,
+        sharedWithTeam: Boolean(user.teamId),
+        filename: fileName,
+        transcript: finalTranscriptWithSpeakers,
+        language: transcription.language || requestedLanguage || 'en',
         summary: analysisResult.executiveSummary || correctedText.slice(0, 500),
         healthScore: typeof analysisResult.salesScorecard?.overallScore === 'number' ? analysisResult.salesScorecard.overallScore : Number(analysisResult.salesScorecard?.overallScore) || null,
+        sentiment: callAnalytics.sentiment,
         actionItems: { create: actionItems },
         decisions: { create: decisions },
         nextSteps: { create: nextSteps },
+        speakers: speakerRecords.length > 0 ? {
+          create: speakerRecords.map((speaker) => ({
+            label: speaker.label,
+            segments: JSON.stringify(speaker.segments),
+            duration: Math.round(speaker.duration),
+          })),
+        } : undefined,
+        analytics: {
+          create: {
+            talkRatio: JSON.stringify(callAnalytics.talkRatio),
+            speakerMetrics: callAnalytics.speakerMetrics,
+            sentimentTimeline: callAnalytics.sentimentTimeline,
+            interruptions: callAnalytics.interruptions,
+            questionsAsked: callAnalytics.questionsAsked,
+            objections: JSON.stringify(callAnalytics.objections),
+            budgetMentioned: callAnalytics.budgetMentioned,
+            timelineMentioned: callAnalytics.timelineMentioned,
+            decisionMakerPresent: callAnalytics.decisionMakerPresent,
+            competitorMentioned: callAnalytics.competitorMentioned,
+          },
+        },
         competitorMentions: competitors.length > 0 ? { create: competitors } : undefined,
+      }
+    });
+
+    // Index for semantic search
+    try {
+      const kgService = new KnowledgeGraphService();
+      await kgService.indexCall(call.id);
+      console.log(`Call ${call.id} indexed in knowledge graph`);
+    } catch (e) {
+      console.log('Knowledge graph indexing failed:', e);
+    }
+
+    // Generate personalized hooks
+    let personalization = { hooks: [] };
+    try {
+      const personalService = new PersonalizationService();
+      personalization = await personalService.generatePersonalizedHooks(correctedText, analysisResult);
+      console.log('Personalization hooks generated');
+    } catch (e) {
+      console.log('Personalization failed:', e);
+    }
+
+    await prisma.callInsight.upsert({
+      where: { callId: call.id },
+      update: {
+        salesScorecard: analysisResult.salesScorecard,
+        closeProbability: analysisResult.closeProbability,
+        coachingNotes: analysisResult.coachingNotes,
+        personalization: personalization,
+      },
+      create: {
+        callId: call.id,
+        salesScorecard: analysisResult.salesScorecard,
+        closeProbability: analysisResult.closeProbability,
+        coachingNotes: analysisResult.coachingNotes,
+        personalization: personalization,
       }
     });
 
@@ -234,6 +336,7 @@ export async function POST(req: Request) {
     }
 
     return NextResponse.json({
+      id: call.id,
       summary: analysisResult.executiveSummary || correctedText.slice(0, 500),
       actionItems: analysisResult.actionItems || [],
       keyDecisions: analysisResult.commitments || [],
@@ -242,9 +345,14 @@ export async function POST(req: Request) {
       transcript: finalTranscriptWithSpeakers,
       segments: finalSegments,
       corrections,
+      detectedLanguage: transcription.language,
       transcriptionConfidence: transcription.confidence,
       analysisAvailable: true,
       competitorsMentioned: competitors,
+      speakerMetrics: callAnalytics.speakerMetrics,
+      interruptions: callAnalytics.interruptions,
+      questionsAsked: callAnalytics.questionsAsked,
+      personalizationHooks: personalization.hooks,
     });
   } catch (error: any) {
     console.error('Analyze route error:', error?.message);

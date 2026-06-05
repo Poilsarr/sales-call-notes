@@ -116,7 +116,7 @@ export default function BillingPage() {
             const plan = PLANS[tier];
             const isCurrent = currentPlan === tier;
             return (
-              <div key={tier} className={`p-6 rounded-2xl linear-surface linear-border flex flex-col ${
+              <div key={tier} className={`p-6 rounded-2xl bg-linear-surface border border-linear-secondary flex flex-col ${
                 isCurrent ? 'ring-1 ring-linear-indigo/50' : ''
               }`}>
                 <div className="mb-6">
@@ -194,7 +194,7 @@ export default function BillingPage() {
           })}
         </div>
 
-        <div className="mt-6 p-6 rounded-2xl linear-surface linear-border flex items-center justify-between">
+        <div className="mt-6 p-6 rounded-2xl bg-linear-surface border border-linear-secondary flex items-center justify-between">
           <div>
             <div className="flex items-center gap-2 mb-1">
               <Crown className="w-4 h-4 text-yellow-400" />
@@ -208,7 +208,7 @@ export default function BillingPage() {
           </a>
         </div>
 
-        <div className="mt-8 p-6 rounded-2xl linear-surface linear-border">
+        <div className="mt-8 p-6 rounded-2xl bg-linear-surface border border-linear-secondary">
           <h2 className="text-sm font-medium mb-4">Plan Comparison</h2>
           <div className="overflow-x-auto">
             <table className="w-full text-xs">

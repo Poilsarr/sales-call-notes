@@ -3,6 +3,8 @@ import { auth } from "@clerk/nextjs/server";
 import { writeFile, unlink } from "fs/promises";
 import path from "path";
 import { spawn } from "child_process";
+import { detectAudioType } from "@/lib/audio-types";
+import { getSecret } from "@/lib/secrets";
 
 export async function POST(req: NextRequest) {
   const { userId } = await auth();
@@ -21,10 +23,15 @@ export async function POST(req: NextRequest) {
     const arrayBuffer = await audioFile.arrayBuffer();
     const buffer = Buffer.from(arrayBuffer);
 
-    const tempDir = process.env.TEMP || "/tmp";
-    const allowedExts = ['wav', 'mp3', 'm4a', 'ogg', 'webm', 'flac'];
+    const type = detectAudioType(buffer);
+    const allowedMimeTypes = ['audio/mpeg', 'audio/wav', 'audio/x-wav', 'audio/ogg', 'audio/flac', 'audio/mp4', 'audio/aac'];
+    if (!type || !allowedMimeTypes.includes(type.mime)) {
+      return NextResponse.json({ error: 'Invalid audio file format. Please upload a valid audio file.' }, { status: 400 });
+    }
+
+    const tempDir = getSecret("TEMP") || "/tmp";
     const origExt = audioFile.name.split(".").pop()?.toLowerCase() || '';
-    const safeExt = allowedExts.includes(origExt) ? origExt : 'wav';
+    const safeExt = ['wav', 'mp3', 'm4a', 'ogg', 'webm', 'flac'].includes(origExt) ? origExt : 'wav';
     const audioPath = path.join(tempDir, `audio_${Date.now()}.${safeExt}`);
     tempFilePath = audioPath;
     await writeFile(audioPath, buffer);

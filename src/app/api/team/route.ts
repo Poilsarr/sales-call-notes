@@ -1,16 +1,18 @@
 import { NextResponse } from 'next/server';
-import { PrismaClient } from '@prisma/client';
 import { auth } from '@clerk/nextjs/server';
-
-const prisma = new PrismaClient();
+import prisma from '@/lib/prisma';
+import { getUserByClerkId } from '@/lib/get-user';
+import { logAuditAction } from '@/lib/audit-logger';
 
 export async function GET() {
   try {
     const { userId } = await auth();
     if (!userId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
-    const user = await prisma.user.findUnique({
+    const user = await prisma.user.upsert({
       where: { clerkId: userId },
+      update: {},
+      create: { clerkId: userId, email: `${userId}@placeholder.dev`, name: '' },
       include: {
         team: {
           include: {
@@ -21,13 +23,66 @@ export async function GET() {
         },
       },
     });
-    if (!user) return NextResponse.json({ error: 'User not found' }, { status: 404 });
 
     const members = user.team?.members ?? [];
     const teamName = user.team?.name ?? null;
     const slug = user.team?.slug ?? null;
 
-    return NextResponse.json({ members, teamName, slug });
+    let sharedCalls: Array<{
+      id: string;
+      filename: string;
+      createdAt: Date;
+      healthScore: number | null;
+      ownerName: string | null;
+      assigneeName: string | null;
+      commentCount: number;
+    }> = [];
+
+    let teamAnalytics = {
+      sharedCalls: 0,
+      avgHealthScore: 0,
+      openActionItems: 0,
+      assignedCalls: 0,
+    };
+
+    if (user.teamId) {
+      const teamCalls = await prisma.call.findMany({
+        where: { teamId: user.teamId, sharedWithTeam: true },
+        include: {
+          actionItems: true,
+          comments: true,
+          user: { select: { name: true } },
+          assignee: { select: { name: true } },
+        } as any,
+        orderBy: { createdAt: 'desc' },
+        take: 8,
+      });
+
+      sharedCalls = teamCalls.map((call) => ({
+        id: call.id,
+        filename: call.filename,
+        createdAt: call.createdAt,
+        healthScore: call.healthScore,
+        ownerName: (call as any).user?.name || null,
+        assigneeName: (call as any).assignee?.name || null,
+        commentCount: (call as any).comments?.length || 0,
+      }));
+
+      const totalHealth = teamCalls.reduce((sum, call) => sum + (call.healthScore || 0), 0);
+      const openActionItems = teamCalls.reduce(
+        (sum, call) => sum + (call.actionItems as any[]).filter((item: any) => item.status !== 'COMPLETED').length,
+        0,
+      );
+
+      teamAnalytics = {
+        sharedCalls: teamCalls.length,
+        avgHealthScore: teamCalls.length > 0 ? Math.round(totalHealth / teamCalls.length) : 0,
+        openActionItems,
+        assignedCalls: teamCalls.filter((call) => Boolean((call as any).assignee)).length,
+      };
+    }
+
+    return NextResponse.json({ members, teamName, slug, sharedCalls, teamAnalytics });
   } catch (error: any) {
     console.error('Team GET error:', error?.message);
     return NextResponse.json({ error: 'Failed to fetch team' }, { status: 500 });
@@ -42,8 +97,7 @@ export async function POST(req: Request) {
     const { email } = await req.json();
     if (!email) return NextResponse.json({ error: 'Email is required' }, { status: 400 });
 
-    const inviter = await prisma.user.findUnique({ where: { clerkId: userId } });
-    if (!inviter) return NextResponse.json({ error: 'User not found' }, { status: 404 });
+    const inviter = await getUserByClerkId(userId);
 
     if (inviter.teamRole !== 'ADMIN') {
       return NextResponse.json({ error: 'Only admins can invite members' }, { status: 403 });
@@ -81,6 +135,8 @@ export async function POST(req: Request) {
       data: { teamId: team.id, teamRole: 'MEMBER' },
     });
 
+    await logAuditAction(inviter.id, 'INVITE_MEMBER', targetUser.id, 'User', { teamId: team.id, email: email });
+
     const updatedTeam = await prisma.team.findUnique({
       where: { id: team.id },
       include: {
@@ -110,8 +166,7 @@ export async function DELETE(req: Request) {
     const { memberId } = await req.json();
     if (!memberId) return NextResponse.json({ error: 'memberId is required' }, { status: 400 });
 
-    const user = await prisma.user.findUnique({ where: { clerkId: userId } });
-    if (!user) return NextResponse.json({ error: 'User not found' }, { status: 404 });
+    const user = await getUserByClerkId(userId);
 
     if (user.teamRole !== 'ADMIN') {
       return NextResponse.json({ error: 'Only admins can remove members' }, { status: 403 });
@@ -130,6 +185,8 @@ export async function DELETE(req: Request) {
       where: { id: memberId },
       data: { teamId: null, teamRole: 'MEMBER' },
     });
+
+    await logAuditAction(user.id, 'REMOVE_MEMBER', memberId, 'User', { teamId: user.teamId });
 
     return NextResponse.json({ message: 'Member removed' });
   } catch (error: any) {

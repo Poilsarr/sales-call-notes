@@ -1,9 +1,20 @@
-import { NextRequest } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
+import { auth } from "@clerk/nextjs/server";
+
+import {
+  publishLiveTranscriptionEvent,
+  subscribeToLiveTranscriptionSession,
+} from "@/lib/live-transcription-bus";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
 export async function GET(req: NextRequest) {
+  const { userId } = await auth();
+  if (!userId) {
+    return new NextResponse(JSON.stringify({ error: "Unauthorized" }), { status: 401, headers: { "Content-Type": "application/json" } });
+  }
+
   const { searchParams } = new URL(req.url);
   const sessionId = searchParams.get("sessionId") || "default";
 
@@ -15,7 +26,9 @@ export async function GET(req: NextRequest) {
         controller.enqueue(encoder.encode(`data: ${JSON.stringify(data)}\n\n`));
       };
 
+      const subscription = subscribeToLiveTranscriptionSession(sessionId, sendEvent);
       sendEvent({ type: "connected", sessionId, message: "Live transcription ready" });
+      subscription.backlog.forEach(sendEvent);
 
       const keepAlive = setInterval(() => {
         sendEvent({ type: "keepalive", timestamp: Date.now() });
@@ -23,6 +36,7 @@ export async function GET(req: NextRequest) {
 
       req.signal.addEventListener("abort", () => {
         clearInterval(keepAlive);
+        subscription.unsubscribe();
         controller.close();
       });
     },
@@ -39,19 +53,35 @@ export async function GET(req: NextRequest) {
 
 export async function POST(req: NextRequest) {
   try {
+    const { userId } = await auth();
+    if (!userId) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
     const { text, sessionId, isFinal } = await req.json();
 
     if (!text) {
-      return new Response(JSON.stringify({ error: "text required" }), { status: 400 });
+      return NextResponse.json({ error: "text required" }, { status: 400 });
     }
 
-    return new Response(JSON.stringify({
+    const resolvedSessionId = sessionId || "default";
+    const event = {
+      type: "transcript" as const,
+      sessionId: resolvedSessionId,
+      text,
+      isFinal: Boolean(isFinal),
+      timestamp: Date.now(),
+    };
+
+    publishLiveTranscriptionEvent(resolvedSessionId, event);
+
+    return NextResponse.json({
       success: true,
-      sessionId,
+      sessionId: resolvedSessionId,
       words: text.split(" ").length,
-      isFinal: isFinal || false,
-    }));
+      isFinal: Boolean(isFinal),
+    });
   } catch (error) {
-    return new Response(JSON.stringify({ error: "Live transcription failed" }), { status: 500 });
+    return NextResponse.json({ error: "Live transcription failed" }, { status: 500 });
   }
 }

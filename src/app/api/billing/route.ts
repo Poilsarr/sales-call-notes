@@ -2,13 +2,15 @@ import { NextRequest, NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
 import { PLANS, PlanTier } from "@/lib/plans";
 import { auth } from "@clerk/nextjs/server";
+import { getUserByClerkId } from '@/lib/get-user';
+import { logAuditAction } from "@/lib/audit-logger";
 
 export async function GET(req: NextRequest) {
   try {
     const { userId } = await auth();
     if (!userId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-    const user = await prisma.user.findUnique({ where: { clerkId: userId } });
+    const user = await getUserByClerkId(userId);
     const plan: PlanTier = (user?.plan as PlanTier) || "free";
 
     const startOfMonth = new Date();
@@ -46,7 +48,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Invalid plan" }, { status: 400 });
     }
 
-    let user = await prisma.user.findUnique({ where: { clerkId: userId } });
+    let user = await getUserByClerkId(userId);
 
     if (targetPlan === "free") {
       if (user) {
@@ -54,6 +56,7 @@ export async function POST(req: NextRequest) {
           where: { clerkId: userId },
           data: { plan: "FREE", credits: 5 },
         });
+        await logAuditAction(user.id, "CHANGE_PLAN", user.id, "User", { newPlan: "FREE" });
       }
       return NextResponse.json({ success: true, plan: "free" });
     }
@@ -61,7 +64,7 @@ export async function POST(req: NextRequest) {
     const planConfig = PLANS[targetPlan as PlanTier];
 
     if (!user) {
-      await prisma.user.create({
+      const newUser = await prisma.user.create({
         data: {
           clerkId: userId,
           email: "",
@@ -69,11 +72,13 @@ export async function POST(req: NextRequest) {
           credits: 999,
         },
       });
+      await logAuditAction(newUser.id, "CREATE_USER_WITH_PLAN", newUser.id, "User", { plan: targetPlan });
     } else {
       await prisma.user.update({
         where: { clerkId: userId },
         data: { plan: targetPlan.toUpperCase() as any, credits: 999 },
       });
+      await logAuditAction(user.id, "CHANGE_PLAN", user.id, "User", { newPlan: targetPlan });
     }
 
     return NextResponse.json({ success: true, plan: targetPlan });

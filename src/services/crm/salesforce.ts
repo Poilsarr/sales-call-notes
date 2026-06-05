@@ -1,7 +1,10 @@
 import { CRMCall } from "@/types/crm";
+import { CRMFormatterService } from "./formatter";
+import { getSecret } from "@/lib/secrets";
 
 export class SalesforceService {
-  private baseUrl = process.env.SF_INSTANCE_URL || "https://login.salesforce.com";
+  private baseUrl = getSecret("SF_INSTANCE_URL") || "https://login.salesforce.com";
+  private formatter = new CRMFormatterService();
 
   async syncCall(call: CRMCall, accessToken: string) {
     const contact = await this.createContact(call, accessToken);
@@ -61,7 +64,7 @@ export class SalesforceService {
       },
       body: JSON.stringify({
         Subject: `Follow up on ${call.filename}`,
-        Description: this.formatNote(call),
+        Description: this.formatter.formatNote(call, 'salesforce'),
         Status: "Not Started",
         Priority: "Normal",
         WhatId: opportunityId,
@@ -82,22 +85,5 @@ export class SalesforceService {
       lastName: "Name",
       phone: phoneMatch?.[0] || "",
     };
-  }
-
-  private formatNote(call: CRMCall): string {
-    let note = `Call Summary: ${call.summary}\n\n`;
-    note += `Action Items:\n`;
-    call.actionItems.forEach((item) => {
-      note += `- ${item.task} (Owner: ${item.owner}, Due: ${item.due})\n`;
-    });
-    note += `\nKey Decisions:\n`;
-    call.decisions.forEach((decision) => {
-      note += `- ${decision.content}\n`;
-    });
-    note += `\nNext Steps:\n`;
-    call.nextSteps.forEach((step) => {
-      note += `- ${step.step} (Date: ${step.date})\n`;
-    });
-    return note;
   }
 }

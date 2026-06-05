@@ -6,11 +6,13 @@ type SlackMessage = {
   healthScore?: number | null;
 };
 
+import { getSecret } from "@/lib/secrets";
+
 export class SlackService {
   private webhookUrl: string;
 
   constructor() {
-    this.webhookUrl = process.env.SLACK_WEBHOOK_URL || "";
+    this.webhookUrl = getSecret("SLACK_WEBHOOK_URL") || "";
   }
 
   async sendCallSummary(message: SlackMessage): Promise<boolean> {
@@ -54,7 +56,7 @@ export class SlackService {
 
     blocks.push({
       type: "context",
-      elements: [{ type: "mrkdwn", text: `Sent by <${process.env.NEXT_PUBLIC_APP_URL || "https://callnotepro.com"}|CallNote Pro>` }],
+      elements: [{ type: "mrkdwn", text: `Sent by <${getSecret("NEXT_PUBLIC_APP_URL") || "https://callnotepro.com"}|CallNote Pro>` }],
     });
 
     try {
@@ -97,7 +99,7 @@ export class SlackService {
       },
       {
         type: "context",
-        elements: [{ type: "mrkdwn", text: `Sent by <${process.env.NEXT_PUBLIC_APP_URL || "https://callnotepro.com"}|CallNote Pro Intelligence>` }],
+        elements: [{ type: "mrkdwn", text: `Sent by <${getSecret("NEXT_PUBLIC_APP_URL") || "https://callnotepro.com"}|CallNote Pro Intelligence>` }],
       },
     ];
 

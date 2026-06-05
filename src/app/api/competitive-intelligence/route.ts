@@ -1,6 +1,9 @@
 import { NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
 import { auth } from '@clerk/nextjs/server';
+import { getUserByClerkId } from '@/lib/get-user';
+
+export const dynamic = 'force-dynamic';
 
 export async function GET(req: Request) {
   try {
@@ -15,8 +18,7 @@ export async function GET(req: Request) {
     const since = new Date();
     since.setDate(since.getDate() - days);
 
-    const user = await prisma.user.findUnique({ where: { clerkId: userId } });
-    if (!user) return NextResponse.json({ error: 'User not found' }, { status: 404 });
+    const user = await getUserByClerkId(userId);
 
     if (teamId && user.teamId !== teamId) {
       return NextResponse.json({ error: 'Access denied' }, { status: 403 });
@@ -32,6 +34,13 @@ export async function GET(req: Request) {
     if (teamId) where.call.teamId = teamId;
     if (competitor) where.competitor = { contains: competitor, mode: 'insensitive' };
 
+    const aggregationWhere = {
+      ...where,
+      call: {
+        ...where.call,
+      },
+    };
+
     const mentions = await prisma.competitorMention.findMany({
       where,
       include: {
@@ -45,10 +54,7 @@ export async function GET(req: Request) {
 
     const aggregation = await prisma.competitorMention.groupBy({
       by: ['competitor'],
-      where: {
-        createdAt: { gte: since },
-        call: { userId: user.id },
-      },
+      where: aggregationWhere,
       _count: { competitor: true },
       orderBy: { _count: { competitor: 'desc' } },
     });

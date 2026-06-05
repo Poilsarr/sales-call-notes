@@ -16,6 +16,29 @@ export interface Result {
   keyDecisions: (string | { who: string; what: string; by: string })[];
   nextSteps: { step: string; date: string }[];
   healthScore?: number;
+  detectedLanguage?: string;
+  transcriptionConfidence?: number;
+  id?: string;
+}
+
+export interface SpeakerMetric {
+  speaker: string;
+  talkRatio: number;
+  sentiment: 'positive' | 'neutral' | 'negative';
+  questionsAsked: number;
+  interruptions: number;
+  turns: number;
+}
+
+export interface CollaborationComment {
+  id: string;
+  body: string;
+  createdAt: string;
+  author: {
+    id: string;
+    name: string | null;
+    email: string;
+  };
 }
 
 export interface Correction {
@@ -70,9 +93,26 @@ export interface CallAnalysis {
   keyEntities: Record<string, unknown>;
   competitorsMentioned?: Array<{ name: string; context: string; sentiment: string }>;
   salesScorecard: {
-    meddic?: { metrics: number; economicBuyer: number; decisionCriteria: number; decisionProcess: number; identifyPain: number; champion: number };
-    bant?: { budget: number; authority: number; need: number; timeline: number };
-    spin?: { situation: number; problem: number; implication: number; needPayoff: number };
+    meddic?: {
+      metrics: { score: number; evidence: string };
+      economicBuyer: { score: number; evidence: string };
+      decisionCriteria: { score: number; evidence: string };
+      decisionProcess: { score: number; evidence: string };
+      identifyPain: { score: number; evidence: string };
+      champion: { score: number; evidence: string };
+    };
+    bant?: {
+      budget: { score: number; evidence: string };
+      authority: { score: number; evidence: string };
+      need: { score: number; evidence: string };
+      timeline: { score: number; evidence: string };
+    };
+    spin?: {
+      situation: { score: number; evidence: string };
+      problem: { score: number; evidence: string };
+      implication: { score: number; evidence: string };
+      needPayoff: { score: number; evidence: string };
+    };
     overallScore: number;
   };
   stakeholderMap?: Array<{ name: string; role: string; influence: string; sentiment: string; concerns: string[] }>;
@@ -96,10 +136,14 @@ export interface CallRecord {
   createdAt: string;
   filename: string;
   transcript: string;
+  language?: string;
   segments?: TranscriptSegment[];
   summary: string;
   actionItems: Result['actionItems'];
   keyDecisions: Result['keyDecisions'];
   nextSteps: Result['nextSteps'];
   healthScore?: number;
+  sharedWithTeam?: boolean;
+  ownerName?: string | null;
+  assigneeName?: string | null;
 }

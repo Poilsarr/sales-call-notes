@@ -11,6 +11,21 @@ import {
   Users, Zap, MessageSquare
 } from "lucide-react";
 
+const LANGUAGE_OPTIONS = [
+  { value: "auto", label: "Auto detect" },
+  { value: "en", label: "English" },
+  { value: "es", label: "Spanish" },
+  { value: "fr", label: "French" },
+  { value: "de", label: "German" },
+  { value: "pt", label: "Portuguese" },
+  { value: "it", label: "Italian" },
+  { value: "nl", label: "Dutch" },
+  { value: "hi", label: "Hindi" },
+  { value: "ja", label: "Japanese" },
+  { value: "ko", label: "Korean" },
+  { value: "zh", label: "Chinese" },
+];
+
 export default function AppInterface({ onClose }: { onClose: () => void }) {
   const [file, setFile] = useState<File | null>(null);
   const [state, setState] = useState<ProcessingState>("idle");
@@ -21,6 +36,8 @@ export default function AppInterface({ onClose }: { onClose: () => void }) {
   const [resultTab, setResultTab] = useState<"transcript" | "synthesis" | "actions">("transcript");
   const { user } = useUser();
   const userId = user?.id || "";
+  const [selectedLanguage, setSelectedLanguage] = useState("auto");
+  const [removeFillers, setRemoveFillers] = useState(true);
   const [recording, setRecording] = useState(false);
   const [mediaRecorder, setMediaRecorder] = useState<MediaRecorder | null>(null);
   const [recordingDuration, setRecordingDuration] = useState(0);
@@ -39,7 +56,7 @@ export default function AppInterface({ onClose }: { onClose: () => void }) {
     try {
       const res = await fetch(`/api/history?userId=${id}`);
       const data = await res.json();
-      setHistory(data);
+      setHistory(Array.isArray(data) ? data : []);
     } catch { console.error("History fetch failed"); }
   }
 
@@ -60,6 +77,7 @@ export default function AppInterface({ onClose }: { onClose: () => void }) {
         const fd = new FormData();
         fd.append("file", recordedFile);
         fd.append("userId", userId);
+        fd.append("removeFillers", String(removeFillers));
         try {
           const res = await fetch("/api/analyze", { method: "POST", body: fd });
           if (res.status === 401) { setState("error"); setProgress("Please sign in."); return; }
@@ -94,6 +112,8 @@ export default function AppInterface({ onClose }: { onClose: () => void }) {
       const formData = new FormData();
       formData.append("file", uploadFile);
       formData.append("userId", userId);
+      formData.append("language", selectedLanguage);
+      formData.append("removeFillers", String(removeFillers));
       const res = await fetch("/api/analyze", { method: "POST", body: formData });
       const responseText = await res.text();
       if (res.status === 401) { setState("error"); setProgress("Please sign in to analyze calls."); return; }
@@ -134,7 +154,7 @@ export default function AppInterface({ onClose }: { onClose: () => void }) {
       <aside className="w-64 border-r border-white/5 flex flex-col shrink-0 bg-[#0a0a0b]">
         <div className="p-6 flex items-center gap-2.5">
           <div className="w-5 h-5 rounded-lg bg-[#5e6ad2] rotate-45" />
-          <span className="font-display text-sm font-semibold tracking-tight">CallNote<span className="text-white/40 font-medium">Pro</span></span>
+          <span className="font-sans text-sm font-semibold tracking-tight">CallNote<span className="text-white/40 font-medium">Pro</span></span>
         </div>
         <div className="flex-1 px-3 space-y-1 mt-4">
           {[
@@ -171,8 +191,17 @@ export default function AppInterface({ onClose }: { onClose: () => void }) {
                         <Mic strokeWidth={1} className="w-10 h-10 text-red-400/60" />
                       </div>
                     </div>
-                    <h3 className="font-display text-2xl font-semibold tracking-tight mb-3">Record a call</h3>
+                    <h3 className="font-sans text-2xl font-semibold tracking-tight mb-3">Record a call</h3>
                     <p className="text-sm text-white/30 mb-10 max-w-md mx-auto">Record directly from your browser. The recording will be transcribed and analyzed automatically.</p>
+                    <label className="flex items-center justify-center gap-3 text-xs text-white/55 mb-8">
+                      <input
+                        type="checkbox"
+                        checked={removeFillers}
+                        onChange={(e) => setRemoveFillers(e.target.checked)}
+                        className="h-4 w-4 rounded border border-white/15 bg-white/5 accent-[#5e6ad2]"
+                      />
+                      Polish transcript by removing filler words
+                    </label>
                     <button onClick={startRecording}
                       className="btn-island flex items-center gap-3 bg-red-500/80 text-white hover:bg-red-500 mx-auto px-8 py-4">
                       <span className="w-2 h-2 rounded-full bg-white animate-pulse" />
@@ -206,9 +235,35 @@ export default function AppInterface({ onClose }: { onClose: () => void }) {
                       className="doppel-outer w-full max-w-xl cursor-pointer group">
                       <div className="doppel-inner p-12 md:p-16 flex flex-col items-center justify-center text-center min-h-[280px] group-hover:bg-white/[0.03] transition-all duration-700">
                         <Upload strokeWidth={1} className="w-6 h-6 text-white/20 group-hover:text-[#5e6ad2] transition-all duration-700 mb-5" />
-                        <h3 className="font-display text-lg font-semibold tracking-tight mb-2">Drop your call recording</h3>
+                        <h3 className="font-sans text-lg font-semibold tracking-tight mb-2">Drop your call recording</h3>
                         <p className="text-xs text-white/30 mb-6">MP3, WAV, M4A, WebM supported</p>
                         <input type="file" id="fu" hidden onChange={(e) => setFile(e.target.files?.[0] || null)} accept="audio/*" />
+                        <div className="w-full max-w-xs mb-6">
+                          <label htmlFor="language-select" className="block text-[11px] uppercase tracking-[0.18em] text-white/35 mb-2">
+                            Transcription language
+                          </label>
+                          <select
+                            id="language-select"
+                            value={selectedLanguage}
+                            onChange={(e) => setSelectedLanguage(e.target.value)}
+                            className="w-full rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-white outline-none transition-all focus:border-[#5e6ad2]/60"
+                          >
+                            {LANGUAGE_OPTIONS.map((option) => (
+                              <option key={option.value} value={option.value} className="bg-[#050505] text-white">
+                                {option.label}
+                              </option>
+                            ))}
+                          </select>
+                        </div>
+                        <label className="flex items-center gap-3 text-xs text-white/55 mb-6">
+                          <input
+                            type="checkbox"
+                            checked={removeFillers}
+                            onChange={(e) => setRemoveFillers(e.target.checked)}
+                            className="h-4 w-4 rounded border border-white/15 bg-white/5 accent-[#5e6ad2]"
+                          />
+                          Polish transcript by removing filler words
+                        </label>
                         <span className="px-6 py-2.5 bg-white/10 text-white rounded-full text-[11px] font-medium hover:bg-white/20 transition-all duration-500">Select File</span>
                       </div>
                     </div>
@@ -262,6 +317,15 @@ export default function AppInterface({ onClose }: { onClose: () => void }) {
                         </button>
                       </div>
                     </div>
+
+                    {result.detectedLanguage && (
+                      <div className="flex items-center gap-2 text-[11px] text-white/45">
+                        <Shield strokeWidth={1} className="w-3.5 h-3.5" />
+                        <span>
+                          Detected language: {formatLanguageLabel(result.detectedLanguage)}
+                        </span>
+                      </div>
+                    )}
 
                     {resultTab === "transcript" && result.segments && result.segments.length > 0 && (
                       <div className="space-y-1">
@@ -367,6 +431,7 @@ export default function AppInterface({ onClose }: { onClose: () => void }) {
                         });
                         setResult({
                           transcript: record.transcript || "",
+                          detectedLanguage: record.language,
                           segments: (record as any).segments || segments,
                           summary: record.summary || "",
                           actionItems: record.actionItems || [],
@@ -403,5 +468,11 @@ export default function AppInterface({ onClose }: { onClose: () => void }) {
     const mins = Math.floor(seconds / 60);
     const secs = Math.floor(seconds % 60);
     return `${mins}:${secs.toString().padStart(2, '0')}`;
+  }
+
+  function formatLanguageLabel(languageCode: string) {
+    const normalized = languageCode.toLowerCase();
+    const match = LANGUAGE_OPTIONS.find((option) => option.value === normalized);
+    return match ? `${match.label} (${languageCode})` : languageCode.toUpperCase();
   }
 }

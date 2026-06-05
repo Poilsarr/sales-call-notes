@@ -2,20 +2,22 @@ import OpenAI from 'openai';
 import { CallAnalysis, TranscriptionSegment } from '@/types';
 import fs from 'fs';
 import path from 'path';
+import { wrapClient } from '@/lib/langfuse';
+import { getSecret } from '@/lib/secrets';
 
 export class AnalysisService {
   private openai: OpenAI;
   private groqOpenai: OpenAI | null = null;
 
   constructor() {
-    this.openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY, timeout: 300000, maxRetries: 2 });
-    if (process.env.GROQ_API_KEY) {
-      this.groqOpenai = new OpenAI({
-        apiKey: process.env.GROQ_API_KEY,
+    this.openai = wrapClient(new OpenAI({ apiKey: getSecret("OPENAI_API_KEY"), timeout: 300000, maxRetries: 2 }));
+    if (getSecret("GROQ_API_KEY")) {
+      this.groqOpenai = wrapClient(new OpenAI({
+        apiKey: getSecret("GROQ_API_KEY"),
         baseURL: 'https://api.groq.com/openai/v1',
         timeout: 300000,
         maxRetries: 2
-      });
+      }));
     }
   }
 
@@ -75,7 +77,7 @@ export class AnalysisService {
   }
 
   private async loadPrompt(domain: string): Promise<string> {
-    const promptPath = path.join(process.cwd(), 'src/lib/prompts', `${domain}.md`);
+    const promptPath = path.resolve(process.cwd(), 'src/lib/prompts', `${domain}.md`);
     return fs.readFileSync(promptPath, 'utf-8');
   }
 
@@ -124,9 +126,26 @@ export class AnalysisService {
       keyEntities: raw.keyEntities || {},
       competitorsMentioned: Array.isArray(raw.competitorsMentioned) ? raw.competitorsMentioned : [],
       salesScorecard: raw.salesScorecard || {
-        meddic: { metrics: 0, economicBuyer: 0, decisionCriteria: 0, decisionProcess: 0, identifyPain: 0, champion: 0 },
-        bant: { budget: 0, authority: 0, need: 0, timeline: 0 },
-        spin: { situation: 0, problem: 0, implication: 0, needPayoff: 0 },
+        meddic: {
+          metrics: { score: 0, evidence: '' },
+          economicBuyer: { score: 0, evidence: '' },
+          decisionCriteria: { score: 0, evidence: '' },
+          decisionProcess: { score: 0, evidence: '' },
+          identifyPain: { score: 0, evidence: '' },
+          champion: { score: 0, evidence: '' }
+        },
+        bant: {
+          budget: { score: 0, evidence: '' },
+          authority: { score: 0, evidence: '' },
+          need: { score: 0, evidence: '' },
+          timeline: { score: 0, evidence: '' }
+        },
+        spin: {
+          situation: { score: 0, evidence: '' },
+          problem: { score: 0, evidence: '' },
+          implication: { score: 0, evidence: '' },
+          needPayoff: { score: 0, evidence: '' }
+        },
         overallScore: 0
       },
       stakeholderMap: raw.stakeholderMap || [],

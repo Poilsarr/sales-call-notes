@@ -10,7 +10,7 @@ export default function AppLayout({
   children: React.ReactNode;
 }) {
   return (
-    <div className="flex h-screen bg-zinc-950">
+    <div className="flex h-screen bg-white">
       <AppSidebar />
       <main className="flex-1 overflow-y-auto">
         <motion.div
@@ -24,12 +24,12 @@ export default function AppLayout({
       </main>
       <Toaster
         position="top-right"
-        theme="dark"
+        theme="light"
         toastOptions={{
           style: {
-            background: '#18181b',
-            color: '#fafafa',
-            border: '1px solid #3f3f46',
+            background: '#ffffff',
+            color: '#111111',
+            border: '1px solid #e5e5e5',
           },
         }}
       />

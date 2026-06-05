@@ -2,6 +2,19 @@ export interface CallAnalytics {
   talkRatio: Record<string, number>;
   interruptions: number;
   questionsAsked: number;
+  speakerMetrics: Array<{
+    speaker: string;
+    talkRatio: number;
+    sentiment: "positive" | "neutral" | "negative";
+    questionsAsked: number;
+    interruptions: number;
+    turns: number;
+  }>;
+  sentimentTimeline: Array<{
+    speaker: string;
+    timestamp: number;
+    sentiment: "positive" | "neutral" | "negative";
+  }>;
   objections: string[];
   budgetMentioned: boolean;
   timelineMentioned: boolean;
@@ -12,8 +25,13 @@ export interface CallAnalytics {
 }
 
 export class AnalyticsService {
-  async analyzeCall(transcript: string, speakers: any[]): Promise<CallAnalytics> {
+  async analyzeCall(
+    transcript: string,
+    speakers: any[],
+    turns: Array<{ speaker: string; text: string; start: number; end: number }> = [],
+  ): Promise<CallAnalytics> {
     const lowerTranscript = transcript.toLowerCase();
+    const normalizedTurns = turns.length > 0 ? turns : this.parseTurnsFromTranscript(transcript);
 
     const budgetMentioned = this.detectBudget(lowerTranscript);
     const timelineMentioned = this.detectTimeline(lowerTranscript);
@@ -24,7 +42,29 @@ export class AnalyticsService {
     const sentiment = this.analyzeSentiment(lowerTranscript);
 
     const talkRatio = this.calculateTalkRatio(speakers);
-    const interruptions = this.countInterruptions(speakers);
+    const interruptions = this.countInterruptions(normalizedTurns);
+    const speakerInterruptions = this.countInterruptionsBySpeaker(normalizedTurns);
+    const speakerQuestions = this.countQuestionsBySpeaker(normalizedTurns);
+    const sentimentTimeline = normalizedTurns.map((turn) => ({
+      speaker: turn.speaker,
+      timestamp: turn.start,
+      sentiment: this.analyzeSentiment(turn.text.toLowerCase()),
+    }));
+    const speakerMetrics = Object.entries(talkRatio).map(([speaker, ratio]) => {
+      const matchingTurns = normalizedTurns.filter((turn) => turn.speaker === speaker);
+      const sentiments = matchingTurns.map((turn) =>
+        this.analyzeSentiment(turn.text.toLowerCase()),
+      );
+
+      return {
+        speaker,
+        talkRatio: ratio,
+        sentiment: this.mergeSentiments(sentiments),
+        questionsAsked: speakerQuestions[speaker] || 0,
+        interruptions: speakerInterruptions[speaker] || 0,
+        turns: matchingTurns.length,
+      };
+    });
     const healthScore = this.calculateHealthScore({
       budgetMentioned,
       timelineMentioned,
@@ -38,6 +78,8 @@ export class AnalyticsService {
       talkRatio,
       interruptions,
       questionsAsked,
+      speakerMetrics,
+      sentimentTimeline,
       objections,
       budgetMentioned,
       timelineMentioned,
@@ -117,6 +159,15 @@ export class AnalyticsService {
     return Math.max(questionMarks, questionWordCount);
   }
 
+  private countQuestionsBySpeaker(
+    turns: Array<{ speaker: string; text: string }>,
+  ): Record<string, number> {
+    return turns.reduce<Record<string, number>>((acc, turn) => {
+      acc[turn.speaker] = (acc[turn.speaker] || 0) + this.countQuestions(turn.text.toLowerCase());
+      return acc;
+    }, {});
+  }
+
   private analyzeSentiment(transcript: string): "positive" | "neutral" | "negative" {
     const positiveWords = [
       "great", "good", "excellent", "perfect", "love", "like",
@@ -159,15 +210,17 @@ export class AnalyticsService {
     return ratio;
   }
 
-  private countInterruptions(speakers: any[]): number {
+  private countInterruptions(
+    turns: Array<{ speaker: string; start: number; end: number }>,
+  ): number {
     let interruptions = 0;
 
-    for (let i = 1; i < speakers.length; i++) {
-      const currentSpeaker = speakers[i];
-      const previousSpeaker = speakers[i - 1];
+    for (let i = 1; i < turns.length; i++) {
+      const currentSpeaker = turns[i];
+      const previousSpeaker = turns[i - 1];
 
-      if (currentSpeaker.label !== previousSpeaker.label) {
-        const gap = currentSpeaker.segments[0]?.start - previousSpeaker.segments[previousSpeaker.segments.length - 1]?.end;
+      if (currentSpeaker.speaker !== previousSpeaker.speaker) {
+        const gap = currentSpeaker.start - previousSpeaker.end;
         if (gap < 0.5) {
           interruptions++;
         }
@@ -175,6 +228,56 @@ export class AnalyticsService {
     }
 
     return interruptions;
+  }
+
+  private countInterruptionsBySpeaker(
+    turns: Array<{ speaker: string; start: number; end: number }>,
+  ): Record<string, number> {
+    const interruptions: Record<string, number> = {};
+
+    for (let i = 1; i < turns.length; i++) {
+      const currentSpeaker = turns[i];
+      const previousSpeaker = turns[i - 1];
+
+      if (currentSpeaker.speaker !== previousSpeaker.speaker) {
+        const gap = currentSpeaker.start - previousSpeaker.end;
+        if (gap < 0.5) {
+          interruptions[currentSpeaker.speaker] =
+            (interruptions[currentSpeaker.speaker] || 0) + 1;
+        }
+      }
+    }
+
+    return interruptions;
+  }
+
+  private parseTurnsFromTranscript(
+    transcript: string,
+  ): Array<{ speaker: string; text: string; start: number; end: number }> {
+    return transcript
+      .split('\n\n')
+      .filter(Boolean)
+      .map((block, index) => {
+        const [speaker, ...content] = block.split(': ');
+        const text = content.join(': ') || block;
+        return {
+          speaker: speaker || 'Unknown',
+          text,
+          start: index * 10,
+          end: index * 10 + 10,
+        };
+      });
+  }
+
+  private mergeSentiments(
+    sentiments: Array<"positive" | "neutral" | "negative">,
+  ): "positive" | "neutral" | "negative" {
+    const positive = sentiments.filter((value) => value === 'positive').length;
+    const negative = sentiments.filter((value) => value === 'negative').length;
+
+    if (positive > negative) return 'positive';
+    if (negative > positive) return 'negative';
+    return 'neutral';
   }
 
   private calculateHealthScore(metrics: {

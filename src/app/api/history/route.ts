@@ -2,15 +2,31 @@
 import { NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
 import { auth } from '@clerk/nextjs/server';
+import { getUserByClerkId } from '@/lib/get-user';
 
 export async function GET(req: Request) {
   try {
-    const { userId } = await auth();
-    if (!userId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    const { userId: clerkUserId } = await auth();
+    if (!clerkUserId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
+    const user = await getUserByClerkId(clerkUserId);
 
     const calls = await prisma.call.findMany({
-      where: { userId },
-      include: { actionItems: true, decisions: true, nextSteps: true },
+      where: user.teamId
+        ? {
+            OR: [
+              { userId: user.id },
+              { teamId: user.teamId, sharedWithTeam: true },
+            ],
+          }
+        : { userId: user.id },
+      include: {
+        actionItems: true,
+        decisions: true,
+        nextSteps: true,
+        assignee: { select: { name: true } },
+        user: { select: { name: true } },
+      },
       orderBy: { createdAt: 'desc' }
     });
 
@@ -19,10 +35,14 @@ export async function GET(req: Request) {
       userId: c.userId,
       filename: c.filename,
       transcript: c.transcript,
+      language: c.language,
       summary: c.summary,
       healthScore: c.healthScore,
       sentiment: c.sentiment,
       createdAt: c.createdAt,
+      sharedWithTeam: c.sharedWithTeam,
+      ownerName: c.user?.name || null,
+      assigneeName: c.assignee?.name || null,
       actionItems: c.actionItems.map(a => ({ task: a.task, owner: a.owner, due: a.due })),
       keyDecisions: c.decisions.map(d => d.content),
       nextSteps: c.nextSteps.map(n => ({ step: n.step, date: n.date })),
@@ -36,8 +56,10 @@ export async function GET(req: Request) {
 
 export async function POST(req: Request) {
   try {
-    const { userId } = await auth();
-    if (!userId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    const { userId: clerkUserId } = await auth();
+    if (!clerkUserId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
+    const user = await getUserByClerkId(clerkUserId);
 
     const body = await req.json();
     const { filename, transcript, summary, healthScore } = body;
@@ -48,7 +70,9 @@ export async function POST(req: Request) {
 
     const call = await prisma.call.create({
       data: {
-        userId,
+        userId: user.id,
+        teamId: user.teamId,
+        sharedWithTeam: Boolean(user.teamId),
         filename,
         transcript: transcript || "",
         summary: summary || "",

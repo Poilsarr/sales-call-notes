@@ -1,4 +1,6 @@
 import { OpenAI } from 'openai';
+import { wrapClient } from '@/lib/langfuse';
+import { getSecret } from '@/lib/secrets';
 
 export interface TranscriptionSegment {
   speaker: string;
@@ -16,8 +18,8 @@ export interface TranscriptionResult {
 
 export class TranscriptionService {
   async transcribe(file: File): Promise<TranscriptionResult> {
-    const openAIKey = process.env.OPENAI_API_KEY;
-    const groqKey = process.env.GROQ_API_KEY;
+    const openAIKey = getSecret("OPENAI_API_KEY");
+    const groqKey = getSecret("GROQ_API_KEY");
 
     if (openAIKey) {
       return this.transcribeWithOpenAI(file, openAIKey);
@@ -30,12 +32,12 @@ export class TranscriptionService {
   }
 
   private async transcribeWithOpenAI(file: File, apiKey: string): Promise<TranscriptionResult> {
-    const openai = new OpenAI({ apiKey });
+    const openai = wrapClient(new OpenAI({ apiKey }));
     return this.transcribeWithProvider(openai, file, 'whisper-1');
   }
 
   private async transcribeWithGroq(file: File, apiKey: string): Promise<TranscriptionResult> {
-    const openai = new OpenAI({ apiKey, baseURL: 'https://api.groq.com/openai/v1' });
+    const openai = wrapClient(new OpenAI({ apiKey, baseURL: 'https://api.groq.com/openai/v1' }));
     return this.transcribeWithProvider(openai, file, 'whisper-large-v3');
   }
 

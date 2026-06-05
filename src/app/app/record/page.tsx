@@ -1,25 +1,69 @@
 'use client';
 
 import { useState, useRef, useEffect } from 'react';
+import { useSearchParams } from 'next/navigation';
 import { motion } from 'framer-motion';
 import { Mic, Square, Upload, ExternalLink } from 'lucide-react';
 import { toast } from 'sonner';
-import { useRouter } from 'next/navigation';
+
+import { LiveTranscriptionPanel } from '@/components/live-transcription-panel';
+
+type BrowserSpeechRecognition = {
+  continuous: boolean;
+  interimResults: boolean;
+  lang: string;
+  onresult: ((event: SpeechRecognitionEventLike) => void) | null;
+  onerror: ((event: { error?: string }) => void) | null;
+  onend: (() => void) | null;
+  start: () => void;
+  stop: () => void;
+};
+
+type SpeechRecognitionEventLike = {
+  resultIndex: number;
+  results: ArrayLike<{
+    isFinal: boolean;
+    0: { transcript: string };
+    length: number;
+  }>;
+};
 
 export default function RecordPage() {
-  const router = useRouter();
+  const searchParams = useSearchParams();
   const [isRecording, setIsRecording] = useState(false);
   const [duration, setDuration] = useState(0);
   const [uploadedCallId, setUploadedCallId] = useState<string | null>(null);
+  const [liveSessionId, setLiveSessionId] = useState(() => crypto.randomUUID());
+  const [speechSupported, setSpeechSupported] = useState(false);
+  const [removeFillers, setRemoveFillers] = useState(true);
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
+  const recognitionRef = useRef<BrowserSpeechRecognition | null>(null);
+  const isRecordingRef = useRef(false);
   const chunksRef = useRef<Blob[]>([]);
   const timerRef = useRef<NodeJS.Timeout | null>(null);
   const streamRef = useRef<MediaStream | null>(null);
+  const extensionSessionId = searchParams.get('liveSessionId');
+  const extensionSource = searchParams.get('source') === 'extension';
+  const activeSessionId = extensionSessionId || liveSessionId;
+  const livePanelActive = isRecording || Boolean(extensionSessionId);
 
   useEffect(() => {
+    isRecordingRef.current = isRecording;
+  }, [isRecording]);
+
+  useEffect(() => {
+    const speechWindow = window as Window & {
+      SpeechRecognition?: new () => BrowserSpeechRecognition;
+      webkitSpeechRecognition?: new () => BrowserSpeechRecognition;
+    };
+    setSpeechSupported(Boolean(speechWindow.SpeechRecognition || speechWindow.webkitSpeechRecognition));
+
     return () => {
       if (mediaRecorderRef.current && mediaRecorderRef.current.state !== 'inactive') {
         mediaRecorderRef.current.stop();
+      }
+      if (recognitionRef.current) {
+        recognitionRef.current.stop();
       }
       if (streamRef.current) {
         streamRef.current.getTracks().forEach(track => track.stop());
@@ -30,6 +74,8 @@ export default function RecordPage() {
 
   const startRecording = async () => {
     try {
+      const sessionId = crypto.randomUUID();
+      setLiveSessionId(sessionId);
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
       streamRef.current = stream;
       const mediaRecorder = new MediaRecorder(stream);
@@ -48,6 +94,8 @@ export default function RecordPage() {
 
       mediaRecorder.start();
       setIsRecording(true);
+      isRecordingRef.current = true;
+      startSpeechRecognition(sessionId);
       
       timerRef.current = setInterval(() => {
         setDuration(prev => prev + 1);
@@ -62,7 +110,11 @@ export default function RecordPage() {
   const stopRecording = () => {
     if (mediaRecorderRef.current && isRecording) {
       mediaRecorderRef.current.stop();
+      if (recognitionRef.current) {
+        recognitionRef.current.stop();
+      }
       setIsRecording(false);
+      isRecordingRef.current = false;
       if (timerRef.current) clearInterval(timerRef.current);
       setDuration(0);
       toast.success('Recording stopped');
@@ -72,6 +124,7 @@ export default function RecordPage() {
   const uploadRecording = async (blob: Blob) => {
     const formData = new FormData();
     formData.append('file', blob, 'recording.webm');
+    formData.append('removeFillers', String(removeFillers));
     
     toast.promise(
       fetch('/api/analyze', { method: 'POST', body: formData }).then(async res => {
@@ -104,6 +157,56 @@ export default function RecordPage() {
     uploadRecording(file);
   };
 
+  const startSpeechRecognition = (sessionId: string) => {
+    const speechWindow = window as Window & {
+      SpeechRecognition?: new () => BrowserSpeechRecognition;
+      webkitSpeechRecognition?: new () => BrowserSpeechRecognition;
+    };
+
+    const RecognitionCtor =
+      speechWindow.SpeechRecognition || speechWindow.webkitSpeechRecognition;
+
+    if (!RecognitionCtor) {
+      return;
+    }
+
+    const recognition = new RecognitionCtor();
+    recognition.continuous = true;
+    recognition.interimResults = true;
+    recognition.lang = navigator.language || 'en-US';
+
+    recognition.onresult = (event) => {
+      for (let index = event.resultIndex; index < event.results.length; index += 1) {
+        const result = event.results[index];
+        const transcript = result[0]?.transcript?.trim();
+        if (!transcript) continue;
+
+        void fetch('/api/transcribe/live', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            sessionId,
+            text: transcript,
+            isFinal: result.isFinal,
+          }),
+        });
+      }
+    };
+
+    recognition.onerror = () => {
+      toast.error('Live captions encountered an error');
+    };
+
+    recognition.onend = () => {
+      if (isRecordingRef.current) {
+        recognition.start();
+      }
+    };
+
+    recognitionRef.current = recognition;
+    recognition.start();
+  };
+
   const formatDuration = (seconds: number) => {
     const mins = Math.floor(seconds / 60);
     const secs = seconds % 60;
@@ -111,63 +214,102 @@ export default function RecordPage() {
   };
 
   return (
-    <div className="max-w-2xl mx-auto space-y-8">
+    <div className="max-w-5xl mx-auto space-y-8">
       <div>
         <h1 className="text-3xl font-semibold text-white mb-2">Record Call</h1>
         <p className="text-zinc-400">Record a sales call directly from your browser</p>
       </div>
-      
-      <div className="doppel-outer">
-        <div className="doppel-inner p-12 flex flex-col items-center justify-center">
-          <motion.div
-            animate={isRecording ? { scale: [1, 1.1, 1] } : { scale: 1 }}
-            transition={{ repeat: isRecording ? Infinity : 0, duration: 1.5 }}
-            className="mb-6"
-          >
-            <div className={`w-24 h-24 rounded-full flex items-center justify-center ${
-              isRecording ? 'bg-red-500/20' : 'bg-emerald-500/20'
-            }`}>
-              {isRecording ? (
-                <Square className="w-10 h-10 text-red-400" />
-              ) : (
-                <Mic className="w-10 h-10 text-emerald-400" />
+
+      <div className="grid grid-cols-1 xl:grid-cols-[1.2fr_0.8fr] gap-6 items-start">
+        <div className="space-y-6">
+          <div className="doppel-outer">
+            <div className="doppel-inner p-12 flex flex-col items-center justify-center">
+              <motion.div
+                animate={isRecording ? { scale: [1, 1.1, 1] } : { scale: 1 }}
+                transition={{ repeat: isRecording ? Infinity : 0, duration: 1.5 }}
+                className="mb-6"
+              >
+                <div className={`w-24 h-24 rounded-full flex items-center justify-center ${
+                  isRecording ? 'bg-red-500/20' : 'bg-emerald-500/20'
+                }`}>
+                  {isRecording ? (
+                    <Square className="w-10 h-10 text-red-400" />
+                  ) : (
+                    <Mic className="w-10 h-10 text-emerald-400" />
+                  )}
+                </div>
+              </motion.div>
+              
+              <p className="text-2xl font-mono text-white mb-6">{formatDuration(duration)}</p>
+              
+              <button
+                onClick={isRecording ? stopRecording : startRecording}
+                className={`px-8 py-3 rounded-full font-medium transition-all active:scale-[0.98] ${
+                  isRecording
+                    ? 'bg-red-500 hover:bg-red-600 text-white'
+                    : 'bg-emerald-500 hover:bg-emerald-600 text-white'
+                }`}
+              >
+                {isRecording ? 'Stop Recording' : 'Start Recording'}
+              </button>
+
+              <p className="text-xs text-zinc-500 mt-4">
+                {speechSupported
+                  ? 'Browser speech recognition is available for live captions.'
+                  : 'Browser speech recognition is unavailable; the panel can still receive external caption events.'}
+              </p>
+              <label className="mt-5 flex items-center gap-3 text-sm text-zinc-300">
+                <input
+                  type="checkbox"
+                  checked={removeFillers}
+                  onChange={(e) => setRemoveFillers(e.target.checked)}
+                  className="h-4 w-4 rounded border border-zinc-700 bg-zinc-900 accent-emerald-500"
+                />
+                Polish transcript by removing filler words
+              </label>
+            </div>
+          </div>
+
+          <div className="doppel-outer">
+            <div className="doppel-inner p-6">
+              <h2 className="text-lg font-medium text-white mb-4">Or Upload Audio</h2>
+              <label className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed border-zinc-700 rounded-xl cursor-pointer hover:border-emerald-500/50 transition-colors">
+                <Upload className="w-8 h-8 text-zinc-500 mb-2" />
+                <span className="text-sm text-zinc-400">Click to upload or drag and drop</span>
+                <span className="text-xs text-zinc-600 mt-1">MP3, WAV, M4A up to 50MB</span>
+                <input type="file" className="hidden" accept="audio/*" onChange={handleFileUpload} />
+              </label>
+              <label className="mt-4 flex items-center gap-3 text-sm text-zinc-300">
+                <input
+                  type="checkbox"
+                  checked={removeFillers}
+                  onChange={(e) => setRemoveFillers(e.target.checked)}
+                  className="h-4 w-4 rounded border border-zinc-700 bg-zinc-900 accent-emerald-500"
+                />
+                Polish transcript by removing filler words
+              </label>
+              {uploadedCallId && (
+                <a
+                  href={`/app/calls/${uploadedCallId}`}
+                  className="inline-flex items-center gap-2 mt-4 text-sm text-emerald-400 hover:text-emerald-300 transition-colors"
+                >
+                  <ExternalLink className="w-4 h-4" />
+                  View uploaded call
+                </a>
               )}
             </div>
-          </motion.div>
-          
-          <p className="text-2xl font-mono text-white mb-6">{formatDuration(duration)}</p>
-          
-          <button
-            onClick={isRecording ? stopRecording : startRecording}
-            className={`px-8 py-3 rounded-full font-medium transition-all active:scale-[0.98] ${
-              isRecording
-                ? 'bg-red-500 hover:bg-red-600 text-white'
-                : 'bg-emerald-500 hover:bg-emerald-600 text-white'
-            }`}
-          >
-            {isRecording ? 'Stop Recording' : 'Start Recording'}
-          </button>
+          </div>
         </div>
-      </div>
-      
-      <div className="doppel-outer">
-        <div className="doppel-inner p-6">
-          <h2 className="text-lg font-medium text-white mb-4">Or Upload Audio</h2>
-          <label className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed border-zinc-700 rounded-xl cursor-pointer hover:border-emerald-500/50 transition-colors">
-            <Upload className="w-8 h-8 text-zinc-500 mb-2" />
-            <span className="text-sm text-zinc-400">Click to upload or drag and drop</span>
-            <span className="text-xs text-zinc-600 mt-1">MP3, WAV, M4A up to 50MB</span>
-            <input type="file" className="hidden" accept="audio/*" onChange={handleFileUpload} />
-          </label>
-          {uploadedCallId && (
-            <a
-              href={`/app/calls/${uploadedCallId}`}
-              className="inline-flex items-center gap-2 mt-4 text-sm text-emerald-400 hover:text-emerald-300 transition-colors"
-            >
-              <ExternalLink className="w-4 h-4" />
-              View uploaded call
-            </a>
-          )}
+
+        <div className="space-y-4">
+          {extensionSource && extensionSessionId ? (
+            <div className="doppel-outer">
+              <div className="doppel-inner p-4 text-sm text-zinc-300">
+                Viewing a live Google Meet stream from the Chrome extension.
+              </div>
+            </div>
+          ) : null}
+          <LiveTranscriptionPanel active={livePanelActive} sessionId={activeSessionId} />
         </div>
       </div>
     </div>

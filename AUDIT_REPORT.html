@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CallNote Pro - Audit & Growth Report</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body { font-family: 'Inter', sans-serif; background-color: #f9fafb; }
+        .card { background: white; border-radius: 12px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); padding: 24px; margin-bottom: 24px; }
+        .severity-critical { color: #dc2626; font-weight: bold; }
+        .severity-medium { color: #d97706; font-weight: bold; }
+        .severity-low { color: #059669; font-weight: bold; }
+    </style>
+</head>
+<body class="p-8 max-w-4xl mx-auto">
+    <header class="mb-12 text-center">
+        <h1 class="text-4xl font-bold text-gray-900 mb-4">CallNote Pro: Audit & Growth Report</h1>
+        <p class="text-gray-600">Security Analysis, Competitor Gaps, and AI Roadmap</p>
+    </header>
+
+    <section>
+        <h2 class="text-2xl font-semibold mb-6 flex items-center">🛡️ Security Audit</h2>
+        <div class="card">
+            <table class="w-full text-left border-collapse">
+                <thead>
+                    <tr class="border-b">
+                        <th class="py-2">Area</th>
+                        <th class="py-2">Severity</th>
+                        <th class="py-2">Finding</th>
+                        <th class="py-2">Fix</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr class="border-b">
+                        <td class="py-4">Whisper Spawning</td>
+                        <td class="py-4 severity-critical">CRITICAL</td>
+                        <td class="py-4">Command Injection (RCE) in DiarizationService</td>
+                        <td class="py-4">Use args array in spawn() instead of template strings.</td>
+                    </tr>
+                    <tr class="border-b">
+                        <td class="py-4">API Routes</td>
+                        <td class="py-4 severity-medium">MEDIUM</td>
+                        <td class="py-4">Rate limiting logic exists but not integrated</td>
+                        <td class="py-4">Import rateLimitMiddleware in src/middleware.ts.</td>
+                    </tr>
+                    <tr>
+                        <td class="py-4">Audio Uploads</td>
+                        <td class="py-4 severity-low">LOW</td>
+                        <td class="py-4">Weak mime-type validation</td>
+                        <td class="py-4">Implement magic-byte verification via file-type.</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </section>
+
+    <section class="mt-12">
+        <h2 class="text-2xl font-semibold mb-6 flex items-center">🚀 Competitor Analysis</h2>
+        <div class="card">
+            <h3 class="font-bold text-lg mb-2">The Winning Edge: Local-First Privacy</h3>
+            <p class="text-gray-600 mb-4">While Otter and Fireflies process in cloud, CallNote Pro wins by guaranteeing data never leaves the device. Target: Legal, Healthcare, and FinTech.</p>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div class="p-4 bg-blue-50 rounded-lg border border-blue-100">
+                    <h4 class="font-bold text-blue-800">Feature Gaps</h4>
+                    <ul class="list-disc ml-4 text-sm text-blue-700">
+                        <li>Bi-directional CRM Sync (HubSpot/SF)</li>
+                        <li>SDR Frameworks (BANT/MEDDIC)</li>
+                        <li>Speaker Diarization</li>
+                        <li>Deal Health Analytics</li>
+                    </ul>
+                </div>
+                <div class="p-4 bg-green-50 rounded-lg border border-green-100">
+                    <h4 class="font-bold text-green-800">Free AI Wins</h4>
+                    <ul class="list-disc ml-4 text-sm text-green-700">
+                        <li>Real-time PII Redactor</li>
+                        <li>Semantic Knowledge Graph</li>
+                        <li>Live Objection Prompting</li>
+                        <li>Hyper-Personalization Engine</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="mt-12">
+        <h2 class="text-2xl font-semibold mb-6 flex items-center">🌐 Strategy</h2>
+        <div class="card">
+            <div class="mb-4">
+                <h3 class="font-bold">Domain Purchase: <span class="text-orange-600">Wait</span></h3>
+                <p class="text-gray-600 text-sm">Buy only after PMF validation. Use .ai or .io for branding.</p>
+            </div>
+            <div>
+                <h3 class la="font-bold">Deployment:</h3>
+                <p class="text-gray-600 text-sm">Vercel (Frontend) &rarr; GPU VPS/Docker (Local AI Backend) &rarr; PostgreSQL (Data).</p>
+            </div>
+        </div>
+    </section>
+
+    <footer class="mt-12 text-center text-gray-400 text-xs">
+        Generated by Claude Code &bull; 2026-05-30
+    </footer>
+</body>
+</html>

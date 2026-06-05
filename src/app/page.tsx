@@ -2,26 +2,47 @@
 
 import { useState, useEffect } from "react";
 import { useUser, SignInButton } from "@clerk/nextjs";
+import { useRouter } from "next/navigation";
 import dynamic from "next/dynamic";
 import Nav from "@/components/nav";
 import Link from "next/link";
 import {
   Upload, Brain, Target, BarChart3,
-  Share2, History, ArrowRight,
+  Share2, History, ArrowRight, Sparkles,
 } from "lucide-react";
 
 const AppInterface = dynamic(() => import("@/components/app-interface"), { ssr: false });
+const HeroShader = dynamic(() => import("@/components/hero-shader"), { ssr: false });
+
+const features = [
+  { icon: Upload, title: "Audio Upload", desc: "Drag-drop or click to upload MP3, WAV, M4A, WebM. Process recordings instantly.", accent: "#F26522", metric: "Instant" },
+  { icon: Brain, title: "Precision Transcription", desc: "Whisper AI powered. Clean speaker separation. Accurate labels for every turn.", accent: "#2563eb", metric: "99% Acc" },
+  { icon: Target, title: "Smart Summarization", desc: "Extract 2-3 sentence summaries, action items, key decisions automatically.", accent: "#7c3aed", metric: "AI" },
+  { icon: BarChart3, title: "Call Analytics", desc: "Track health scores, sentiment, talk ratios, budget signals, and next steps.", accent: "#059669", metric: "Live" },
+  { icon: Share2, title: "One-Click CRM Export", desc: "Push MEDDIC/BANT summaries to HubSpot, Salesforce, or Teams.", accent: "#d97706", metric: "3 CRMs" },
+  { icon: History, title: "Searchable History", desc: "Full archive with semantic search across all your calls and insights.", accent: "#dc2626", metric: "∞ storage" },
+];
+
+const testimonials = [
+  { quote: "I easily save hours per week, without a doubt. That's an exponential amount of time savings.", name: "Matt S.", role: "Marketing Manager", initials: "MS" },
+  { quote: "Just being conservative — our team is getting 33% time back from manual note-taking.", name: "Laura B.", role: "VP of Sales", initials: "LB" },
+  { quote: "Cut my post-call documentation from 15 minutes to 30 seconds. It's a superpower.", name: "Brandon S.", role: "Sales Enablement", initials: "BS" },
+];
 
 export default function Home() {
+  const router = useRouter();
   const [showApp, setShowApp] = useState(false);
+  const [mounted, setMounted] = useState(false);
   const { user } = useUser();
+
+  useEffect(() => setMounted(true), []);
 
   useEffect(() => {
     let rafId: number;
     const handleMouseMove = (e: MouseEvent) => {
       cancelAnimationFrame(rafId);
       rafId = requestAnimationFrame(() => {
-        document.querySelectorAll(".group.relative").forEach((card) => {
+        document.querySelectorAll(".glow-card").forEach((card) => {
           const rect = card.getBoundingClientRect();
           const x = ((e.clientX - rect.left) / rect.width) * 100;
           const y = ((e.clientY - rect.top) / rect.height) * 100;
@@ -34,91 +55,99 @@ export default function Home() {
     return () => { document.removeEventListener("mousemove", handleMouseMove); cancelAnimationFrame(rafId); };
   }, []);
 
-  const features = [
-    { icon: <Upload strokeWidth={1} className="w-5 h-5" />, title: "Upload & Transcribe", desc: "Drop audio files. Whisper AI converts speech to text with speaker labels.", accent: "#5e6ad2", metric: "<60s" },
-    { icon: <Brain strokeWidth={1} className="w-5 h-5" />, title: "AI Analysis", desc: "Extract summary, action items, decisions, and next steps automatically.", accent: "#8b5cf6", metric: "98%" },
-    { icon: <Target strokeWidth={1} className="w-5 h-5" />, title: "Action Tracking", desc: "Every task gets an owner and due date. No follow-up gets missed.", accent: "#22d3a8", metric: "0 missed" },
-    { icon: <BarChart3 strokeWidth={1} className="w-5 h-5" />, title: "Call Analytics", desc: "Health scores, sentiment, talk ratios, and buying signal detection.", accent: "#f59e0b", metric: "6 metrics" },
-    { icon: <Share2 strokeWidth={1} className="w-5 h-5" />, title: "CRM Sync", desc: "Push notes to HubSpot, Salesforce, or Teams with one click.", accent: "#3b82f6", metric: "3 CRMs" },
-    { icon: <History strokeWidth={1} className="w-5 h-5" />, title: "Searchable History", desc: "Full archive with search across all your calls and notes.", accent: "#ec4899", metric: "∞ storage" },
-  ];
-
   return (
-    <main className="min-h-screen bg-[#050505] text-white overflow-hidden selection:bg-[#5e6ad2]/30">
-      <Nav />
+    <main className="min-h-screen bg-[#EFEFEF] text-gray-900 overflow-hidden">
+      {/* SECTION 1: HERO */}
+      <section className="relative min-h-[100dvh] flex flex-col">
+        <HeroShader />
+        <Nav />
 
-      <section className="relative min-h-[100dvh] flex flex-col items-center justify-center px-6 pt-24 pb-32 overflow-hidden mesh-bg">
-        <div className="radial-glow top-[-10%] left-[-5%] bg-[#5e6ad2]" />
-        <div className="radial-glow bottom-[-20%] right-[-10%] bg-[#22d3a8]" />
+        <div className="flex-1" />
 
-        <div className="relative z-10 max-w-5xl mx-auto text-center">
-          <div className="eyebrow inline-flex items-center gap-2 mb-8 motion-safe:animate-fade-up motion-safe:[animation-delay:100ms]">
-            <span className="w-1.5 h-1.5 rounded-full bg-[#22d3a8] animate-pulse" />
-            AI processed locally — Free for SDRs
-          </div>
-
-          <h1 className="font-display text-6xl md:text-8xl lg:text-9xl font-semibold tracking-tighter leading-[0.85] mb-8 motion-safe:animate-fade-up motion-safe:[animation-delay:200ms]">
-            Sales call notes,<br />
-            <span className="text-white/20">rendered instant.</span>
+        <div className="relative z-20 w-full max-w-[1440px] mx-auto px-5 sm:px-8 lg:px-12 pb-14 sm:pb-16 lg:pb-20">
+          <p className="text-[13px] leading-[14px] text-gray-900 tracking-wide mb-5 sm:mb-8 motion-safe:animate-fade-up">
+            CallNote Pro
+          </p>
+          <h1 className="text-[clamp(1.75rem,7vw,4.2rem)] sm:text-[clamp(2.5rem,5vw,4.2rem)] font-medium leading-[1.08] tracking-[-0.03em] text-gray-900 motion-safe:animate-fade-up motion-safe:[animation-delay:100ms]">
+            Sales call notes,<br className="hidden sm:block" />
+            <span className="sm:hidden"> </span>rendered instant.
           </h1>
-
-          <p className="text-base md:text-lg text-white/30 max-w-2xl mx-auto mb-12 font-[425] leading-relaxed motion-safe:animate-fade-up motion-safe:[animation-delay:300ms]">
+          <p className="text-[15px] text-gray-500 max-w-lg mt-4 mb-8 motion-safe:animate-fade-up motion-safe:[animation-delay:200ms]">
             Upload your call recording. Get summary, action items, and CRM-ready notes in seconds.
             Built for the modern SDR. No bots, no complex setup.
           </p>
 
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-4 motion-safe:animate-fade-up motion-safe:[animation-delay:400ms]">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 sm:gap-5 motion-safe:animate-fade-up motion-safe:[animation-delay:300ms]">
             {user ? (
-              <button onClick={() => setShowApp(true)}
-                className="btn-island flex items-center gap-3 bg-white text-[#050505] hover:bg-white/90 group px-8 py-4">
-                Open App
-                <span className="icon-wrap bg-[#050505]/10 group-hover:bg-[#050505]/15">
-                  <ArrowRight strokeWidth={1.5} className="w-3.5 h-3.5" />
+              <Link href="/app"
+                className="group inline-flex items-center gap-2 bg-[#F26522] hover:bg-[#e05a1a] text-white text-[13px] sm:text-[14px] rounded-full pl-5 sm:pl-6 pr-2 py-2 transition-colors duration-300">
+                <span className="flex flex-col overflow-hidden h-[20px]">
+                  <span className="transition-transform duration-500 ease-[cubic-bezier(0.25,0.1,0.25,1)] group-hover:-translate-y-1/2 leading-[20px]">
+                    Open App
+                  </span>
+                  <span className="leading-[20px]">Open App</span>
                 </span>
-              </button>
+                <span className="w-7 h-7 sm:w-8 sm:h-8 bg-white rounded-full flex items-center justify-center transition-transform duration-500 ease-[cubic-bezier(0.25,0.1,0.25,1)] group-hover:-rotate-45">
+                  <ArrowRight size={14} className="text-[#F26522]" />
+                </span>
+              </Link>
             ) : (
               <SignInButton mode="modal">
-                <button className="btn-island flex items-center gap-3 bg-white text-[#050505] hover:bg-white/90 group px-8 py-4">
-                  Get Started Free
-                  <span className="icon-wrap bg-[#050505]/10 group-hover:bg-[#050505]/15">
-                    <ArrowRight strokeWidth={1.5} className="w-3.5 h-3.5" />
+                <button className="group inline-flex items-center gap-2 bg-[#F26522] hover:bg-[#e05a1a] text-white text-[13px] sm:text-[14px] rounded-full pl-5 sm:pl-6 pr-2 py-2 transition-colors duration-300">
+                  <span className="flex flex-col overflow-hidden h-[20px]">
+                    <span className="transition-transform duration-500 ease-[cubic-bezier(0.25,0.1,0.25,1)] group-hover:-translate-y-1/2 leading-[20px]">
+                      Get Started Free
+                    </span>
+                    <span className="leading-[20px]">Get Started Free</span>
+                  </span>
+                  <span className="w-7 h-7 sm:w-8 sm:h-8 bg-white rounded-full flex items-center justify-center transition-transform duration-500 ease-[cubic-bezier(0.25,0.1,0.25,1)] group-hover:-rotate-45">
+                    <ArrowRight size={14} className="text-[#F26522]" />
                   </span>
                 </button>
               </SignInButton>
             )}
-            <button onClick={() => setShowApp(true)}
-              className="btn-island flex items-center gap-2 bg-white/5 text-white/60 hover:bg-white/10 hover:text-white border border-white/10 px-8 py-4">
-              View Demo
-            </button>
+            <Link href="/features"
+              className="group inline-flex items-center gap-2 bg-white text-gray-600 hover:text-gray-900 text-[13px] rounded-full pl-5 pr-2 py-2 border border-gray-200 hover:border-gray-300 transition-all duration-300">
+              <span className="flex flex-col overflow-hidden h-[20px]">
+                <span className="transition-transform duration-500 ease-[cubic-bezier(0.25,0.1,0.25,1)] group-hover:-translate-y-1/2 leading-[20px]">
+                  View Demo
+                </span>
+                <span className="leading-[20px]">View Demo</span>
+              </span>
+              <span className="w-7 h-7 bg-gray-100 rounded-full flex items-center justify-center transition-transform duration-500 ease-[cubic-bezier(0.25,0.1,0.25,1)] group-hover:-rotate-45">
+                <ArrowRight size={14} className="text-gray-500" />
+              </span>
+            </Link>
           </div>
         </div>
 
-        <div className="absolute bottom-8 left-1/2 -translate-x-1/2 animate-float">
-          <svg className="w-5 h-5 text-white/20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1">
+        <div className="absolute bottom-6 left-1/2 -translate-x-1/2 animate-float motion-safe:animate-fade-up motion-safe:[animation-delay:500ms]">
+          <svg className="w-5 h-5 text-gray-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1">
             <path d="M12 5v14M5 12l7 7 7-7" />
           </svg>
         </div>
       </section>
 
-      <section className="py-32 md:py-44 px-6">
-        <div className="max-w-6xl mx-auto">
-          <div className="text-center mb-20 motion-safe:animate-fade-up">
-            <div className="eyebrow inline-flex mb-6">Capabilities</div>
-            <h2 className="font-display text-4xl md:text-6xl font-semibold tracking-tighter leading-[0.9] mb-4">
+      {/* SECTION 2: FEATURES */}
+      <section className="bg-white pt-16 sm:pt-20 lg:pt-28 pb-16 sm:pb-20 lg:pb-28 overflow-hidden">
+        <div className="max-w-[1440px] mx-auto px-5 sm:px-8 lg:px-12">
+          <div className="text-center mb-14 motion-safe:animate-fade-up">
+            <div className="eyebrow inline-flex mb-5">Capabilities</div>
+            <h2 className="text-[clamp(1.5rem,4vw,3.2rem)] font-medium leading-[1.12] tracking-[-0.02em] text-gray-900 mb-3">
               Everything an SDR needs
             </h2>
-            <p className="text-white/30 max-w-xl mx-auto">From upload to CRM export in under 60 seconds. No learning curve.</p>
-            <div className="flex items-center justify-center gap-6 mt-8">
-              <div className="flex items-center gap-2 text-xs text-white/30">
-                <div className="w-1.5 h-1.5 rounded-full bg-[#5e6ad2]" />
+            <p className="text-gray-500 max-w-xl mx-auto text-[14px]">From upload to CRM export in under 60 seconds. No learning curve.</p>
+            <div className="flex items-center justify-center gap-6 mt-6">
+              <div className="flex items-center gap-2 text-[11px] text-gray-400">
+                <div className="w-1.5 h-1.5 rounded-full bg-[#F26522]" />
                 <span>AI-powered</span>
               </div>
-              <div className="flex items-center gap-2 text-xs text-white/30">
-                <div className="w-1.5 h-1.5 rounded-full bg-[#22d3a8]" />
+              <div className="flex items-center gap-2 text-[11px] text-gray-400">
+                <div className="w-1.5 h-1.5 rounded-full bg-[#059669]" />
                 <span>CRM ready</span>
               </div>
-              <div className="flex items-center gap-2 text-xs text-white/30">
-                <div className="w-1.5 h-1.5 rounded-full bg-[#8b5cf6]" />
+              <div className="flex items-center gap-2 text-[11px] text-gray-400">
+                <div className="w-1.5 h-1.5 rounded-full bg-[#7c3aed]" />
                 <span>Free forever</span>
               </div>
             </div>
@@ -128,25 +157,25 @@ export default function Home() {
             {features.map((f, i) => (
               <div key={i} className={`motion-safe:animate-fade-up ${i === 0 ? "md:col-span-2" : ""}`}
                 style={{ animationDelay: `${0.1 + i * 0.08}s` }}>
-                <div className="group relative h-full">
-                  <div className="absolute inset-0 rounded-[2rem] opacity-0 group-hover:opacity-100 transition-opacity duration-700"
-                    style={{ background: `radial-gradient(600px circle at var(--mouse-x, 50%) var(--mouse-y, 50%), ${f.accent}15, transparent 40%)` }} />
+                <div className="glow-card group relative h-full">
                   <div className="doppel-outer h-full relative">
+                    <div className="absolute inset-0 rounded-[2rem] opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none"
+                      style={{ background: `radial-gradient(600px circle at var(--mouse-x, 50%) var(--mouse-y, 50%), ${f.accent}15, transparent 40%)` }} />
                     <div className="absolute top-0 left-0 right-0 h-px opacity-0 group-hover:opacity-100 transition-opacity duration-700"
-                      style={{ background: `linear-gradient(90deg, transparent, ${f.accent}60, transparent)` }} />
-                    <div className="doppel-inner p-8 md:p-10 h-full flex flex-col relative">
-                      <div className="flex items-start justify-between mb-6">
-                        <div className={`w-10 h-10 rounded-xl flex items-center justify-center text-white/60 group-hover:text-white transition-all duration-700 ease-[cubic-bezier(0.32,0.72,0,1)] ${i === 0 ? "md:w-12 md:h-12" : ""}`}
-                          style={{ background: `${f.accent}15`, boxShadow: `0 0 20px ${f.accent}10` }}>
-                          {f.icon}
+                      style={{ background: `linear-gradient(90deg, transparent, ${f.accent}40, transparent)` }} />
+                    <div className="doppel-inner p-6 sm:p-8 md:p-10 h-full flex flex-col relative">
+                      <div className="flex items-start justify-between mb-5">
+                        <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${i === 0 ? "md:w-12 md:h-12" : ""}`}
+                          style={{ background: `${f.accent}10` }}>
+                          <f.icon size={i === 0 ? 22 : 18} style={{ color: f.accent }} strokeWidth={1.5} />
                         </div>
                         <span className="text-[10px] font-mono font-medium px-2.5 py-1 rounded-full"
-                          style={{ color: f.accent, background: `${f.accent}10` }}>
+                          style={{ color: f.accent, background: `${f.accent}08` }}>
                           {f.metric}
                         </span>
                       </div>
-                      <h3 className={`font-display font-semibold tracking-tight mb-3 ${i === 0 ? "text-xl md:text-2xl" : "text-lg"}`}>{f.title}</h3>
-                      <p className="text-sm text-white/40 font-[425] leading-relaxed max-w-md">{f.desc}</p>
+                      <h3 className={`font-semibold tracking-tight text-gray-900 mb-2 ${i === 0 ? "text-[18px] md:text-[20px]" : "text-[15px]"}`}>{f.title}</h3>
+                      <p className="text-[13px] text-gray-500 leading-relaxed max-w-md">{f.desc}</p>
                     </div>
                   </div>
                 </div>
@@ -154,47 +183,44 @@ export default function Home() {
             ))}
           </div>
 
-          <div className="text-center mt-10 motion-safe:animate-fade-up" style={{ animationDelay: "0.6s" }}>
+          <div className="text-center mt-8 motion-safe:animate-fade-up" style={{ animationDelay: "0.6s" }}>
             <Link href="/features"
-              className="inline-flex items-center gap-2 text-xs text-white/30 hover:text-white transition-all duration-500 px-6 py-3 rounded-full border border-white/5 hover:border-white/20">
+              className="inline-flex items-center gap-2 text-[12px] text-gray-400 hover:text-gray-900 transition-all duration-300 px-5 py-2.5 rounded-full border border-gray-200 hover:border-gray-300">
               View all features
-              <ArrowRight strokeWidth={1} className="w-3 h-3" />
+              <ArrowRight size={12} strokeWidth={1.5} />
             </Link>
           </div>
         </div>
       </section>
 
-      <section className="py-32 md:py-44 px-6 bg-white/[0.02]">
-        <div className="max-w-6xl mx-auto">
-          <div className="text-center mb-20 motion-safe:animate-fade-up">
-            <div className="eyebrow inline-flex mb-6">Testimonials</div>
-            <h2 className="font-display text-4xl md:text-6xl font-semibold tracking-tighter leading-[0.9]">
+      {/* SECTION 3: TESTIMONIALS */}
+      <section className="bg-[#F5F5F5] pt-16 sm:pt-20 lg:pt-28 pb-16 sm:pb-20 lg:pb-28">
+        <div className="max-w-[1440px] mx-auto px-5 sm:px-8 lg:px-12">
+          <div className="text-center mb-14 motion-safe:animate-fade-up">
+            <div className="eyebrow inline-flex mb-5">Testimonials</div>
+            <h2 className="text-[clamp(1.5rem,4vw,3.2rem)] font-medium leading-[1.12] tracking-[-0.02em] text-gray-900">
               Trusted by SDR teams
             </h2>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            {[
-              { quote: "I easily save hours per week, without a doubt. That's an exponential amount of time savings.", name: "Matt S.", role: "Marketing Manager", initials: "MS" },
-              { quote: "Just being conservative — our team is getting 33% time back from manual note-taking.", name: "Laura B.", role: "VP of Sales", initials: "LB" },
-              { quote: "Cut my post-call documentation from 15 minutes to 30 seconds. It's a superpower.", name: "Brandon S.", role: "Sales Enablement", initials: "BS" },
-            ].map((t, i) => (
+            {testimonials.map((t, i) => (
               <div key={i} className="motion-safe:animate-fade-up" style={{ animationDelay: `${0.1 + i * 0.1}s` }}>
                 <div className="doppel-outer h-full">
-                  <div className="doppel-inner p-8 h-full flex flex-col">
-                    <div className="flex gap-1 mb-5">
+                  <div className="doppel-inner p-6 sm:p-8 h-full flex flex-col">
+                    <div className="flex gap-1 mb-4">
                       {[...Array(5)].map((_, j) => (
-                        <svg key={j} className="w-3.5 h-3.5 text-[#5e6ad2]" viewBox="0 0 24 24" fill="currentColor">
+                        <svg key={j} className="w-3.5 h-3.5 text-[#F26522]" viewBox="0 0 24 24" fill="currentColor">
                           <path d="M12 2l3.1 6.3 6.9 1-5 4.9 1.2 6.8L12 17.8l-6.2 3.2L7 14.2 2 9.3l6.9-1L12 2z" />
                         </svg>
                       ))}
                     </div>
-                    <p className="text-sm text-white/60 font-[425] leading-relaxed flex-1 mb-6">&ldquo;{t.quote}&rdquo;</p>
-                    <div className="flex items-center gap-3">
-                      <div className="w-8 h-8 rounded-full bg-white/5 flex items-center justify-center text-[11px] font-semibold text-white/40">{t.initials}</div>
+                    <p className="text-[13px] text-gray-600 leading-relaxed flex-1">&ldquo;{t.quote}&rdquo;</p>
+                    <div className="flex items-center gap-3 mt-5 pt-4 border-t border-gray-100">
+                      <div className="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center text-[11px] font-semibold text-gray-500">{t.initials}</div>
                       <div>
-                        <div className="text-xs font-medium">{t.name}</div>
-                        <div className="text-[11px] text-white/30">{t.role}</div>
+                        <div className="text-[12px] font-semibold text-gray-900">{t.name}</div>
+                        <div className="text-[11px] text-gray-500">{t.role}</div>
                       </div>
                     </div>
                   </div>
@@ -205,44 +231,56 @@ export default function Home() {
         </div>
       </section>
 
-      <section className="py-32 md:py-44 px-6">
-        <div className="max-w-4xl mx-auto text-center motion-safe:animate-fade-up">
-          <div className="doppel-outer">
-            <div className="doppel-inner p-12 md:p-20 relative overflow-hidden">
-              <div className="radial-glow top-[-30%] left-1/2 -translate-x-1/2 bg-[#5e6ad2]" />
+      {/* SECTION 4: CTA */}
+      <section className="bg-white py-16 sm:py-20 lg:py-28">
+        <div className="max-w-[1440px] mx-auto px-5 sm:px-8 lg:px-12">
+          <div className="doppel-outer group">
+            <div className="doppel-inner p-10 sm:p-14 lg:p-20 text-center relative overflow-hidden">
+              <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-1000"
+                style={{ background: "radial-gradient(ellipse at 50% 50%, rgba(242,101,34,0.06), transparent 70%)" }} />
               <div className="relative z-10">
-                <h2 className="font-display text-3xl md:text-5xl font-semibold tracking-tighter leading-[0.9] mb-4">
+                <h2 className="text-[clamp(1.5rem,4vw,3.2rem)] font-medium leading-[1.12] tracking-[-0.02em] mb-3">
                   Stop taking notes.<br />
-                  <span className="text-white/20">Start selling.</span>
+                  <span className="text-gray-400">Start selling.</span>
                 </h2>
-                <p className="text-white/30 mb-10 max-w-md mx-auto text-sm">
-                  Join thousands of SDRs who eliminated manual note-taking. Free forever. No credit card.
-                </p>
-                {user ? (
-                  <button onClick={() => setShowApp(true)}
-                    className="btn-island flex items-center gap-3 bg-white text-[#050505] hover:bg-white/90 group mx-auto px-8 py-4">
-                    Open App
-                    <span className="icon-wrap bg-[#050505]/10 group-hover:bg-[#050505]/15">
-                      <ArrowRight strokeWidth={1.5} className="w-3.5 h-3.5" />
-                    </span>
-                  </button>
-                ) : (
-                  <SignInButton mode="modal">
-                    <button className="btn-island flex items-center gap-3 bg-white text-[#050505] hover:bg-white/90 group mx-auto px-8 py-4">
-                      Get Started Free
-                      <span className="icon-wrap bg-[#050505]/10 group-hover:bg-[#050505]/15">
-                        <ArrowRight strokeWidth={1.5} className="w-3.5 h-3.5" />
+                <p className="text-gray-500 mb-8 text-[14px]">Join thousands of SDRs who eliminated manual note-taking. Free forever. No credit card.</p>
+                <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
+                  {user ? (
+                    <Link href="/app"
+                      className="group inline-flex items-center gap-2 bg-[#F26522] hover:bg-[#e05a1a] text-white text-[13px] rounded-full pl-5 pr-2 py-2 transition-colors duration-300">
+                      <span className="flex flex-col overflow-hidden h-[20px]">
+                        <span className="transition-transform duration-500 ease-[cubic-bezier(0.25,0.1,0.25,1)] group-hover:-translate-y-1/2 leading-[20px]">
+                          Open App
+                        </span>
+                        <span className="leading-[20px]">Open App</span>
                       </span>
-                    </button>
-                  </SignInButton>
-                )}
+                      <span className="w-7 h-7 bg-white rounded-full flex items-center justify-center transition-transform duration-500 ease-[cubic-bezier(0.25,0.1,0.25,1)] group-hover:-rotate-45">
+                        <ArrowRight size={14} className="text-[#F26522]" />
+                      </span>
+                    </Link>
+                  ) : (
+                    <SignInButton mode="modal">
+                      <button className="group inline-flex items-center gap-2 bg-[#F26522] hover:bg-[#e05a1a] text-white text-[13px] rounded-full pl-5 pr-2 py-2 transition-colors duration-300">
+                        <span className="flex flex-col overflow-hidden h-[20px]">
+                          <span className="transition-transform duration-500 ease-[cubic-bezier(0.25,0.1,0.25,1)] group-hover:-translate-y-1/2 leading-[20px]">
+                            Get Started Free
+                          </span>
+                          <span className="leading-[20px]">Get Started Free</span>
+                        </span>
+                        <span className="w-7 h-7 bg-white rounded-full flex items-center justify-center transition-transform duration-500 ease-[cubic-bezier(0.25,0.1,0.25,1)] group-hover:-rotate-45">
+                          <ArrowRight size={14} className="text-[#F26522]" />
+                        </span>
+                      </button>
+                    </SignInButton>
+                  )}
+                </div>
               </div>
             </div>
           </div>
         </div>
       </section>
 
-      {showApp && <AppInterface onClose={() => setShowApp(false)} />}
+      {mounted && showApp && <AppInterface onClose={() => setShowApp(false)} />}
     </main>
   );
 }

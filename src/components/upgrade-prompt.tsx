@@ -106,7 +106,7 @@ export default function UpgradePrompt({ feature, featureName, onClose, minimal }
 
   return (
     <div className="fixed inset-0 z-[70] bg-black/60 backdrop-blur-sm flex items-center justify-center p-6">
-      <div className="w-full max-w-md p-8 rounded-3xl linear-surface linear-border relative">
+      <div className="w-full max-w-md p-8 rounded-3xl bg-linear-surface border border-linear-secondary relative">
         <button onClick={onClose} className="absolute top-4 right-4 p-1 hover:bg-white/5 rounded-lg transition">
           <X className="w-4 h-4 text-white/40" />
         </button>

@@ -5,6 +5,7 @@ let captionObserver = null;
 let captions = [];
 let meetingStarted = false;
 let meetingTitle = "";
+let lastCaptionText = "";
 
 function init() {
   // Watch for the captions button and enable them (only if user has consented)
@@ -47,7 +48,8 @@ function startCaptionCapture() {
     if (captionContainer) {
       const textSpans = captionContainer.querySelectorAll('span');
       const newText = Array.from(textSpans).map(s => s.textContent).join(" ").trim();
-      if (newText) {
+      if (newText && newText !== lastCaptionText) {
+        lastCaptionText = newText;
         captions.push({ text: newText, timestamp: Date.now() });
       }
     }

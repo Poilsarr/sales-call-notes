@@ -23,6 +23,10 @@ model User {
   team                Team?    @relation("teamMembers", fields: [teamId], references: [id])
   teamRole            String   @default("MEMBER")
   ownedTeams          Team[]   @relation("teamOwner")
+  calls               Call[]
+  assignedCalls       Call[]   @relation("callAssignments")
+  comments            CallComment[]
+  auditLogs           AuditLog[]
   createdAt           DateTime @default(now())
   updatedAt           DateTime @updatedAt
 
@@ -52,8 +56,12 @@ model Team {
 model Call {
   id            String   @id @default(cuid())
   userId        String
+  user          User     @relation(fields: [userId], references: [id])
   teamId        String?
   team          Team?    @relation(fields: [teamId], references: [id])
+  sharedWithTeam Boolean @default(false)
+  assigneeId    String?
+  assignee      User?    @relation("callAssignments", fields: [assigneeId], references: [id])
   filename      String
   audioUrl      String?
   duration      Int?
@@ -67,6 +75,7 @@ model Call {
   crmRecordId   String?
   source        String   @default("upload")
   tags          String?
+  embedding       Float[]
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
   actionItems        ActionItem[]
@@ -76,9 +85,11 @@ model Call {
   analytics          Analytics?
   insight            CallInsight?
   competitorMentions CompetitorMention[]
+  comments           CallComment[]
 
   @@index([userId])
   @@index([teamId])
+  @@index([assigneeId])
   @@index([createdAt])
 }
 
@@ -140,6 +151,8 @@ model Analytics {
   callId                String   @unique
   call                  Call     @relation(fields: [callId], references: [id])
   talkRatio             String?
+  speakerMetrics        Json?
+  sentimentTimeline     Json?
   interruptions         Int?
   questionsAsked        Int?
   objections            String?
@@ -200,9 +213,41 @@ model CallInsight {
   objections       Json?
   coachingNotes    Json?
   closeProbability Float?
+  salesScorecard   Json?
   topics           Json?
+  personalization  Json?
   createdAt        DateTime @default(now())
   updatedAt        DateTime @updatedAt
 
   @@index([callId])
+}
+
+model CallComment {
+  id        String   @id @default(cuid())
+  callId    String
+  call      Call     @relation(fields: [callId], references: [id], onDelete: Cascade)
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  body      String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([callId])
+  @@index([userId])
+  @@index([createdAt])
+}
+
+model AuditLog {
+  id         String   @id @default(cuid())
+  userId     String
+  user       User     @relation(fields: [userId], references: [id], onDelete: SetNull)
+  action     String
+  entityId   String?
+  entityType String?
+  metadata   Json?
+  createdAt  DateTime @default(now())
+
+  @@index([userId])
+  @@index([action])
+  @@index([createdAt])
 }

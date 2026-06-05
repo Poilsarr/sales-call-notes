@@ -22,9 +22,26 @@ Return ONLY valid JSON with this exact structure:
   },
   "competitorsMentioned": [{"name": "competitor name", "context": "what was said about them", "sentiment": "positive|negative|neutral"}],
   "salesScorecard": {
-    "meddic": {"metrics": 0-10, "economicBuyer": 0-10, "decisionCriteria": 0-10, "decisionProcess": 0-10, "identifyPain": 0-10, "champion": 0-10},
-    "bant": {"budget": 0-10, "authority": 0-10, "need": 0-10, "timeline": 0-10},
-    "spin": {"situation": 0-10, "problem": 0-10, "implication": 0-10, "needPayoff": 0-10},
+    "meddic": {
+      "metrics": {"score": 0-10, "evidence": "string"},
+      "economicBuyer": {"score": 0-10, "evidence": "string"},
+      "decisionCriteria": {"score": 0-10, "evidence": "string"},
+      "decisionProcess": {"score": 0-10, "evidence": "string"},
+      "identifyPain": {"score": 0-10, "evidence": "string"},
+      "champion": {"score": 0-10, "evidence": "string"}
+    },
+    "bant": {
+      "budget": {"score": 0-10, "evidence": "string"},
+      "authority": {"score": 0-10, "evidence": "string"},
+      "need": {"score": 0-10, "evidence": "string"},
+      "timeline": {"score": 0-10, "evidence": "string"}
+    },
+    "spin": {
+      "situation": {"score": 0-10, "evidence": "string"},
+      "problem": {"score": 0-10, "evidence": "string"},
+      "implication": {"score": 0-10, "evidence": "string"},
+      "needPayoff": {"score": 0-10, "evidence": "string"}
+    },
     "overallScore": 0-100
   },
   "objections": [{"type": "price|timing|features|competition|trust", "quote": "string", "handled": boolean, "resolution": "string"}],

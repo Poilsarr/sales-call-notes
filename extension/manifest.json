@@ -4,7 +4,7 @@
   "version": "1.0.0",
   "description": "Automatically capture Google Meet transcripts and generate AI-powered sales notes.",
   "permissions": ["storage", "identity", "activeTab"],
-  "host_permissions": ["https://meet.google.com/*", "https://app.callnotepro.com/*"],
+  "host_permissions": ["https://meet.google.com/*", "https://sales-call-notes.vercel.app/*"],
   "action": {
     "default_popup": "popup.html",
     "default_icon": {
@@ -14,7 +14,8 @@
     }
   },
   "background": {
-    "service_worker": "background.js"
+    "service_worker": "background.js",
+    "type": "module"
   },
   "content_scripts": [
     {

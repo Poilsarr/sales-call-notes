@@ -1,4 +1,5 @@
 import { CRMCall } from "@/types/crm";
+import { CRMFormatterService } from "./formatter";
 
 export interface HubSpotContact {
   id: string;
@@ -22,6 +23,7 @@ export interface HubSpotDeal {
 
 export class HubSpotService {
   private baseUrl = "https://api.hubapi.com";
+  private formatter = new CRMFormatterService();
 
   async syncCall(call: CRMCall, accessToken: string) {
     const contact = await this.createContact(call, accessToken);
@@ -76,7 +78,7 @@ export class HubSpotService {
   }
 
   private async createNote(call: CRMCall, dealId: string, accessToken: string) {
-    const noteContent = this.formatNote(call);
+    const noteContent = this.formatter.formatNote(call, 'hubspot');
 
     const response = await fetch(`${this.baseUrl}/crm/v3/objects/notes`, {
       method: "POST",
@@ -108,22 +110,5 @@ export class HubSpotService {
       lastName: "Name",
       phone: phoneMatch?.[0] || "",
     };
-  }
-
-  private formatNote(call: CRMCall): string {
-    let note = `Call Summary: ${call.summary}\n\n`;
-    note += `Action Items:\n`;
-    call.actionItems.forEach((item) => {
-      note += `- ${item.task} (Owner: ${item.owner}, Due: ${item.due})\n`;
-    });
-    note += `\nKey Decisions:\n`;
-    call.decisions.forEach((decision) => {
-      note += `- ${decision.content}\n`;
-    });
-    note += `\nNext Steps:\n`;
-    call.nextSteps.forEach((step) => {
-      note += `- ${step.step} (Date: ${step.date})\n`;
-    });
-    return note;
   }
 }

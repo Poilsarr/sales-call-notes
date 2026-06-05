@@ -2,26 +2,37 @@ import { NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
 import { AnalyticsService } from '@/services/ai/analytics';
 import { auth } from '@clerk/nextjs/server';
+import { getUserByClerkId } from '@/lib/get-user';
 
 export async function GET(req: Request) {
   try {
-    const { userId } = await auth();
-    if (!userId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    const { userId: clerkUserId } = await auth();
+    if (!clerkUserId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
+    const user = await getUserByClerkId(clerkUserId);
 
     const { searchParams } = new URL(req.url);
     const days = parseInt(searchParams.get('days') || '30');
+    const scope = searchParams.get('scope') || 'personal';
 
     const since = new Date();
     since.setDate(since.getDate() - days);
 
     const calls = await prisma.call.findMany({
-      where: { userId, createdAt: { gte: since } },
-      include: {
+      where: scope === 'team' && user.teamId
+        ? { teamId: user.teamId, sharedWithTeam: true, createdAt: { gte: since } }
+        : { userId: user.id, createdAt: { gte: since } },
+      select: {
+        id: true,
+        filename: true,
+        createdAt: true,
+        healthScore: true,
+        sentiment: true,
         actionItems: true,
-        decisions: true,
-        nextSteps: true,
         analytics: true,
         insight: true,
+        user: { select: { name: true } },
+        // Assignee depends on the latest DB migration, so keep dashboard resilient before rollout.
       },
       orderBy: { createdAt: 'desc' },
     });
@@ -56,8 +67,26 @@ export async function GET(req: Request) {
     const budgetSignals = calls.filter(c => c.analytics?.budgetMentioned).length;
     const timelineSignals = calls.filter(c => c.analytics?.timelineMentioned).length;
     const dmSignals = calls.filter(c => c.analytics?.decisionMakerPresent).length;
+    const totalInterruptions = calls.reduce((sum, c) => sum + (c.analytics?.interruptions || 0), 0);
+    const totalQuestionsAsked = calls.reduce((sum, c) => sum + (c.analytics?.questionsAsked || 0), 0);
+    const speakerLeaderboard = calls
+      .flatMap((c) => ((c.analytics?.speakerMetrics as any[]) || []))
+      .reduce<Record<string, { speaker: string; calls: number; questionsAsked: number; interruptions: number }>>((acc, metric) => {
+        const existing = acc[metric.speaker] || {
+          speaker: metric.speaker,
+          calls: 0,
+          questionsAsked: 0,
+          interruptions: 0,
+        };
+        existing.calls += 1;
+        existing.questionsAsked += metric.questionsAsked || 0;
+        existing.interruptions += metric.interruptions || 0;
+        acc[metric.speaker] = existing;
+        return acc;
+      }, {});
 
     return NextResponse.json({
+      scope,
       totalCalls,
       totalActionItems,
       completionRate: totalActionItems > 0 ? completedItems / totalActionItems : 0,
@@ -67,6 +96,11 @@ export async function GET(req: Request) {
       scoresByDay,
       sentimentCounts,
       signals: { budgetSignals, timelineSignals, dmSignals },
+      conversationSignals: {
+        totalInterruptions,
+        totalQuestionsAsked,
+      },
+      speakerLeaderboard: Object.values(speakerLeaderboard).sort((a, b) => b.questionsAsked - a.questionsAsked).slice(0, 5),
       recentCalls: calls.slice(0, 5).map(c => ({
         id: c.id,
         filename: c.filename,
@@ -76,6 +110,8 @@ export async function GET(req: Request) {
         actionItemCount: c.actionItems.length,
         closeProbability: c.insight?.closeProbability || null,
         topObjection: (c.insight?.objections as any[])?.[0]?.type || null,
+        ownerName: (c as any).user?.name || null,
+        assigneeName: null,
       })),
     });
   } catch (error) {
