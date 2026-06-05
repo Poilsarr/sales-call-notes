@@ -335,9 +335,15 @@ function FeatureCard({ feature, index }: { feature: typeof features[0]; index: n
   const categoryLabel = index < 4 ? "Core" : index < 8 ? "Intelligence" : "Platform";
   const dirLabel = { a: "Studio", b: "Showstopper", c: "Engineering" }[feature.direction];
 
+  const staggerDelay = `${(index % 4) * 0.08}s`;
+
   return (
     <div className={`${sizeClasses[feature.size]} reveal-card`}
-      style={{ opacity: 0, transform: "translateY(60px) rotateX(8deg)" }}>
+      style={{
+        opacity: isVisible ? 1 : 0,
+        transform: isVisible ? "none" : "translateY(60px) rotateX(8deg)",
+        transition: `opacity 0.9s cubic-bezier(0.16, 1, 0.3, 1) ${staggerDelay}, transform 0.9s cubic-bezier(0.16, 1, 0.3, 1) ${staggerDelay}`,
+      }}>
       <div ref={cardRef}
         className="group relative h-full cursor-default rounded-[2rem] overflow-hidden doppel-outer"
         onMouseMove={handleMouseMove}
@@ -561,7 +567,6 @@ function WorkflowSection() {
 
 export default function FeaturesPage() {
   const heroRef = useRef<HTMLDivElement>(null);
-  const gridRef = useRef<HTMLDivElement>(null);
 
   useGSAP(() => {
     if (!heroRef.current) return;
@@ -571,15 +576,6 @@ export default function FeaturesPage() {
       .fromTo(heroRef.current.querySelector(".hero-subtitle"), { y: 20, opacity: 0 }, { y: 0, opacity: 1, duration: 0.8 }, 0.5)
       .fromTo(heroRef.current.querySelector(".hero-badge"), { y: 16, opacity: 0, scale: 0.9 }, { y: 0, opacity: 1, scale: 1, duration: 0.6 }, 0.7);
   }, { scope: heroRef });
-
-  useGSAP(() => {
-    if (!gridRef.current) return;
-    const cards = gridRef.current.querySelectorAll(".reveal-card");
-    gsap.to(cards, {
-      opacity: 1, y: 0, rotateX: 0, stagger: 0.08, duration: 0.9, ease: "power3.out",
-      scrollTrigger: { trigger: gridRef.current, start: "top 75%" },
-    });
-  }, { scope: gridRef });
 
   return (
     <main className="min-h-screen bg-white text-gray-900 overflow-hidden selection:bg-[#F26522]/20">
@@ -650,7 +646,7 @@ export default function FeaturesPage() {
                 <p className="text-[13px] text-gray-500">{cat.desc}</p>
               </div>
 
-              <div ref={gridRef}>
+              <div>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                   {features.slice(cat.start, cat.end).map((f, i) => (
                     <FeatureCard key={cat.start + i} feature={f} index={cat.start + i} />
