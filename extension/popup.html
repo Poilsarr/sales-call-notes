@@ -14,12 +14,22 @@
     .logo-icon { width: 20px; height: 20px; background: #6366f1; border-radius: 4px; transform: rotate(45deg); }
     .logo-text { font-size: 14px; font-weight: 500; }
     .logo-text span { color: rgba(255,255,255,0.5); }
-    .status { padding: 12px; border-radius: 12px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); margin-bottom: 12px; }
-    .status-dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; margin-right: 8px; }
-    .active { background: #22c55e; }
-    .inactive { background: #6b7280; }
-    .status-text { font-size: 13px; }
-    .status-sub { font-size: 11px; color: rgba(255,255,255,0.4); margin-top: 4px; }
+    .card {
+      padding: 12px; border-radius: 12px;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.1);
+      margin-bottom: 12px;
+    }
+    .row { display: flex; align-items: center; gap: 8px; }
+    .dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+    .dot-active { background: #22c55e; }
+    .dot-idle { background: #6b7280; }
+    .dot-uploading { background: #eab308; }
+    .dot-success { background: #22c55e; }
+    .dot-error { background: #ef4444; }
+    .dot-needs { background: #f59e0b; }
+    .label { font-size: 13px; font-weight: 500; }
+    .sub { font-size: 11px; color: rgba(255,255,255,0.4); margin-top: 4px; word-break: break-word; }
     .btn {
       width: 100%; padding: 10px; border-radius: 12px; border: none;
       font-size: 12px; font-weight: 600; cursor: pointer; transition: all 0.2s;
@@ -28,6 +38,9 @@
     .btn-primary:hover { background: #4f46e5; }
     .btn-secondary { background: rgba(255,255,255,0.1); color: white; margin-top: 8px; }
     .btn-secondary:hover { background: rgba(255,255,255,0.15); }
+    .btn-warn { background: #f59e0b; color: #1a1a1a; }
+    .btn-warn:hover { background: #d97706; }
+    .hidden { display: none; }
     .footer { margin-top: 16px; text-align: center; font-size: 10px; color: rgba(255,255,255,0.3); }
   </style>
 </head>
@@ -37,12 +50,21 @@
     <div class="logo-text">CallNote<span>Pro</span></div>
   </div>
 
-  <div class="status">
-    <div>
-      <span class="status-dot active" id="statusDot"></span>
-      <span class="status-text" id="statusText">Extension Active</span>
+  <div class="card" id="authCard">
+    <div class="row">
+      <span class="dot dot-idle" id="authDot"></span>
+      <span class="label" id="authText">Checking sign-in...</span>
     </div>
-    <div class="status-sub" id="meetingInfo">No meeting detected</div>
+    <div class="sub" id="authSub"></div>
+    <button class="btn btn-warn hidden" id="signInBtn">Sign in to CallNote Pro</button>
+  </div>
+
+  <div class="card" id="statusCard">
+    <div class="row">
+      <span class="dot dot-idle" id="statusDot"></span>
+      <span class="label" id="statusText">Extension Idle</span>
+    </div>
+    <div class="sub" id="meetingInfo">Open Google Meet to start capturing</div>
   </div>
 
   <button class="btn btn-primary" id="openApp">Open CallNote Pro</button>

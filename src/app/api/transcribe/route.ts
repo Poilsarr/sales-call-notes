@@ -5,6 +5,13 @@ import path from "path";
 import { spawn } from "child_process";
 import { detectAudioType } from "@/lib/audio-types";
 import { getSecret } from "@/lib/secrets";
+import {
+  EXTENSION_MAX_TRANSCRIPT_CHARS,
+  clampTranscriptText,
+  isValidExtensionSource,
+  sanitizeExtensionTitle,
+  sanitizeSessionId,
+} from "@/lib/extension-upload";
 
 export async function POST(req: NextRequest) {
   const { userId } = await auth();
@@ -14,7 +21,36 @@ export async function POST(req: NextRequest) {
 
   try {
     const formData = await req.formData();
-    const audioFile = formData.get("audio") as File;
+    const audioFile = formData.get("audio") as File | null;
+    const transcriptField = formData.get("transcript");
+    const sourceField = formData.get("source");
+    const sessionIdField = formData.get("sessionId");
+    const meetingTitleField = formData.get("meetingTitle");
+
+    const providedTranscript = typeof transcriptField === "string"
+      ? clampTranscriptText(transcriptField)
+      : "";
+
+    if (!audioFile && !providedTranscript) {
+      return NextResponse.json(
+        { error: "No audio file or transcript provided" },
+        { status: 400 },
+      );
+    }
+
+    if (!audioFile && providedTranscript) {
+      const source = isValidExtensionSource(typeof sourceField === "string" ? sourceField : null)
+        ? sourceField
+        : "web";
+      return NextResponse.json({
+        transcript: providedTranscript,
+        source,
+        sessionId: sanitizeSessionId(typeof sessionIdField === "string" ? sessionIdField : ""),
+        meetingTitle: sanitizeExtensionTitle(typeof meetingTitleField === "string" ? meetingTitleField : ""),
+        length: providedTranscript.length,
+        maxLength: EXTENSION_MAX_TRANSCRIPT_CHARS,
+      });
+    }
 
     if (!audioFile) {
       return NextResponse.json({ error: "No audio file" }, { status: 400 });
