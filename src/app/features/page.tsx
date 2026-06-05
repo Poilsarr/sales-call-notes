@@ -7,27 +7,60 @@ import { useGSAP } from "@gsap/react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import {
-  Mic, FileText, Brain, Target, Share2, BarChart3,
+  Mic, Brain, Target, Share2, BarChart3,
   Upload, Layers, Shield, Globe, Download, Search,
-  Users, Sparkles, ArrowRight, Zap, Cpu, Lock, Clock,
+  Users, Sparkles, ArrowRight, Zap, Cpu, Lock, Clock, Check,
 } from "lucide-react";
+import {
+  AFileUpload, ATranscription, ASummarization, ASearch, ALocal, ALang,
+} from "@/components/feature-3d-a";
+import { BSummarization, BGlobe, BRocket } from "@/components/feature-3d-b";
+import { CAct, CHud, CSpeaker, CJson, CTeam } from "@/components/feature-3d-c";
+import { featureContent } from "@/lib/feature-content";
 
 gsap.registerPlugin(ScrollTrigger);
 
 const features = [
-  { icon: Upload, title: "Audio Upload", desc: "Drag-drop or click to upload MP3, WAV, M4A, WebM files. Process recordings instantly.", color: "#F26522", size: "lg" },
-  { icon: Mic, title: "AI Transcription", desc: "Powered by Whisper AI. Accurate speech-to-text with speaker identification support.", color: "#2563eb", size: "sm" },
-  { icon: Brain, title: "Smart Summarization", desc: "Extract 2-3 sentence summaries, action items, key decisions, and next steps automatically.", color: "#7c3aed", size: "sm" },
-  { icon: Target, title: "Action Item Extraction", desc: "Identify tasks, owners, and due dates from every call. Never miss a follow-up.", color: "#d97706", size: "md" },
-  { icon: Share2, title: "One-Click CRM Export", desc: "Copy formatted notes for HubSpot, Salesforce, or Microsoft Teams in one click.", color: "#059669", size: "md" },
-  { icon: BarChart3, title: "Call Analytics", desc: "Track health scores, sentiment, talk ratios, budget signals, and decision-maker presence.", color: "#dc2626", size: "lg" },
-  { icon: Users, title: "Speaker Diarization", desc: "Automatic speaker labeling so you know exactly who said what during the conversation.", color: "#0891b2", size: "sm" },
-  { icon: Search, title: "Searchable History", desc: "Full call archive with search and filter by date, customer, or keywords.", color: "#4f46e5", size: "sm" },
-  { icon: Shield, title: "Local Processing", desc: "AI runs locally by default. Your call data never leaves your machine.", color: "#059669", size: "md" },
-  { icon: Globe, title: "Multi-Language", desc: "Transcribe and analyze calls in English, Spanish, French, German, and more.", color: "#ea580c", size: "sm" },
-  { icon: Download, title: "JSON Export", desc: "Export structured data for API integrations and custom workflows.", color: "#9333ea", size: "sm" },
-  { icon: Layers, title: "Team Dashboard", desc: "Manager view of all team calls with aggregated analytics and performance metrics.", color: "#0891b2", size: "md" },
+  { icon: Upload, title: "Audio Upload", desc: "Drag-drop or click to upload MP3, WAV, M4A, WebM files. Process recordings instantly.", color: "#F26522", size: "lg", direction: "a" as const },
+  { icon: Mic, title: "AI Transcription", desc: "Powered by Whisper AI. Accurate speech-to-text with speaker identification support.", color: "#2563eb", size: "sm", direction: "a" as const },
+  { icon: Brain, title: "Smart Summarization", desc: "Extract 2-3 sentence summaries, action items, key decisions, and next steps automatically.", color: "#7c3aed", size: "sm", direction: "b" as const },
+  { icon: Target, title: "Action Item Extraction", desc: "Identify tasks, owners, and due dates from every call. Never miss a follow-up.", color: "#d97706", size: "md", direction: "c" as const },
+  { icon: Share2, title: "One-Click CRM Export", desc: "Copy formatted notes for HubSpot, Salesforce, or Microsoft Teams in one click.", color: "#059669", size: "md", direction: "b" as const },
+  { icon: BarChart3, title: "Call Analytics", desc: "Track health scores, sentiment, talk ratios, budget signals, and decision-maker presence.", color: "#dc2626", size: "lg", direction: "c" as const },
+  { icon: Users, title: "Speaker Diarization", desc: "Automatic speaker labeling so you know exactly who said what during the conversation.", color: "#0891b2", size: "sm", direction: "c" as const },
+  { icon: Search, title: "Searchable History", desc: "Full call archive with search and filter by date, customer, or keywords.", color: "#4f46e5", size: "sm", direction: "a" as const },
+  { icon: Shield, title: "Local Processing", desc: "AI runs locally by default. Your call data never leaves your machine.", color: "#059669", size: "md", direction: "a" as const },
+  { icon: Globe, title: "Multi-Language", desc: "Transcribe and analyze calls in English, Spanish, French, German, and more.", color: "#ea580c", size: "sm", direction: "b" as const },
+  { icon: Download, title: "JSON Export", desc: "Export structured data for API integrations and custom workflows.", color: "#9333ea", size: "sm", direction: "c" as const },
+  { icon: Layers, title: "Team Dashboard", desc: "Manager view of all team calls with aggregated analytics and performance metrics.", color: "#0891b2", size: "md", direction: "c" as const },
 ];
+
+function Feature3D({ index, color }: { index: number; color: string }) {
+  const f = features[index];
+  if (f.direction === "a") {
+    switch (index) {
+      case 0: return <AFileUpload color={color} />;
+      case 1: return <ATranscription color={color} />;
+      case 7: return <ASearch color={color} />;
+      case 8: return <ALocal color={color} />;
+      case 9: return <ALang color={color} />;
+      default: return <ASummarization color={color} />;
+    }
+  }
+  if (f.direction === "b") {
+    if (index === 4) return <BRocket />;
+    if (index === 9) return <BGlobe />;
+    return <BSummarization />;
+  }
+  switch (index) {
+    case 3: return <CAct />;
+    case 5: return <CHud />;
+    case 6: return <CSpeaker />;
+    case 10: return <CJson />;
+    case 11: return <CTeam />;
+    default: return <CAct />;
+  }
+}
 
 const statsData = [
   { value: "60s", label: "Avg. processing time", icon: Clock },
@@ -212,50 +245,49 @@ function AnimatedIcon({ Icon, color, isActive }: { Icon: any; color: string; isA
   );
 }
 
-function WaveformToText({ color, isHovered }: { color: string; isHovered: boolean }) {
-  const containerRef = useRef<HTMLDivElement>(null);
-  const barsRef = useRef<HTMLDivElement[]>([]);
-  const textRef = useRef<HTMLDivElement>(null);
-  const barCount = 24;
-
-  useEffect(() => {
-    if (!isHovered) {
-      barsRef.current.forEach(bar => {
-        if (bar) gsap.to(bar, { height: 4, duration: 0.3, ease: "power2.out" });
-      });
-      if (textRef.current) gsap.set(textRef.current, { opacity: 0, y: 10 });
-      return;
-    }
-
-    barsRef.current.forEach((bar, i) => {
-      if (!bar) return;
-      const h = Math.random() * 28 + 8;
-      gsap.to(bar, {
-        height: h, duration: 0.15, delay: i * 0.06, ease: "power2.out",
-        onComplete: () => {
-          if (i === barCount - 1) {
-            gsap.to(barsRef.current.filter(Boolean), { opacity: 0, duration: 0.3, stagger: 0.02, ease: "power2.in" });
-            if (textRef.current) {
-              gsap.to(textRef.current, { opacity: 1, y: 0, duration: 0.5, delay: 0.3, ease: "power3.out" });
-            }
-          }
-        },
-      });
-    });
-  }, [isHovered]);
-
+function LearnMorePanel({ index, isOpen }: { index: number; isOpen: boolean }) {
+  const content = featureContent[index + 1];
+  if (!content) return null;
   return (
-    <div ref={containerRef} className="h-14 flex items-center justify-center relative overflow-hidden rounded-xl"
-      style={{ background: `${color}06`, border: `1px solid ${color}15` }}>
-      <div className="flex items-center gap-[3px] absolute inset-0 justify-center">
-        {Array.from({ length: barCount }).map((_, i) => (
-          <div key={i} ref={el => { barsRef.current[i] = el!; }}
-            className="rounded-full" style={{ width: 2, height: 4, background: color, opacity: 0.5 }} />
-        ))}
-      </div>
-      <div ref={textRef} className="relative z-10 font-mono text-[11px] tracking-wider whitespace-nowrap"
-        style={{ color, opacity: 0, transform: "translateY(10px)" }}>
-        <span className="opacity-50">Speaker 1:</span> &quot;Let me walk you through...&quot;
+    <div
+      className="grid transition-[grid-template-rows] duration-500 ease-out"
+      style={{ gridTemplateRows: isOpen ? "1fr" : "0fr" }}
+    >
+      <div className="overflow-hidden">
+        <div className="pt-5 mt-5 border-t border-gray-100 space-y-4">
+          <p className="text-[12.5px] text-gray-700 leading-relaxed font-medium">
+            {content.summary}
+          </p>
+          <ul className="space-y-2">
+            {content.bullets.map((b, i) => (
+              <li key={i} className="flex items-start gap-2.5 text-[12px] text-gray-600 leading-relaxed">
+                <Check strokeWidth={2} className="w-3.5 h-3.5 mt-0.5 shrink-0" style={{ color: "#F26522" }} />
+                <span>{b}</span>
+              </li>
+            ))}
+          </ul>
+          <div className="grid grid-cols-2 gap-2 pt-1">
+            {content.specs.map((s, i) => (
+              <div key={i} className="bg-[#fafafa] border border-gray-200 rounded-lg px-2.5 py-2">
+                <div className="text-[9px] font-mono uppercase tracking-[0.1em] text-gray-400 font-medium">
+                  {s.label}
+                </div>
+                <div className="text-[11px] text-gray-900 mt-0.5 leading-snug font-medium">
+                  {s.value}
+                </div>
+              </div>
+            ))}
+          </div>
+          <div className="flex flex-wrap gap-1.5 pt-1">
+            {content.meta.map((m, i) => (
+              <span key={i}
+                className="inline-flex items-center gap-1.5 text-[10px] font-mono text-gray-500 bg-white border border-gray-200 rounded-full px-2.5 py-1">
+                <span className="text-gray-400">{m.label}:</span>
+                <span className="text-gray-900">{m.value}</span>
+              </span>
+            ))}
+          </div>
+        </div>
       </div>
     </div>
   );
@@ -267,8 +299,8 @@ function FeatureCard({ feature, index }: { feature: typeof features[0]; index: n
   const innerRef = useRef<HTMLDivElement>(null);
   const [isHovered, setIsHovered] = useState(false);
   const [isVisible, setIsVisible] = useState(false);
+  const [isExpanded, setIsExpanded] = useState(false);
   const isLarge = feature.size === "lg";
-  const isTranscription = index === 1;
 
   useEffect(() => {
     if (!cardRef.current) return;
@@ -301,6 +333,7 @@ function FeatureCard({ feature, index }: { feature: typeof features[0]; index: n
 
   const sizeClasses: Record<string, string> = { sm: "md:col-span-1", md: "md:col-span-1", lg: "md:col-span-2" };
   const categoryLabel = index < 4 ? "Core" : index < 8 ? "Intelligence" : "Platform";
+  const dirLabel = { a: "Studio", b: "Showstopper", c: "Engineering" }[feature.direction];
 
   return (
     <div className={`${sizeClasses[feature.size]} reveal-card`}
@@ -336,21 +369,35 @@ function FeatureCard({ feature, index }: { feature: typeof features[0]; index: n
             {feature.title}
           </h3>
 
-          {isTranscription ? (
-            <div className="flex-1 flex flex-col gap-3">
-              <p className="text-[13px] text-gray-500 leading-relaxed">{feature.desc}</p>
-              <WaveformToText color={feature.color} isHovered={isHovered} />
-            </div>
-          ) : (
-            <p className="text-[13px] text-gray-500 leading-relaxed flex-1">{feature.desc}</p>
-          )}
+          <div
+            className="rounded-2xl mb-4 flex items-center justify-center overflow-hidden relative"
+            style={{
+              background: feature.direction === "c" ? "#fafafa" : `${feature.color}05`,
+              border: `1px solid ${feature.direction === "c" ? "#e5e5e5" : `${feature.color}12`}`,
+              height: isLarge ? "180px" : "150px",
+            }}
+          >
+            <Feature3D index={index} color={feature.color} />
+          </div>
+
+          <p className="text-[13px] text-gray-500 leading-relaxed">{feature.desc}</p>
+
+          <LearnMorePanel index={index} isOpen={isExpanded} />
 
           <div className="mt-5 pt-4 border-t border-gray-100 flex items-center justify-between">
             <span className="text-[10px] text-gray-400 uppercase tracking-[0.15em] font-medium">Feature {String(index + 1).padStart(2, "0")}</span>
-            <div className="flex items-center gap-1.5 text-[10px] text-gray-400 group-hover:text-gray-600 transition-colors duration-500">
-              <span>Learn more</span>
-              <ArrowRight strokeWidth={1.5} className="w-3 h-3 group-hover:translate-x-1 transition-transform duration-500" />
-            </div>
+            <button
+              type="button"
+              onClick={(e) => { e.stopPropagation(); setIsExpanded((v) => !v); }}
+              className="flex items-center gap-1.5 text-[10px] text-gray-400 hover:text-gray-700 transition-colors duration-300 cursor-pointer"
+              aria-expanded={isExpanded}
+            >
+              <span className="font-mono uppercase tracking-[0.15em]">{isExpanded ? "Hide" : "Learn more"}</span>
+              <ArrowRight
+                strokeWidth={1.5}
+                className={`w-3 h-3 transition-transform duration-500 ${isExpanded ? "rotate-90" : "group-hover:translate-x-1"}`}
+              />
+            </button>
           </div>
         </div>
       </div>
