@@ -11,7 +11,7 @@ export default function SignUpPage() {
           <h1 className="text-[20px] font-semibold tracking-tight text-gray-900">Create your account</h1>
           <p className="text-[13px] text-gray-500 mt-1">Start your free trial — no credit card needed</p>
         </div>
-        <SignUp
+        <SignUp afterSignUpUrl="/app"
           appearance={{
             elements: {
               rootBox: "w-full",
