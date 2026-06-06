@@ -4,7 +4,7 @@
 https://sales-call-notes.vercel.app
 
 ## GitHub
-https://github.com/Poilsarr/sales-call-notes (branch main protected — 4 CI checks required)
+https://github.com/Poilsarr/sales-call-notes (branch main protected — 3 CI checks: Tests, Lint, Build)
 
 ---
 
@@ -16,6 +16,26 @@ https://github.com/Poilsarr/sales-call-notes (branch main protected — 4 CI che
 - Services: AI (analytics, diarization), CRM (HubSpot, Salesforce, Teams), Calendar, Slack, Webhooks, BullMQ queues, Competitive Intelligence
 - Chrome extension (Manifest V3, Google Meet captions)
 - PWA manifest + favicon + app icons (192, 512)
+
+## Recent Work (session #3 — parallel build batch + CI fix)
+
+### Parallel workstream (4 worktrees, 0 conflicts)
+Merged in PR #23:
+- **Live transcription UI** — `src/app/app/live/page.tsx` (690 lines) + `src/app/api/calls/route.ts` + sidebar Live link
+- **Chrome extension upload** — `extension/` (background.js, shared.js, popup.html, popup.js, manifest.json) + `src/lib/extension-upload.ts` + 22 new tests. Service worker uses Clerk `__session` cookie for auth, `chrome.alarms` for retry backoff
+- **PNG icon set** — 12 new icons (16/32/72/96/128/144/152/192/384/512 + apple-touch 180 + 2 maskable) + `logo-maskable.svg`. Used rsvg-convert (ImageMagick 7 silently dropped SVG gradients). Updated `manifest.json` + layout `<link>` tags
+- **Competitive Intelligence tests** — +10 tests, 84/84 total
+
+### CI fix (PR #24)
+- **Root cause**: Vercel CLI token cannot bypass Vercel's "Running Checks" gate — Deploy job failed with "1 failed" on every PR
+- **Fix**: Removed CI deploy step entirely. Vercel GitHub App integration handles PR previews + production deploys automatically
+- **Required checks**: Now `Tests`, `Lint`, `Build` only (3, not 4) — deploy is no longer a required gate
+- **Files**: `.github/workflows/ci.yml` — `deploy:` job removed (87 lines down from 103)
+
+### Integrations OAuth status (PR #22)
+- API now returns `configured: boolean` per provider
+- Page shows "Setup Required" amber badge + disables Connect button when env vars missing
+- HubSpot/Salesforce/Teams will work as soon as `HUBSPOT_CLIENT_ID` + `HUBSPOT_CLIENT_SECRET` etc. are added to Vercel + GitHub secrets
 
 ## Recent Work (session #2 — massive security + quality overhaul)
 
@@ -74,11 +94,9 @@ https://github.com/Poilsarr/sales-call-notes (branch main protected — 4 CI che
 1. **Switch Clerk to Production** — need a custom domain first (Clerk blocks `*.vercel.app` in production)
 2. **Buy domain** — Namecheap (e.g., callnotepro.com)
 3. **Create Paddle products** — create Pro + Business plan products in Paddle Dashboard, paste price IDs into `src/lib/plans.ts`, merge PR #2 (Paddle billing, 571+81 lines)
-4. **Generate PNG icons** — run `bash public/generate-icons.sh` (needs ImageMagick, already installed)
-5. **Chrome extension upload** — wire Google Meet caption capture to backend upload API
-6. **Live transcription frontend** — SSE endpoint at `/api/transcribe/live` exists but no UI page
-7. **Sentry** — error monitoring (optional)
-8. **Competitive Intelligence test coverage** — add tests for `/api/competitive-intelligence` endpoint
+4. **Add OAuth env vars** — `HUBSPOT_CLIENT_ID`/`HUBSPOT_CLIENT_SECRET`, `SALESFORCE_CLIENT_ID`/`SALESFORCE_CLIENT_SECRET`, `TEAMS_CLIENT_ID`/`TEAMS_CLIENT_SECRET` (or `MICROSOFT_*`) to Vercel + GitHub secrets. Requires creating developer apps on each platform first.
+5. **Sentry** — error monitoring (optional)
+6. **Competitive Intelligence route improvements** — `from`/`to` date range params, `limit` pagination, input validation (400s), plan gating (free users blocked), per-week/month trend bucketing. Tests already cover current behavior; route is correct but unopinionated.
 
 ## Key Files
 
@@ -90,11 +108,16 @@ https://github.com/Poilsarr/sales-call-notes (branch main protected — 4 CI che
 | `src/app/api/team/route.ts` | Team CRUD (list, invite, remove members) |
 | `src/app/api/competitive-intelligence/route.ts` | GET endpoint — returns mentions + trends (scoped to user's team) |
 | `src/app/app/intelligence/page.tsx` | Competitive Intelligence console UI |
-| `src/components/app-sidebar.tsx` | Sidebar nav — Team + Intelligence items added |
+| `src/app/app/live/page.tsx` | Live transcription page (MediaRecorder + SSE) |
+| `src/app/api/calls/route.ts` | Call persistence (used by live page + extension finalize) |
+| `extension/` | Chrome extension (manifest.json, background.js, shared.js, popup.html/js) |
+| `src/lib/extension-upload.ts` | Server-side extension payload validation + sanitization |
+| `src/components/app-sidebar.tsx` | Sidebar nav — Team + Intelligence + Live items |
 | `src/lib/prompts/enrollment-calls.md` | AI prompt — `competitorsMentioned` extraction |
 | `src/services/slack.ts` | Slack alerts (no longer accepts client webhook URL) |
 | `prisma/schema.prisma` | 13 models — added `CompetitorMention`, `teamRole` on User |
 | `next.config.mjs` | Clean config (bodyParser removed) |
+| `.github/workflows/ci.yml` | 3 CI jobs: Tests, Lint, Build. Deploy via Vercel GitHub App |
 
 ## Commands
 
