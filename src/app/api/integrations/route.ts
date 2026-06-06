@@ -4,6 +4,11 @@ import { NextRequest, NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
 import { getUserByClerkId } from "@/lib/get-user";
 import { getSecret } from "@/lib/secrets";
+import {
+  getDevSandboxCredentials,
+  isDevSandboxEnabled,
+  type SandboxProvider,
+} from "@/lib/integrations/dev-sandbox";
 
 type SupportedProvider = "hubspot" | "salesforce" | "teams";
 
@@ -17,6 +22,9 @@ type IntegrationStatus = {
 const SUPPORTED_PROVIDERS: SupportedProvider[] = ["hubspot", "salesforce", "teams"];
 
 function isProviderConfigured(provider: SupportedProvider): boolean {
+  if (isDevSandboxEnabled()) {
+    return true;
+  }
   if (provider === "hubspot") {
     return Boolean(getSecret("HUBSPOT_CLIENT_ID") && getSecret("HUBSPOT_CLIENT_SECRET"));
   }
@@ -130,7 +138,8 @@ function serializeStatuses(
 }
 
 function buildHubSpotAuthUrl(req: NextRequest) {
-  const clientId = getSecret("HUBSPOT_CLIENT_ID");
+  const sandbox = getDevSandboxCredentials("hubspot");
+  const clientId = sandbox?.clientId || getSecret("HUBSPOT_CLIENT_ID");
   if (!clientId) {
     throw new Error("Missing HUBSPOT_CLIENT_ID");
   }
@@ -147,7 +156,8 @@ function buildHubSpotAuthUrl(req: NextRequest) {
 }
 
 function buildSalesforceAuthUrl(req: NextRequest) {
-  const clientId = getSecret("SALESFORCE_CLIENT_ID");
+  const sandbox = getDevSandboxCredentials("salesforce");
+  const clientId = sandbox?.clientId || getSecret("SALESFORCE_CLIENT_ID");
   if (!clientId) {
     throw new Error("Missing SALESFORCE_CLIENT_ID");
   }
@@ -164,7 +174,8 @@ function buildSalesforceAuthUrl(req: NextRequest) {
 }
 
 function buildTeamsAuthUrl(req: NextRequest) {
-  const clientId = getSecret("TEAMS_CLIENT_ID") || getSecret("MICROSOFT_CLIENT_ID");
+  const sandbox = getDevSandboxCredentials("teams");
+  const clientId = sandbox?.clientId || (getSecret("TEAMS_CLIENT_ID") || getSecret("MICROSOFT_CLIENT_ID"));
   if (!clientId) {
     throw new Error("Missing TEAMS_CLIENT_ID or MICROSOFT_CLIENT_ID");
   }
@@ -182,10 +193,15 @@ function buildTeamsAuthUrl(req: NextRequest) {
 }
 
 async function exchangeHubSpotCode(code: string, req: NextRequest) {
-  const clientId = getSecret("HUBSPOT_CLIENT_ID");
-  const clientSecret = getSecret("HUBSPOT_CLIENT_SECRET");
+  const sandbox = getDevSandboxCredentials("hubspot");
+  const clientId = sandbox?.clientId || getSecret("HUBSPOT_CLIENT_ID");
+  const clientSecret = sandbox?.clientSecret || getSecret("HUBSPOT_CLIENT_SECRET");
   if (!clientId || !clientSecret) {
     throw new Error("Missing HubSpot OAuth credentials");
+  }
+
+  if (sandbox) {
+    return buildSandboxTokenResponse("hubspot", code);
   }
 
   const response = await fetch("https://api.hubapi.com/oauth/v1/token", {
@@ -225,10 +241,15 @@ async function exchangeHubSpotCode(code: string, req: NextRequest) {
 }
 
 async function exchangeSalesforceCode(code: string, req: NextRequest) {
-  const clientId = getSecret("SALESFORCE_CLIENT_ID");
-  const clientSecret = getSecret("SALESFORCE_CLIENT_SECRET");
+  const sandbox = getDevSandboxCredentials("salesforce");
+  const clientId = sandbox?.clientId || getSecret("SALESFORCE_CLIENT_ID");
+  const clientSecret = sandbox?.clientSecret || getSecret("SALESFORCE_CLIENT_SECRET");
   if (!clientId || !clientSecret) {
     throw new Error("Missing Salesforce OAuth credentials");
+  }
+
+  if (sandbox) {
+    return buildSandboxTokenResponse("salesforce", code);
   }
 
   const response = await fetch(`${getSalesforceAuthBase()}/services/oauth2/token`, {
@@ -268,10 +289,15 @@ async function exchangeSalesforceCode(code: string, req: NextRequest) {
 }
 
 async function exchangeTeamsCode(code: string, req: NextRequest) {
-  const clientId = getSecret("TEAMS_CLIENT_ID") || getSecret("MICROSOFT_CLIENT_ID");
-  const clientSecret = getSecret("TEAMS_CLIENT_SECRET") || getSecret("MICROSOFT_CLIENT_SECRET");
+  const sandbox = getDevSandboxCredentials("teams");
+  const clientId = sandbox?.clientId || (getSecret("TEAMS_CLIENT_ID") || getSecret("MICROSOFT_CLIENT_ID"));
+  const clientSecret = sandbox?.clientSecret || (getSecret("TEAMS_CLIENT_SECRET") || getSecret("MICROSOFT_CLIENT_SECRET"));
   if (!clientId || !clientSecret) {
     throw new Error("Missing Microsoft Teams OAuth credentials");
+  }
+
+  if (sandbox) {
+    return buildSandboxTokenResponse("teams", code);
   }
 
   const response = await fetch(
@@ -311,6 +337,21 @@ async function exchangeTeamsCode(code: string, req: NextRequest) {
     expiresAt: data.expires_in ? new Date(Date.now() + data.expires_in * 1000).toISOString() : null,
     scope: data.scope ?? TEAMS_SCOPES.join(" "),
     tokenType: data.token_type ?? "Bearer",
+  };
+}
+
+function buildSandboxTokenResponse(
+  provider: SandboxProvider,
+  code: string,
+): Record<string, string | null> {
+  const expiresIn = 60 * 60 * 24;
+  return {
+    accessToken: `dev-${provider}-access-token:${code}`,
+    refreshToken: `dev-${provider}-refresh-token`,
+    expiresAt: new Date(Date.now() + expiresIn * 1000).toISOString(),
+    scope: getDevSandboxCredentials(provider)?.scope.join(" ") ?? null,
+    tokenType: "Bearer",
+    instanceUrl: provider === "salesforce" ? "https://example.my.salesforce.com" : null,
   };
 }
 
