@@ -87,10 +87,16 @@ jobs:
     if: github.event_name == 'pull_request' || github.ref == 'refs/heads/main'
     steps:
       - uses: actions/checkout@v5
-      - uses: amondnet/vercel-action@v25
+      - uses: actions/setup-node@v5
         with:
-          vercel-token: ${{ secrets.VERCEL_TOKEN }}
-          vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
-          vercel-project-id: ${{ secrets.VERCEL_PROJECT_ID }}
-          working-directory: ./
-          vercel-args: '${{ github.ref == ''refs/heads/main'' && ''--prod'' || '''' }}'
+          node-version: 24
+          cache: npm
+      - run: npx vercel@latest --version
+      - run: |
+          mkdir -p .vercel
+          echo '{"projectId":"${{ secrets.VERCEL_PROJECT_ID }}","orgId":"${{ secrets.VERCEL_ORG_ID }}"}' > .vercel/project.json
+          if [ "${{ github.ref }}" = "refs/heads/main" ]; then
+            npx vercel@latest --token ${{ secrets.VERCEL_TOKEN }} --prod --yes
+          else
+            npx vercel@latest --token ${{ secrets.VERCEL_TOKEN }} --yes
+          fi
