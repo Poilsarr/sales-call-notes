@@ -4,6 +4,7 @@ import { PLANS, PlanTier } from "@/lib/plans";
 import { auth } from "@clerk/nextjs/server";
 import { getUserByClerkId } from '@/lib/get-user';
 import { logAuditAction } from "@/lib/audit-logger";
+import { captureApiError } from "@/lib/sentry";
 
 export async function GET(req: NextRequest) {
   try {
@@ -30,6 +31,7 @@ export async function GET(req: NextRequest) {
       subscriptionPlan: user?.subscriptionPlan || null,
     });
   } catch (error) {
+    captureApiError("/api/billing", error, { method: "GET" });
     return NextResponse.json({ error: "Failed to get billing info" }, { status: 500 });
   }
 }
@@ -83,6 +85,7 @@ export async function POST(req: NextRequest) {
 
     return NextResponse.json({ success: true, plan: targetPlan });
   } catch (error) {
+    captureApiError("/api/billing", error, { method: "POST" });
     return NextResponse.json({ error: "Billing update failed" }, { status: 500 });
   }
 }
