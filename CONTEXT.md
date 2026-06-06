@@ -19,12 +19,16 @@ https://github.com/Poilsarr/sales-call-notes (branch main protected — 3 CI che
 
 ## Recent Work (session #3 — parallel build batch + CI fix)
 
-### Parallel workstream (4 worktrees, 0 conflicts)
-Merged in PR #23:
+### Parallel workstream #1 (PR #23 — 4 worktrees, 0 conflicts)
 - **Live transcription UI** — `src/app/app/live/page.tsx` (690 lines) + `src/app/api/calls/route.ts` + sidebar Live link
 - **Chrome extension upload** — `extension/` (background.js, shared.js, popup.html, popup.js, manifest.json) + `src/lib/extension-upload.ts` + 22 new tests. Service worker uses Clerk `__session` cookie for auth, `chrome.alarms` for retry backoff
 - **PNG icon set** — 12 new icons (16/32/72/96/128/144/152/192/384/512 + apple-touch 180 + 2 maskable) + `logo-maskable.svg`. Used rsvg-convert (ImageMagick 7 silently dropped SVG gradients). Updated `manifest.json` + layout `<link>` tags
 - **Competitive Intelligence tests** — +10 tests, 84/84 total
+
+### Parallel workstream #2 (PR #26 — 3 worktrees)
+- **Sentry error monitoring** — `@sentry/nextjs` v10, 3 config files (client/server/edge) with PII scrubbing (emails, Clerk sessions, 12 server secrets, bearer tokens). No-op when `NEXT_PUBLIC_SENTRY_DSN` missing. `next.config.mjs` wrapped with `withSentryConfig` for source map upload. `src/lib/sentry.ts` `captureApiError` helper. 3 critical API routes (transcribe, analyze, billing) wired. `docs/SENTRY.md` setup guide. +6 tests
+- **CI route improvements** — added `from`/`to` ISO date params, `limit` (1-200, default 50), `groupBy=week|month` for time-bucketed trend, 400 responses for invalid params, empty `competitor` normalized to no filter, plan gating (free users get 403 `PLAN_REQUIRED`). 13 → 41 tests in file
+- **OAuth setup docs + dev sandbox** — comprehensive `.env.example` (32 vars, 11 groups), `docs/INTEGRATIONS.md` step-by-step for HubSpot/Salesforce/Teams, `scripts/check-env.ts` verification script, dev sandbox mode (NODE_ENV=development) returns fake creds. +10 tests for the env checker
 
 ### CI fix (PR #24)
 - **Root cause**: Vercel CLI token cannot bypass Vercel's "Running Checks" gate — Deploy job failed with "1 failed" on every PR
@@ -35,7 +39,14 @@ Merged in PR #23:
 ### Integrations OAuth status (PR #22)
 - API now returns `configured: boolean` per provider
 - Page shows "Setup Required" amber badge + disables Connect button when env vars missing
-- HubSpot/Salesforce/Teams will work as soon as `HUBSPOT_CLIENT_ID` + `HUBSPOT_CLIENT_SECRET` etc. are added to Vercel + GitHub secrets
+- Dev sandbox (`NODE_ENV=development`) auto-mocks HubSpot/Salesforce/Teams creds for local testing
+- Full setup guide at `docs/INTEGRATIONS.md`
+- `npx tsx scripts/check-env.ts` reports which env vars are set vs missing
+
+### Final test count: 128/128 across 18 files (was 84/84)
+- Lint: 0 warnings, 0 errors
+- Build: 36 routes, all compiling clean
+- Production: https://sales-call-notes.vercel.app
 
 ## Recent Work (session #2 — massive security + quality overhaul)
 
@@ -94,9 +105,8 @@ Merged in PR #23:
 1. **Switch Clerk to Production** — need a custom domain first (Clerk blocks `*.vercel.app` in production)
 2. **Buy domain** — Namecheap (e.g., callnotepro.com)
 3. **Create Paddle products** — create Pro + Business plan products in Paddle Dashboard, paste price IDs into `src/lib/plans.ts`, merge PR #2 (Paddle billing, 571+81 lines)
-4. **Add OAuth env vars** — `HUBSPOT_CLIENT_ID`/`HUBSPOT_CLIENT_SECRET`, `SALESFORCE_CLIENT_ID`/`SALESFORCE_CLIENT_SECRET`, `TEAMS_CLIENT_ID`/`TEAMS_CLIENT_SECRET` (or `MICROSOFT_*`) to Vercel + GitHub secrets. Requires creating developer apps on each platform first.
-5. **Sentry** — error monitoring (optional)
-6. **Competitive Intelligence route improvements** — `from`/`to` date range params, `limit` pagination, input validation (400s), plan gating (free users blocked), per-week/month trend bucketing. Tests already cover current behavior; route is correct but unopinionated.
+4. **Add OAuth env vars** — `HUBSPOT_CLIENT_ID`/`HUBSPOT_CLIENT_SECRET`, `SALESFORCE_CLIENT_ID`/`SALESFORCE_CLIENT_SECRET`, `TEAMS_CLIENT_ID`/`TEAMS_CLIENT_SECRET` (or `MICROSOFT_*`) to Vercel + GitHub secrets. Follow `docs/INTEGRATIONS.md` for step-by-step setup. Verify with `npx tsx scripts/check-env.ts`.
+5. **Sentry** — create Sentry project, add `NEXT_PUBLIC_SENTRY_DSN` + `SENTRY_AUTH_TOKEN` + `SENTRY_ORG` + `SENTRY_PROJECT` to Vercel + GitHub secrets. Follow `docs/SENTRY.md`. Code is ready, no-op when DSN missing.
 
 ## Key Files
 
@@ -104,9 +114,13 @@ Merged in PR #23:
 |---|---|
 | `src/lib/plans.ts` | Plan definitions — update `paddlePriceId` after creating Paddle products |
 | `src/lib/prisma.ts` | PrismaClient singleton (used by all routes) |
-| `src/middleware.ts` | Clerk auth middleware + rate limiting (no more public API bypass) |
+| `src/lib/sentry.ts` | Sentry captureApiError(route, error, context?) helper |
+| `src/lib/integrations/dev-sandbox.ts` | Dev-only fake OAuth creds when NODE_ENV=development |
+| `src/middleware.ts` | Clerk auth + Sentry capture on auth failure |
+| `sentry.{client,server,edge}.config.ts` | Sentry SDK init (no-op when DSN missing) |
+| `src/app/global-error.tsx`, `src/app/app/error.tsx` | Error boundaries |
 | `src/app/api/team/route.ts` | Team CRUD (list, invite, remove members) |
-| `src/app/api/competitive-intelligence/route.ts` | GET endpoint — returns mentions + trends (scoped to user's team) |
+| `src/app/api/competitive-intelligence/route.ts` | GET — mentions + time-bucketed trend (from/to, limit, groupBy=week\|month, plan-gated) |
 | `src/app/app/intelligence/page.tsx` | Competitive Intelligence console UI |
 | `src/app/app/live/page.tsx` | Live transcription page (MediaRecorder + SSE) |
 | `src/app/api/calls/route.ts` | Call persistence (used by live page + extension finalize) |
@@ -116,7 +130,11 @@ Merged in PR #23:
 | `src/lib/prompts/enrollment-calls.md` | AI prompt — `competitorsMentioned` extraction |
 | `src/services/slack.ts` | Slack alerts (no longer accepts client webhook URL) |
 | `prisma/schema.prisma` | 13 models — added `CompetitorMention`, `teamRole` on User |
-| `next.config.mjs` | Clean config (bodyParser removed) |
+| `next.config.mjs` | Clean config (bodyParser removed) + withSentryConfig |
+| `.env.example` | 32 env vars across 11 groups, all documented |
+| `docs/INTEGRATIONS.md` | Step-by-step OAuth setup for HubSpot/Salesforce/Teams |
+| `docs/SENTRY.md` | Sentry setup guide |
+| `scripts/check-env.ts` | Env var verification (run: `npx tsx scripts/check-env.ts`) |
 | `.github/workflows/ci.yml` | 3 CI jobs: Tests, Lint, Build. Deploy via Vercel GitHub App |
 
 ## Commands
