@@ -5,6 +5,7 @@ import path from "path";
 import { spawn } from "child_process";
 import { detectAudioType } from "@/lib/audio-types";
 import { getSecret } from "@/lib/secrets";
+import { captureApiError } from "@/lib/sentry";
 import {
   EXTENSION_MAX_TRANSCRIPT_CHARS,
   clampTranscriptText,
@@ -107,6 +108,7 @@ except Exception as e:
 
     return NextResponse.json({ transcript });
   } catch (error) {
+    captureApiError("/api/transcribe", error, { method: "POST" });
     return NextResponse.json(
       { error: "Transcription failed", details: error instanceof Error ? error.message : String(error) },
       { status: 500 }

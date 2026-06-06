@@ -19,6 +19,7 @@ import fs from 'fs/promises';
 import path from 'path';
 import os from 'os';
 import { detectAudioType } from '@/lib/audio-types';
+import { captureApiError } from '@/lib/sentry';
 
 export const maxDuration = 300;
 
@@ -355,6 +356,7 @@ export async function POST(req: Request) {
       personalizationHooks: personalization.hooks,
     });
   } catch (error: any) {
+    captureApiError('/api/analyze', error, { method: 'POST' });
     console.error('Analyze route error:', error?.message);
     return NextResponse.json({ error: 'Analysis failed: ' + error?.message }, { status: 500 });
   }
