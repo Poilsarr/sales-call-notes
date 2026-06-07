@@ -88,7 +88,8 @@ function IntegrationsContent() {
   }, [loadProviderStates]);
 
   const code = searchParams.get("code");
-  const providerParam = searchParams.get("state");
+  const stateParam = searchParams.get("state");
+  const providerParam = stateParam?.split(":")[0] ?? null;
 
   useEffect(() => {
     const provider = providerParam;
@@ -115,7 +116,7 @@ function IntegrationsContent() {
         const response = await fetch("/api/integrations", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ provider, code }),
+          body: JSON.stringify({ provider, code, state: stateParam }),
         });
         const data = await response.json();
         if (!response.ok) throw new Error(data.error || "Failed to save integration");
@@ -136,7 +137,7 @@ function IntegrationsContent() {
         router.replace("/integrations");
       }
     })();
-  }, [router, code, providerParam, searchParams]);
+  }, [router, code, providerParam, searchParams, stateParam]);
 
   const connectProvider = async (provider: SupportedProvider) => {
     if (!providerStates[provider].configured) {

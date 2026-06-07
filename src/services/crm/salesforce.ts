@@ -1,10 +1,13 @@
 import { CRMCall } from "@/types/crm";
 import { CRMFormatterService } from "./formatter";
-import { getSecret } from "@/lib/secrets";
 
 export class SalesforceService {
-  private baseUrl = getSecret("SF_INSTANCE_URL") || "https://login.salesforce.com";
+  private baseUrl: string;
   private formatter = new CRMFormatterService();
+
+  constructor(instanceUrl?: string | null) {
+    this.baseUrl = instanceUrl || "https://login.salesforce.com";
+  }
 
   async syncCall(call: CRMCall, accessToken: string) {
     const contact = await this.createContact(call, accessToken);
