@@ -1,5 +1,7 @@
 import { auth } from "@clerk/nextjs/server";
+import { cookies } from "next/headers";
 import { NextRequest, NextResponse } from "next/server";
+import crypto from "crypto";
 
 import prisma from "@/lib/prisma";
 import { getUserByClerkId } from "@/lib/get-user";
@@ -9,6 +11,7 @@ import {
   isDevSandboxEnabled,
   type SandboxProvider,
 } from "@/lib/integrations/dev-sandbox";
+import { checkRateLimit } from "@/lib/rate-limit";
 
 type SupportedProvider = "hubspot" | "salesforce" | "teams";
 
@@ -50,21 +53,49 @@ const SALESFORCE_SCOPES = ["api", "refresh_token", "offline_access"];
 const TEAMS_SCOPES = [
   "offline_access",
   "User.Read",
-  "Tasks.ReadWrite",
-  "Group.ReadWrite.All",
-  "ChannelMessage.Send",
+  "Calendars.ReadWrite",
+  "OnlineMeetings.ReadWrite",
 ];
 
 function isSupportedProvider(value: string | null): value is SupportedProvider {
   return value === "hubspot" || value === "salesforce" || value === "teams";
 }
 
-function getAppUrl(req: NextRequest) {
-  return (getSecret("NEXT_PUBLIC_APP_URL") || req.nextUrl.origin).replace(/\/$/, "");
+function getAppUrl() {
+  const url = getSecret("NEXT_PUBLIC_APP_URL");
+  if (!url) throw new Error("NEXT_PUBLIC_APP_URL must be set for OAuth redirects");
+  return url.replace(/\/$/, "");
 }
 
-function getRedirectUri(req: NextRequest) {
-  return `${getAppUrl(req)}/integrations`;
+function getRedirectUri() {
+  return `${getAppUrl()}/integrations`;
+}
+
+function generateNonce(): string {
+  return crypto.randomBytes(16).toString("hex");
+}
+
+function setOAuthCookie(provider: string, nonce: string) {
+  const cookieStore = cookies();
+  cookieStore.set(`oauth_${provider}`, nonce, {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === "production",
+    sameSite: "lax",
+    path: "/",
+    maxAge: 300,
+  });
+}
+
+function validateOAuthCookie(provider: string, nonce: string): boolean {
+  try {
+    const cookieStore = cookies();
+    const stored = cookieStore.get(`oauth_${provider}`);
+    if (!stored || stored.value !== nonce) return false;
+    cookieStore.delete(`oauth_${provider}`);
+    return true;
+  } catch {
+    return false;
+  }
 }
 
 function getSalesforceAuthBase() {
@@ -137,62 +168,71 @@ function serializeStatuses(
   );
 }
 
-function buildHubSpotAuthUrl(req: NextRequest) {
+function buildHubSpotAuthUrl() {
   const sandbox = getDevSandboxCredentials("hubspot");
   const clientId = sandbox?.clientId || getSecret("HUBSPOT_CLIENT_ID");
   if (!clientId) {
     throw new Error("Missing HUBSPOT_CLIENT_ID");
   }
 
+  const nonce = generateNonce();
+  setOAuthCookie("hubspot", nonce);
+
   const params = new URLSearchParams({
     client_id: clientId,
-    redirect_uri: getRedirectUri(req),
+    redirect_uri: getRedirectUri(),
     scope: HUBSPOT_SCOPES.join(" "),
     response_type: "code",
-    state: "hubspot",
+    state: `hubspot:${nonce}`,
   });
 
   return `https://app.hubspot.com/oauth/authorize?${params.toString()}`;
 }
 
-function buildSalesforceAuthUrl(req: NextRequest) {
+function buildSalesforceAuthUrl() {
   const sandbox = getDevSandboxCredentials("salesforce");
   const clientId = sandbox?.clientId || getSecret("SALESFORCE_CLIENT_ID");
   if (!clientId) {
     throw new Error("Missing SALESFORCE_CLIENT_ID");
   }
 
+  const nonce = generateNonce();
+  setOAuthCookie("salesforce", nonce);
+
   const params = new URLSearchParams({
     client_id: clientId,
-    redirect_uri: getRedirectUri(req),
+    redirect_uri: getRedirectUri(),
     response_type: "code",
     scope: SALESFORCE_SCOPES.join(" "),
-    state: "salesforce",
+    state: `salesforce:${nonce}`,
   });
 
   return `${getSalesforceAuthBase()}/services/oauth2/authorize?${params.toString()}`;
 }
 
-function buildTeamsAuthUrl(req: NextRequest) {
+function buildTeamsAuthUrl() {
   const sandbox = getDevSandboxCredentials("teams");
   const clientId = sandbox?.clientId || (getSecret("TEAMS_CLIENT_ID") || getSecret("MICROSOFT_CLIENT_ID"));
   if (!clientId) {
     throw new Error("Missing TEAMS_CLIENT_ID or MICROSOFT_CLIENT_ID");
   }
 
+  const nonce = generateNonce();
+  setOAuthCookie("teams", nonce);
+
   const params = new URLSearchParams({
     client_id: clientId,
-    redirect_uri: getRedirectUri(req),
+    redirect_uri: getRedirectUri(),
     response_type: "code",
     response_mode: "query",
     scope: TEAMS_SCOPES.join(" "),
-    state: "teams",
+    state: `teams:${nonce}`,
   });
 
   return `https://login.microsoftonline.com/${getMicrosoftTenant()}/oauth2/v2.0/authorize?${params.toString()}`;
 }
 
-async function exchangeHubSpotCode(code: string, req: NextRequest) {
+async function exchangeHubSpotCode(code: string) {
   const sandbox = getDevSandboxCredentials("hubspot");
   const clientId = sandbox?.clientId || getSecret("HUBSPOT_CLIENT_ID");
   const clientSecret = sandbox?.clientSecret || getSecret("HUBSPOT_CLIENT_SECRET");
@@ -213,14 +253,13 @@ async function exchangeHubSpotCode(code: string, req: NextRequest) {
       grant_type: "authorization_code",
       client_id: clientId,
       client_secret: clientSecret,
-      redirect_uri: getRedirectUri(req),
+      redirect_uri: getRedirectUri(),
       code,
     }),
   });
 
   if (!response.ok) {
-    const details = await response.text();
-    throw new Error(`HubSpot token exchange failed: ${details}`);
+    throw new Error(`HubSpot token exchange failed`);
   }
 
   const data = (await response.json()) as {
@@ -240,7 +279,7 @@ async function exchangeHubSpotCode(code: string, req: NextRequest) {
   };
 }
 
-async function exchangeSalesforceCode(code: string, req: NextRequest) {
+async function exchangeSalesforceCode(code: string) {
   const sandbox = getDevSandboxCredentials("salesforce");
   const clientId = sandbox?.clientId || getSecret("SALESFORCE_CLIENT_ID");
   const clientSecret = sandbox?.clientSecret || getSecret("SALESFORCE_CLIENT_SECRET");
@@ -261,14 +300,13 @@ async function exchangeSalesforceCode(code: string, req: NextRequest) {
       grant_type: "authorization_code",
       client_id: clientId,
       client_secret: clientSecret,
-      redirect_uri: getRedirectUri(req),
+      redirect_uri: getRedirectUri(),
       code,
     }),
   });
 
   if (!response.ok) {
-    const details = await response.text();
-    throw new Error(`Salesforce token exchange failed: ${details}`);
+    throw new Error(`Salesforce token exchange failed`);
   }
 
   const data = (await response.json()) as {
@@ -288,7 +326,7 @@ async function exchangeSalesforceCode(code: string, req: NextRequest) {
   };
 }
 
-async function exchangeTeamsCode(code: string, req: NextRequest) {
+async function exchangeTeamsCode(code: string) {
   const sandbox = getDevSandboxCredentials("teams");
   const clientId = sandbox?.clientId || (getSecret("TEAMS_CLIENT_ID") || getSecret("MICROSOFT_CLIENT_ID"));
   const clientSecret = sandbox?.clientSecret || (getSecret("TEAMS_CLIENT_SECRET") || getSecret("MICROSOFT_CLIENT_SECRET"));
@@ -310,7 +348,7 @@ async function exchangeTeamsCode(code: string, req: NextRequest) {
       body: new URLSearchParams({
         client_id: clientId,
         client_secret: clientSecret,
-        redirect_uri: getRedirectUri(req),
+        redirect_uri: getRedirectUri(),
         code,
         grant_type: "authorization_code",
         scope: TEAMS_SCOPES.join(" "),
@@ -319,8 +357,7 @@ async function exchangeTeamsCode(code: string, req: NextRequest) {
   );
 
   if (!response.ok) {
-    const details = await response.text();
-    throw new Error(`Microsoft Teams token exchange failed: ${details}`);
+    throw new Error(`Microsoft Teams token exchange failed`);
   }
 
   const data = (await response.json()) as {
@@ -372,11 +409,11 @@ export async function GET(req: NextRequest) {
 
       let authUrl: string;
       if (providerParam === "hubspot") {
-        authUrl = buildHubSpotAuthUrl(req);
+        authUrl = buildHubSpotAuthUrl();
       } else if (providerParam === "salesforce") {
-        authUrl = buildSalesforceAuthUrl(req);
+        authUrl = buildSalesforceAuthUrl();
       } else {
-        authUrl = buildTeamsAuthUrl(req);
+        authUrl = buildTeamsAuthUrl();
       }
 
       return NextResponse.json({ authUrl });
@@ -407,24 +444,35 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const { provider, code } = (await req.json()) as {
+    const rl = await checkRateLimit(`oauth:${user.id}`, "oauth");
+    if (!rl.success) {
+      return NextResponse.json({ error: "Too many requests" }, { status: 429 });
+    }
+
+    const { provider, code, state: rawState } = (await req.json()) as {
       provider?: string;
       code?: string;
+      state?: string;
     };
 
     if (!provider || !code || !isSupportedProvider(provider)) {
       return NextResponse.json({ error: "provider and code are required" }, { status: 400 });
     }
 
+    const [stateProvider, nonce] = (rawState ?? "").split(":");
+    if (stateProvider !== provider || !validateOAuthCookie(provider, nonce)) {
+      return NextResponse.json({ error: "Invalid OAuth state" }, { status: 403 });
+    }
+
     const teamId = await ensureTeamId(user);
 
     let config: Record<string, string | null>;
     if (provider === "hubspot") {
-      config = await exchangeHubSpotCode(code, req);
+      config = await exchangeHubSpotCode(code);
     } else if (provider === "salesforce") {
-      config = await exchangeSalesforceCode(code, req);
+      config = await exchangeSalesforceCode(code);
     } else {
-      config = await exchangeTeamsCode(code, req);
+      config = await exchangeTeamsCode(code);
     }
 
     const existing = await prisma.integration.findFirst({

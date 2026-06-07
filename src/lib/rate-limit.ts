@@ -10,6 +10,7 @@ const LIMITS: Record<string, LimitConfig> = {
   default: { tokens: 60, window: "1 m" },
   analyze: { tokens: 5, window: "1 h" },
   api: { tokens: 100, window: "1 m" },
+  oauth: { tokens: 10, window: "1 h" },
 };
 
 const instances = new Map<string, Ratelimit>();

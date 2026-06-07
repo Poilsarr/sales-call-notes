@@ -51,10 +51,12 @@ export async function POST(
     });
 
     let accessToken: string | null = null;
+    let instanceUrl: string | undefined;
     if (integration?.config) {
       try {
         const parsed = JSON.parse(integration.config);
         accessToken = parsed.accessToken || null;
+        instanceUrl = parsed.instanceUrl ?? undefined;
       } catch {
         return NextResponse.json({ error: "Integration not configured" }, { status: 400 });
       }
@@ -80,7 +82,7 @@ export async function POST(
       const hubspot = new HubSpotService();
       result = await hubspot.syncCall(crmCall, accessToken);
     } else if (provider === "salesforce") {
-      const salesforce = new SalesforceService();
+      const salesforce = new SalesforceService(instanceUrl);
       result = await salesforce.syncCall(crmCall, accessToken);
     } else {
       const teams = new TeamsService();
