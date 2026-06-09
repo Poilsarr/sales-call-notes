@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@clerk/nextjs/server";
 import prisma from "@/lib/prisma";
 import { getUserByClerkId } from "@/lib/get-user";
+import { requireRole } from "@/lib/rbac";
 import { CRMFormatterService } from "@/services/crm/formatter";
 
 export async function GET(
@@ -15,6 +16,13 @@ export async function GET(
     }
 
     const user = await getUserByClerkId(userId);
+
+    if (user.teamId) {
+      const { allowed } = await requireRole(userId, user.teamId, "MEMBER");
+      if (!allowed) {
+        return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+      }
+    }
 
     const call = await prisma.call.findUnique({
       where: { id: params.id },

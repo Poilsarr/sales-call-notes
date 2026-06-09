@@ -6,6 +6,8 @@ type EnvGroup = {
   vars: Array<{ key: string; level: CheckLevel; description?: string }>;
 };
 
+import { config } from 'dotenv';
+
 export const ENV_GROUPS: readonly EnvGroup[] = [
   {
     name: "Core",
@@ -260,6 +262,7 @@ export function formatReport(summary: CheckSummary, opts: { color?: boolean } = 
 }
 
 function main(): number {
+  config({ path: '.env.local' });
   const summary = checkEnv();
   process.stdout.write(formatReport(summary));
   return summary.ok ? 0 : 1;

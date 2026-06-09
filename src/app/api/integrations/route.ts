@@ -5,7 +5,9 @@ import crypto from "crypto";
 
 import prisma from "@/lib/prisma";
 import { getUserByClerkId } from "@/lib/get-user";
+import { requireRole } from "@/lib/rbac";
 import { getSecret } from "@/lib/secrets";
+import { logAuditAction } from "@/lib/audit-logger";
 import {
   getDevSandboxCredentials,
   isDevSandboxEnabled,
@@ -399,6 +401,13 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
+    if (user.teamId) {
+      const { allowed } = await requireRole(user.clerkId, user.teamId, "MEMBER");
+      if (!allowed) {
+        return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+      }
+    }
+
     const action = req.nextUrl.searchParams.get("action");
     const providerParam = req.nextUrl.searchParams.get("provider");
 
@@ -465,6 +474,11 @@ export async function POST(req: NextRequest) {
     }
 
     const teamId = await ensureTeamId(user);
+
+    const { allowed } = await requireRole(user.clerkId, teamId, "ADMIN");
+    if (!allowed) {
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    }
 
     let config: Record<string, string | null>;
     if (provider === "hubspot") {
@@ -533,6 +547,11 @@ export async function DELETE(req: NextRequest) {
       return NextResponse.json({ success: true });
     }
 
+    const { allowed } = await requireRole(user.clerkId, user.teamId, "ADMIN");
+    if (!allowed) {
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    }
+
     await prisma.integration.updateMany({
       where: {
         teamId: user.teamId,
@@ -543,6 +562,10 @@ export async function DELETE(req: NextRequest) {
         config: null,
         syncedAt: null,
       },
+    });
+
+    await logAuditAction(user.id, "DISCONNECT_INTEGRATION", user.teamId, "Integration", {
+      provider,
     });
 
     return NextResponse.json({ success: true });

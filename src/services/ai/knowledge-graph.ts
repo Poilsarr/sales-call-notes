@@ -1,40 +1,16 @@
+import OpenAI from 'openai';
 import prisma from '@/lib/prisma';
+import { getSecret } from '@/lib/secrets';
+
+const openai = new OpenAI({ apiKey: getSecret('OPENAI_API_KEY'), timeout: 30000, maxRetries: 2 });
 
 export class KnowledgeGraphService {
-  /**
-   * Generate a simple embedding for a text.
-   * In a real production app, this would use a local model like Sentence-Transformers
-   * or a local Ollama instance. For this implementation, we'll provide a
-   * structural approach that can be easily swapped with a real model.
-   */
   private async generateEmbedding(text: string): Promise<number[]> {
-    // This is a placeholder for a real local embedding model.
-    // To make it truly local, one would use:
-    // 1. Ollama (e.g. model 'all-minilm')
-    // 2. @xenova/transformers (WASM)
-
-    // Implementation via a simple dummy embedding for now,
-    // but structured to be replaced by a real call.
-    const words = text.toLowerCase().split(/\s+/);
-    const embedding = new Array(384).fill(0); // Standard Small model size
-
-    words.forEach((word, i) => {
-      const hash = this.simpleHash(word);
-      embedding[hash % 384] += 1;
+    const response = await openai.embeddings.create({
+      model: 'text-embedding-3-small',
+      input: text,
     });
-
-    // Normalize
-    const magnitude = Math.sqrt(embedding.reduce((sum, val) => sum + val * val, 0));
-    return magnitude > 0 ? embedding.map(v => v / magnitude) : embedding;
-  }
-
-  private simpleHash(str: string): number {
-    let hash = 0;
-    for (let i = 0; i < str.length; i++) {
-      hash = (hash << 5) - hash + str.charCodeAt(i);
-      hash |= 0;
-    }
-    return Math.abs(hash);
+    return response.data[0].embedding;
   }
 
   async indexCall(callId: string) {

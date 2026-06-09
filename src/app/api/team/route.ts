@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { auth } from '@clerk/nextjs/server';
 import prisma from '@/lib/prisma';
 import { getUserByClerkId } from '@/lib/get-user';
+import { requireRole } from '@/lib/rbac';
 import { logAuditAction } from '@/lib/audit-logger';
 
 export async function GET() {
@@ -99,8 +100,11 @@ export async function POST(req: Request) {
 
     const inviter = await getUserByClerkId(userId);
 
-    if (inviter.teamRole !== 'ADMIN') {
-      return NextResponse.json({ error: 'Only admins can invite members' }, { status: 403 });
+    if (inviter.teamId) {
+      const { allowed } = await requireRole(userId, inviter.teamId, "ADMIN");
+      if (!allowed) {
+        return NextResponse.json({ error: 'Only admins can invite members' }, { status: 403 });
+      }
     }
 
     const targetUser = await prisma.user.findUnique({ where: { email } });
@@ -168,8 +172,11 @@ export async function DELETE(req: Request) {
 
     const user = await getUserByClerkId(userId);
 
-    if (user.teamRole !== 'ADMIN') {
-      return NextResponse.json({ error: 'Only admins can remove members' }, { status: 403 });
+    if (user.teamId) {
+      const { allowed } = await requireRole(userId, user.teamId, "ADMIN");
+      if (!allowed) {
+        return NextResponse.json({ error: 'Only admins can remove members' }, { status: 403 });
+      }
     }
 
     if (memberId === user.id) {

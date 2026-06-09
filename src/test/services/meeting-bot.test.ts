@@ -9,8 +9,8 @@ describe("Meeting Bot", () => {
       {
         id: "1",
         summary: "Test Meeting",
-        start: new Date(now.getTime() - 5 * 60 * 1000).toISOString(),
-        end: new Date(now.getTime() + 25 * 60 * 1000).toISOString(),
+        start: new Date(now.getTime() - 5 * 60 * 1000),
+        end: new Date(now.getTime() + 25 * 60 * 1000),
         attendees: ["alice@test.com"],
       },
     ] as CalendarEvent[];
@@ -26,8 +26,8 @@ describe("Meeting Bot", () => {
       {
         id: "2",
         summary: "Upcoming Standup",
-        start: new Date(now.getTime() + 10 * 60 * 1000).toISOString(),
-        end: new Date(now.getTime() + 40 * 60 * 1000).toISOString(),
+        start: new Date(now.getTime() + 10 * 60 * 1000),
+        end: new Date(now.getTime() + 40 * 60 * 1000),
         attendees: ["bob@test.com"],
       },
     ] as CalendarEvent[];

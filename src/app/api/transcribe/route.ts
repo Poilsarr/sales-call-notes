@@ -6,6 +6,7 @@ import { spawn } from "child_process";
 import { detectAudioType } from "@/lib/audio-types";
 import { getSecret } from "@/lib/secrets";
 import { captureApiError } from "@/lib/sentry";
+import { isQuotaError, quotaErrorResponse, captureQuotaEvent } from "@/lib/quota-guard";
 import {
   EXTENSION_MAX_TRANSCRIPT_CHARS,
   clampTranscriptText,
@@ -108,6 +109,10 @@ except Exception as e:
 
     return NextResponse.json({ transcript });
   } catch (error) {
+    if (isQuotaError(error)) {
+      captureQuotaEvent(error, "transcribe");
+      return quotaErrorResponse();
+    }
     captureApiError("/api/transcribe", error, { method: "POST" });
     return NextResponse.json(
       { error: "Transcription failed", details: error instanceof Error ? error.message : String(error) },
