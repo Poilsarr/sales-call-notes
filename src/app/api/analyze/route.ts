@@ -20,6 +20,7 @@ import path from 'path';
 import os from 'os';
 import { detectAudioType } from '@/lib/audio-types';
 import { captureApiError } from '@/lib/sentry';
+import { isQuotaError, quotaErrorResponse, captureQuotaEvent } from '@/lib/quota-guard';
 
 export const maxDuration = 300;
 
@@ -91,8 +92,9 @@ export async function POST(req: Request) {
       if (msg.includes('OPENAI_API_KEY') || msg.includes('GROQ_API_KEY')) {
         return NextResponse.json({ error: msg }, { status: 500 });
       }
-      if (msg.includes('Insufficient credits') || msg.includes('insufficient_quota') || msg.includes('429')) {
-        return NextResponse.json({ error: 'AI provider quota exceeded. Add credits to your OpenAI/Groq account.' }, { status: 429 });
+      if (isQuotaError(error)) {
+        captureQuotaEvent(error, "analyze/transcribe");
+        return quotaErrorResponse();
       }
       if (msg.includes('401') || msg.includes('Unauthorized') || msg.includes('Incorrect API key')) {
         return NextResponse.json({ error: 'AI provider API key is invalid or expired. Check OPENAI_API_KEY and GROQ_API_KEY.' }, { status: 500 });
@@ -356,6 +358,10 @@ export async function POST(req: Request) {
       personalizationHooks: personalization.hooks,
     });
   } catch (error: any) {
+    if (isQuotaError(error)) {
+      captureQuotaEvent(error, "analyze");
+      return quotaErrorResponse();
+    }
     captureApiError('/api/analyze', error, { method: 'POST' });
     console.error('Analyze route error:', error?.message);
     return NextResponse.json({ error: 'Analysis failed: ' + error?.message }, { status: 500 });

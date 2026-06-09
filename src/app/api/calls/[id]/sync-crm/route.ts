@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@clerk/nextjs/server";
 import prisma from "@/lib/prisma";
 import { getUserByClerkId } from "@/lib/get-user";
+import { requireRole } from "@/lib/rbac";
 import { HubSpotService } from "@/services/crm/hubspot";
 import { SalesforceService } from "@/services/crm/salesforce";
 import { TeamsService } from "@/services/crm/teams";
@@ -19,6 +20,11 @@ export async function POST(
     const user = await getUserByClerkId(clerkUserId);
     if (!user.teamId) {
       return NextResponse.json({ error: "No team found" }, { status: 400 });
+    }
+
+    const { allowed } = await requireRole(clerkUserId, user.teamId, "ADMIN");
+    if (!allowed) {
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
 
     const { provider } = await req.json();

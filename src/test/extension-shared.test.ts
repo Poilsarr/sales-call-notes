@@ -109,37 +109,37 @@ describe("extension upload auth + error handling", () => {
 
   it("reads the Clerk __session cookie via chrome.cookies.get", async () => {
     const get = vi.fn().mockResolvedValue({ value: "jwt.from.cookie" });
-    const previous = globalThis.chrome;
-    globalThis.chrome = { cookies: { get } };
+    const previous = (globalThis as Record<string, unknown>).chrome;
+    (globalThis as Record<string, unknown>).chrome = { cookies: { get } };
     try {
       const token = await getClerkSessionToken();
       expect(token).toBe("jwt.from.cookie");
       expect(get).toHaveBeenCalledWith({ url: APP_BASE_URL, name: "__session" });
     } finally {
-      globalThis.chrome = previous;
+      (globalThis as Record<string, unknown>).chrome = previous;
     }
   });
 
   it("returns null when the cookies API is unavailable", async () => {
-    const previous = globalThis.chrome;
-    globalThis.chrome = {};
+    const previous = (globalThis as Record<string, unknown>).chrome;
+    (globalThis as Record<string, unknown>).chrome = {};
     try {
       expect(await getClerkSessionToken()).toBeNull();
     } finally {
-      globalThis.chrome = previous;
+      (globalThis as Record<string, unknown>).chrome = previous;
     }
   });
 
   it("swallows cookie read errors and returns null", async () => {
     const get = vi.fn().mockRejectedValue(new Error("denied"));
     const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
-    const previous = globalThis.chrome;
-    globalThis.chrome = { cookies: { get } };
+    const previous = (globalThis as Record<string, unknown>).chrome;
+(globalThis as Record<string, unknown>).chrome = { cookies: { get } };
     try {
       expect(await getClerkSessionToken()).toBeNull();
       expect(warn).toHaveBeenCalled();
     } finally {
-      globalThis.chrome = previous;
+      (globalThis as Record<string, unknown>).chrome = previous;
       warn.mockRestore();
     }
   });
@@ -154,7 +154,7 @@ describe("extension caption + finalize payloads", () => {
       text: huge,
       sessionId: "ext-test",
       isFinal: true,
-    });
+    })!;
     expect(trimmed.text.length).toBeLessThanOrEqual(4000);
     expect(trimmed.sessionId).toBe("ext-test");
     expect(trimmed.isFinal).toBe(true);
@@ -192,17 +192,17 @@ describe("extension caption + finalize payloads", () => {
 
 describe("extension upload status persistence", () => {
   function installChrome() {
-    const store = {};
+    const store: Record<string, unknown> = {};
     const set = vi.fn((value, cb) => {
       Object.assign(store, value);
       cb?.();
     });
-    const previous = globalThis.chrome;
-    globalThis.chrome = { storage: { local: { set } } };
+    const previous = (globalThis as Record<string, unknown>).chrome;
+    (globalThis as Record<string, unknown>).chrome = { storage: { local: { set } } };
     return {
       store,
       restore: () => {
-        globalThis.chrome = previous;
+        (globalThis as Record<string, unknown>).chrome = previous;
       },
     };
   }
@@ -211,9 +211,9 @@ describe("extension upload status persistence", () => {
     const ctx = installChrome();
     try {
       await recordUploadSuccess(null, 5);
-      expect(ctx.store.uploadStatus).toMatchObject({ state: "success", count: 5 });
-      expect(ctx.store.lastUploadAt).toBeGreaterThan(0);
-      expect(ctx.store.lastUploadError).toBeNull();
+      expect((ctx.store as Record<string, unknown>).uploadStatus).toMatchObject({ state: "success", count: 5 });
+      expect((ctx.store as Record<string, unknown>).lastUploadAt).toBeGreaterThan(0);
+      expect((ctx.store as Record<string, unknown>).lastUploadError).toBeNull();
     } finally {
       ctx.restore();
     }
@@ -235,7 +235,7 @@ describe("extension upload status persistence", () => {
     try {
       await recordUploadError(null, "rate_limited", "Slow down");
       expect(ctx.store.uploadStatus).toMatchObject({ state: "error", status: "rate_limited" });
-      expect(ctx.store.lastUploadError.message).toBe("Slow down");
+      expect((ctx.store.lastUploadError as { message: string }).message).toBe("Slow down");
     } finally {
       ctx.restore();
     }

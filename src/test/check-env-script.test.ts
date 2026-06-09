@@ -26,7 +26,7 @@ const REQUIRED_KEYS = [
 ];
 
 const buildEnv = (overrides: Record<string, string | undefined>): NodeJS.ProcessEnv => {
-  const env: NodeJS.ProcessEnv = {};
+  const env: Record<string, string | undefined> = {};
   for (const key of REQUIRED_KEYS) {
     if (!(key in overrides)) {
       env[key] = `value-${key}`;
@@ -36,7 +36,7 @@ const buildEnv = (overrides: Record<string, string | undefined>): NodeJS.Process
     if (v === undefined) continue;
     env[k] = v;
   }
-  return env;
+  return env as NodeJS.ProcessEnv;
 };
 
 const summarize = (s: CheckSummary) => ({
@@ -125,7 +125,7 @@ describe('check-env script', () => {
   });
 
   it('handles a fully empty env without throwing', () => {
-    const summary = checkEnv({});
+    const summary = checkEnv({} as NodeJS.ProcessEnv);
     expect(summary.ok).toBe(false);
     expect(summary.requiredSet).toBe(0);
     expect(summary.requiredMissing).toBe(REQUIRED_KEYS.length);
