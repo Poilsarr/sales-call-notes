@@ -1,0 +1,2 @@
+ALTER TABLE "User" ADD COLUMN IF NOT EXISTS "preferredTone" TEXT DEFAULT 'balanced';
+ALTER TABLE "User" ADD COLUMN IF NOT EXISTS "rubricEmphasis" TEXT[] DEFAULT '{}';

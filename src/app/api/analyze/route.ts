@@ -302,7 +302,7 @@ export async function POST(req: Request) {
     }
 
     // Generate personalized hooks
-    let personalization = { hooks: [] };
+    let personalization: { hooks: string[] } = { hooks: [] };
     try {
       const personalService = new PersonalizationService();
       personalization = await personalService.generatePersonalizedHooks(correctedText, analysisResult);

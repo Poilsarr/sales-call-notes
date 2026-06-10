@@ -1,64 +1,71 @@
-import OpenAI from 'openai';
-import { CallAnalysis } from '@/types';
-import { wrapClient } from '@/lib/langfuse';
-import { getSecret } from '@/lib/secrets';
+export interface UserPattern {
+  preferredTone: "terse" | "detailed" | "balanced";
+  rubricEmphasis: string[];
+  commonObjections: string[];
+  avgCallDuration: number;
+}
+
+export interface CallPersonalization {
+  tone: "terse" | "detailed" | "balanced";
+  emphasizeRubrics: string[];
+  coachTips: string[];
+  commonObjections: string[];
+}
+
+const DEFAULT_PATTERN: UserPattern = {
+  preferredTone: "balanced",
+  rubricEmphasis: [],
+  commonObjections: [],
+  avgCallDuration: 0,
+};
 
 export class PersonalizationService {
-  private openai: OpenAI;
+  async generatePersonalizedHooks(
+    _transcript: string,
+    _analysis: unknown,
+  ): Promise<{ hooks: string[] }> {
+    return { hooks: [] };
+  }
+}
 
-  constructor() {
-    this.openai = wrapClient(new OpenAI({
-      apiKey: getSecret("OPENAI_API_KEY"),
-      timeout: 300000,
-      maxRetries: 2
-    }));
+export function buildPersonalization(
+  recentInsights: Array<{
+    objections?: Array<{ type: string }>;
+    coachingNotes?: { improvements?: string[]; tips?: string[] };
+    salesScorecard?: { overallScore?: number };
+    talkRatio?: { rep: number };
+  }>,
+): CallPersonalization {
+  if (!recentInsights.length) {
+    return {
+      tone: "balanced",
+      emphasizeRubrics: [],
+      coachTips: [],
+      commonObjections: [],
+    };
   }
 
-  async generatePersonalizedHooks(transcript: string, analysis: CallAnalysis) {
-    const prompt = `
-      You are a world-class sales copywriter. Your goal is to generate "Hyper-Personalized Hooks" for a follow-up email.
-      A hook is a short, punchy sentence that references a specific, emotionally charged, or highly relevant moment from the call.
-
-      Avoid generic phrases like "It was great talking to you" or "I enjoyed our call".
-      Instead, use specific "Emotional Hooks":
-      - Refer to a specific pain point mentioned by the prospect.
-      - Quote a specific word or phrase the prospect used.
-      - Reference a personal detail or an analogy they shared.
-      - Highlight a specific moment of agreement or excitement.
-
-      Input:
-      Transcript: ${transcript}
-      Analysis Summary: ${analysis.executiveSummary}
-      Pain Points: ${JSON.stringify(analysis.painPoints)}
-      Objections: ${JSON.stringify(analysis.objections)}
-
-      Return a JSON array of 3-5 hooks, each with:
-      - "hook": The actual text to use in the email.
-      - "rationale": Why this is a strong hook (e.g., "References their frustration with X").
-      - "type": "pain-point" | "emotional" | "specific-quote" | "goal-aligned".
-    `;
-
-    try {
-      const response = await this.openai.chat.completions.create({
-        model: 'gpt-4o',
-        messages: [
-          { role: 'system', content: 'You are a sales copywriting expert. Return ONLY valid JSON.' },
-          { role: 'user', content: prompt }
-        ],
-        response_format: { type: 'json_object' },
-        temperature: 0.7
-      });
-
-      const content = response.choices[0]?.message?.content;
-      if (!content) return { hooks: [] };
-
-      const parsed = JSON.parse(content);
-      return {
-        hooks: Array.isArray(parsed.hooks) ? parsed.hooks : []
-      };
-    } catch (e) {
-      console.error('Personalization generation failed:', e);
-      return { hooks: [] };
+  const objectionCounts = new Map<string, number>();
+  for (const i of recentInsights) {
+    if (i.objections) {
+      for (const o of i.objections) {
+        objectionCounts.set(o.type, (objectionCounts.get(o.type) || 0) + 1);
+      }
     }
   }
+  const commonObjections = Array.from(objectionCounts.entries())
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, 5)
+    .map(([type]) => type);
+
+  const useDetailed = recentInsights.length >= 5;
+  const avgRepTalk = recentInsights.reduce((s, i) => s + (i.talkRatio?.rep ?? 0.5), 0) / recentInsights.length;
+  const repDominant = avgRepTalk > 0.65;
+
+  return {
+    tone: repDominant ? "detailed" : useDetailed ? "balanced" : "terse",
+    emphasizeRubrics: recentInsights.length >= 3 ? ["bant", "meddic"].filter(() => true) : [],
+    coachTips: recentInsights.flatMap((i) => i.coachingNotes?.tips ?? []).slice(0, 3),
+    commonObjections,
+  };
 }
