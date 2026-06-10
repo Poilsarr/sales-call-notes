@@ -1,6 +1,6 @@
-import { spawn } from "child_process";
-import { writeFile, unlink } from "fs/promises";
-import path from "path";
+import { readFile } from "fs/promises";
+import { DeepgramClient } from "@deepgram/sdk";
+import { getSecret } from "@/lib/secrets";
 
 export interface SpeakerSegment {
   speaker: string;
@@ -18,62 +18,54 @@ export interface DiarizationResult {
   transcript: string;
 }
 
+const speakerLabel = (id: number | undefined): string => {
+  if (typeof id !== "number" || id < 0) return "Speaker A";
+  return `Speaker ${String.fromCharCode(65 + id)}`;
+};
+
 export class DiarizationService {
   async diarize(audioPath: string): Promise<DiarizationResult> {
-    const scriptPath = path.resolve(process.cwd(), 'src/services/ai/scripts/diarize.py');
+    const apiKey = getSecret("DEEPGRAM_API_KEY");
+    if (!apiKey) {
+      throw new Error("DEEPGRAM_API_KEY is not set");
+    }
 
-    const result = await new Promise<DiarizationResult>((resolve, reject) => {
-      const python = spawn("python3", [scriptPath, audioPath]);
+    const deepgram = new DeepgramClient({ apiKey });
+    const audio = await readFile(audioPath);
 
-      let output = "";
-      let error = "";
+    const response = await deepgram.listen.v1.media.transcribeFile(
+      audio,
+      { model: "nova-2", diarize: true, smart_format: true },
+    );
 
-      python.stdout.on("data", (data) => { output += data.toString(); });
-      python.stderr.on("data", (data) => { error += data.toString(); });
-      python.on("close", (code) => {
-        if (code !== 0) {
-          reject(new Error(error || "Diarization failed"));
-        } else {
-          try {
-            const data = JSON.parse(output.trim());
-            resolve({
-              speakers: data.speakers.map((s: any) => ({
-                label: s.label,
-                segments: s.segments,
-                duration: s.segments.reduce((acc: number, seg: any) => acc + (seg.end - seg.start), 0),
-              })),
-              transcript: "",
-            });
-          } catch (e) {
-            reject(new Error("Failed to parse diarization output"));
-          }
-        }
+    if (!("results" in response) || !response.results) {
+      throw new Error("Deepgram returned no results (async request?)");
+    }
+
+    const channel = response.results.channels?.[0];
+    const alternative = channel?.alternatives?.[0];
+    const words: any[] = alternative?.words ?? [];
+    const transcript: string = alternative?.transcript ?? "";
+
+    const bySpeaker = new Map<number, SpeakerSegment[]>();
+    for (const w of words) {
+      const sid = typeof w.speaker === "number" ? w.speaker : 0;
+      if (!bySpeaker.has(sid)) bySpeaker.set(sid, []);
+      bySpeaker.get(sid)!.push({
+        speaker: speakerLabel(sid),
+        start: w.start,
+        end: w.end,
       });
-    });
+    }
 
-    return result;
-  }
+    const speakers = Array.from(bySpeaker.entries())
+      .sort(([a], [b]) => a - b)
+      .map(([sid, segments]) => ({
+        label: speakerLabel(sid),
+        segments,
+        duration: segments.reduce((acc, s) => acc + (s.end - s.start), 0),
+      }));
 
-  async detectLanguage(audioPath: string): Promise<string> {
-    const scriptPath = path.resolve(process.cwd(), 'src/services/ai/scripts/detect_lang.py');
-
-    const result = await new Promise<string>((resolve, reject) => {
-      const python = spawn("python3", [scriptPath, audioPath]);
-
-      let output = "";
-      let error = "";
-
-      python.stdout.on("data", (data) => { output += data.toString(); });
-      python.stderr.on("data", (data) => { error += data.toString(); });
-      python.on("close", (code) => {
-        if (code !== 0) {
-          reject(new Error(error || "Language detection failed"));
-        } else {
-          resolve(output.trim());
-        }
-      });
-    });
-
-    return result;
+    return { speakers, transcript };
   }
 }

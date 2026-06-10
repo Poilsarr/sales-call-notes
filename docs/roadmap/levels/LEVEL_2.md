@@ -3,6 +3,7 @@
 
 **Pre-reqs:** GATE 1 closed.
 **Goal:** Real diarization, multi-stage analysis, knowledge graph, personalization, trend analytics.
+**Status:** ✅ COMPLETE — GATE 2 closed.
 **Gate:** See `DEVELOPMENT_FRONTIER.md` GATE 2.
 
 ---
@@ -26,7 +27,7 @@ Comparison:
 
 ---
 
-## Task 2.2 — Diarization Integration
+## Task 2.2 — Diarization Integration ✅
 
 **Files:**
 - Modify: `src/services/ai/diarization.ts`
@@ -42,7 +43,7 @@ Comparison:
 
 ---
 
-## Task 2.3 — Multi-Stage Analysis
+## Task 2.3 — Multi-Stage Analysis ✅
 
 **Files:**
 - Modify: `src/services/ai/analysis.ts`
@@ -58,7 +59,7 @@ Comparison:
 
 ---
 
-## Task 2.4 — Objection Detection
+## Task 2.4 — Objection Detection ✅
 
 **Files:**
 - Modify: `src/services/ai/analytics.ts`
@@ -74,7 +75,7 @@ Comparison:
 
 ---
 
-## Task 2.5 — Knowledge Graph
+## Task 2.5 — Knowledge Graph ✅
 
 **Files:**
 - Modify: `prisma/schema.prisma` (add `KnowledgeEntity`, `KnowledgeRelation`)
@@ -112,7 +113,7 @@ Comparison:
 
 ---
 
-## Task 2.6 — Personalization
+## Task 2.6 — Personalization ✅
 
 **Files:**
 - Modify: `src/services/ai/personalization.ts`
@@ -128,7 +129,7 @@ Comparison:
 
 ---
 
-## Task 2.7 — Langfuse Tracing
+## Task 2.7 — Langfuse Tracing ⏭️ (deferred — deps installed, not wired)
 
 **Files:**
 - Modify: `src/services/ai/transcription.ts`
@@ -143,7 +144,7 @@ Comparison:
 
 ---
 
-## Task 2.8 — Trend & Health Analytics Endpoints
+## Task 2.8 — Trend & Health Analytics Endpoints ✅
 
 **Files:**
 - Create: `src/app/api/analytics/trends/route.ts`

@@ -13,6 +13,7 @@
   },
   "dependencies": {
     "@clerk/nextjs": "^5.0.0",
+    "@deepgram/sdk": "^5.4.0",
     "@gsap/react": "^2.1.2",
     "@paddle/paddle-js": "^1.6.4",
     "@paddle/paddle-node-sdk": "^3.8.0",
@@ -38,7 +39,8 @@
     "react-dom": "^18",
     "shaders": "^2.5.128",
     "sonner": "^2.0.7",
-    "tailwind-merge": "^2.3.0"
+    "tailwind-merge": "^2.3.0",
+    "zod": "^3.25.76"
   },
   "devDependencies": {
     "@testing-library/jest-dom": "^6.9.1",
