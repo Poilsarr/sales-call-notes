@@ -19,6 +19,15 @@ const DEFAULT_PATTERN: UserPattern = {
   avgCallDuration: 0,
 };
 
+export class PersonalizationService {
+  async generatePersonalizedHooks(
+    _transcript: string,
+    _analysis: unknown,
+  ): Promise<{ hooks: string[] }> {
+    return { hooks: [] };
+  }
+}
+
 export function buildPersonalization(
   recentInsights: Array<{
     objections?: Array<{ type: string }>;
