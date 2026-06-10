@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useUser, SignInButton, UserButton } from "@clerk/nextjs";
+import { useUser, UserButton } from "@clerk/nextjs";
 import { Show } from "@/components/show";
 import { useState, useEffect } from "react";
 import { ArrowRight, Clock, Menu, X } from "lucide-react";
@@ -82,19 +82,22 @@ export default function Nav() {
           <div className="hidden md:flex items-center gap-4">
             <span className="hidden lg:inline text-[13px] text-gray-600">Serving 500+ SDR teams</span>
             <LiveClock />
-            <Show when="signed-out">
-              <SignInButton mode="modal">
-                <button className="text-[13px] text-gray-600 hover:text-gray-900 transition-colors duration-300 font-medium">
-                  Sign In
-                </button>
-              </SignInButton>
-            </Show>
-            <Show when="signed-in">
-              <Link href="/app" className="text-[13px] text-gray-600 hover:text-gray-900 transition-colors duration-300 font-medium">
-                Dashboard
+            {!mounted ? (
+              <Link href="/sign-in" className="text-[13px] text-gray-600 hover:text-gray-900 transition-colors duration-300 font-medium">
+                Sign In
               </Link>
-              <UserButton />
-            </Show>
+            ) : user ? (
+              <>
+                <Link href="/app" className="text-[13px] text-gray-600 hover:text-gray-900 transition-colors duration-300 font-medium">
+                  Dashboard
+                </Link>
+                <UserButton />
+              </>
+            ) : (
+              <Link href="/sign-in" className="text-[13px] text-gray-600 hover:text-gray-900 transition-colors duration-300 font-medium">
+                Sign In
+              </Link>
+            )}
             <Link href="/sign-up" className="group bg-gray-900 text-white text-[13px] font-medium rounded-full pl-5 pr-2 py-2 inline-flex items-center gap-1.5 transition-all duration-300">
               <span className="flex flex-col overflow-hidden h-[20px]">
                 <span className="transition-transform duration-500 ease-[cubic-bezier(0.25,0.1,0.25,1)] group-hover:-translate-y-1/2 leading-[20px]">
@@ -170,13 +173,9 @@ export default function Nav() {
                 Dashboard
               </Link>
             </Show>
-            <Show when="signed-out">
-              <SignInButton mode="modal">
-                <button className="block mt-4 text-[13px] text-gray-600 font-medium">
-                  Sign In
-                </button>
-              </SignInButton>
-            </Show>
+            <Link href="/sign-in" onClick={() => setOpen(false)} className="block mt-4 text-[13px] text-gray-600 font-medium">
+              Sign In
+            </Link>
           </div>
         </div>
       )}
