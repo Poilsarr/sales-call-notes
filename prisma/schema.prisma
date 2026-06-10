@@ -239,8 +239,8 @@ model CallComment {
 
 model AuditLog {
   id         String   @id @default(cuid())
-  userId     String
-  user       User     @relation(fields: [userId], references: [id], onDelete: SetNull)
+  userId     String?
+  user       User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
   action     String
   entityId   String?
   entityType String?
