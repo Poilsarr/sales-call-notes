@@ -40,6 +40,35 @@ function getRatelimit(type: string = 'default'): Ratelimit | null {
   }
 }
 
+export async function rateLimit(opts: { key: string; limit: number; windowSec: number }) {
+  const upstashUrl = process.env.UPSTASH_REDIS_REST_URL?.trim() || "";
+  const upstashToken = process.env.UPSTASH_REDIS_REST_TOKEN?.trim() || "";
+  const hasCreds = upstashUrl && upstashToken && !upstashUrl.includes("your-database-name");
+  if (!hasCreds) return { success: true };
+
+  const cacheKey = `rl_${opts.limit}_${opts.windowSec}`;
+  let rl = instances.get(cacheKey) as Ratelimit | undefined;
+  if (!rl) {
+    try {
+      const redis = new Redis({ url: upstashUrl, token: upstashToken });
+      rl = new Ratelimit({
+        redis,
+        limiter: Ratelimit.slidingWindow(opts.limit, `${opts.windowSec} s` as Duration),
+        analytics: false,
+      });
+      instances.set(cacheKey, rl);
+    } catch {
+      return { success: true };
+    }
+  }
+  try {
+    const { success } = await rl.limit(opts.key);
+    return { success };
+  } catch {
+    return { success: true };
+  }
+}
+
 export async function checkRateLimit(identifier: string, type: string = 'default') {
   const rl = getRatelimit(type);
   if (!rl) return { success: true, remaining: 999, reset: 0 };

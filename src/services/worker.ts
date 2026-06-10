@@ -1,9 +1,10 @@
 import { Worker } from "bullmq";
 import IORedis from "ioredis";
+import { createHash } from "crypto";
 import { getSecret } from "@/lib/secrets";
 import { buildUserExport } from "@/lib/gdpr-export";
-import { prisma } from "@/lib/prisma";
-import { createHash } from "crypto";
+import prisma from "@/lib/prisma";
+import { buildGraphFromText } from "@/services/ai/knowledge-extract";
 
 const connection = new IORedis({
   host: getSecret("REDIS_HOST") || "localhost",
@@ -36,7 +37,7 @@ print(result["text"])
 }, { connection });
 
 const analysisWorker = new Worker("analysis", async (job) => {
-  const { transcript, callId } = job.data;
+  const { transcript, callId, userId } = job.data;
   const response = await fetch("http://localhost:11434/api/chat", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
@@ -50,6 +51,42 @@ const analysisWorker = new Worker("analysis", async (job) => {
   });
 
   const data = await response.json();
+
+  if (userId && transcript && transcript.length > 20) {
+    try {
+      const graph = buildGraphFromText({ text: transcript, callId, userId });
+      if (graph.entities.length > 0) {
+        for (const e of graph.entities) {
+          const key = { userId_type_value: { userId, type: e.type, value: e.value } };
+          await prisma.knowledgeEntity.upsert({
+            where: key,
+            update: { calls: { push: callId } },
+            create: { userId, type: e.type, value: e.value, calls: [callId] },
+          });
+        }
+      }
+      if (graph.relations.length > 0) {
+        for (const r of graph.relations) {
+          const [fromEnt] = await Promise.all([
+            prisma.knowledgeEntity.findUnique({
+              where: { userId_type_value: { userId, type: r.fromType, value: r.from } },
+            }),
+          ]);
+          const toEnt = await prisma.knowledgeEntity.findUnique({
+            where: { userId_type_value: { userId, type: r.toType, value: r.to } },
+          });
+          if (fromEnt && toEnt) {
+            await prisma.knowledgeRelation.create({
+              data: { userId, fromEntityId: fromEnt.id, toEntityId: toEnt.id, relation: r.relation, calls: [callId] },
+            });
+          }
+        }
+      }
+    } catch (err) {
+      console.error("Knowledge ingest failed (non-fatal):", err);
+    }
+  }
+
   return { callId, result: data };
 }, { connection });
 

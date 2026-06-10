@@ -22,6 +22,8 @@ model User {
   teamId              String?
   team                Team?    @relation("teamMembers", fields: [teamId], references: [id])
   teamRole            String   @default("MEMBER")
+  preferredTone       String?  @default("balanced")
+  rubricEmphasis      String[]  @default([])
   ownedTeams          Team[]   @relation("teamOwner")
   calls               Call[]
   assignedCalls       Call[]   @relation("callAssignments")
@@ -235,6 +237,35 @@ model CallComment {
   @@index([callId])
   @@index([userId])
   @@index([createdAt])
+}
+
+model KnowledgeEntity {
+  id        String   @id @default(cuid())
+  userId    String
+  type      String
+  value     String
+  calls     String[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([userId, type, value])
+  @@index([userId, type, value])
+}
+
+model KnowledgeRelation {
+  id           String   @id @default(cuid())
+  userId       String
+  fromEntityId String
+  toEntityId   String
+  relation     String
+  calls        String[]
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@index([userId])
+  @@index([fromEntityId])
+  @@index([toEntityId])
+  @@index([relation])
 }
 
 model AuditLog {
