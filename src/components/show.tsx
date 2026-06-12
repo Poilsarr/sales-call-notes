@@ -8,7 +8,10 @@ type ShowProps = {
 };
 
 export function Show({ when, children }: ShowProps) {
-  const { isSignedIn } = useAuth();
+  const { isSignedIn, isLoaded } = useAuth();
+
+  if (!isLoaded) return null;
+
   const shouldRender = when === "signed-in" ? isSignedIn : !isSignedIn;
 
   if (!shouldRender) return null;
