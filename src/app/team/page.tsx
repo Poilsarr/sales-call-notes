@@ -1,7 +1,8 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useUser } from "@clerk/nextjs";
+import { useUser, useAuth } from "@clerk/nextjs";
+import { useRouter } from "next/navigation";
 import Nav from "@/components/nav";
 import Link from "next/link";
 import { Users, Plus, X, Mail, Crown, Shield, UserPlus, Loader2, CheckCircle, AlertCircle } from "lucide-react";
@@ -26,6 +27,13 @@ interface SharedCall {
 
 export default function TeamPage() {
   const { user } = useUser();
+  const { isLoaded: authLoaded, isSignedIn } = useAuth();
+  const router = useRouter();
+
+  useEffect(() => {
+    if (authLoaded && !isSignedIn) router.replace("/sign-in");
+  }, [authLoaded, isSignedIn, router]);
+
   const [members, setMembers] = useState<Member[]>([]);
   const [teamName, setTeamName] = useState<string | null>(null);
   const [inviteEmail, setInviteEmail] = useState("");

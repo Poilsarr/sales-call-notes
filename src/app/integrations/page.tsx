@@ -3,6 +3,7 @@
 import { Suspense, useEffect, useRef, useState, useCallback } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
+import { useAuth } from "@clerk/nextjs";
 import Nav from "@/components/nav";
 import {
   Sparkles, Building2, BarChart3, MessageSquare, Calendar, Globe,
@@ -37,9 +38,13 @@ const integrations = [
 ];
 
 function IntegrationsContent() {
-  const observerRef = useRef<IntersectionObserver | null>(null);
-  const handledCallbackRef = useRef(false);
+  const { isLoaded: authLoaded, isSignedIn } = useAuth();
   const router = useRouter();
+
+  useEffect(() => {
+    if (authLoaded && !isSignedIn) router.replace("/sign-in");
+  }, [authLoaded, isSignedIn, router]);
+
   const searchParams = useSearchParams();
   const [providerStates, setProviderStates] = useState<Record<SupportedProvider, ProviderStatus>>({
     hubspot: { connected: false, enabled: false, syncedAt: null, configured: false },
@@ -52,6 +57,8 @@ function IntegrationsContent() {
     teams: false,
   });
   const [initialLoadDone, setInitialLoadDone] = useState(false);
+  const observerRef = useRef<IntersectionObserver | null>(null);
+  const handledCallbackRef = useRef(false);
 
   const loadProviderStates = useCallback(async () => {
     try {

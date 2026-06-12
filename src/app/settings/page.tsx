@@ -1,13 +1,21 @@
 "use client";
 
-import { useState } from "react";
-import { useUser } from "@clerk/nextjs";
+import { useState, useEffect } from "react";
+import { useUser, useAuth } from "@clerk/nextjs";
+import { useRouter } from "next/navigation";
 import Nav from "@/components/nav";
 import { Calendar, Link2, CheckCircle, ExternalLink, Loader2, Brain, MessageSquare, Send, FileText, ArrowRight } from "lucide-react";
 import { toast } from "sonner";
 
 export default function SettingsPage() {
   const { user } = useUser();
+  const { isLoaded: authLoaded, isSignedIn } = useAuth();
+  const router = useRouter();
+
+  useEffect(() => {
+    if (authLoaded && !isSignedIn) router.replace("/sign-in");
+  }, [authLoaded, isSignedIn, router]);
+
   const [calendarConnected, setCalendarConnected] = useState(false);
   const [connecting, setConnecting] = useState(false);
   const [chatQuery, setChatQuery] = useState("");
