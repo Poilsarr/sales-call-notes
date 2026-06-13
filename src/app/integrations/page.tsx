@@ -185,7 +185,7 @@ function IntegrationsContent() {
         router.replace("/integrations");
       }
     })();
-  }, [router, code, providerParam, searchParams, stateParam, slackConnected, errorParam]);
+  }, [router, code, providerParam, searchParams, stateParam, slackConnected, teamsConnected, errorParam]);
 
   const connectProvider = async (provider: SupportedProvider) => {
     if (!providerStates[provider].configured) {
