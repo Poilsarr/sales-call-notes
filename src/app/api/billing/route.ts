@@ -17,18 +17,41 @@ export async function GET(req: NextRequest) {
     const startOfMonth = new Date();
     startOfMonth.setDate(1);
     startOfMonth.setHours(0, 0, 0, 0);
-    const usage = await prisma.call.count({
-      where: { userId, createdAt: { gte: startOfMonth } },
-    });
+
+    const [usage, minuteAgg] = await Promise.all([
+      prisma.call.count({
+        where: { userId, createdAt: { gte: startOfMonth } },
+      }),
+      prisma.call.aggregate({
+        where: { userId, createdAt: { gte: startOfMonth } },
+        _sum: { duration: true },
+      }),
+    ]);
+
+    const durationSeconds = minuteAgg._sum.duration || 0;
+    const minuteUsage = Math.round(durationSeconds / 60);
+
+    let teamMemberCount = 1;
+    if (user?.teamId) {
+      teamMemberCount = await prisma.user.count({
+        where: { teamId: user.teamId },
+      });
+    }
 
     return NextResponse.json({
       plan,
       usage,
+      minuteUsage,
       limit: PLANS[plan].uploadLimit,
       minuteLimit: PLANS[plan].minuteLimit,
+      teamMemberCount,
+      teamMemberLimit: PLANS[plan].teamMemberLimit,
       features: PLANS[plan].features,
       subscriptionStatus: user?.subscriptionStatus || null,
       subscriptionPlan: user?.subscriptionPlan || null,
+      paddleSubscriptionId: user?.paddleSubscriptionId || null,
+      trialEndsAt: user?.trialEndsAt?.toISOString() || null,
+      cancellationEffectiveDate: user?.cancellationEffectiveDate?.toISOString() || null,
     });
   } catch (error) {
     captureApiError("/api/billing", error, { method: "GET" });

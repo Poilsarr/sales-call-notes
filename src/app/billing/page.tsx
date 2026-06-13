@@ -3,8 +3,12 @@
 import { useState, useEffect, useCallback } from "react";
 import { useUser } from "@clerk/nextjs";
 import { initializePaddle } from "@paddle/paddle-js";
+import { toast } from "sonner";
 import Nav from "@/components/nav";
-import { Crown, CheckCircle, Sparkles, Loader2 } from "lucide-react";
+import UsageDisplay from "@/components/usage-display";
+import {
+  Crown, CheckCircle, Sparkles, Loader2, AlertTriangle, Ban, Info,
+} from "lucide-react";
 import { PLANS, PlanTier } from "@/lib/plans";
 
 export default function BillingPage() {
@@ -12,9 +16,18 @@ export default function BillingPage() {
   const [currentPlan, setCurrentPlan] = useState<PlanTier>("free");
   const [usage, setUsage] = useState(0);
   const [limit, setLimit] = useState<number | "unlimited">(5);
+  const [minuteUsage, setMinuteUsage] = useState(0);
+  const [minuteLimit, setMinuteLimit] = useState<number | "unlimited">(300);
+  const [teamMemberCount, setTeamMemberCount] = useState(1);
+  const [teamMemberLimit, setTeamMemberLimit] = useState<number | "unlimited">(1);
+  const [subscriptionStatus, setSubscriptionStatus] = useState<string | null>(null);
+  const [paddleSubscriptionId, setPaddleSubscriptionId] = useState<string | null>(null);
+  const [cancellationEffectiveDate, setCancellationEffectiveDate] = useState<string | null>(null);
   const [paddle, setPaddle] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [upgradeSuccess, setUpgradeSuccess] = useState(false);
+  const [showCancelConfirm, setShowCancelConfirm] = useState(false);
+  const [cancelling, setCancelling] = useState(false);
 
   useEffect(() => {
     initializePaddle({
@@ -31,13 +44,45 @@ export default function BillingPage() {
       fetch(`/api/billing?userId=${user.id}`)
         .then(r => r.json())
         .then(d => {
-          setCurrentPlan(d.plan || "free");
+          const plan: PlanTier = d.plan || "free";
+          setCurrentPlan(plan);
           setUsage(d.usage || 0);
           setLimit(d.limit || 5);
+          setMinuteUsage(d.minuteUsage || 0);
+          setMinuteLimit(d.minuteLimit || 300);
+          setTeamMemberCount(d.teamMemberCount || 1);
+          setTeamMemberLimit(d.teamMemberLimit || 1);
+          setSubscriptionStatus(d.subscriptionStatus || null);
+          setPaddleSubscriptionId(d.paddleSubscriptionId || null);
+          setCancellationEffectiveDate(d.cancellationEffectiveDate || null);
         })
         .catch((err) => console.error("Failed to fetch billing data:", err));
     }
   }, [user?.id]);
+
+  const handleCancel = useCallback(async () => {
+    if (!user?.id || cancelling) return;
+    setCancelling(true);
+    try {
+      const res = await fetch("/api/billing/cancel", { method: "POST" });
+      const data = await res.json();
+      if (res.ok) {
+        toast.success("Subscription cancelled.");
+        setCurrentPlan("free");
+        setSubscriptionStatus("cancelled");
+        setLimit(5);
+        setMinuteLimit(300);
+        setTeamMemberLimit(1);
+        setShowCancelConfirm(false);
+      } else {
+        toast.error(data.error || "Cancellation failed");
+      }
+    } catch {
+      toast.error("Cancellation failed");
+    } finally {
+      setCancelling(false);
+    }
+  }, [user?.id, cancelling]);
 
   const openCheckout = useCallback((plan: PlanTier) => {
     if (!paddle || !user?.id || upgradeSuccess) return;
@@ -193,6 +238,120 @@ export default function BillingPage() {
             );
           })}
         </div>
+
+        {subscriptionStatus === "cancelled" && (
+          <div className="mt-6 p-6 rounded-2xl bg-linear-surface border border-amber-500/20">
+            <div className="flex items-start gap-3">
+              <Info className="w-5 h-5 text-amber-400 shrink-0 mt-0.5" />
+              <div>
+                <h3 className="text-sm font-medium text-amber-400 mb-1">Subscription Cancelled</h3>
+                <p className="text-xs text-white/40">
+                  You have access until{" "}
+                  {cancellationEffectiveDate
+                    ? new Date(cancellationEffectiveDate).toLocaleDateString("en-US", {
+                        year: "numeric",
+                        month: "long",
+                        day: "numeric",
+                      })
+                    : "the end of your billing period"}
+                  .
+                </p>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {currentPlan !== "free" && subscriptionStatus === "active" && (
+          <div className="mt-6 p-6 rounded-2xl bg-linear-surface border border-linear-secondary">
+            <div className="flex items-center justify-between">
+              <div className="flex items-start gap-3">
+                <Info className="w-5 h-5 text-linear-indigo shrink-0 mt-0.5" />
+                <div>
+                  <h3 className="text-sm font-medium mb-1">Auto-Renewal</h3>
+                  <p className="text-xs text-white/40">
+                    Your <strong>{PLANS[currentPlan].name}</strong> plan renews
+                    automatically at <strong>{PLANS[currentPlan].priceLabel}/month</strong>.
+                    You will be billed on the same date each month.
+                  </p>
+                </div>
+              </div>
+              <span className="px-3 py-1 rounded-full text-[10px] font-semibold bg-green-500/20 text-green-400 shrink-0 ml-4">
+                Active
+              </span>
+            </div>
+          </div>
+        )}
+
+        {currentPlan !== "free" && (
+          <div className="mt-6 p-6 rounded-2xl bg-linear-surface border border-linear-secondary">
+            <h3 className="text-sm font-medium mb-4">Monthly Usage</h3>
+            <div className="space-y-4">
+              <UsageDisplay
+                used={usage}
+                limit={limit}
+                label="Uploads"
+                unit="uploads"
+              />
+              <UsageDisplay
+                used={minuteUsage}
+                limit={minuteLimit}
+                label="Call Minutes"
+                unit="min"
+              />
+              <UsageDisplay
+                used={teamMemberCount}
+                limit={teamMemberLimit}
+                label="Team Members"
+                unit="members"
+              />
+            </div>
+          </div>
+        )}
+
+        {currentPlan !== "free" && subscriptionStatus === "active" && (
+          <div className="mt-6 p-6 rounded-2xl bg-linear-surface border border-red-500/20">
+            <div className="flex items-start gap-3 mb-4">
+              <AlertTriangle className="w-5 h-5 text-red-400 shrink-0 mt-0.5" />
+              <div>
+                <h3 className="text-sm font-medium text-red-400 mb-1">Cancel Subscription</h3>
+                <p className="text-xs text-white/40">
+                  Your <strong>{PLANS[currentPlan].name}</strong> plan will be
+                  cancelled. You will retain access until the end of your billing
+                  period. This action cannot be undone.
+                </p>
+              </div>
+            </div>
+            {showCancelConfirm ? (
+              <div className="flex items-center gap-3 ml-8">
+                <button
+                  onClick={handleCancel}
+                  disabled={cancelling}
+                  className="px-4 py-2 rounded-full text-xs font-semibold bg-red-600 text-white hover:bg-red-700 transition disabled:opacity-50"
+                >
+                  {cancelling ? (
+                    <Loader2 className="w-3 h-3 animate-spin" />
+                  ) : (
+                    "Confirm Cancellation"
+                  )}
+                </button>
+                <button
+                  onClick={() => setShowCancelConfirm(false)}
+                  className="px-4 py-2 rounded-full text-xs font-semibold bg-white/10 text-white hover:bg-white/20 transition"
+                >
+                  Keep Plan
+                </button>
+              </div>
+            ) : (
+              <button
+                onClick={() => setShowCancelConfirm(true)}
+                className="ml-8 px-4 py-2 rounded-full text-xs font-semibold bg-red-600/20 text-red-400 hover:bg-red-600/30 border border-red-500/30 transition"
+              >
+                <Ban className="w-3 h-3 inline mr-1" />
+                Cancel Plan
+              </button>
+            )}
+          </div>
+        )}
 
         <div className="mt-6 p-6 rounded-2xl bg-linear-surface border border-linear-secondary flex items-center justify-between">
           <div>
