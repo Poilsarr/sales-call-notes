@@ -41,6 +41,10 @@ function IntegrationsContent() {
   const { isLoaded: authLoaded, isSignedIn } = useAuth();
   const router = useRouter();
 
+  const redirectToCrmEnv = () => {
+    router.replace("/settings?tab=crm");
+  };
+
   useEffect(() => {
     if (authLoaded && !isSignedIn) router.replace("/sign-in");
   }, [authLoaded, isSignedIn, router]);
@@ -334,7 +338,43 @@ function IntegrationsContent() {
                               </>
                             )}
                           </div>
-                          {providerStates[int.provider].connected ? (
+
+                          {int.provider === "hubspot" || int.provider === "salesforce" ? (
+                            <div className="flex items-center gap-2 shrink-0">
+                              {providerStates[int.provider].connected ? (
+                                <button
+                                  onClick={() => toast.success(`CRM sync started for ${int.name}.`)}
+                                  disabled={providerLoading[int.provider]}
+                                  className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-[#F26522] text-white text-[11px] font-semibold hover:bg-[#e05a1a] transition-all disabled:opacity-50"
+                                >
+                                  <Sparkles size={14} />
+                                  Sync CRM
+                                </button>
+                              ) : (
+                                <button
+                                  onClick={redirectToCrmEnv}
+                                  className="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-gray-200 text-[11px] font-medium text-gray-600 hover:text-gray-900 hover:bg-gray-50 transition-all"
+                                >
+                                  <Link2 size={14} />
+                                  Env Vars
+                                </button>
+                              )}
+                              {providerStates[int.provider].connected ? (
+                                <button
+                                  onClick={() => disconnectProvider(int.provider)}
+                                  disabled={providerLoading[int.provider]}
+                                  className="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-gray-200 text-[11px] font-medium text-gray-600 hover:text-gray-900 hover:bg-gray-50 transition-all disabled:opacity-50"
+                                >
+                                  {providerLoading[int.provider] ? (
+                                    <Loader2 size={14} className="animate-spin" />
+                                  ) : (
+                                    <Unplug size={14} />
+                                  )}
+                                  Disconnect
+                                </button>
+                              ) : null}
+                            </div>
+                          ) : providerStates[int.provider].connected ? (
                             <button
                               onClick={() => disconnectProvider(int.provider)}
                               disabled={providerLoading[int.provider]}
