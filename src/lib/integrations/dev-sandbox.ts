@@ -1,4 +1,4 @@
-export type SandboxProvider = "hubspot" | "salesforce" | "teams";
+export type SandboxProvider = "hubspot" | "salesforce" | "teams" | "slack";
 
 export type SandboxCredentials = {
   clientId: string;
@@ -39,6 +39,19 @@ const SANDBOX_VALUES: Record<SandboxProvider, SandboxCredentials> = {
       "OnlineMeetings.ReadWrite",
     ],
     notesUrl: "https://portal.azure.com/",
+  },
+  slack: {
+    clientId: "dev-slack-client-id",
+    clientSecret: "dev-slack-client-secret",
+    redirectUri: "http://localhost:3000/api/integrations/slack/callback",
+    scope: [
+      "chat:write",
+      "chat:write.public",
+      "users:read",
+      "commands",
+      "im:write",
+    ],
+    notesUrl: "https://api.slack.com/apps",
   },
 };
 

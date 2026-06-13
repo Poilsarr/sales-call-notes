@@ -5,6 +5,9 @@ import { getSecret } from "@/lib/secrets";
 import { buildUserExport } from "@/lib/gdpr-export";
 import prisma from "@/lib/prisma";
 import { buildGraphFromText } from "@/services/ai/knowledge-extract";
+import { HubSpotService } from "@/services/crm/hubspot";
+import { SalesforceService } from "@/services/crm/salesforce";
+import { logAuditAction } from "@/lib/audit-logger";
 
 const connection = new IORedis({
   host: getSecret("REDIS_HOST") || "localhost",
@@ -84,6 +87,56 @@ const analysisWorker = new Worker("analysis", async (job) => {
       }
     } catch (err) {
       console.error("Knowledge ingest failed (non-fatal):", err);
+    }
+  }
+
+  if (userId && callId) {
+    try {
+      const user = await prisma.user.findUnique({
+        where: { id: userId },
+        select: { teamId: true },
+      });
+      if (user?.teamId) {
+        const integrations = await prisma.integration.findMany({
+          where: { teamId: user.teamId, enabled: true, provider: { in: ["hubspot", "salesforce"] } },
+        });
+        if (integrations.length > 0) {
+          const callRecord = await prisma.call.findUnique({
+            where: { id: callId },
+            include: { actionItems: true, decisions: true, nextSteps: true, analytics: true },
+          });
+          if (callRecord) {
+            const crmCall = {
+              filename: callRecord.filename,
+              createdAt: callRecord.createdAt,
+              transcript: callRecord.transcript,
+              summary: callRecord.summary,
+              analytics: callRecord.analytics,
+              actionItems: callRecord.actionItems.map(a => ({ task: a.task, owner: a.owner, due: a.due })),
+              decisions: callRecord.decisions.map(d => ({ content: d.content })),
+              nextSteps: callRecord.nextSteps.map(n => ({ step: n.step, date: n.date })),
+            };
+            for (const integration of integrations) {
+              try {
+                const provider = integration.provider as "hubspot" | "salesforce";
+                if (provider === "hubspot") {
+                  const service = new HubSpotService(user.teamId);
+                  await service.syncCall(crmCall);
+                } else {
+                  const config = integration.config ? JSON.parse(integration.config) : {};
+                  const service = new SalesforceService(user.teamId, config.instanceUrl || null);
+                  await service.syncCall(crmCall);
+                }
+                await logAuditAction(userId, "CRM_SYNC", callId, "Call", { provider });
+              } catch (err) {
+                console.error(`CRM auto-sync failed for ${integration.provider} (non-fatal):`, err);
+              }
+            }
+          }
+        }
+      }
+    } catch (err) {
+      console.error("CRM auto-sync setup failed (non-fatal):", err);
     }
   }
 

@@ -17,7 +17,6 @@ const REQUIRED_KEYS = [
   'TEAMS_CLIENT_SECRET',
   'GOOGLE_CLIENT_ID',
   'GOOGLE_CLIENT_SECRET',
-  'SLACK_WEBHOOK_URL',
   'UPSTASH_REDIS_REST_URL',
   'UPSTASH_REDIS_REST_TOKEN',
   'PADDLE_API_KEY',
@@ -122,6 +121,7 @@ describe('check-env script', () => {
     expect(groups).toContain('HubSpot');
     expect(groups).toContain('Salesforce');
     expect(groups).toContain('Microsoft Teams');
+    expect(groups).toContain('Slack');
   });
 
   it('handles a fully empty env without throwing', () => {

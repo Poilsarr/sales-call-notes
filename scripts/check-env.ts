@@ -75,9 +75,20 @@ export const ENV_GROUPS: readonly EnvGroup[] = [
   },
   {
     name: "Slack",
-    description: "Outgoing notifications",
+    description: "Outgoing notifications + OAuth + commands",
     vars: [
-      { key: "SLACK_WEBHOOK_URL", level: "required" },
+      { key: "SLACK_CLIENT_ID", level: "optional", description: "OAuth" },
+      { key: "SLACK_CLIENT_SECRET", level: "optional", description: "OAuth" },
+      { key: "SLACK_SIGNING_SECRET", level: "optional", description: "Slash commands" },
+      { key: "SLACK_WEBHOOK_URL", level: "optional", description: "Legacy fallback" },
+      { key: "SLACK_REDIRECT_URI", level: "optional" },
+    ],
+  },
+  {
+    name: "Cron",
+    description: "Scheduled jobs",
+    vars: [
+      { key: "CRON_SECRET", level: "optional" },
     ],
   },
   {

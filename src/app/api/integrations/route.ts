@@ -15,7 +15,7 @@ import {
 } from "@/lib/integrations/dev-sandbox";
 import { checkRateLimit } from "@/lib/rate-limit";
 
-type SupportedProvider = "hubspot" | "salesforce" | "teams";
+type SupportedProvider = "hubspot" | "salesforce" | "teams" | "slack";
 
 type IntegrationStatus = {
   connected: boolean;
@@ -24,7 +24,7 @@ type IntegrationStatus = {
   configured: boolean;
 };
 
-const SUPPORTED_PROVIDERS: SupportedProvider[] = ["hubspot", "salesforce", "teams"];
+const SUPPORTED_PROVIDERS: SupportedProvider[] = ["hubspot", "salesforce", "teams", "slack"];
 
 function isProviderConfigured(provider: SupportedProvider): boolean {
   if (isDevSandboxEnabled()) {
@@ -35,6 +35,9 @@ function isProviderConfigured(provider: SupportedProvider): boolean {
   }
   if (provider === "salesforce") {
     return Boolean(getSecret("SALESFORCE_CLIENT_ID") && getSecret("SALESFORCE_CLIENT_SECRET"));
+  }
+  if (provider === "slack") {
+    return Boolean(getSecret("SLACK_CLIENT_ID") && getSecret("SLACK_CLIENT_SECRET"));
   }
   return Boolean(
     (getSecret("TEAMS_CLIENT_ID") || getSecret("MICROSOFT_CLIENT_ID")) &&
@@ -59,8 +62,16 @@ const TEAMS_SCOPES = [
   "OnlineMeetings.ReadWrite",
 ];
 
+const SLACK_SCOPES = [
+  "chat:write",
+  "chat:write.public",
+  "users:read",
+  "commands",
+  "im:write",
+];
+
 function isSupportedProvider(value: string | null): value is SupportedProvider {
-  return value === "hubspot" || value === "salesforce" || value === "teams";
+  return value === "hubspot" || value === "salesforce" || value === "teams" || value === "slack";
 }
 
 function getAppUrl() {
@@ -210,6 +221,32 @@ function buildSalesforceAuthUrl() {
   });
 
   return `${getSalesforceAuthBase()}/services/oauth2/authorize?${params.toString()}`;
+}
+
+function buildSlackAuthUrl() {
+  const sandbox = getDevSandboxCredentials("slack");
+  const clientId = sandbox?.clientId || getSecret("SLACK_CLIENT_ID");
+  if (!clientId) {
+    throw new Error("Missing SLACK_CLIENT_ID");
+  }
+
+  const nonce = generateNonce();
+  setOAuthCookie("slack", nonce);
+
+  const params = new URLSearchParams({
+    client_id: clientId,
+    redirect_uri: getSlackRedirectUri(),
+    scope: SLACK_SCOPES.join(","),
+    state: `slack:${nonce}`,
+  });
+
+  return `https://slack.com/oauth/v2/authorize?${params.toString()}`;
+}
+
+function getSlackRedirectUri() {
+  const override = getSecret("SLACK_REDIRECT_URI");
+  if (override) return override;
+  return `${getAppUrl()}/api/integrations/slack/callback`;
 }
 
 function buildTeamsAuthUrl() {
@@ -421,6 +458,8 @@ export async function GET(req: NextRequest) {
         authUrl = buildHubSpotAuthUrl();
       } else if (providerParam === "salesforce") {
         authUrl = buildSalesforceAuthUrl();
+      } else if (providerParam === "slack") {
+        authUrl = buildSlackAuthUrl();
       } else {
         authUrl = buildTeamsAuthUrl();
       }
@@ -474,6 +513,10 @@ export async function POST(req: NextRequest) {
     }
 
     const teamId = await ensureTeamId(user);
+
+    if (provider === "slack") {
+      return NextResponse.json({ error: "Use /api/integrations/slack/callback for Slack" }, { status: 400 });
+    }
 
     const { allowed } = await requireRole(user.clerkId, teamId, "ADMIN");
     if (!allowed) {
