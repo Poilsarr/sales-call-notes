@@ -100,6 +100,7 @@ function IntegrationsContent() {
   const stateParam = searchParams.get("state");
   const providerParam = stateParam?.split(":")[0] ?? null;
   const slackConnected = searchParams.get("slack");
+  const teamsConnected = searchParams.get("teams");
   const errorParam = searchParams.get("error");
 
   useEffect(() => {
@@ -128,9 +129,27 @@ function IntegrationsContent() {
       return;
     }
 
+    if (teamsConnected === "connected") {
+      handledCallbackRef.current = true;
+      toast.success("Microsoft Teams connected");
+      setProviderStates((prev) => ({
+        ...prev,
+        teams: { ...prev.teams, connected: true, enabled: true, syncedAt: new Date().toISOString(), error: undefined },
+      }));
+      router.replace("/integrations");
+      return;
+    }
+
     if (errorParam && errorParam.startsWith("slack_")) {
       handledCallbackRef.current = true;
       toast.error(decodeURIComponent(errorParam.replace("slack_", "")));
+      router.replace("/integrations");
+      return;
+    }
+
+    if (errorParam && errorParam.startsWith("teams_")) {
+      handledCallbackRef.current = true;
+      toast.error(decodeURIComponent(errorParam.replace("teams_", "")));
       router.replace("/integrations");
       return;
     }
@@ -181,6 +200,8 @@ function IntegrationsContent() {
     try {
       const authUrl = provider === "slack"
         ? "/api/integrations/slack/connect"
+        : provider === "teams"
+        ? "/api/integrations/teams/connect"
         : await fetch(`/api/integrations?action=auth-url&provider=${provider}`).then(async (r) => {
             const data = await r.json();
             if (!r.ok) throw new Error(data.error || "Failed to start OAuth flow");

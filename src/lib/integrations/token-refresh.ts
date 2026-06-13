@@ -46,6 +46,8 @@ export async function refreshIntegrationToken(
     updated = await refreshSalesforceToken(config.refreshToken, config.instanceUrl);
   } else if (provider === "google_calendar") {
     updated = await refreshGoogleToken(config.refreshToken);
+  } else if (provider === "teams") {
+    updated = await refreshTeamsToken(config.refreshToken);
   }
 
   if (!updated) return null;
@@ -123,6 +125,44 @@ async function refreshSalesforceToken(refreshToken: string, instanceUrl?: string
     accessToken: data.access_token,
     instanceUrl: data.instance_url ?? instanceUrl ?? null,
     expiresAt: null,
+  };
+}
+
+async function refreshTeamsToken(refreshToken: string) {
+  const clientId = getSecret("TEAMS_CLIENT_ID") || getSecret("MICROSOFT_CLIENT_ID");
+  const clientSecret = getSecret("TEAMS_CLIENT_SECRET") || getSecret("MICROSOFT_CLIENT_SECRET");
+  if (!clientId || !clientSecret) return null;
+
+  const tenant = getSecret("MICROSOFT_TENANT_ID") || getSecret("TEAMS_TENANT_ID") || "common";
+
+  const res = await fetch(
+    `https://login.microsoftonline.com/${tenant}/oauth2/v2.0/token`,
+    {
+      method: "POST",
+      headers: { "Content-Type": "application/x-www-form-urlencoded" },
+      body: new URLSearchParams({
+        grant_type: "refresh_token",
+        client_id: clientId,
+        client_secret: clientSecret,
+        refresh_token: refreshToken,
+      }),
+    },
+  );
+
+  if (!res.ok) return null;
+
+  const data = (await res.json()) as {
+    access_token: string;
+    refresh_token?: string;
+    expires_in?: number;
+  };
+
+  return {
+    accessToken: data.access_token,
+    refreshToken: data.refresh_token ?? refreshToken,
+    expiresAt: data.expires_in
+      ? new Date(Date.now() + data.expires_in * 1000).toISOString()
+      : null,
   };
 }
 
