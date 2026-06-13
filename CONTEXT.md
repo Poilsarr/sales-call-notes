@@ -10,81 +10,63 @@ https://github.com/Poilsarr/sales-call-notes (branch main protected — 3 CI che
 
 ## What's Been Built (all coded)
 
-- 23 API routes (analyze, transcribe, summarize, billing, analytics, chat, calendar, slack, webhooks, CRM sync, history, team, competitive-intelligence)
+- 37 API routes (analyze, transcribe, summarize, billing, analytics, chat, calendar, slack, webhooks, CRM sync, history, team, competitive-intelligence, OAuth connect/callback for 5 providers, integration test, cron/weekly-digest, billing cancel)
 - All frontend pages (landing, dashboard, billing, settings, team, integrations, features, pricing, sign-in/up, intelligence)
-- Prisma schema — 13 models on Neon PostgreSQL
-- Services: AI (analytics, diarization), CRM (HubSpot, Salesforce, Teams), Calendar, Slack, Webhooks, BullMQ queues, Competitive Intelligence
+- Prisma schema — 15 models on Neon PostgreSQL
+- Services: AI (analytics, diarization), CRM (HubSpot, Salesforce, Teams), Calendar, Slack (DMs, slash commands, digest), Webhooks, BullMQ queues, Competitive Intelligence, Meeting Bot, Billing
 - Chrome extension (Manifest V3, Google Meet captions)
 - PWA manifest + favicon + app icons (192, 512)
 
-## Recent Work (session #3 — parallel build batch + CI fix)
+## Recent Work (Level 3 — Integrations That Pay)
 
-### Parallel workstream #1 (PR #23 — 4 worktrees, 0 conflicts)
-- **Live transcription UI** — `src/app/app/live/page.tsx` (690 lines) + `src/app/api/calls/route.ts` + sidebar Live link
-- **Chrome extension upload** — `extension/` (background.js, shared.js, popup.html, popup.js, manifest.json) + `src/lib/extension-upload.ts` + 22 new tests. Service worker uses Clerk `__session` cookie for auth, `chrome.alarms` for retry backoff
-- **PNG icon set** — 12 new icons (16/32/72/96/128/144/152/192/384/512 + apple-touch 180 + 2 maskable) + `logo-maskable.svg`. Used rsvg-convert (ImageMagick 7 silently dropped SVG gradients). Updated `manifest.json` + layout `<link>` tags
-- **Competitive Intelligence tests** — +10 tests, 84/84 total
+### Workstream A — HubSpot + Salesforce token refresh (3.1/3.2)
+- **Token refresh helper** (`src/lib/integrations/token-refresh.ts`) — reads Integration from DB, checks expiry, calls provider refresh endpoints, updates stored tokens. Supports HubSpot, Salesforce, Google, Teams, Slack.
+- **HubSpotService** refactored — reads tokens from DB via `refreshIntegrationToken` instead of accepting `accessToken` param
+- **SalesforceService** refactored — same pattern
+- **Auto-sync** wired in worker.ts — after call analysis, syncs to HubSpot/Salesforce if integration enabled
+- **Tests**: `src/test/services/hubspot.test.ts` (7 tests), `src/test/services/salesforce.test.ts` (8 tests)
 
-### Parallel workstream #2 (PR #26 — 3 worktrees)
-- **Sentry error monitoring** — `@sentry/nextjs` v10, 3 config files (client/server/edge) with PII scrubbing (emails, Clerk sessions, 12 server secrets, bearer tokens). No-op when `NEXT_PUBLIC_SENTRY_DSN` missing. `next.config.mjs` wrapped with `withSentryConfig` for source map upload. `src/lib/sentry.ts` `captureApiError` helper. 3 critical API routes (transcribe, analyze, billing) wired. `docs/SENTRY.md` setup guide. +6 tests
-- **CI route improvements** — added `from`/`to` ISO date params, `limit` (1-200, default 50), `groupBy=week|month` for time-bucketed trend, 400 responses for invalid params, empty `competitor` normalized to no filter, plan gating (free users get 403 `PLAN_REQUIRED`). 13 → 41 tests in file
-- **OAuth setup docs + dev sandbox** — comprehensive `.env.example` (32 vars, 11 groups), `docs/INTEGRATIONS.md` step-by-step for HubSpot/Salesforce/Teams, `scripts/check-env.ts` verification script, dev sandbox mode (NODE_ENV=development) returns fake creds. +10 tests for the env checker
+### Workstream B — Google Calendar OAuth (3.3)
+- `src/app/api/integrations/google/connect/route.ts` — Google OAuth redirect with nonce cookie
+- `src/app/api/integrations/google/callback/route.ts` — code exchange, token storage, redirect
+- `src/services/calendar.ts` — rewritten: `listEvents()`, `createEvent()`, `detectUpcomingMeetings()` with transcript parsing
+- Google refresh added to `token-refresh.ts`
+- Dev sandbox updated
+- **Tests**: `src/test/services/calendar.test.ts`, `src/test/api/integrations-google.test.ts` (35 tests total across both)
 
-### CI fix (PR #24)
-- **Root cause**: Vercel CLI token cannot bypass Vercel's "Running Checks" gate — Deploy job failed with "1 failed" on every PR
-- **Fix**: Removed CI deploy step entirely. Vercel GitHub App integration handles PR previews + production deploys automatically
-- **Required checks**: Now `Tests`, `Lint`, `Build` only (3, not 4) — deploy is no longer a required gate
-- **Files**: `.github/workflows/ci.yml` — `deploy:` job removed (87 lines down from 103)
+### Workstream C — Teams OAuth + meeting bot stub (3.4/3.5)
+- `src/app/api/integrations/teams/connect/route.ts` — Microsoft OAuth v2 redirect
+- `src/app/api/integrations/teams/callback/route.ts` — code exchange, token storage via Microsoft Graph
+- `src/services/teams.ts` — TeamsService with `listMeetings()`, `createMeeting()`, token refresh via MS Graph
+- Existing `meeting-bot.ts` detects active/upcoming meetings from calendar events, formats reminders, detects platform (Zoom/Meet/Teams)
+- **Tests**: `src/test/services/teams.test.ts` (8 tests), `src/test/api/integrations-teams.test.ts` (13 tests)
 
-### Integrations OAuth status (PR #22)
-- API now returns `configured: boolean` per provider
-- Page shows "Setup Required" amber badge + disables Connect button when env vars missing
-- Dev sandbox (`NODE_ENV=development`) auto-mocks HubSpot/Salesforce/Teams creds for local testing
-- Full setup guide at `docs/INTEGRATIONS.md`
-- `npx tsx scripts/check-env.ts` reports which env vars are set vs missing
+### Workstream D — Slack upgrade (3.6)
+- `src/app/api/integrations/slack/connect/route.ts` — Slack OAuth redirect with `chat:write,commands,im:write` scopes
+- `src/app/api/integrations/slack/callback/route.ts` — code exchange via `oauth.v2.access`
+- `src/services/slack.ts` — rewritten: reads bot token from Integration model, `sendDirectMessage()` via `conversations.open` + `chat.postMessage`, DM to assignees
+- `src/app/api/slack/commands/route.ts` — `/callnote <callId>` slash command with HMAC-SHA256 signature verification
+- `src/app/api/cron/weekly-digest/route.ts` — cron endpoint protected by `CRON_SECRET`
+- `src/services/slack-digest.ts` — weekly digest (past-7-day call stats per team)
+- `prisma/schema.prisma` — added `slackUserId` to User model
+- **Tests**: `src/test/services/slack.test.ts` (17 tests)
 
-### Final test count: 128/128 across 18 files (was 84/84)
+### Workstream E — Integration health check (3.7)
+- `src/app/api/integrations/[id]/test/route.ts` — connection health check per provider (HubSpot: contacts endpoint, Salesforce: sobjects, Slack: auth.test, Teams: not_supported)
+- **Tests**: `src/test/api/integrations.test.ts` updated (11 tests)
+
+### Workstream F — Billing UX (3.8-3.11)
+- `src/components/trial-banner.tsx` — color-coded trial expiry banner (amber 4-7d, orange 2-3d, red 0-1d) with localStorage dismiss
+- `src/components/usage-display.tsx` — progress bar with color logic (red >100%, amber >=80%)
+- `src/app/billing/page.tsx` — auto-renewal disclosure, usage display (call minutes, team members), cancel subscription with confirmation dialog
+- `src/app/api/billing/cancel/route.ts` — POST cancel with Clerk auth, sets plan to FREE, logs cancellation
+- `prisma/schema.prisma` — added `trialEndsAt` and `cancellationEffectiveDate` to User model
+- **Tests**: `src/test/billing/trial-banner.test.tsx` (9 tests), `src/test/api/billing-cancel.test.ts` (4 tests)
+
+### Final test count: 328/328 across 40 files
 - Lint: 0 warnings, 0 errors
-- Build: 36 routes, all compiling clean
-- Production: https://sales-call-notes.vercel.app
-
-## Recent Work (session #2 — massive security + quality overhaul)
-
-### Security Fixes (15 issues)
-- **Auth lockdown**: Clerk auth added to 8 unprotected API routes (chat, billing, history, analytics, slack, webhooks, transcribe, summarize) — previously any endpoint could be called with any userId
-- **Command injection (RCE)**: Fixed in transcribe route + worker.ts — filename interpolation → `sys.argv[1]` pattern
-- **SSRF prevention**: Webhook URLs validated HTTPS-only
-- **IDOR fixes**: Team DELETE verifies member belongs to same team; competitive intelligence rejects cross-team queries
-- **Data exfiltration**: Slack webhook URL no longer accepted from client
-- **Token leak**: Calendar access token moved from query param to Authorization header
-- **Rate limit hardening**: Uses `req.ip` + user-based keying instead of spoofable `x-forwarded-for`
-- **Paddle webhook idempotency**: Dedup by subscription status
-- **hasFeature logic bug**: numeric ≠ boolean true
-- **Slack competitor alert URL**: Uses real call ID, not literal `[id]`
-
-### Frontend Fixes (12 issues)
-- Sign-out button wired in app sidebar
-- Nav active state fixed for sub-routes (`startsWith` matching)
-- `aria-current="page"` on active nav links
-- `<a>` → `<Link>` in root layout
-- Error states + catch handlers on 4 pages
-- `toast.promise` false-success on 4xx fixed
-- Calendar connection no longer fakes success on failure
-- Chat sidebar auto-scroll + unique keys
-- 0 healthScore no longer renders "N/A"
-- Email validation on team invite
-- Recording cleanup on unmount
-- Landing page dead `liveText` + console.log removed
-- Billing: upgrade success screen, free plan guard
-
-### Code Quality
-- **PrismaClient singleton** (`src/lib/prisma.ts`) — prevents connection pool exhaustion in 12 route/service files
-- Non-functional `api.bodyParser` config removed from `next.config.mjs`
-- Chrome extension: MutationObserver scoped to container, storage capped at 500, sender.id verified
-- Auto-caption consent check via localStorage
-- Lint: 0 warnings, 0 errors
-- Tests: 32/32 passing across 7 files
-- Build: 36 routes, all compiling clean
+- Build: 37 routes, all compiling clean
+- 7 commits on main (Google, Teams, Billing, lint fix + prior Level 3 batch)
 
 ## Env Vars Configured (in Vercel + GitHub secrets)
 
@@ -100,13 +82,16 @@ https://github.com/Poilsarr/sales-call-notes (branch main protected — 3 CI che
 | `UPSTASH_REDIS_REST_URL` + `UPSTASH_REDIS_REST_TOKEN` | Upstash |
 | `NEXT_PUBLIC_APP_URL` | https://sales-call-notes.vercel.app |
 
+Env vars still needed: `HUBSPOT_CLIENT_ID/SECRET`, `SALESFORCE_CLIENT_ID/SECRET`, `TEAMS_CLIENT_ID/SECRET` (or `MICROSOFT_*`), `SLACK_CLIENT_ID/SECRET/SIGNING_SECRET`, `CRON_SECRET`, `NEXT_PUBLIC_SENTRY_DSN`.
+
 ## What's Still Left
 
 1. **Switch Clerk to Production** — need a custom domain first (Clerk blocks `*.vercel.app` in production)
 2. **Buy domain** — Namecheap (e.g., callnotepro.com)
-3. **Create Paddle products** — create Pro + Business plan products in Paddle Dashboard, paste price IDs into `src/lib/plans.ts`, merge PR #2 (Paddle billing, 571+81 lines)
-4. **Add OAuth env vars** — `HUBSPOT_CLIENT_ID`/`HUBSPOT_CLIENT_SECRET`, `SALESFORCE_CLIENT_ID`/`SALESFORCE_CLIENT_SECRET`, `TEAMS_CLIENT_ID`/`TEAMS_CLIENT_SECRET` (or `MICROSOFT_*`) to Vercel + GitHub secrets. Follow `docs/INTEGRATIONS.md` for step-by-step setup. Verify with `npx tsx scripts/check-env.ts`.
+3. **Create Paddle products** — create Pro + Business plan products in Paddle Dashboard, paste price IDs into `src/lib/plans.ts`, merge PR #2 (Paddle billing)
+4. **Add remaining OAuth env vars** to Vercel + GitHub secrets
 5. **Sentry** — create Sentry project, add `NEXT_PUBLIC_SENTRY_DSN` + `SENTRY_AUTH_TOKEN` + `SENTRY_ORG` + `SENTRY_PROJECT` to Vercel + GitHub secrets. Follow `docs/SENTRY.md`. Code is ready, no-op when DSN missing.
+6. **OpenAI connectivity** — still flaky (ECONNRESET/quota) — quota-guard exists but live calls untested
 
 ## Key Files
 
@@ -116,21 +101,27 @@ https://github.com/Poilsarr/sales-call-notes (branch main protected — 3 CI che
 | `src/lib/prisma.ts` | PrismaClient singleton (used by all routes) |
 | `src/lib/sentry.ts` | Sentry captureApiError(route, error, context?) helper |
 | `src/lib/integrations/dev-sandbox.ts` | Dev-only fake OAuth creds when NODE_ENV=development |
-| `src/middleware.ts` | Clerk auth + Sentry capture on auth failure |
-| `sentry.{client,server,edge}.config.ts` | Sentry SDK init (no-op when DSN missing) |
-| `src/app/global-error.tsx`, `src/app/app/error.tsx` | Error boundaries |
-| `src/app/api/team/route.ts` | Team CRUD (list, invite, remove members) |
-| `src/app/api/competitive-intelligence/route.ts` | GET — mentions + time-bucketed trend (from/to, limit, groupBy=week\|month, plan-gated) |
-| `src/app/app/intelligence/page.tsx` | Competitive Intelligence console UI |
-| `src/app/app/live/page.tsx` | Live transcription page (MediaRecorder + SSE) |
-| `src/app/api/calls/route.ts` | Call persistence (used by live page + extension finalize) |
-| `extension/` | Chrome extension (manifest.json, background.js, shared.js, popup.html/js) |
-| `src/lib/extension-upload.ts` | Server-side extension payload validation + sanitization |
-| `src/components/app-sidebar.tsx` | Sidebar nav — Team + Intelligence + Live items |
-| `src/lib/prompts/enrollment-calls.md` | AI prompt — `competitorsMentioned` extraction |
-| `src/services/slack.ts` | Slack alerts (no longer accepts client webhook URL) |
-| `prisma/schema.prisma` | 13 models — added `CompetitorMention`, `teamRole` on User |
-| `next.config.mjs` | Clean config (bodyParser removed) + withSentryConfig |
+| `src/lib/integrations/token-refresh.ts` | Shared OAuth token refresh for HubSpot, Salesforce, Google, Teams |
+| `src/middleware.ts` | Clerk auth + CSP headers + route protection |
+| `src/services/crm/hubspot.ts` | HubSpot CRM sync (reads tokens from DB) |
+| `src/services/crm/salesforce.ts` | Salesforce CRM sync (reads tokens from DB) |
+| `src/services/calendar.ts` | Google Calendar events + meeting detection |
+| `src/services/teams.ts` | Microsoft Teams meetings via Graph API |
+| `src/services/slack.ts` | Slack DMs, webhook, bot token auth |
+| `src/services/slack-digest.ts` | Weekly Slack digest cron |
+| `src/services/meeting-bot.ts` | Meeting detection, reminders, platform detection |
+| `src/components/trial-banner.tsx` | Trial expiry banner (color-coded, dismissible) |
+| `src/components/usage-display.tsx` | Usage progress bars |
+| `src/app/api/billing/cancel/route.ts` | Subscription cancellation endpoint |
+| `src/app/api/integrations/[id]/test/route.ts` | Integration health check endpoint |
+| `src/app/api/slack/commands/route.ts` | `/callnote` slash command handler |
+| `src/app/api/cron/weekly-digest/route.ts` | Weekly digest cron (CRON_SECRET protected) |
+| `src/app/api/integrations/google/connect|callback/route.ts` | Google Calendar OAuth |
+| `src/app/api/integrations/teams/connect|callback/route.ts` | Microsoft Teams OAuth |
+| `src/app/api/integrations/slack/connect|callback/route.ts` | Slack OAuth |
+| `src/app/integrations/page.tsx` | Integrations UI (all 5 providers live) |
+| `src/app/billing/page.tsx` | Billing page with usage, cancellation, auto-renewal |
+| `prisma/schema.prisma` | 15 models — added `slackUserId`, `trialEndsAt`, `cancellationEffectiveDate` on User |
 | `.env.example` | 32 env vars across 11 groups, all documented |
 | `docs/INTEGRATIONS.md` | Step-by-step OAuth setup for HubSpot/Salesforce/Teams |
 | `docs/SENTRY.md` | Sentry setup guide |
