@@ -99,7 +99,7 @@ describe('GET /api/integrations', () => {
   });
 
   describe('integrations list', () => {
-    it('returns all four provider entries in the response', async () => {
+    it('returns all five provider entries in the response', async () => {
       mockAuth.mockResolvedValue({ userId: 'test-user' });
       mockGetUserByClerkId.mockResolvedValue(mockUserWithTeam);
       mockRequireRole.mockResolvedValue({ allowed: true, userRole: 'MEMBER' });
@@ -118,7 +118,7 @@ describe('GET /api/integrations', () => {
 
       expect(response.status).toBe(200);
       expect(body).toHaveProperty('integrations');
-      expect(Object.keys(body.integrations)).toEqual(['hubspot', 'salesforce', 'teams', 'slack']);
+      expect(Object.keys(body.integrations)).toEqual(['hubspot', 'salesforce', 'teams', 'slack', 'google_calendar']);
     });
 
     it('marks connected providers correctly', async () => {
@@ -205,6 +205,7 @@ describe('GET /api/integrations', () => {
       expect(body.integrations.salesforce.configured).toBe(true);
       expect(body.integrations.teams.configured).toBe(true);
       expect(body.integrations.slack.configured).toBe(true);
+      expect(body.integrations.google_calendar.configured).toBe(true);
     });
 
     it('marks providers as configured based on env vars when sandbox is disabled', async () => {
@@ -230,11 +231,12 @@ describe('GET /api/integrations', () => {
       expect(body.integrations.salesforce.configured).toBe(true);
       expect(body.integrations.teams.configured).toBe(false);
       expect(body.integrations.slack.configured).toBe(false);
+      expect(body.integrations.google_calendar.configured).toBe(false);
     });
   });
 
   describe('provider list consistency', () => {
-    it('always returns the same four providers regardless of database state', async () => {
+    it('always returns the same five providers regardless of database state', async () => {
       mockAuth.mockResolvedValue({ userId: 'test-user' });
       mockGetUserByClerkId.mockResolvedValue(mockUserWithTeam);
       mockRequireRole.mockResolvedValue({ allowed: true, userRole: 'MEMBER' });
@@ -245,11 +247,12 @@ describe('GET /api/integrations', () => {
       const body = await response.json();
       const providers = Object.keys(body.integrations);
 
-      expect(providers).toHaveLength(4);
+      expect(providers).toHaveLength(5);
       expect(providers).toContain('hubspot');
       expect(providers).toContain('salesforce');
       expect(providers).toContain('teams');
       expect(providers).toContain('slack');
+      expect(providers).toContain('google_calendar');
     });
 
     it('reports OAuth providers in a consistent order', async () => {
@@ -262,7 +265,7 @@ describe('GET /api/integrations', () => {
       const response = await GET(mockGetRequest('http://localhost/api/integrations'));
       const body = await response.json();
 
-      expect(Object.keys(body.integrations)).toEqual(['hubspot', 'salesforce', 'teams', 'slack']);
+      expect(Object.keys(body.integrations)).toEqual(['hubspot', 'salesforce', 'teams', 'slack', 'google_calendar']);
     });
   });
 

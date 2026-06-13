@@ -15,7 +15,7 @@ import {
 } from "@/lib/integrations/dev-sandbox";
 import { checkRateLimit } from "@/lib/rate-limit";
 
-type SupportedProvider = "hubspot" | "salesforce" | "teams" | "slack";
+type SupportedProvider = "hubspot" | "salesforce" | "teams" | "slack" | "google_calendar";
 
 type IntegrationStatus = {
   connected: boolean;
@@ -24,7 +24,7 @@ type IntegrationStatus = {
   configured: boolean;
 };
 
-const SUPPORTED_PROVIDERS: SupportedProvider[] = ["hubspot", "salesforce", "teams", "slack"];
+const SUPPORTED_PROVIDERS: SupportedProvider[] = ["hubspot", "salesforce", "teams", "slack", "google_calendar"];
 
 function isProviderConfigured(provider: SupportedProvider): boolean {
   if (isDevSandboxEnabled()) {
@@ -38,6 +38,9 @@ function isProviderConfigured(provider: SupportedProvider): boolean {
   }
   if (provider === "slack") {
     return Boolean(getSecret("SLACK_CLIENT_ID") && getSecret("SLACK_CLIENT_SECRET"));
+  }
+  if (provider === "google_calendar") {
+    return Boolean(getSecret("GOOGLE_CLIENT_ID") && getSecret("GOOGLE_CLIENT_SECRET"));
   }
   return Boolean(
     (getSecret("TEAMS_CLIENT_ID") || getSecret("MICROSOFT_CLIENT_ID")) &&
@@ -71,7 +74,7 @@ const SLACK_SCOPES = [
 ];
 
 function isSupportedProvider(value: string | null): value is SupportedProvider {
-  return value === "hubspot" || value === "salesforce" || value === "teams" || value === "slack";
+  return value === "hubspot" || value === "salesforce" || value === "teams" || value === "slack" || value === "google_calendar";
 }
 
 function getAppUrl() {
@@ -460,6 +463,8 @@ export async function GET(req: NextRequest) {
         authUrl = buildSalesforceAuthUrl();
       } else if (providerParam === "slack") {
         authUrl = buildSlackAuthUrl();
+      } else if (providerParam === "google_calendar") {
+        authUrl = `${getAppUrl()}/api/integrations/google/connect`;
       } else {
         authUrl = buildTeamsAuthUrl();
       }

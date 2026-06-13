@@ -1,4 +1,4 @@
-export type SandboxProvider = "hubspot" | "salesforce" | "teams" | "slack";
+export type SandboxProvider = "hubspot" | "salesforce" | "teams" | "slack" | "google_calendar";
 
 export type SandboxCredentials = {
   clientId: string;
@@ -52,6 +52,16 @@ const SANDBOX_VALUES: Record<SandboxProvider, SandboxCredentials> = {
       "im:write",
     ],
     notesUrl: "https://api.slack.com/apps",
+  },
+  google_calendar: {
+    clientId: "dev-google-client-id",
+    clientSecret: "dev-google-client-secret",
+    redirectUri: "http://localhost:3000/api/integrations/google/callback",
+    scope: [
+      "https://www.googleapis.com/auth/calendar",
+      "https://www.googleapis.com/auth/calendar.events",
+    ],
+    notesUrl: "https://console.cloud.google.com/",
   },
 };
 
