@@ -1,199 +1,206 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { useUser, useAuth } from "@clerk/nextjs";
-import { useRouter } from "next/navigation";
+import { useEffect, useMemo, useState } from "react";
+import { useAuth } from "@clerk/nextjs";
+import { useRouter, useSearchParams } from "next/navigation";
 import Nav from "@/components/nav";
-import { User, Bell, Moon, ShieldAlert, Loader2 } from "lucide-react";
+import { Calendar, Link2, CheckCircle, Loader2, Code } from "lucide-react";
 import { toast } from "sonner";
 
 export default function SettingsPage() {
-  const { user } = useUser();
-  const { isLoaded, isSignedIn } = useAuth();
+  const { isLoaded: authLoaded, isSignedIn } = useAuth();
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const tab = searchParams.get("tab") || "general";
 
   useEffect(() => {
-    if (isLoaded && !isSignedIn) router.replace("/sign-in");
-  }, [isLoaded, isSignedIn, router]);
+    if (authLoaded && !isSignedIn) router.replace("/sign-in");
+  }, [authLoaded, isSignedIn, router]);
 
-  const [emailNotifs, setEmailNotifs] = useState(true);
-  const [weeklyDigest, setWeeklyDigest] = useState(true);
-  const [darkMode, setDarkMode] = useState(true);
-  const [deleting, setDeleting] = useState(false);
-  const [confirmDelete, setConfirmDelete] = useState(false);
-  const [saving, setSaving] = useState(false);
+  const [calendarConnected, setCalendarConnected] = useState(false);
+  const [connecting, setConnecting] = useState(false);
 
-  const savePreferences = async () => {
-    setSaving(true);
+  const envPanel = useMemo(() => {
+    return (
+      <div className="space-y-6">
+        <div className="p-6 rounded-2xl bg-linear-surface border border-linear-secondary">
+          <div className="flex items-start justify-between mb-6">
+            <div>
+              <div className="flex items-center gap-3 mb-2">
+                <Code className="w-5 h-5 text-linear-indigo" />
+                <h2 className="text-lg font-medium">CRM Sync (Environment Variables)</h2>
+              </div>
+              <p className="text-sm text-white/50">
+                Add the required OAuth credentials for HubSpot and/or Salesforce. After updating your env vars, reconnect from the Integrations page.
+              </p>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <EnvItem
+              title="HubSpot"
+              items={[
+                "HUBSPOT_CLIENT_ID",
+                "HUBSPOT_CLIENT_SECRET",
+              ]}
+            />
+            <EnvItem
+              title="Salesforce"
+              items={[
+                "SALESFORCE_CLIENT_ID",
+                "SALESFORCE_CLIENT_SECRET",
+                "SALESFORCE_AUTH_URL (optional, defaults to login.salesforce.com)",
+              ]}
+            />
+          </div>
+
+          <div className="mt-5 p-4 rounded-xl bg-white/5 border border-white/5">
+            <p className="text-sm text-white/70">
+              Redirect URI used for OAuth: <span className="text-white/90">/integrations</span>
+            </p>
+            <p className="text-xs text-white/40 mt-2">
+              Tip: keep <span className="text-white/60">NEXT_PUBLIC_APP_URL</span> set so OAuth redirects correctly.
+            </p>
+          </div>
+        </div>
+      </div>
+    );
+  }, []);
+
+  const connectCalendar = async () => {
+    setConnecting(true);
     try {
-      const res = await fetch("/api/user/preferences", {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ emailNotifs, weeklyDigest, darkMode }),
-      });
-      if (res.ok) {
-        toast.success("Preferences saved");
+      const res = await fetch("/api/calendar");
+      const data = await res.json();
+      if (data.authUrl) {
+        window.open(data.authUrl, "_blank");
       } else {
-        toast.error("Failed to save preferences");
+        toast.error("Failed to get calendar auth URL");
       }
     } catch {
-      toast.error("Failed to save preferences");
-    } finally {
-      setSaving(false);
+      toast.error("Could not connect to calendar service");
     }
+    setConnecting(false);
   };
-
-  if (!isLoaded || !isSignedIn) return null;
 
   return (
     <main className="min-h-screen bg-linear-black text-white">
       <Nav />
-      <div className="max-w-3xl mx-auto px-6 pt-32 pb-20">
-        <div className="mb-10">
+      <div className="max-w-4xl mx-auto px-6 pt-32 pb-20">
+        <div className="flex items-center justify-between mb-10 gap-4">
           <h1 className="text-3xl font-medium tracking-tight">Settings</h1>
-          <p className="text-white/40 text-sm mt-1">Manage your account preferences</p>
-        </div>
-
-        <div className="space-y-6">
-          <Section icon={<User className="w-4 h-4" />} title="Profile">
-            <div className="space-y-4">
-              <div>
-                <label className="text-xs text-white/40 uppercase tracking-wider mb-1.5 block">Name</label>
-                <p className="text-white/80 text-sm">{user?.fullName || "Not set"}</p>
-              </div>
-              <div>
-                <label className="text-xs text-white/40 uppercase tracking-wider mb-1.5 block">Email</label>
-                <p className="text-white/80 text-sm">{user?.primaryEmailAddress?.toString() || "Not set"}</p>
-              </div>
-            </div>
-          </Section>
-
-          <Section icon={<Bell className="w-4 h-4" />} title="Notifications">
-            <div className="space-y-5">
-              <Toggle
-                label="Email notifications"
-                description="Receive email updates about shared calls and mentions"
-                checked={emailNotifs}
-                onChange={setEmailNotifs}
-              />
-              <Toggle
-                label="Weekly digest"
-                description="Get a weekly summary of call activity and action items"
-                checked={weeklyDigest}
-                onChange={setWeeklyDigest}
-              />
-            </div>
-          </Section>
-
-          <Section icon={<Moon className="w-4 h-4" />} title="Theme">
-            <Toggle
-              label="Dark mode"
-              description="Use dark theme across the app"
-              checked={darkMode}
-              onChange={setDarkMode}
-            />
-          </Section>
-
-          <div className="flex justify-end">
+          <div className="flex items-center gap-2">
             <button
-              onClick={savePreferences}
-              disabled={saving}
-              className="flex items-center gap-2 px-6 py-2.5 bg-[#F26522] rounded-full text-xs font-semibold hover:bg-[#F26522]/90 transition disabled:opacity-50"
+              onClick={() => router.replace("/settings?tab=general")}
+              className={`px-4 py-2 rounded-lg text-xs font-medium transition ${
+                tab === "general" ? "bg-white text-linear-black" : "bg-white/5 text-white/60 hover:text-white"
+              }`}
             >
-              {saving && <Loader2 className="w-3.5 h-3.5 animate-spin" />}
-              {saving ? "Saving..." : "Save preferences"}
+              General
+            </button>
+            <button
+              onClick={() => router.replace("/settings?tab=crm")}
+              className={`px-4 py-2 rounded-lg text-xs font-medium transition ${
+                tab === "crm" ? "bg-white text-linear-black" : "bg-white/5 text-white/60 hover:text-white"
+              }`}
+            >
+              CRM Env Vars
             </button>
           </div>
+        </div>
 
-          <Section icon={<ShieldAlert className="w-4 h-4" />} title="Account">
-            {!confirmDelete ? (
-              <button
-                onClick={() => setConfirmDelete(true)}
-                className="px-5 py-2.5 text-xs font-medium text-red-400 bg-red-500/10 border border-red-500/20 rounded-xl hover:bg-red-500/20 transition"
-              >
-                Delete account
-              </button>
-            ) : (
-              <div className="space-y-4">
-                <div className="p-4 rounded-xl bg-red-500/10 border border-red-500/20">
-                  <p className="text-sm text-red-400 leading-relaxed">
-                    This action is permanent and cannot be undone. All your data, including calls, analytics, and team associations, will be deleted.
+        {tab === "crm" ? (
+          envPanel
+        ) : (
+          <div className="space-y-6">
+            <div className="p-6 rounded-2xl bg-linear-surface border border-linear-secondary">
+              <div className="flex items-start justify-between mb-6">
+                <div>
+                  <div className="flex items-center gap-3 mb-2">
+                    <Calendar className="w-5 h-5 text-linear-indigo" />
+                    <h2 className="text-lg font-medium">Calendar Integration</h2>
+                  </div>
+                  <p className="text-sm text-white/50">Auto-detect meetings from your calendar and join them for transcription.</p>
+                </div>
+                {calendarConnected ? (
+                  <div className="flex items-center gap-2 text-xs text-green-400">
+                    <CheckCircle className="w-3.5 h-3.5" /> Connected
+                  </div>
+                ) : null}
+              </div>
+
+              {calendarConnected ? (
+                <div className="p-4 rounded-xl bg-white/5 border border-white/5">
+                  <div className="flex items-center gap-3 text-sm">
+                    <Calendar className="w-4 h-4 text-linear-indigo" />
+                    <span className="text-white/70">Google Calendar connected</span>
+                  </div>
+                  <p className="text-xs text-white/40 mt-2">
+                    CallNote Pro will automatically detect upcoming meetings with Zoom, Google Meet, and Microsoft Teams links.
                   </p>
                 </div>
-                <div className="flex gap-3">
-                  <button
-                    onClick={async () => {
-                      setDeleting(true);
-                      try {
-                        const res = await fetch("/api/user/delete", { method: "DELETE" });
-                        if (res.ok) {
-                          toast.success("Account deleted");
-                          router.push("/sign-in");
-                        } else {
-                          toast.error("Failed to delete account");
-                        }
-                      } catch {
-                        toast.error("Failed to delete account");
-                      } finally {
-                        setDeleting(false);
-                      }
-                    }}
-                    disabled={deleting}
-                    className="flex items-center gap-2 px-5 py-2.5 text-xs font-semibold text-white bg-red-500 rounded-xl hover:bg-red-600 transition disabled:opacity-50"
-                  >
-                    {deleting && <Loader2 className="w-3.5 h-3.5 animate-spin" />}
-                    {deleting ? "Deleting..." : "Yes, delete my account"}
-                  </button>
-                  <button
-                    onClick={() => setConfirmDelete(false)}
-                    className="px-5 py-2.5 text-xs font-medium text-white/60 bg-white/5 border border-white/10 rounded-xl hover:bg-white/10 transition"
-                  >
-                    Cancel
-                  </button>
-                </div>
+              ) : (
+                <button
+                  onClick={connectCalendar}
+                  disabled={connecting}
+                  className="flex items-center gap-2 px-6 py-3 bg-white text-linear-black rounded-full text-xs font-semibold hover:bg-white/90 transition disabled:opacity-50"
+                >
+                  {connecting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Link2 className="w-4 h-4" />}
+                  {connecting ? "Connecting..." : "Connect Google Calendar"}
+                </button>
+              )}
+            </div>
+
+            <div className="p-6 rounded-2xl bg-linear-surface border border-linear-secondary">
+              <div className="flex items-center gap-3 mb-4">
+                <Link2 className="w-5 h-5 text-linear-indigo" />
+                <h2 className="text-lg font-medium">Integrations</h2>
               </div>
-            )}
-          </Section>
-        </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                {[
+                  { name: "HubSpot", status: "Live" },
+                  { name: "Salesforce", status: "Live" },
+                  { name: "Microsoft Teams", status: "Live" },
+                  { name: "Google Meet", status: "Coming Soon" },
+                  { name: "Zoom", status: "Coming Soon" },
+                  { name: "Slack", status: "Coming Soon" },
+                ].map((int, i) => (
+                  <div key={i} className="flex items-center justify-between p-3 rounded-xl bg-white/5 border border-white/5">
+                    <span className="text-sm font-medium">{int.name}</span>
+                    <span
+                      className={`text-[10px] font-medium px-2 py-0.5 rounded-full ${
+                        int.status === "Live" ? "bg-green-500/10 text-green-400" : "bg-yellow-500/10 text-yellow-400"
+                      }`}
+                    >
+                      {int.status}
+                    </span>
+                  </div>
+                ))}
+              </div>
+
+              <div className="mt-5 text-xs text-white/40">
+                Need to configure CRM OAuth? Go to <button className="underline hover:text-white" onClick={() => router.replace("/settings?tab=crm")}>CRM Env Vars</button>.
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </main>
   );
 }
 
-function Section({ icon, title, children }: { icon: React.ReactNode; title: string; children: React.ReactNode }) {
+function EnvItem({ title, items }: { title: string; items: string[] }) {
   return (
-    <div className="p-6 rounded-2xl bg-linear-surface border border-linear-secondary">
-      <div className="flex items-center gap-3 mb-6">
-        <span className="text-[#F26522]">{icon}</span>
-        <h2 className="text-sm font-medium text-white">{title}</h2>
-      </div>
-      {children}
-    </div>
-  );
-}
-
-function Toggle({ label, description, checked, onChange }: { label: string; description: string; checked: boolean; onChange: (v: boolean) => void }) {
-  return (
-    <div className="flex items-center justify-between gap-4">
-      <div className="min-w-0">
-        <p className="text-sm text-white/80">{label}</p>
-        <p className="text-xs text-white/40 mt-0.5">{description}</p>
-      </div>
-      <button
-        type="button"
-        role="switch"
-        aria-checked={checked}
-        onClick={() => onChange(!checked)}
-        className={`relative inline-flex h-5 w-9 shrink-0 rounded-full border-2 border-transparent transition-colors focus:outline-none ${
-          checked ? "bg-[#F26522]" : "bg-white/10"
-        }`}
-      >
-        <span
-          className={`pointer-events-none inline-block h-4 w-4 rounded-full bg-white shadow transition-transform ${
-            checked ? "translate-x-4" : "translate-x-0"
-          }`}
-        />
-      </button>
+    <div className="p-4 rounded-xl bg-white/5 border border-white/5">
+      <div className="text-sm font-medium mb-3">{title}</div>
+      <ul className="space-y-2">
+        {items.map((it) => (
+          <li key={it} className="flex items-start gap-2 text-sm text-white/70">
+            <span className="w-1.5 h-1.5 rounded-full mt-2 bg-linear-indigo" />
+            <span>{it}</span>
+          </li>
+        ))}
+      </ul>
     </div>
   );
 }
