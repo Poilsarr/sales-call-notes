@@ -1,4 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { NextRequest } from 'next/server';
 
 const {
   mockAuth,
@@ -54,14 +55,14 @@ vi.mock('next/headers', () => ({
 
 import { GET } from '@/app/api/integrations/route';
 
-function mockGetRequest(url: string): Request {
+function mockGetRequest(url: string): NextRequest {
   const req = new Request(url);
   const nextUrl = new URL(url);
   Object.defineProperty(req, 'nextUrl', {
     value: nextUrl,
     writable: false,
   });
-  return req;
+  return req as unknown as NextRequest;
 }
 
 const mockUserWithTeam = {
