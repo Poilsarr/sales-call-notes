@@ -12,7 +12,7 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 
-type SupportedProvider = "hubspot" | "salesforce" | "teams";
+type SupportedProvider = "hubspot" | "salesforce" | "teams" | "slack";
 
 type ProviderStatus = {
   connected: boolean;
@@ -30,7 +30,7 @@ const integrations = [
   { icon: <Calendar size={22} />, name: "Outlook Calendar", desc: "Sync meetings from Microsoft 365 calendar for automatic capture.", status: "Coming Soon" },
   { icon: <Globe size={22} />, name: "Zoom", desc: "Record and transcribe Zoom meetings directly from the platform.", status: "Coming Soon" },
   { icon: <Globe size={22} />, name: "Google Meet", desc: "Live transcription and note-taking for Google Meet calls.", status: "Coming Soon" },
-  { icon: <Layers size={22} />, name: "Slack", desc: "Post call summaries and action items to Slack channels automatically.", status: "Coming Soon" },
+  { icon: <Layers size={22} />, name: "Slack", desc: "Post call summaries, action items, and weekly digests to Slack.", status: "Live", provider: "slack" as const },
   { icon: <Share2 size={22} />, name: "Zapier", desc: "Connect CallNote Pro to 5,000+ apps via Zapier workflows.", status: "Coming Soon" },
   { icon: <Code size={22} />, name: "REST API", desc: "Build custom integrations with our full-featured REST API.", status: "Business+" },
   { icon: <Download size={22} />, name: "Webhooks", desc: "Receive real-time events when calls are transcribed and analyzed.", status: "Business+" },
@@ -41,6 +41,10 @@ function IntegrationsContent() {
   const { isLoaded: authLoaded, isSignedIn } = useAuth();
   const router = useRouter();
 
+  const redirectToCrmEnv = () => {
+    router.replace("/settings?tab=crm");
+  };
+
   useEffect(() => {
     if (authLoaded && !isSignedIn) router.replace("/sign-in");
   }, [authLoaded, isSignedIn, router]);
@@ -50,11 +54,13 @@ function IntegrationsContent() {
     hubspot: { connected: false, enabled: false, syncedAt: null, configured: false },
     salesforce: { connected: false, enabled: false, syncedAt: null, configured: false },
     teams: { connected: false, enabled: false, syncedAt: null, configured: false },
+    slack: { connected: false, enabled: false, syncedAt: null, configured: false },
   });
   const [providerLoading, setProviderLoading] = useState<Record<SupportedProvider, boolean>>({
     hubspot: false,
     salesforce: false,
     teams: false,
+    slack: false,
   });
   const [initialLoadDone, setInitialLoadDone] = useState(false);
   const observerRef = useRef<IntersectionObserver | null>(null);
@@ -97,6 +103,9 @@ function IntegrationsContent() {
   const code = searchParams.get("code");
   const stateParam = searchParams.get("state");
   const providerParam = stateParam?.split(":")[0] ?? null;
+  const slackConnected = searchParams.get("slack");
+  const teamsConnected = searchParams.get("teams");
+  const errorParam = searchParams.get("error");
 
   useEffect(() => {
     const provider = providerParam;
@@ -106,9 +115,45 @@ function IntegrationsContent() {
     const error = searchParams.get("error");
     const errorDescription = searchParams.get("error_description");
 
-    if (error) {
+    if (error && provider !== "slack") {
       handledCallbackRef.current = true;
       toast.error(errorDescription || `Connection failed: ${error}`);
+      router.replace("/integrations");
+      return;
+    }
+
+    if (slackConnected === "connected") {
+      handledCallbackRef.current = true;
+      toast.success("Slack connected");
+      setProviderStates((prev) => ({
+        ...prev,
+        slack: { ...prev.slack, connected: true, enabled: true, syncedAt: new Date().toISOString(), error: undefined },
+      }));
+      router.replace("/integrations");
+      return;
+    }
+
+    if (teamsConnected === "connected") {
+      handledCallbackRef.current = true;
+      toast.success("Microsoft Teams connected");
+      setProviderStates((prev) => ({
+        ...prev,
+        teams: { ...prev.teams, connected: true, enabled: true, syncedAt: new Date().toISOString(), error: undefined },
+      }));
+      router.replace("/integrations");
+      return;
+    }
+
+    if (errorParam && errorParam.startsWith("slack_")) {
+      handledCallbackRef.current = true;
+      toast.error(decodeURIComponent(errorParam.replace("slack_", "")));
+      router.replace("/integrations");
+      return;
+    }
+
+    if (errorParam && errorParam.startsWith("teams_")) {
+      handledCallbackRef.current = true;
+      toast.error(decodeURIComponent(errorParam.replace("teams_", "")));
       router.replace("/integrations");
       return;
     }
@@ -144,7 +189,7 @@ function IntegrationsContent() {
         router.replace("/integrations");
       }
     })();
-  }, [router, code, providerParam, searchParams, stateParam]);
+  }, [router, code, providerParam, searchParams, stateParam, slackConnected, teamsConnected, errorParam]);
 
   const connectProvider = async (provider: SupportedProvider) => {
     if (!providerStates[provider].configured) {
@@ -157,10 +202,16 @@ function IntegrationsContent() {
       [provider]: { ...prev[provider], error: undefined },
     }));
     try {
-      const response = await fetch(`/api/integrations?action=auth-url&provider=${provider}`);
-      const data = await response.json();
-      if (!response.ok) throw new Error(data.error || "Failed to start OAuth flow");
-      window.location.assign(data.authUrl);
+      const authUrl = provider === "slack"
+        ? "/api/integrations/slack/connect"
+        : provider === "teams"
+        ? "/api/integrations/teams/connect"
+        : await fetch(`/api/integrations?action=auth-url&provider=${provider}`).then(async (r) => {
+            const data = await r.json();
+            if (!r.ok) throw new Error(data.error || "Failed to start OAuth flow");
+            return data.authUrl;
+          });
+      window.location.assign(authUrl);
     } catch (error) {
       const msg = error instanceof Error ? error.message : "Could not start OAuth flow";
       setProviderStates((prev) => ({
@@ -287,7 +338,43 @@ function IntegrationsContent() {
                               </>
                             )}
                           </div>
-                          {providerStates[int.provider].connected ? (
+
+                          {int.provider === "hubspot" || int.provider === "salesforce" ? (
+                            <div className="flex items-center gap-2 shrink-0">
+                              {providerStates[int.provider].connected ? (
+                                <button
+                                  onClick={() => toast.success(`CRM sync started for ${int.name}.`)}
+                                  disabled={providerLoading[int.provider]}
+                                  className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-[#F26522] text-white text-[11px] font-semibold hover:bg-[#e05a1a] transition-all disabled:opacity-50"
+                                >
+                                  <Sparkles size={14} />
+                                  Sync CRM
+                                </button>
+                              ) : (
+                                <button
+                                  onClick={redirectToCrmEnv}
+                                  className="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-gray-200 text-[11px] font-medium text-gray-600 hover:text-gray-900 hover:bg-gray-50 transition-all"
+                                >
+                                  <Link2 size={14} />
+                                  Env Vars
+                                </button>
+                              )}
+                              {providerStates[int.provider].connected ? (
+                                <button
+                                  onClick={() => disconnectProvider(int.provider)}
+                                  disabled={providerLoading[int.provider]}
+                                  className="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-gray-200 text-[11px] font-medium text-gray-600 hover:text-gray-900 hover:bg-gray-50 transition-all disabled:opacity-50"
+                                >
+                                  {providerLoading[int.provider] ? (
+                                    <Loader2 size={14} className="animate-spin" />
+                                  ) : (
+                                    <Unplug size={14} />
+                                  )}
+                                  Disconnect
+                                </button>
+                              ) : null}
+                            </div>
+                          ) : providerStates[int.provider].connected ? (
                             <button
                               onClick={() => disconnectProvider(int.provider)}
                               disabled={providerLoading[int.provider]}

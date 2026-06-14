@@ -1,9 +1,10 @@
 'use client';
 
+import { useState, useEffect } from 'react';
 import { AppSidebar } from '@/components/app-sidebar';
+import TrialBanner from '@/components/trial-banner';
 import { Toaster } from 'sonner';
 import { motion } from 'framer-motion';
-import { useEffect } from 'react';
 import { useAuth } from '@clerk/nextjs';
 import { useRouter } from 'next/navigation';
 
@@ -12,12 +13,23 @@ export default function AppLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const { isLoaded, isSignedIn } = useAuth();
+  const { isLoaded, isSignedIn, userId } = useAuth();
   const router = useRouter();
+  const [trialEndsAt, setTrialEndsAt] = useState<string | null>(null);
 
   useEffect(() => {
     if (isLoaded && !isSignedIn) router.replace("/sign-in");
   }, [isLoaded, isSignedIn, router]);
+
+  useEffect(() => {
+    if (!userId) return;
+    fetch(`/api/billing?userId=${userId}`)
+      .then(r => r.json())
+      .then(d => {
+        if (d.trialEndsAt) setTrialEndsAt(d.trialEndsAt);
+      })
+      .catch(() => {});
+  }, [userId]);
 
   if (!isLoaded || !isSignedIn) return null;
 
@@ -25,6 +37,7 @@ export default function AppLayout({
     <div className="flex h-screen bg-white">
       <AppSidebar />
       <main className="flex-1 overflow-y-auto">
+        <TrialBanner trialEndsAt={trialEndsAt} />
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}

@@ -21,6 +21,10 @@ import os from 'os';
 import { detectAudioType } from '@/lib/audio-types';
 import { captureApiError } from '@/lib/sentry';
 import { isQuotaError, quotaErrorResponse, captureQuotaEvent } from '@/lib/quota-guard';
+import { HubSpotService } from '@/services/crm/hubspot';
+import { SalesforceService } from '@/services/crm/salesforce';
+import { logAuditAction } from '@/lib/audit-logger';
+import { refreshIntegrationToken } from '@/lib/integrations/token-refresh';
 
 export const maxDuration = 300;
 
@@ -336,6 +340,45 @@ export async function POST(req: Request) {
         fileName,
         `${appUrl}/app/calls/${call.id}`
       ).catch(() => {});
+    }
+
+    if (user.teamId) {
+      try {
+        const crmIntegrations = await prisma.integration.findMany({
+          where: { teamId: user.teamId, enabled: true, provider: { in: ["hubspot", "salesforce"] } },
+        });
+        if (crmIntegrations.length > 0) {
+          const crmCall = {
+            filename: fileName,
+            createdAt: call.createdAt,
+            transcript: finalTranscriptWithSpeakers,
+            summary: analysisResult.executiveSummary || correctedText.slice(0, 500),
+            analytics: callAnalytics,
+            actionItems: actionItems.map(a => ({ task: a.task, owner: a.owner, due: a.due })),
+            decisions: decisions.map(d => ({ content: d.content })),
+            nextSteps: nextSteps.map(n => ({ step: n.step, date: n.date })),
+          };
+          for (const integration of crmIntegrations) {
+            try {
+              const provider = integration.provider as "hubspot" | "salesforce";
+              let result: Record<string, string>;
+              if (provider === "hubspot") {
+                const service = new HubSpotService(user.teamId);
+                result = await service.syncCall(crmCall);
+              } else {
+                const config = integration.config ? JSON.parse(integration.config) : {};
+                const service = new SalesforceService(user.teamId, config.instanceUrl || null);
+                result = await service.syncCall(crmCall);
+              }
+              await logAuditAction(user.id, "CRM_SYNC", call.id, "Call", { provider, result });
+            } catch (err) {
+              console.error(`CRM auto-sync failed for ${integration.provider} (non-fatal):`, err);
+            }
+          }
+        }
+      } catch (err) {
+        console.error("CRM auto-sync setup failed (non-fatal):", err);
+      }
     }
 
     return NextResponse.json({

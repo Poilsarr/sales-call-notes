@@ -16,12 +16,15 @@ model User {
   plan                String   @default("FREE")
   credits             Int      @default(5)
   paddleCustomerId    String?  @unique
-  paddleSubscriptionId String?
-  subscriptionStatus  String?
-  subscriptionPlan    String?
+  paddleSubscriptionId  String?
+  subscriptionStatus    String?
+  subscriptionPlan      String?
+  trialEndsAt           DateTime?
+  cancellationEffectiveDate DateTime?
   teamId              String?
   team                Team?    @relation("teamMembers", fields: [teamId], references: [id])
   teamRole            String   @default("MEMBER")
+  slackUserId         String?
   preferredTone       String?  @default("balanced")
   rubricEmphasis      String[]  @default([])
   ownedTeams          Team[]   @relation("teamOwner")

@@ -41,7 +41,9 @@ export class CRMFormatterService {
 
     if (call.analytics) {
       note += `📊 QUICK METRICS\n`;
-      note += `- Talk Ratio: ${call.analytics.talkRatio || "N/A"}\n`;
+      const ratio = call.analytics.talkRatio;
+      const ratioStr = ratio && typeof ratio === "object" ? Object.entries(ratio).map(([k, v]) => `${k}:${Math.round(v * 100)}%`).join(", ") : ratio || "N/A";
+      note += `- Talk Ratio: ${ratioStr}\n`;
       note += `- Sentiment: ${call.analytics.sentiment || "N/A"}\n`;
       note += `- Budget Mentioned: ${call.analytics.budgetMentioned ? "✅" : "❌"}\n`;
       note += `- Timeline Mentioned: ${call.analytics.timelineMentioned ? "✅" : "❌"}\n`;

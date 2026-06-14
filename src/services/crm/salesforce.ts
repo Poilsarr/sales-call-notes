@@ -1,20 +1,31 @@
 import { CRMCall } from "@/types/crm";
 import { CRMFormatterService } from "./formatter";
+import { refreshIntegrationToken } from "@/lib/integrations/token-refresh";
 
 export class SalesforceService {
   private baseUrl: string;
   private formatter = new CRMFormatterService();
+  private teamId: string;
 
-  constructor(instanceUrl?: string | null) {
+  constructor(teamId?: string, instanceUrl?: string | null) {
+    this.teamId = teamId || "";
     this.baseUrl = instanceUrl || "https://login.salesforce.com";
   }
 
-  async syncCall(call: CRMCall, accessToken: string) {
+  async syncCall(call: CRMCall) {
+    const accessToken = await this.getToken();
+    if (!accessToken) throw new Error("Salesforce not connected");
+
     const contact = await this.createContact(call, accessToken);
     const opportunity = await this.createOpportunity(call, contact.id, accessToken);
     await this.createTask(call, opportunity.id, accessToken);
 
     return { contactId: contact.id, opportunityId: opportunity.id };
+  }
+
+  private async getToken(): Promise<string | null> {
+    if (!this.teamId) return null;
+    return refreshIntegrationToken(this.teamId, "salesforce");
   }
 
   private async createContact(call: CRMCall, accessToken: string) {

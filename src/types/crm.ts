@@ -8,7 +8,7 @@ export type CRMCall = {
     budgetMentioned?: boolean;
     timelineMentioned?: boolean;
     decisionMakerPresent?: boolean;
-    talkRatio?: string | null;
+    talkRatio?: string | Record<string, number> | null;
     sentiment?: string | null;
   } | null;
   actionItems: Array<{

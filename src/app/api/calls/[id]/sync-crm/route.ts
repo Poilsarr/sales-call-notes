@@ -56,20 +56,14 @@ export async function POST(
       where: { teamId: user.teamId, provider },
     });
 
-    let accessToken: string | null = null;
     let instanceUrl: string | undefined;
     if (integration?.config) {
       try {
         const parsed = JSON.parse(integration.config);
-        accessToken = parsed.accessToken || null;
         instanceUrl = parsed.instanceUrl ?? undefined;
       } catch {
         return NextResponse.json({ error: "Integration not configured" }, { status: 400 });
       }
-    }
-
-    if (!accessToken) {
-      return NextResponse.json({ error: "Integration not connected" }, { status: 400 });
     }
 
     const crmCall = {
@@ -85,14 +79,15 @@ export async function POST(
 
     let result;
     if (provider === "hubspot") {
-      const hubspot = new HubSpotService();
-      result = await hubspot.syncCall(crmCall, accessToken);
+      const hubspot = new HubSpotService(user.teamId);
+      result = await hubspot.syncCall(crmCall);
     } else if (provider === "salesforce") {
-      const salesforce = new SalesforceService(instanceUrl);
-      result = await salesforce.syncCall(crmCall, accessToken);
+      const salesforce = new SalesforceService(user.teamId, instanceUrl);
+      result = await salesforce.syncCall(crmCall);
     } else {
       const teams = new TeamsService();
-      result = await teams.syncCall(crmCall, accessToken);
+      const mockToken = integration?.config ? JSON.parse(integration.config).accessToken : null;
+      result = await teams.syncCall(crmCall, mockToken || "");
     }
 
     await prisma.call.update({
