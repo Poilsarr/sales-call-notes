@@ -3,24 +3,15 @@ import prisma from '@/lib/prisma';
 import { AnalyticsService } from '@/services/ai/analytics';
 import { auth } from '@clerk/nextjs/server';
 import { getUserByClerkId } from '@/lib/get-user';
-
-function safeJsonParse<T>(value: unknown): T | null {
-  if (value === null || value === undefined) return null;
-  if (typeof value === 'string') {
-    try {
-      return JSON.parse(value) as T;
-    } catch {
-      return null;
-    }
-  }
-  return value as T;
-}
+import { captureApiError } from '@/lib/sentry';
 
 function asArray(value: unknown): any[] {
   if (!value) return [];
   if (Array.isArray(value)) return value;
-  const parsed = safeJsonParse<any[]>(value);
-  return Array.isArray(parsed) ? parsed : [];
+  if (typeof value === 'string') {
+    try { return JSON.parse(value); } catch { return []; }
+  }
+  return [];
 }
 
 export async function GET(req: Request) {
@@ -29,6 +20,9 @@ export async function GET(req: Request) {
     if (!clerkUserId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
     const user = await getUserByClerkId(clerkUserId);
+    if (!user) {
+      return NextResponse.json({ error: 'User not found' }, { status: 404 });
+    }
 
     const { searchParams } = new URL(req.url);
     const daysRaw = searchParams.get('days') || '30';
@@ -64,21 +58,35 @@ export async function GET(req: Request) {
       0,
     );
     const avgHealthScore =
-      calls.length > 0 ? calls.reduce((sum, c) => sum + (c.healthScore || 0), 0) / calls.length : 0;
+      calls.length > 0
+        ? calls.reduce((sum, c) => sum + (c.healthScore || 0), 0) / calls.length
+        : 0;
 
     const avgCloseProbability =
       calls.length > 0
-        ? calls.reduce((sum, c) => sum + (typeof c.insight?.closeProbability === 'number' ? c.insight?.closeProbability : 0), 0) /
-          calls.length
+        ? calls.reduce(
+            (sum, c) =>
+              sum +
+              (typeof c.insight?.closeProbability === 'number'
+                ? c.insight.closeProbability
+                : 0),
+            0,
+          ) / calls.length
         : 0;
 
     const callsByDay: Record<string, number> = {};
-    const scoresByDay: Record<string, number> = {};
+    const scoresByDay: Record<string, { sum: number; count: number }> = {};
     calls.forEach((c) => {
       const day = c.createdAt.toISOString().split('T')[0];
       callsByDay[day] = (callsByDay[day] || 0) + 1;
-      scoresByDay[day] = c.healthScore || 0;
+      if (!scoresByDay[day]) scoresByDay[day] = { sum: 0, count: 0 };
+      scoresByDay[day].sum += c.healthScore || 0;
+      scoresByDay[day].count += 1;
     });
+    const avgScoresByDay: Record<string, number> = {};
+    for (const [day, { sum, count }] of Object.entries(scoresByDay)) {
+      avgScoresByDay[day] = count > 0 ? sum / count : 0;
+    }
 
     const sentimentCounts = { positive: 0, neutral: 0, negative: 0 };
     calls.forEach((c) => {
@@ -103,9 +111,12 @@ export async function GET(req: Request) {
     );
 
     const speakerLeaderboard = calls
-      .flatMap((c) => asArray((c as any).analytics?.speakerMetrics))
+      .flatMap((c) => asArray(c.analytics?.speakerMetrics))
       .reduce<
-        Record<string, { speaker: string; calls: number; questionsAsked: number; interruptions: number }>
+        Record<
+          string,
+          { speaker: string; calls: number; questionsAsked: number; interruptions: number }
+        >
       >((acc, metric) => {
         if (!metric || typeof metric !== 'object') return acc;
         const speaker = (metric as any).speaker;
@@ -119,8 +130,14 @@ export async function GET(req: Request) {
         };
 
         existing.calls += 1;
-        existing.questionsAsked += typeof (metric as any).questionsAsked === 'number' ? (metric as any).questionsAsked : 0;
-        existing.interruptions += typeof (metric as any).interruptions === 'number' ? (metric as any).interruptions : 0;
+        existing.questionsAsked +=
+          typeof (metric as any).questionsAsked === 'number'
+            ? (metric as any).questionsAsked
+            : 0;
+        existing.interruptions +=
+          typeof (metric as any).interruptions === 'number'
+            ? (metric as any).interruptions
+            : 0;
         acc[speaker] = existing;
 
         return acc;
@@ -132,10 +149,6 @@ export async function GET(req: Request) {
       const closeProbability =
         typeof insight?.closeProbability === 'number' ? insight.closeProbability : null;
 
-      // insight.objections is Json? in schema; stored shape may be:
-      // - array of { type, ... }
-      // - array of strings
-      // - stringified JSON
       const objectionsArr = asArray(insight?.objections);
       const topObjection =
         objectionsArr.length > 0
@@ -153,7 +166,7 @@ export async function GET(req: Request) {
         actionItemCount: c.actionItems.length,
         closeProbability,
         topObjection,
-        ownerName: (c as any).user?.name || null,
+        ownerName: c.user?.name || null,
         assigneeName: null,
       };
     });
@@ -166,7 +179,7 @@ export async function GET(req: Request) {
       avgHealthScore: Math.round(avgHealthScore * 100),
       avgCloseProbability: Math.round(avgCloseProbability),
       callsByDay,
-      scoresByDay,
+      scoresByDay: avgScoresByDay,
       sentimentCounts,
       signals: { budgetSignals, timelineSignals, dmSignals },
       conversationSignals: {
@@ -178,8 +191,9 @@ export async function GET(req: Request) {
         .slice(0, 5),
       recentCalls,
     });
-  } catch {
-    // Intentionally avoid leaking internals to client.
+  } catch (err) {
+    console.error('[analytics/GET]', err);
+    captureApiError('/api/analytics', err, { method: 'GET' });
     return NextResponse.json({ error: 'Analytics failed' }, { status: 500 });
   }
 }
@@ -202,6 +216,8 @@ export async function POST(req: Request) {
         where: { callId },
         update: {
           talkRatio: JSON.stringify(analytics.talkRatio),
+          speakerMetrics: analytics.speakerMetrics,
+          sentimentTimeline: analytics.sentimentTimeline,
           interruptions: analytics.interruptions,
           questionsAsked: analytics.questionsAsked,
           objections: JSON.stringify(analytics.objections),
@@ -213,6 +229,8 @@ export async function POST(req: Request) {
         create: {
           callId,
           talkRatio: JSON.stringify(analytics.talkRatio),
+          speakerMetrics: analytics.speakerMetrics,
+          sentimentTimeline: analytics.sentimentTimeline,
           interruptions: analytics.interruptions,
           questionsAsked: analytics.questionsAsked,
           objections: JSON.stringify(analytics.objections),
@@ -225,7 +243,9 @@ export async function POST(req: Request) {
     }
 
     return NextResponse.json(analytics);
-  } catch {
+  } catch (err) {
+    console.error('[analytics/POST]', err);
+    captureApiError('/api/analytics', err, { method: 'POST' });
     return NextResponse.json({ error: 'Analytics processing failed' }, { status: 500 });
   }
 }

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useUser } from "@clerk/nextjs";
 import Nav from "@/components/nav";
 import {
@@ -88,36 +88,12 @@ export default function DashboardPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  // AI Meeting Assistant state (moved from settings)
-  const [chatQuery, setChatQuery] = useState("");
-  const [chatLoading, setChatLoading] = useState(false);
-  const [chatResult, setChatResult] = useState<{ answer: string; relevantCalls: any[] } | null>(null);
-
-  const askChat = async () => {
-    if (!chatQuery.trim() || !user?.id) return;
-    setChatLoading(true);
-    setChatResult(null);
-    try {
-      const res = await fetch("/api/chat", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ query: chatQuery, userId: user.id }),
-      });
-      const payload = await res.json();
-      setChatResult(payload);
-    } catch {
-      setChatResult({ answer: "Failed to query meetings. Please try again.", relevantCalls: [] });
-    } finally {
-      setChatLoading(false);
-    }
-  };
-
-  useEffect(() => {
+  const fetchAnalytics = useCallback(() => {
     if (!user?.id) return;
     setLoading(true);
     setError(null);
 
-    fetch(`/api/analytics?userId=${user.id}&days=${days}&scope=${scope}`)
+    fetch(`/api/analytics?days=${days}&scope=${scope}`)
       .then(async (response) => {
         const payload = await response.json();
         if (!response.ok) {
@@ -136,6 +112,10 @@ export default function DashboardPage() {
       });
   }, [user?.id, days, scope]);
 
+  useEffect(() => {
+    fetchAnalytics();
+  }, [fetchAnalytics]);
+
   if (loading) {
     return (
       <div className="min-h-screen bg-linear-black text-white flex items-center justify-center">
@@ -149,16 +129,32 @@ export default function DashboardPage() {
 
   if (error) {
     return (
-      <div className="min-h-screen bg-linear-black text-white flex items-center justify-center">
-        <p className="text-red-400">{error}</p>
+      <div className="min-h-screen bg-linear-black text-white">
+        <Nav />
+        <div className="max-w-7xl mx-auto px-6 py-12 flex flex-col items-center justify-center min-h-[60vh]">
+          <AlertTriangle className="w-10 h-10 text-red-400 mb-4" />
+          <p className="text-red-400 text-lg mb-2">Failed to load analytics</p>
+          <p className="text-white/40 text-sm mb-6">{error}</p>
+          <button
+            onClick={fetchAnalytics}
+            className="px-5 py-3 bg-linear-indigo rounded-xl text-xs font-semibold hover:bg-linear-indigo/80 transition"
+          >
+            Retry
+          </button>
+        </div>
       </div>
     );
   }
 
   if (!data) {
     return (
-      <div className="min-h-screen bg-linear-black text-white flex items-center justify-center">
-        <p className="text-white/40">No analytics data available</p>
+      <div className="min-h-screen bg-linear-black text-white">
+        <Nav />
+        <div className="max-w-7xl mx-auto px-6 py-12 flex flex-col items-center justify-center min-h-[60vh]">
+          <BarChart3 className="w-10 h-10 text-white/20 mb-4" />
+          <p className="text-white/40">No analytics data available yet.</p>
+          <p className="text-white/20 text-sm mt-2">Upload your first call to see insights here.</p>
+        </div>
       </div>
     );
   }
@@ -167,70 +163,7 @@ export default function DashboardPage() {
     <div className="min-h-screen bg-linear-black text-white">
       <Nav />
       <div className="max-w-7xl mx-auto px-6 py-12">
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
-          {/* AI Meeting Assistant */}
-          <div className="lg:col-span-1 p-6 rounded-2xl bg-linear-surface border border-linear-secondary">
-            <h3 className="text-xs font-medium text-white/40 uppercase tracking-widest mb-4 flex items-center gap-2">
-              <Brain className="w-4 h-4 text-linear-indigo" />
-              AI Meeting Assistant
-            </h3>
-
-            <div className="space-y-3">
-              <div className="text-sm text-white/50">
-                Ask questions about your meeting history. Get instant answers with source calls.
-              </div>
-
-              <div className="flex gap-2">
-                <input
-                  value={chatQuery}
-                  onChange={(e) => setChatQuery(e.target.value)}
-                  onKeyDown={(e) => e.key === "Enter" && askChat()}
-                  placeholder='Ask anything... e.g., "What objections came up last week?"'
-                  className="flex-1 px-4 py-3 rounded-xl bg-white/5 border border-white/10 text-sm text-white placeholder-white/30 focus:outline-none focus:border-linear-indigo/50"
-                />
-                <button
-                  onClick={askChat}
-                  disabled={chatLoading || !chatQuery.trim()}
-                  className="px-5 py-3 bg-linear-indigo rounded-xl text-xs font-semibold hover:bg-linear-indigo/80 transition disabled:opacity-50"
-                >
-                  {chatLoading ? (
-                    <div className="w-4 h-4 rounded-full border-2 border-white/70 border-t-transparent animate-spin" />
-                  ) : (
-                    <Send className="w-4 h-4" />
-                  )}
-                </button>
-              </div>
-
-              {chatResult && (
-                <div className="p-4 rounded-xl bg-white/5 border border-white/5">
-                  <div className="flex items-start gap-2 mb-3">
-                    <MessageSquare className="w-4 h-4 text-linear-indigo shrink-0 mt-0.5" />
-                    <p className="text-sm text-white/80 leading-relaxed">{chatResult.answer}</p>
-                  </div>
-
-                  {chatResult.relevantCalls?.length > 0 && (
-                    <div className="mt-3 pt-3 border-t border-white/5">
-                      <div className="text-[11px] text-white/40 uppercase tracking-wider mb-2">Source calls</div>
-                      {chatResult.relevantCalls.map((c: any) => (
-                        <div key={c.id} className="flex items-center gap-2 text-xs text-white/60 py-1">
-                          <FileText className="w-3 h-3" />
-                          <span>{c.filename}</span>
-                          <span className="text-white/30">{new Date(c.date).toLocaleDateString()}</span>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-
-                  <div className="text-[11px] text-white/30 mt-2">
-                    Searched {chatResult.relevantCalls?.length ? chatResult.relevantCalls.length : "0"} calls
-                  </div>
-                </div>
-              )}
-            </div>
-          </div>
-
-          {/* Analytics */}
-          <div className="lg:col-span-2">
+        <div>
             <div className="flex items-center justify-between mb-10">
               <div>
                 <h1 className="text-3xl font-medium tracking-tight">Analytics</h1>
@@ -457,7 +390,6 @@ export default function DashboardPage() {
               </div>
             </div>
           </div>
-        </div>
       </div>
     </div>
   );

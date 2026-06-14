@@ -145,7 +145,7 @@ export default function TeamPage() {
         <Nav />
         <div className="max-w-4xl mx-auto px-6 pt-32 pb-20">
           <div className="flex items-center justify-center h-64">
-            <Loader2 className="w-6 h-6 animate-spin text-linear-indigo" />
+            <Loader2 className="w-6 h-6 animate-spin text-[#F26522]" />
           </div>
         </div>
       </main>
@@ -159,14 +159,14 @@ export default function TeamPage() {
         <div className="flex items-center justify-between mb-10">
           <div>
             <div className="flex items-center gap-3 mb-2">
-              <Users className="w-6 h-6 text-linear-indigo" />
+              <Users className="w-6 h-6 text-[#F26522]" />
               <h1 className="text-3xl font-medium tracking-tight">Team</h1>
             </div>
             <p className="text-white/40 text-sm">
               {teamName ? `${teamName} — ` : ""}Manage your workspace members and permissions.
             </p>
           </div>
-          <span className="px-3 py-1 bg-linear-indigo/10 text-linear-indigo rounded-full text-[10px] font-bold uppercase tracking-wider">
+          <span className="px-3 py-1 bg-[#F26522]/10 text-[#F26522] rounded-full text-[10px] font-bold uppercase tracking-wider">
             {members.length} member{members.length !== 1 ? "s" : ""}
           </span>
         </div>
@@ -194,10 +194,10 @@ export default function TeamPage() {
                 onChange={e => setInviteEmail(e.target.value)}
                 onKeyDown={e => e.key === "Enter" && inviteMember()}
                 placeholder="colleague@company.com"
-                className="flex-1 px-4 py-2.5 rounded-xl bg-white/5 border border-white/10 text-sm text-white placeholder-white/30 focus:outline-none focus:border-linear-indigo/50"
+                className="flex-1 px-4 py-2.5 rounded-xl bg-white/5 border border-white/10 text-sm text-white placeholder-white/30 focus:outline-none focus:border-[#F26522]/50"
               />
               <button onClick={inviteMember} disabled={inviting}
-                className="flex items-center gap-2 px-5 py-2.5 bg-linear-indigo rounded-xl text-xs font-semibold hover:bg-linear-indigo/80 transition disabled:opacity-50">
+                className="flex items-center gap-2 px-5 py-2.5 bg-[#F26522] rounded-xl text-xs font-semibold hover:bg-[#F26522]/80 transition disabled:opacity-50">
                 {inviting ? <Loader2 className="w-4 h-4 animate-spin" /> : <UserPlus className="w-4 h-4" />}
                 Invite
               </button>
@@ -216,9 +216,9 @@ export default function TeamPage() {
           <h2 className="text-sm font-medium mb-4">Members</h2>
           <div className="space-y-2">
             {currentUserMember && (
-              <div className="flex items-center justify-between p-3 rounded-xl bg-linear-indigo/5 border border-linear-indigo/10">
+              <div className="flex items-center justify-between p-3 rounded-xl bg-[#F26522]/5 border border-[#F26522]/10">
                 <div className="flex items-center gap-3">
-                  <div className="w-8 h-8 rounded-full bg-linear-indigo/20 flex items-center justify-center text-xs font-bold text-linear-indigo">
+                  <div className="w-8 h-8 rounded-full bg-[#F26522]/20 flex items-center justify-center text-xs font-bold text-[#F26522]">
                     {currentUserMember.name?.split(" ").map(n => n[0]).join("").slice(0, 2) ?? "?"}
                   </div>
                   <div>
@@ -239,7 +239,7 @@ export default function TeamPage() {
             {otherMembers.map((m) => (
               <div key={m.id} className="flex items-center justify-between p-3 rounded-xl bg-white/5 border border-white/5">
                 <div className="flex items-center gap-3">
-                  <div className="w-8 h-8 rounded-full bg-linear-indigo/20 flex items-center justify-center text-xs font-bold text-linear-indigo">
+                  <div className="w-8 h-8 rounded-full bg-[#F26522]/20 flex items-center justify-center text-xs font-bold text-[#F26522]">
                     {m.name?.split(" ").map(n => n[0]).join("").slice(0, 2) ?? "?"}
                   </div>
                   <div>
