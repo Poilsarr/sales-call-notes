@@ -1,7 +1,7 @@
 import OpenAI, { toFile } from 'openai';
 import { TranscriptionResult, TranscriptionSegment, WordTimestamp } from '@/types';
 import { buildTranscriptionPrompt } from '@/lib/transcription-options';
-import { wrapClient } from '@/lib/langfuse';
+import { createOpenAIClient } from '@/lib/openai-client';
 import { getSecret } from '@/lib/secrets';
 
 export class TranscriptionServiceV2 {
@@ -15,17 +15,11 @@ export class TranscriptionServiceV2 {
     if (!getSecret("GROQ_API_KEY")) {
       throw new Error('GROQ_API_KEY is required for transcription fallback');
     }
-    this.openai = wrapClient(new OpenAI({
-      apiKey: getSecret("OPENAI_API_KEY"),
-      timeout: 300000,
-      maxRetries: 2
-    }));
-    this.groqOpenai = wrapClient(new OpenAI({
+    this.openai = createOpenAIClient();
+    this.groqOpenai = createOpenAIClient({
       apiKey: getSecret("GROQ_API_KEY"),
       baseURL: 'https://api.groq.com/openai/v1',
-      timeout: 300000,
-      maxRetries: 2
-    }));
+    });
   }
 
   async transcribe(

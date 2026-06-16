@@ -2,7 +2,7 @@ import OpenAI from 'openai';
 import { CallAnalysis, TranscriptionSegment } from '@/types';
 import fs from 'fs';
 import path from 'path';
-import { wrapClient } from '@/lib/langfuse';
+import { createOpenAIClient } from '@/lib/openai-client';
 import { getSecret } from '@/lib/secrets';
 
 export class AnalysisService {
@@ -10,14 +10,12 @@ export class AnalysisService {
   private groqOpenai: OpenAI | null = null;
 
   constructor() {
-    this.openai = wrapClient(new OpenAI({ apiKey: getSecret("OPENAI_API_KEY"), timeout: 300000, maxRetries: 2 }));
+    this.openai = createOpenAIClient();
     if (getSecret("GROQ_API_KEY")) {
-      this.groqOpenai = wrapClient(new OpenAI({
+      this.groqOpenai = createOpenAIClient({
         apiKey: getSecret("GROQ_API_KEY"),
         baseURL: 'https://api.groq.com/openai/v1',
-        timeout: 300000,
-        maxRetries: 2
-      }));
+      });
     }
   }
 

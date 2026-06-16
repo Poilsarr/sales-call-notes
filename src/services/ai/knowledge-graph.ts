@@ -1,8 +1,8 @@
 import OpenAI from 'openai';
 import prisma from '@/lib/prisma';
-import { getSecret } from '@/lib/secrets';
+import { createOpenAIClient } from '@/lib/openai-client';
 
-const openai = new OpenAI({ apiKey: getSecret('OPENAI_API_KEY'), timeout: 30000, maxRetries: 2 });
+const openai: OpenAI = createOpenAIClient({ timeout: 30000 });
 
 export class KnowledgeGraphService {
   private async generateEmbedding(text: string): Promise<number[]> {

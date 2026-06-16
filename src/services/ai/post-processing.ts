@@ -1,6 +1,6 @@
 import OpenAI from 'openai';
 import { Correction } from '@/types';
-import { wrapClient } from '@/lib/langfuse';
+import { createOpenAIClient } from '@/lib/openai-client';
 import { getSecret } from '@/lib/secrets';
 
 export class PostProcessingService {
@@ -10,7 +10,7 @@ export class PostProcessingService {
     if (!getSecret("OPENAI_API_KEY")) {
       throw new Error('OPENAI_API_KEY is required for post-processing');
     }
-    this.openai = wrapClient(new OpenAI({ apiKey: getSecret("OPENAI_API_KEY"), timeout: 300000, maxRetries: 2 }));
+    this.openai = createOpenAIClient();
   }
 
   async correctEntities(transcript: string): Promise<{ correctedText: string; corrections: Correction[]; confidence: number }> {
