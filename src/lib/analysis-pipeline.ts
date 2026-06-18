@@ -1,5 +1,5 @@
 import OpenAI from "openai";
-import { getSecret } from "@/lib/secrets";
+import { createOpenAIClient } from "@/lib/openai-client";
 
 export interface ExtractedItem { task: string; owner: string; due: string; }
 export interface DecisionItem { who: string; what: string; by: string; }
@@ -28,11 +28,7 @@ export interface AnalysisResult {
 let _client: OpenAI | null = null;
 function client(): OpenAI {
   if (_client) return _client;
-  _client = new OpenAI({
-    apiKey: getSecret("OPENAI_API_KEY"),
-    timeout: 120000,
-    maxRetries: 2,
-  });
+  _client = createOpenAIClient({ timeout: 120000 });
   return _client;
 }
 

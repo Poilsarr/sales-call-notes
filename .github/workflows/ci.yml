@@ -1,4 +1,4 @@
-name: CI/CD
+name: CI
 
 on:
   push:
@@ -6,82 +6,74 @@ on:
   pull_request:
     branches: [main]
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 env:
-  DATABASE_URL: ${{ secrets.DATABASE_URL }}
-  OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
-  GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
-  HF_TOKEN: ${{ secrets.HF_TOKEN }}
-  NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: ${{ secrets.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY }}
-  CLERK_SECRET_KEY: ${{ secrets.CLERK_SECRET_KEY }}
-  NEXT_PUBLIC_APP_URL: ${{ secrets.NEXT_PUBLIC_APP_URL }}
+  NEXT_PUBLIC_APP_URL: ${{ vars.NEXT_PUBLIC_APP_URL || 'http://localhost:3000' }}
 
 jobs:
-  test:
-    name: Tests
+  Tests:
     runs-on: ubuntu-latest
     services:
       postgres:
-        image: postgres:16-alpine
+        image: postgres:16
         env:
-          POSTGRES_USER: callnote
-          POSTGRES_PASSWORD: callnote_dev
-          POSTGRES_DB: callnote_pro
-        ports:
-          - 5432:5432
+          POSTGRES_DB: testdb
+          POSTGRES_USER: testuser
+          POSTGRES_PASSWORD: testpass
         options: >-
           --health-cmd pg_isready
           --health-interval 10s
           --health-timeout 5s
           --health-retries 5
+        ports:
+          - 5432:5432
 
     steps:
-      - uses: actions/checkout@v5
-
-      - uses: actions/setup-node@v5
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
         with:
-          node-version: 24
-          cache: npm
-
+          node-version: 20
+          cache: 'npm'
       - run: npm ci
-
       - run: npx prisma generate
-
       - run: npx prisma db push
         env:
-          DATABASE_URL: postgresql://callnote:callnote_dev@localhost:5432/callnote_pro
-
-      - run: npx vitest run
+          DATABASE_URL: postgresql://testuser:testpass@localhost:5432/testdb
+      - run: npx tsc --noEmit
+      - run: npm test
         env:
-          DATABASE_URL: postgresql://callnote:callnote_dev@localhost:5432/callnote_pro
+          DATABASE_URL: postgresql://testuser:testpass@localhost:5432/testdb
 
-  lint:
-    name: Lint
+  Lint:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v5
-      - uses: actions/setup-node@v5
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
         with:
-          node-version: 24
-          cache: npm
+          node-version: 20
+          cache: 'npm'
       - run: npm ci
-      - run: npx next lint --no-cache
+      - run: npm run lint
 
-  build:
-    name: Build
+  Build:
     runs-on: ubuntu-latest
-    needs: [test, lint]
     steps:
-      - uses: actions/checkout@v5
-      - uses: actions/setup-node@v5
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
         with:
-          node-version: 24
-          cache: npm
+          node-version: 20
+          cache: 'npm'
       - run: npm ci
       - run: npx prisma generate
-      - run: npx next build
-
-  # Vercel deploy is handled by the Vercel GitHub App integration, which
-  # creates PR preview deployments on PR open and production deploys on
-  # push to main. The required 'Vercel' status check below gates the
-  # merge on the GitHub App's deployment check (the Vercel CLI token in
-  # this repo's secrets cannot bypass Vercel's 'Running Checks' gate).
+      - run: npm run build
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL || 'postgresql://testuser:testpass@localhost:5432/testdb' }}
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY || 'sk-dummy' }}
+          GROQ_API_KEY: ${{ secrets.GROQ_API_KEY || 'gsk_dummy' }}
+          NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: ${{ secrets.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY || 'pk_test_dummy' }}
+          CLERK_SECRET_KEY: ${{ secrets.CLERK_SECRET_KEY || 'sk_test_dummy' }}
+          UPSTASH_REDIS_REST_URL: ${{ secrets.UPSTASH_REDIS_REST_URL || 'https://dummy.upstash.io' }}
+          UPSTASH_REDIS_REST_TOKEN: ${{ secrets.UPSTASH_REDIS_REST_TOKEN || 'dummy' }}

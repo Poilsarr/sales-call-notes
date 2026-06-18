@@ -1,8 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
 import { auth } from "@clerk/nextjs/server";
-import { wrapClient } from "@/lib/langfuse";
-import { getSecret } from "@/lib/secrets";
+import { createOpenAIClient } from "@/lib/openai-client";
 
 export async function POST(req: NextRequest) {
   try {
@@ -23,8 +22,7 @@ export async function POST(req: NextRequest) {
       orderBy: { createdAt: "desc" },
     });
 
-    const { OpenAI } = await import("openai");
-    const openai = wrapClient(new OpenAI({ apiKey: getSecret("OPENAI_API_KEY") }));
+    const openai = createOpenAIClient();
 
     const callContext = calls.map(c => ({
       filename: c.filename,
