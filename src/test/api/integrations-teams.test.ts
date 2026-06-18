@@ -1,3 +1,4 @@
+import type { NextRequest } from "next/server";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const { mockAuth, mockGetUserByClerkId, mockFindFirst, mockCreate, mockUpdate, mockGetSecret, mockDevSandboxEnabled, mockDevSandboxCredentials, mockLogAuditAction, mockPrismaTeamCreate, mockPrismaUserUpdate, mockPrismaUserFindUnique, mockCookieStore } = vi.hoisted(() => ({
@@ -61,14 +62,14 @@ vi.mock("next/headers", () => ({
 import { GET as ConnectGET } from "@/app/api/integrations/teams/connect/route";
 import { GET as CallbackGET } from "@/app/api/integrations/teams/callback/route";
 
-function mockNextRequest(url: string): Request {
+function mockNextRequest(url: string): NextRequest {
   const req = new Request(url);
   const nextUrl = new URL(url);
   Object.defineProperty(req, "nextUrl", {
     value: nextUrl,
     writable: false,
   });
-  return req;
+  return req as unknown as NextRequest;
 }
 
 describe("Teams Connect", () => {
