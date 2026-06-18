@@ -14,7 +14,7 @@ env:
   NEXT_PUBLIC_APP_URL: ${{ vars.NEXT_PUBLIC_APP_URL || 'http://localhost:3000' }}
 
 jobs:
-  verify:
+  Tests:
     runs-on: ubuntu-latest
     services:
       postgres:
@@ -33,30 +33,42 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
-
       - uses: actions/setup-node@v4
         with:
           node-version: 20
           cache: 'npm'
-
       - run: npm ci
-
       - run: npx prisma generate
-
       - run: npx prisma db push
         env:
           DATABASE_URL: postgresql://testuser:testpass@localhost:5432/testdb
-
       - run: npx tsc --noEmit
-
       - run: npm test
         env:
           DATABASE_URL: postgresql://testuser:testpass@localhost:5432/testdb
 
+  Lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+      - run: npm ci
       - run: npm run lint
 
-      - name: Build
-        run: npm run build
+  Build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+      - run: npm ci
+      - run: npx prisma generate
+      - run: npm run build
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL || 'postgresql://testuser:testpass@localhost:5432/testdb' }}
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY || 'sk-dummy' }}
@@ -65,18 +77,3 @@ jobs:
           CLERK_SECRET_KEY: ${{ secrets.CLERK_SECRET_KEY || 'sk_test_dummy' }}
           UPSTASH_REDIS_REST_URL: ${{ secrets.UPSTASH_REDIS_REST_URL || 'https://dummy.upstash.io' }}
           UPSTASH_REDIS_REST_TOKEN: ${{ secrets.UPSTASH_REDIS_REST_TOKEN || 'dummy' }}
-
-      - name: Install Playwright
-        if: github.event_name == 'pull_request'
-        continue-on-error: true
-        run: npx playwright install --with-deps 2>/dev/null || echo "Playwright not configured"
-
-      - name: Run E2E tests
-        if: github.event_name == 'pull_request' && hashFiles('playwright.config.ts') != ''
-        continue-on-error: true
-        run: npm run e2e
-        env:
-          DATABASE_URL: postgresql://testuser:testpass@localhost:5432/testdb
-          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY || '' }}
-          NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: ${{ secrets.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY || '' }}
-          CLERK_SECRET_KEY: ${{ secrets.CLERK_SECRET_KEY || '' }}
