@@ -1,8 +1,9 @@
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@clerk/nextjs/server';
 
 import prisma from '@/lib/prisma';
 import { getUserByClerkId } from '@/lib/get-user';
+import { cacheGet, cacheSet, makeCacheKey } from '@/lib/cache';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -18,6 +19,44 @@ function sanitizeNumber(raw: unknown): number | null {
   if (typeof raw !== 'number' || !Number.isFinite(raw)) return null;
   if (raw < 0) return null;
   return Math.round(raw);
+}
+
+export async function GET(req: NextRequest) {
+  try {
+    const { userId: clerkUserId } = await auth();
+    if (!clerkUserId) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    const user = await getUserByClerkId(clerkUserId);
+    const { searchParams } = new URL(req.url);
+    const limit = Math.min(Math.max(Number(searchParams.get('limit')) || 20, 1), 100);
+    const offset = Math.max(Number(searchParams.get('offset')) || 0, 0);
+
+    const cacheKey = makeCacheKey('calls', user.id, 'list', `${limit}`, `${offset}`);
+    const cached = await cacheGet<{ calls: unknown[]; total: number }>(cacheKey);
+    if (cached) {
+      return NextResponse.json(cached);
+    }
+
+    const [calls, total] = await Promise.all([
+      prisma.call.findMany({
+        where: { userId: user.id },
+        orderBy: { createdAt: 'desc' },
+        take: limit,
+        skip: offset,
+      }),
+      prisma.call.count({ where: { userId: user.id } }),
+    ]);
+
+    const result = { calls, total };
+    await cacheSet(cacheKey, result, 60);
+
+    return NextResponse.json(result);
+  } catch (error) {
+    const message = error instanceof Error ? error.message : 'Unknown error';
+    return NextResponse.json({ error: `Failed to list calls: ${message}` }, { status: 500 });
+  }
 }
 
 export async function POST(req: Request) {

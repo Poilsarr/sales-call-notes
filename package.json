@@ -9,7 +9,9 @@
     "lint": "next lint",
     "test": "vitest run",
     "test:watch": "vitest",
-    "postinstall": "prisma generate"
+    "e2e": "playwright test",
+    "postinstall": "prisma generate",
+    "perf:audit": "bash scripts/bundle-audit.sh"
   },
   "dependencies": {
     "@clerk/nextjs": "^5.0.0",
@@ -43,6 +45,7 @@
     "zod": "^3.25.76"
   },
   "devDependencies": {
+    "@playwright/test": "^1.61.0",
     "@testing-library/jest-dom": "^6.9.1",
     "@testing-library/react": "^16.3.2",
     "@types/fluent-ffmpeg": "^2.1.28",
