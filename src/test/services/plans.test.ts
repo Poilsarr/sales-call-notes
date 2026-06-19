@@ -15,8 +15,8 @@ describe("Plans Configuration", () => {
     expect(PLANS.free.price).toBe(0);
   });
 
-  it("pro plan should be $12 ($1200 in cents)", () => {
-    expect(PLANS.pro.price).toBe(1200);
+  it("pro plan should be $9 ($900 in cents)", () => {
+    expect(PLANS.pro.price).toBe(900);
   });
 
   it("business plan should be $29 ($2900 in cents)", () => {

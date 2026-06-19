@@ -87,8 +87,8 @@ export const PLANS: Record<PlanTier, PlanConfig> = {
   pro: {
     tier: "pro",
     name: "Pro",
-    price: 1200, // $12 in cents
-    priceLabel: "$12",
+    price: 900, // $9 in cents
+    priceLabel: "$9",
     period: "month",
     paddlePriceId: "pri_pro_monthly",
     uploadLimit: "unlimited",
