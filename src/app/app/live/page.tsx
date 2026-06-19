@@ -465,7 +465,7 @@ export default function LiveTranscriptionPage() {
             <Radio className="w-3.5 h-3.5" />
             Live transcription
           </div>
-          <h1 className="text-3xl font-semibold text-gray-900 mb-2">Capture a call in real time</h1>
+          <h1 className="text-3xl font-semibold text-white mb-2">Capture a call in real time</h1>
           <p className="text-zinc-500 max-w-2xl">
             Stream audio from your microphone and see captions appear instantly. The transcript is
             saved to your calls library when you stop.
@@ -502,7 +502,7 @@ export default function LiveTranscriptionPage() {
           >
             <div
               className={`w-24 h-24 rounded-full flex items-center justify-center transition-colors ${
-                isRecording ? 'bg-[#F26522]/15' : 'bg-black/[0.04]'
+                isRecording ? 'bg-[#F26522]/15' : 'bg-white/[0.04]'
               }`}
             >
               {isRecording ? (
@@ -511,12 +511,12 @@ export default function LiveTranscriptionPage() {
                   <Square className="relative w-9 h-9 text-[#F26522]" />
                 </div>
               ) : (
-                <Mic className="w-10 h-10 text-zinc-700" />
+                <Mic className="w-10 h-10 text-zinc-400" />
               )}
             </div>
           </motion.div>
 
-          <p className="text-2xl font-mono text-gray-900 mb-2">{formatDuration(duration)}</p>
+          <p className="text-2xl font-mono text-white mb-2">{formatDuration(duration)}</p>
           <p className="text-xs text-zinc-500 mb-6 max-w-md">
             {isRecording
               ? 'Listening — speak naturally. Captions appear below as you talk.'
@@ -557,7 +557,7 @@ export default function LiveTranscriptionPage() {
                 <Radio className="w-3.5 h-3.5" />
                 Live transcript
               </div>
-              <h2 className="text-lg font-medium text-gray-900">Caption stream</h2>
+              <h2 className="text-lg font-medium text-white">Caption stream</h2>
               <p className="text-sm text-zinc-500 mt-1">
                 Segments streamed from the active live transcription session.
               </p>
@@ -567,7 +567,7 @@ export default function LiveTranscriptionPage() {
                 type="button"
                 onClick={() => void copyTranscript()}
                 disabled={!canCopy}
-                className="inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium border border-black/10 text-gray-700 hover:bg-black/[0.03] disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                className="inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium border border-white/10 text-white/60 hover:bg-white/[0.05] disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
               >
                 {copyState === 'copied' ? (
                   <Check className="w-4 h-4 text-emerald-600" />
@@ -579,7 +579,7 @@ export default function LiveTranscriptionPage() {
             </div>
           </div>
 
-          <div className="rounded-2xl border border-black/5 bg-black/[0.02] p-1">
+          <div className="rounded-2xl border border-zinc-800/50 bg-zinc-800/20 p-1">
             <div
               ref={scrollRef}
               className="h-[420px] overflow-y-auto px-4 py-4 space-y-3"
@@ -603,7 +603,7 @@ export default function LiveTranscriptionPage() {
                   {entries.map((entry, index) => (
                     <div
                       key={`${entry.timestamp}-${index}`}
-                      className="rounded-xl bg-white border border-black/5 p-4 shadow-[0_1px_2px_rgba(0,0,0,0.02)]"
+                      className="rounded-xl bg-zinc-800/50 border border-zinc-700/50 p-4"
                     >
                       <div className="flex items-center justify-between gap-3 mb-1.5">
                         <span
@@ -617,17 +617,17 @@ export default function LiveTranscriptionPage() {
                           {new Date(entry.timestamp).toLocaleTimeString()}
                         </span>
                       </div>
-                      <p className="text-sm text-gray-800 leading-relaxed">{entry.text}</p>
+                      <p className="text-sm text-zinc-200 leading-relaxed">{entry.text}</p>
                     </div>
                   ))}
                   {interim ? (
-                    <div className="rounded-xl bg-amber-50 border border-amber-200/60 p-4">
+                    <div className="rounded-xl bg-amber-500/10 border border-amber-500/20 p-4">
                       <div className="flex items-center justify-between gap-3 mb-1.5">
                         <span className="text-[10px] uppercase tracking-[0.18em] text-amber-600">
                           Interim
                         </span>
                       </div>
-                      <p className="text-sm text-amber-900 leading-relaxed italic">{interim}</p>
+                      <p className="text-sm text-amber-300 leading-relaxed italic">{interim}</p>
                     </div>
                   ) : null}
                 </>
@@ -637,7 +637,7 @@ export default function LiveTranscriptionPage() {
 
           <div className="mt-4 flex items-center justify-between gap-3 flex-wrap text-xs text-zinc-500">
             <span>
-              Session: <span className="font-mono text-zinc-700">{sessionIdRef.current}</span>
+              Session: <span className="font-mono text-zinc-400">{sessionIdRef.current}</span>
             </span>
             <span>{entries.filter((entry) => entry.isFinal).length} final segments</span>
           </div>
@@ -656,7 +656,7 @@ export default function LiveTranscriptionPage() {
               <Save className="w-4 h-4 text-[#F26522]" />
             </div>
             <div className="flex-1">
-              <h2 className="text-base font-medium text-gray-900 mb-1">Session output</h2>
+              <h2 className="text-base font-medium text-white mb-1">Session output</h2>
               {isSaving ? (
                 <p className="text-sm text-zinc-500 inline-flex items-center gap-2">
                   <Loader2 className="w-3.5 h-3.5 animate-spin" />

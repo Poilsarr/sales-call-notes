@@ -34,7 +34,7 @@ export default function AppLayout({
   if (!isLoaded || !isSignedIn) return null;
 
   return (
-    <div className="flex h-screen bg-white">
+    <div className="flex h-screen bg-linear-black">
       <AppSidebar />
       <main className="flex-1 overflow-y-auto">
         <TrialBanner trialEndsAt={trialEndsAt} />
@@ -49,12 +49,12 @@ export default function AppLayout({
       </main>
       <Toaster
         position="top-right"
-        theme="light"
+        theme="dark"
         toastOptions={{
           style: {
-            background: '#ffffff',
-            color: '#111111',
-            border: '1px solid #e5e5e5',
+            background: '#141416',
+            color: '#ffffff',
+            border: '1px solid #1c1c20',
           },
         }}
       />
