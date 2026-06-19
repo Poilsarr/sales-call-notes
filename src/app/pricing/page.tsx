@@ -13,7 +13,7 @@ const plans = [
     cta: "Get Started", popular: false,
   },
   {
-    name: "Pro", price: "$12", period: "/month per user",
+    name: "Pro", price: "$9", period: "/month per user",
     desc: "For serious SDRs who need CRM integration.",
     features: ["1,200 transcription minutes/mo", "Unlimited AI summaries", "CRM export (HubSpot, Salesforce)", "Advanced analytics dashboard", "Priority support", "90-minute call limit", "Team workspace (up to 5)"],
     cta: "Start Free Trial", popular: true,
@@ -34,7 +34,7 @@ const plans = [
 
 const comparison = [
   ["Free tier minutes", "300/mo", "300/mo", "800/mo"],
-  ["Pro price", "$12/user/mo", "$8.33/user/mo", "$10/user/mo"],
+  ["Pro price", "$9/user/mo", "$8.33/user/mo", "$10/user/mo"],
   ["Business price", "$29/user/mo", "$19.99/user/mo", "$19/user/mo"],
   ["AI credits system", "No credits", "Limits on free", "Yes (20-50 pool)"],
   ["Local AI processing", "Yes", "No", "No"],

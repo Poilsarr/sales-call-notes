@@ -80,7 +80,7 @@ export default function Nav() {
 
           {/* Right Desktop */}
           <div className="hidden md:flex items-center gap-4">
-            <span className="hidden lg:inline text-[13px] text-gray-600">Serving 500+ SDR teams</span>
+            <span className="hidden lg:inline text-[13px] text-gray-600">Track every competitor mention</span>
             <LiveClock />
             {!mounted ? (
               <Link href="/sign-in" className="text-[13px] text-gray-600 hover:text-gray-900 transition-colors duration-300 font-medium">
