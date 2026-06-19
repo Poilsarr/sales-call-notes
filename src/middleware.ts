@@ -4,7 +4,7 @@ import type { NextRequest } from "next/server";
 import { rateLimitMiddleware } from "./middleware-rate-limit";
 import * as Sentry from "@sentry/nextjs";
 
-const isPublicApi = createRouteMatcher(["/api/webhooks/(.*)", "/api/paddle/webhook"]);
+const isPublicApi = createRouteMatcher(["/api/webhooks/(.*)", "/api/paddle/webhook", "/api/health"]);
 const isProtectedRoute = createRouteMatcher(["/api/(.*)", "/dashboard(.*)", "/app(.*)", "/team(.*)", "/integrations(.*)", "/settings(.*)"]);
 
 export default clerkMiddleware(async (auth, req: NextRequest) => {
