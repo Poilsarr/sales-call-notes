@@ -11,6 +11,7 @@ const links = [
   { href: "/features", label: "Features" },
   { href: "/integrations", label: "Integrations" },
   { href: "/pricing", label: "Pricing" },
+  { href: "/demo", label: "Live demo" },
 ];
 
 function LiveClock({ mobileId }: { mobileId?: string }) {
