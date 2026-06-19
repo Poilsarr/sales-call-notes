@@ -55,6 +55,9 @@ export default function Home() {
             <Link href="/pricing" className="text-[13px] text-gray-600 hover:text-gray-900 font-medium underline-offset-4 hover:underline">
               See pricing →
             </Link>
+            <Link href="/demo" className="text-[13px] text-gray-600 hover:text-gray-900 font-medium underline-offset-4 hover:underline">
+              See it live →
+            </Link>
           </div>
         </div>
       </section>
