@@ -57,6 +57,8 @@ const scrubValue = (value: unknown): unknown => {
 if (SENTRY_DSN) {
   Sentry.init({
     dsn: SENTRY_DSN,
+    release: process.env.VERCEL_GIT_COMMIT_SHA || process.env.SENTRY_RELEASE || "dev",
+    environment: process.env.VERCEL_ENV || process.env.SENTRY_ENV || process.env.NODE_ENV || "development",
     tracesSampleRate: TRACES_SAMPLE_RATE,
     debug: false,
     beforeSend(event) {
