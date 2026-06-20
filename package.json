@@ -11,7 +11,8 @@
     "test:watch": "vitest",
     "e2e": "playwright test",
     "postinstall": "prisma generate",
-    "perf:audit": "bash scripts/bundle-audit.sh"
+    "perf:audit": "bash scripts/bundle-audit.sh",
+    "bundle:proof": "./scripts/refresh-bundle-proof.sh"
   },
   "dependencies": {
     "@clerk/nextjs": "^5.0.0",
