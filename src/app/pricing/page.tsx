@@ -1,8 +1,6 @@
-"use client";
-
-import { useEffect, useRef } from "react";
 import Link from "next/link";
 import Nav from "@/components/nav";
+import RevealObserver from "@/components/reveal-observer";
 import { Sparkles, CheckCircle, ArrowRight, Zap } from "lucide-react";
 
 const plans = [
@@ -46,26 +44,10 @@ const comparison = [
 ];
 
 export default function PricingPage() {
-  const observerRef = useRef<IntersectionObserver | null>(null);
-
-  useEffect(() => {
-    observerRef.current = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((e) => {
-          if (e.isIntersecting) {
-            e.target.classList.add("is-visible");
-            observerRef.current?.unobserve(e.target);
-          }
-        });
-      }, { threshold: 0.1 }
-    );
-    document.querySelectorAll(".reveal").forEach((el) => observerRef.current?.observe(el));
-    return () => observerRef.current?.disconnect();
-  }, []);
-
   return (
     <main className="min-h-screen bg-white text-gray-900">
       <Nav />
+      <RevealObserver />
 
       {/* Hero */}
       <section className="pt-36 pb-16 sm:pt-40 sm:pb-20 px-5 sm:px-8 lg:px-12 bg-[#EFEFEF] overflow-hidden">
