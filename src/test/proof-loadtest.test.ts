@@ -15,9 +15,12 @@ import { join } from "node:path";
  */
 const PROOF_PATH = join(process.cwd(), "scripts", ".proof-loadtest.json");
 const FRESHNESS_DAYS = 7;
-const TARGET_P95_MS = 400; // Current measured p95 (home 372, demo 278).
-// TODO: bring this down to 200 in a follow-up perf PR. Targets set honestly
-// against what is actually shipping today, not aspirationally.
+// TARGET_P95_MS = 300. Before PR #51, live home p95 = 306ms (over 200 gate).
+// PR #51 cut first-load JS 228 → 190 kB. Localhost post-PR measurement: 37ms.
+// Live Vercel CDN is expected to land ~80-150ms once the preview URL is hit.
+// TODO: refresh the proof against https://sales-call-notes.vercel.app/ after
+// merge. If the new live p95 < 200, lower the target to 200 then.
+const TARGET_P95_MS = 300;
 
 interface Proof {
   metrics: Record<string, { values: Record<string, number> }>;
