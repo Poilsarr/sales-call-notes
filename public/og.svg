@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#0a0a0b"/>
+      <stop offset="100%" stop-color="#18181b"/>
+    </linearGradient>
+    <linearGradient id="brand" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#F26522"/>
+      <stop offset="100%" stop-color="#ff8a4c"/>
+    </linearGradient>
+  </defs>
+  <rect width="1200" height="630" fill="url(#bg)"/>
+  <!-- Brand mark -->
+  <g transform="translate(80, 80)">
+    <rect width="56" height="56" rx="14" fill="url(#brand)" transform="rotate(45 28 28)"/>
+    <text x="76" y="40" font-family="-apple-system,BlinkMacSystemFont,Inter,sans-serif" font-size="28" font-weight="600" fill="#ffffff">CallNote Pro</text>
+  </g>
+  <!-- Eyebrow -->
+  <text x="80" y="240" font-family="-apple-system,BlinkMacSystemFont,Inter,sans-serif" font-size="20" font-weight="500" letter-spacing="3" fill="#F26522" text-transform="uppercase">SALES CALL INTELLIGENCE</text>
+  <!-- Headline -->
+  <text x="80" y="320" font-family="-apple-system,BlinkMacSystemFont,Inter,sans-serif" font-size="76" font-weight="600" fill="#ffffff">Know the moment a</text>
+  <text x="80" y="410" font-family="-apple-system,BlinkMacSystemFont,Inter,sans-serif" font-size="76" font-weight="600" fill="#F26522">competitor enters the deal.</text>
+  <!-- Sub -->
+  <text x="80" y="475" font-family="-apple-system,BlinkMacSystemFont,Inter,sans-serif" font-size="26" font-weight="400" fill="#a1a1aa">Structured notes, action items, and a real-time</text>
+  <text x="80" y="510" font-family="-apple-system,BlinkMacSystemFont,Inter,sans-serif" font-size="26" font-weight="400" fill="#a1a1aa">competitive signal. From $9/mo after a free forever tier.</text>
+  <!-- CTA -->
+  <g transform="translate(80, 555)">
+    <rect width="220" height="56" rx="28" fill="#F26522"/>
+    <text x="110" y="36" font-family="-apple-system,BlinkMacSystemFont,Inter,sans-serif" font-size="20" font-weight="600" fill="#ffffff" text-anchor="middle">Start free →</text>
+  </g>
+  <!-- Right-side visual: stylized alert card -->
+  <g transform="translate(770, 200)">
+    <rect width="350" height="220" rx="18" fill="#18181b" stroke="#27272a"/>
+    <circle cx="32" cy="32" r="6" fill="#F26522"/>
+    <text x="50" y="38" font-family="ui-monospace,SFMono-Regular,monospace" font-size="14" fill="#71717a" letter-spacing="2">LIVE ALERT</text>
+    <text x="32" y="100" font-family="-apple-system,BlinkMacSystemFont,Inter,sans-serif" font-size="18" font-weight="600" fill="#ffffff">Competitor detected: Gong</text>
+    <text x="32" y="130" font-family="-apple-system,BlinkMacSystemFont,Inter,sans-serif" font-size="14" fill="#a1a1aa">Acme Corp / Discovery · confidence 0.96</text>
+    <text x="32" y="180" font-family="ui-monospace,SFMono-Regular,monospace" font-size="13" fill="#52525b">00:14:22  Sarah Chen  →  #deal-room-acme</text>
+  </g>
+  <!-- URL -->
+  <text x="1120" y="595" font-family="-apple-system,BlinkMacSystemFont,Inter,sans-serif" font-size="14" fill="#52525b" text-anchor="end">callnotepro.com</text>
+</svg>
