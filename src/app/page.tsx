@@ -1,11 +1,10 @@
-"use client";
-
-import { useState, useEffect } from "react";
-import { useUser, SignInButton } from "@clerk/nextjs";
 import Link from "next/link";
 import Nav from "@/components/nav";
-import { ArrowRight, Crosshair, Upload, BarChart3, Shield, Check } from "lucide-react";
+import { HeroCTA } from "@/components/hero-cta";
+import { Crosshair, Upload, BarChart3, Shield, Check, ArrowRight } from "lucide-react";
 
+// Server component — zero JS shipped for the static landing content.
+// Only the CTA island runs client-side.
 const capabilities = [
   { icon: Upload, title: "Upload or record", desc: "Drop an MP3, record in browser, or pipe from our Chrome extension. Whisper handles the rest." },
   { icon: Crosshair, title: "Track competitors", desc: "Every call is scanned for competitor names. You get a Slack ping the second Gong, Otter, or Chorus shows up in a deal." },
@@ -14,10 +13,6 @@ const capabilities = [
 ];
 
 export default function Home() {
-  const { user } = useUser();
-  const [mounted, setMounted] = useState(false);
-  useEffect(() => setMounted(true), []);
-
   return (
     <main className="min-h-screen bg-[#EFEFEF] text-gray-900">
       {/* HERO */}
@@ -35,23 +30,7 @@ export default function Home() {
             competitive signal. Upload, record, or capture from Google Meet. $9/mo after a free forever tier.
           </p>
           <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 sm:gap-5">
-            {mounted && user ? (
-              <Link href="/app/intelligence" className="group inline-flex items-center gap-2 bg-[#F26522] hover:bg-[#e05a1a] text-white text-[13px] sm:text-[14px] rounded-full pl-5 sm:pl-6 pr-2 py-2">
-                <span>Open Intelligence</span>
-                <span className="w-7 h-7 sm:w-8 sm:h-8 bg-white rounded-full flex items-center justify-center group-hover:rotate-45 transition-transform duration-500">
-                  <ArrowRight size={14} className="text-[#F26522]" />
-                </span>
-              </Link>
-            ) : (
-              <SignInButton mode="modal">
-                <button className="group inline-flex items-center gap-2 bg-[#F26522] hover:bg-[#e05a1a] text-white text-[13px] sm:text-[14px] rounded-full pl-5 sm:pl-6 pr-2 py-2">
-                  <span>Start free</span>
-                  <span className="w-7 h-7 sm:w-8 sm:h-8 bg-white rounded-full flex items-center justify-center group-hover:rotate-45 transition-transform duration-500">
-                    <ArrowRight size={14} className="text-[#F26522]" />
-                  </span>
-                </button>
-              </SignInButton>
-            )}
+            <HeroCTA />
             <Link href="/pricing" className="text-[13px] text-gray-600 hover:text-gray-900 font-medium underline-offset-4 hover:underline">
               See pricing →
             </Link>
