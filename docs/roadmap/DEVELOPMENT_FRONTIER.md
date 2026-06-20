@@ -12,11 +12,11 @@
 
 | Metric | Today | After Frontier |
 |---|---|---|
-| Spec completion | ~75% | 100% |
-| Honest "ships in prod" | ~70% | ~95% |
-| Working features (no mocks) | ~85% | ~98% |
+| Spec completion | ~78% | 100% |
+| Honest "ships in prod" | ~75% | ~95% |
+| Working features (no mocks) | ~88% | ~98% |
 | Open critical issues | 2 | 0 |
-| Test coverage | 59 test files | 30+ test files (exceeded) |
+| Test coverage | 59 test files / 498 tests | 30+ test files (exceeded) |
 | CI/CD | GitHub Actions | GitHub Actions |
 
 **7 Levels · 30+ work items · 12 explicit "do-not-break" checkpoints · 6 honest "gate" reviews**
@@ -61,6 +61,8 @@ The principle: **never advance a level with a known break, mock-leak, or uncommi
 | #57 | 2026-06-20 | chore(perf): bundle-size CI gate | 4 (regression guard) |
 | #58 | 2026-06-20 | feat(api): per-key rate limiting (60/600 req/min) | 5.3 hardening |
 | #59 | 2026-06-20 | feat(marketing): ROI calculator on / | 5.4 close |
+| #61 | 2026-06-21 | feat(api-docs): dedicated v1 public API docs page | 5.7 v1 + audit fix |
+
 
 ---
 
