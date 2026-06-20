@@ -1,6 +1,7 @@
 import Link from "next/link";
 import Nav from "@/components/nav";
 import SocialProof from "@/components/social-proof";
+import RoiCalculator from "@/components/roi-calculator";
 import { HeroCTA } from "@/components/hero-cta";
 import { Crosshair, Upload, BarChart3, Shield, Check, ArrowRight } from "lucide-react";
 
@@ -112,6 +113,9 @@ export default function Home() {
 
       {/* WHO IT'S FOR (social proof — honest, no fake brand names) */}
       <SocialProof />
+
+      {/* ROI CALCULATOR (honest math, all inputs user-controlled) */}
+      <RoiCalculator />
 
       {/* PRICING + CTA */}
       <section className="bg-white pt-16 sm:pt-20 lg:pt-28 pb-16 sm:pb-20 lg:pb-28">
