@@ -21,6 +21,12 @@ vi.mock("@/lib/audit-logger", () => ({
   logAuditAction: vi.fn(),
 }));
 
+// Mock the rate-limit lib so tests don't hit Redis and we control pass/deny.
+const checkApiKeyRateLimitMock = vi.fn();
+vi.mock("@/lib/api-rate-limit", () => ({
+  checkApiKeyRateLimit: (...args: unknown[]) => checkApiKeyRateLimitMock(...args),
+}));
+
 import { resolveApiKey } from "@/lib/resolve-api-key";
 import prisma from "@/lib/prisma";
 
@@ -44,6 +50,13 @@ const fakeRow = (overrides: Partial<{
 
 beforeEach(() => {
   vi.clearAllMocks();
+  mockPrisma.apiKey.update.mockResolvedValue(undefined);
+  // Default: rate limit allows.
+  checkApiKeyRateLimitMock.mockResolvedValue({
+    allowed: true,
+    remaining: 60,
+    resetAt: Date.now() + 60_000,
+  });
 });
 
 describe("resolveApiKey", () => {
@@ -74,8 +87,7 @@ describe("resolveApiKey", () => {
     expect(await resolveApiKey("Bearer cn_live_abcd1234efgh5678")).toBeNull();
   });
 
-  it("returns context on valid key + matching hash", async () => {
-    // Generate a real key, then plant its hash.
+  it("returns ok context on valid key + matching hash", async () => {
     const { generateApiKey } = await import("@/lib/api-key");
     const { raw, hash } = generateApiKey("test");
     mockPrisma.apiKey.findUnique.mockResolvedValueOnce({
@@ -86,12 +98,15 @@ describe("resolveApiKey", () => {
       hash,
       revokedAt: null,
     });
-    const ctx = await resolveApiKey(`Bearer ${raw}`);
-    expect(ctx).toEqual({
-      userId: "u_2",
-      keyId: "key_2",
-      scope: "read_write",
-      prefix: prefixOfRaw(raw),
+    const result = await resolveApiKey(`Bearer ${raw}`);
+    expect(result).toEqual({
+      kind: "ok",
+      context: {
+        userId: "u_2",
+        keyId: "key_2",
+        scope: "read_write",
+        prefix: prefixOfRaw(raw),
+      },
     });
   });
 
@@ -106,9 +121,50 @@ describe("resolveApiKey", () => {
       hash,
       revokedAt: null,
     });
-    // update() should NOT throw the request — we don't await it.
-    const ctx = await resolveApiKey(`Bearer ${raw}`);
-    expect(ctx?.userId).toBe("u_3");
+    const result = await resolveApiKey(`Bearer ${raw}`);
+    expect(result?.kind).toBe("ok");
+    if (result?.kind === "ok") {
+      expect(result.context.userId).toBe("u_3");
+    }
+  });
+
+  it("returns rate_limited when checkApiKeyRateLimit denies", async () => {
+    const { generateApiKey } = await import("@/lib/api-key");
+    const { raw, hash } = generateApiKey();
+    mockPrisma.apiKey.findUnique.mockResolvedValueOnce({
+      id: "key_4",
+      userId: "u_4",
+      prefix: prefixOfRaw(raw),
+      scope: "read",
+      hash,
+      revokedAt: null,
+    });
+    const resetAt = Date.now() + 30_000;
+    checkApiKeyRateLimitMock.mockResolvedValueOnce({
+      allowed: false,
+      remaining: 0,
+      resetAt,
+    });
+    const result = await resolveApiKey(`Bearer ${raw}`);
+    expect(result).toEqual({ kind: "rate_limited", resetAt });
+  });
+
+  it("passes keyId + scope to checkApiKeyRateLimit", async () => {
+    const { generateApiKey } = await import("@/lib/api-key");
+    const { raw, hash } = generateApiKey();
+    mockPrisma.apiKey.findUnique.mockResolvedValueOnce({
+      id: "key_5",
+      userId: "u_5",
+      prefix: prefixOfRaw(raw),
+      scope: "read_write",
+      hash,
+      revokedAt: null,
+    });
+    await resolveApiKey(`Bearer ${raw}`);
+    expect(checkApiKeyRateLimitMock).toHaveBeenCalledWith({
+      keyId: "key_5",
+      scope: "read_write",
+    });
   });
 });
 

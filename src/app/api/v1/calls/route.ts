@@ -14,10 +14,30 @@ import prisma from "@/lib/prisma";
  * Scope rules:
  *   read → may call GET
  *   read_write → may call any method
+ *
+ * Rate limiting:
+ *   Each API key is limited to 60 req/min (read) or 600 req/min (read_write).
+ *   Over-limit requests return 429 with a Retry-After header (seconds).
  */
 export async function GET(req: Request) {
   // 1. Try API key first (preserves Clerk session fallback).
-  const apiKey = await resolveApiKey(req.headers.get("authorization"));
+  const apiKeyResult = await resolveApiKey(req.headers.get("authorization"));
+
+  if (apiKeyResult && apiKeyResult.kind === "rate_limited") {
+    const retryAfterSec = Math.max(
+      1,
+      Math.ceil((apiKeyResult.resetAt - Date.now()) / 1000),
+    );
+    return NextResponse.json(
+      { error: "Rate limit exceeded" },
+      {
+        status: 429,
+        headers: { "Retry-After": String(retryAfterSec) },
+      },
+    );
+  }
+
+  const apiKey = apiKeyResult?.kind === "ok" ? apiKeyResult.context : null;
   let userId: string | null = null;
 
   if (apiKey) {
@@ -36,12 +56,12 @@ export async function GET(req: Request) {
   }
 
   // 2. Look up db userId from clerkId (api key already gave us db id).
-  let dbUserId = userId;
+  let dbUserId: string;
   if (apiKey) {
     dbUserId = apiKey.userId;
   } else {
     const { getUserByClerkId } = await import("@/lib/get-user");
-    const u = await getUserByClerkId(userId);
+    const u = await getUserByClerkId(userId!);
     dbUserId = u.id;
   }
 
