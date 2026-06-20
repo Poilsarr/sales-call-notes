@@ -1,0 +1,269 @@
+"use client";
+
+import { useEffect, useState } from "react";
+import { Key, Plus, Trash2, Copy, Loader2, AlertTriangle, Check } from "lucide-react";
+import { toast } from "sonner";
+
+/**
+ * API keys settings UI (Level 5.3 close — wire CRUD to /api/v1/keys).
+ *
+ * Flow:
+ *   1. List active keys via GET /api/v1/keys
+ *   2. Create via POST → modal shows the raw key + copy button + "shown only once" warning
+ *   3. Revoke via DELETE /api/v1/keys/[id]
+ *
+ * Scope selector: "read" (default) | "read_write"
+ */
+
+type KeyRow = {
+  id: string;
+  name: string;
+  prefix: string;
+  scope: "read" | "read_write";
+  lastUsedAt: string | null;
+  createdAt: string;
+};
+
+type CreatedKey = KeyRow & { raw: string };
+
+export default function APIKeysSettings() {
+  const [loading, setLoading] = useState(true);
+  const [keys, setKeys] = useState<KeyRow[]>([]);
+  const [creating, setCreating] = useState(false);
+  const [newName, setNewName] = useState("");
+  const [newScope, setNewScope] = useState<"read" | "read_write">("read");
+  const [justCreated, setJustCreated] = useState<CreatedKey | null>(null);
+  const [revokingId, setRevokingId] = useState<string | null>(null);
+
+  async function refresh() {
+    setLoading(true);
+    try {
+      const r = await fetch("/api/v1/keys");
+      if (!r.ok) throw new Error("Failed to load");
+      const data = await r.json();
+      setKeys(data.keys ?? []);
+    } catch (err) {
+      console.error(err);
+      toast.error("Could not load API keys");
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  useEffect(() => {
+    refresh();
+  }, []);
+
+  async function create(e: React.FormEvent) {
+    e.preventDefault();
+    if (!newName.trim()) {
+      toast.error("Name required");
+      return;
+    }
+    setCreating(true);
+    try {
+      const r = await fetch("/api/v1/keys", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ name: newName.trim(), scope: newScope }),
+      });
+      if (!r.ok) {
+        const err = await r.json().catch(() => ({}));
+        toast.error(err?.error || "Failed to create key");
+        return;
+      }
+      const created: CreatedKey = await r.json();
+      setJustCreated(created);
+      setNewName("");
+      setNewScope("read");
+      await refresh();
+    } finally {
+      setCreating(false);
+    }
+  }
+
+  async function revoke(id: string, name: string) {
+    if (!confirm(`Revoke "${name}"? Any service using this key will lose access immediately.`)) {
+      return;
+    }
+    setRevokingId(id);
+    try {
+      const r = await fetch(`/api/v1/keys/${id}`, { method: "DELETE" });
+      if (!r.ok) {
+        const err = await r.json().catch(() => ({}));
+        toast.error(err?.error || "Failed to revoke");
+        return;
+      }
+      toast.success("Key revoked");
+      await refresh();
+    } finally {
+      setRevokingId(null);
+    }
+  }
+
+  async function copy(raw: string) {
+    try {
+      await navigator.clipboard.writeText(raw);
+      toast.success("Copied to clipboard");
+    } catch {
+      toast.error("Copy failed — select the text manually");
+    }
+  }
+
+  if (loading) {
+    return (
+      <div className="p-6 rounded-2xl bg-linear-surface border border-linear-secondary flex items-center gap-2 text-white/50">
+        <Loader2 className="w-4 h-4 animate-spin" /> Loading API keys…
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-6">
+      {/* Create form */}
+      <form
+        onSubmit={create}
+        className="p-6 rounded-2xl bg-linear-surface border border-linear-secondary"
+      >
+        <div className="flex items-center gap-3 mb-4">
+          <Plus className="w-5 h-5 text-linear-indigo" />
+          <h2 className="text-lg font-medium">Create a new key</h2>
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <label className="space-y-2 md:col-span-2">
+            <span className="text-sm text-white/60">Name</span>
+            <input
+              type="text"
+              value={newName}
+              onChange={(e) => setNewName(e.target.value)}
+              maxLength={64}
+              placeholder="e.g. Zapier integration"
+              className="w-full px-3 py-2 rounded-lg bg-linear-black border border-linear-secondary text-white text-sm"
+            />
+          </label>
+          <label className="space-y-2">
+            <span className="text-sm text-white/60">Scope</span>
+            <select
+              value={newScope}
+              onChange={(e) => setNewScope(e.target.value as "read" | "read_write")}
+              className="w-full px-3 py-2 rounded-lg bg-linear-black border border-linear-secondary text-white text-sm"
+            >
+              <option value="read">Read only</option>
+              <option value="read_write">Read + Write</option>
+            </select>
+          </label>
+        </div>
+        <div className="mt-4 flex items-center gap-3">
+          <button
+            type="submit"
+            disabled={creating}
+            className="px-4 py-2 rounded-lg bg-linear-indigo text-white text-sm font-medium flex items-center gap-2 disabled:opacity-40"
+          >
+            {creating ? <Loader2 className="w-4 h-4 animate-spin" /> : <Key className="w-4 h-4" />}
+            Generate key
+          </button>
+          <span className="text-xs text-white/40">
+            You will see the full key once. We store only a hash.
+          </span>
+        </div>
+      </form>
+
+      {/* Just-created modal — raw key reveal */}
+      {justCreated && (
+        <div className="p-6 rounded-2xl bg-linear-surface border border-[#F26522]/40">
+          <div className="flex items-center gap-3 mb-3">
+            <AlertTriangle className="w-5 h-5 text-[#F26522]" />
+            <h3 className="text-base font-medium">
+              Copy &quot;{justCreated.name}&quot; now — shown only once
+            </h3>
+          </div>
+          <div className="flex items-stretch gap-2">
+            <code className="flex-1 px-3 py-2 rounded-lg bg-linear-black border border-linear-secondary text-[#F26522] text-xs font-mono break-all select-all">
+              {justCreated.raw}
+            </code>
+            <button
+              type="button"
+              onClick={() => copy(justCreated.raw)}
+              className="px-3 py-2 rounded-lg bg-linear-indigo text-white text-sm flex items-center gap-2 shrink-0"
+            >
+              <Copy className="w-4 h-4" /> Copy
+            </button>
+            <button
+              type="button"
+              onClick={() => setJustCreated(null)}
+              className="px-3 py-2 rounded-lg bg-white/5 text-white/70 text-sm shrink-0"
+              aria-label="Dismiss"
+            >
+              I&apos;ve saved it
+            </button>
+          </div>
+          <p className="text-xs text-white/40 mt-3">
+            Prefix <code className="font-mono">{justCreated.prefix}</code> · Scope {justCreated.scope}.
+            If you lose this, you&apos;ll need to revoke and create a new one.
+          </p>
+        </div>
+      )}
+
+      {/* Existing keys list */}
+      <div className="p-6 rounded-2xl bg-linear-surface border border-linear-secondary">
+        <div className="flex items-center gap-3 mb-4">
+          <Key className="w-5 h-5 text-linear-indigo" />
+          <h2 className="text-lg font-medium">Active keys</h2>
+          <span className="text-xs text-white/40 ml-auto">{keys.length} active</span>
+        </div>
+        {keys.length === 0 ? (
+          <p className="text-sm text-white/40">No API keys yet. Create one above.</p>
+        ) : (
+          <div className="space-y-2">
+            {keys.map((k) => (
+              <div
+                key={k.id}
+                className="flex items-center gap-3 p-3 rounded-lg bg-linear-black border border-linear-secondary"
+              >
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2">
+                    <span className="text-sm font-medium text-white truncate">{k.name}</span>
+                    <span
+                      className={`text-[10px] font-mono uppercase tracking-wider px-2 py-0.5 rounded-full ${
+                        k.scope === "read_write"
+                          ? "bg-[#F26522]/10 text-[#F26522] border border-[#F26522]/20"
+                          : "bg-white/5 text-white/50 border border-white/10"
+                      }`}
+                    >
+                      {k.scope === "read_write" ? "R/W" : "Read"}
+                    </span>
+                  </div>
+                  <div className="text-xs text-white/40 font-mono mt-1">
+                    {k.prefix}…
+                    {" · last used "}
+                    {k.lastUsedAt ? new Date(k.lastUsedAt).toLocaleString() : "never"}
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => revoke(k.id, k.name)}
+                  disabled={revokingId === k.id}
+                  className="p-2 rounded-lg bg-white/5 text-white/60 hover:text-red-400 hover:bg-red-400/10 disabled:opacity-40"
+                  aria-label={`Revoke ${k.name}`}
+                >
+                  {revokingId === k.id ? (
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                  ) : (
+                    <Trash2 className="w-4 h-4" />
+                  )}
+                </button>
+              </div>
+            ))}
+          </div>
+        )}
+        <details className="mt-4 text-xs text-white/40">
+          <summary className="cursor-pointer hover:text-white/60">How to use</summary>
+          <pre className="mt-2 p-3 rounded bg-linear-black border border-linear-secondary text-white/70 font-mono overflow-x-auto">
+{`curl -H "Authorization: Bearer ${keys[0]?.prefix ?? "cn_live_..."}YOUR_SECRET" \\
+     https://callnotepro.com/api/v1/calls`}
+          </pre>
+        </details>
+      </div>
+    </div>
+  );
+}
