@@ -142,3 +142,12 @@ npx lighthouse http://localhost:3000 --view
 ```
 
 When all 6 pass, **GATE 5 is closed**. Move to LEVEL 6.
+
+
+---
+
+## Status (post PRs #42–#64)
+
+**PARTIAL** — 5 of 7 tasks shipped (branding, public API, marketing, onboarding, docs). SSO blocked on Clerk Enterprise; pricing live blocked on Paddle IDs.
+
+Last verified: 2026-06-21. See `docs/roadmap/DEVELOPMENT_FRONTIER.md` for the master list of shipped PRs.

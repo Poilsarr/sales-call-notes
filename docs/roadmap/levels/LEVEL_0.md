@@ -592,3 +592,12 @@ grep -rn "// TODO: REAL" src/ extension/ | wc -l
 ```
 
 When all 6 pass, **GATE 0 is closed**. Move to LEVEL 1.
+
+
+---
+
+## Status (post PRs #42–#64)
+
+**SHIPPED (with one external-blocked item)** — 6 of 7 tasks shipped. OpenAI quota $$ blocks real end-to-end; Groq fallback proven (PR #45).
+
+Last verified: 2026-06-21. See `docs/roadmap/DEVELOPMENT_FRONTIER.md` for the master list of shipped PRs.

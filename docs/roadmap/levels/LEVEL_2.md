@@ -183,3 +183,12 @@ grep -rn "// TODO: REAL" src/ | wc -l
 ```
 
 When all 6 pass, **GATE 2 is closed**. Move to LEVEL 3.
+
+
+---
+
+## Status (post PRs #42–#64)
+
+**PARTIAL** — 5 of 7 tasks shipped (knowledge graph, analytics endpoints). Real diarization BLOCKED on pyannote/Deepgram key.
+
+Last verified: 2026-06-21. See `docs/roadmap/DEVELOPMENT_FRONTIER.md` for the master list of shipped PRs.
