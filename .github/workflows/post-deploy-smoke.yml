@@ -1,0 +1,42 @@
+name: Post-deploy smoke
+
+# Runs scripts/smoke-test.sh against the live URL after Vercel
+# finishes deploying. Triggered via workflow_dispatch (manual
+# button in the Actions tab) so deploys aren't blocked by
+# Vercel preview-deploy timing quirks.
+#
+# Wire to Vercel "Deploy Hook" webhook if you want automatic
+# runs on every push to main.
+
+on:
+  workflow_dispatch:
+    inputs:
+      base_url:
+        description: "Base URL to smoke (default: prod)"
+        required: false
+        default: "https://callnotepro.com"
+        type: string
+
+concurrency:
+  group: post-deploy-smoke-${{ inputs.base_url || 'prod' }}
+  cancel-in-progress: true
+
+jobs:
+  smoke:
+    name: Hit live URL
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Smoke test live endpoints
+        env:
+          BASE_URL: ${{ inputs.base_url || 'https://callnotepro.com' }}
+        run: bash scripts/smoke-test.sh
+
+      - name: Report (always)
+        if: always()
+        run: |
+          echo "::notice::Smoke run finished. Exit code: $?"
+          echo "URL tested: ${{ inputs.base_url || 'https://callnotepro.com' }}"
