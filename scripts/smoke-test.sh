@@ -61,7 +61,7 @@ check "landing"              "/"                          "200"
 check "demo"                 "/demo"                      "200"
 check "pricing"              "/pricing"                   "200"
 check "features"             "/features"                  "200"
-check "integrations"         "/integrations"              "200"
+check "integrations"         "/integrations"              "307"  # auth-gated, redirect to sign-in
 check "sign-in"              "/sign-in"                   "200"
 check "sign-up"              "/sign-up"                   "200"
 check "privacy"              "/privacy"                   "200"

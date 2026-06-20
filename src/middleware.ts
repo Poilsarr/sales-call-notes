@@ -10,7 +10,7 @@ const isPublicApi = createRouteMatcher([
   "/api/health",
   "/api/v1/(.*)", // public API: auth via API key in Authorization header
 ]);
-const isProtectedRoute = createRouteMatcher(["/api/(.*)", "/dashboard(.*)", "/app(.*)", "/team(.*)", "/integrations(.*)", "/settings(.*)"]);
+const isProtectedRoute = createRouteMatcher(["/api/(.*)", "/dashboard(.*)", "/app(.*)", "/team(.*)", "/integrations(.*)", "/settings(.*)", "/billing(.*)"]);
 
 export default clerkMiddleware(async (auth, req: NextRequest) => {
   try {
