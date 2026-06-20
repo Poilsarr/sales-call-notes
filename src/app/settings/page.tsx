@@ -5,6 +5,7 @@ import { useAuth } from "@clerk/nextjs";
 import { useRouter, useSearchParams } from "next/navigation";
 import Nav from "@/components/nav";
 import TeamBrandingForm from "@/components/team-branding-form";
+import APIKeysSettings from "@/components/api-keys-settings";
 import { Calendar, Link2, CheckCircle, Loader2, Code, Download, Trash2, AlertTriangle, ShieldCheck } from "lucide-react";
 import { toast } from "sonner";
 
@@ -186,6 +187,14 @@ export default function SettingsPage() {
             >
               Team
             </button>
+            <button
+              onClick={() => router.replace("/settings?tab=api-keys")}
+              className={`px-4 py-2 rounded-lg text-xs font-medium transition ${
+                tab === "api-keys" ? "bg-white text-linear-black" : "bg-white/5 text-white/60 hover:text-white"
+              }`}
+            >
+              API Keys
+            </button>
           </div>
         </div>
 
@@ -193,6 +202,8 @@ export default function SettingsPage() {
           envPanel
         ) : tab === "team" ? (
           <TeamBrandingForm />
+        ) : tab === "api-keys" ? (
+          <APIKeysSettings />
         ) : (
           <div className="space-y-6">
             <div className="p-6 rounded-2xl bg-linear-surface border border-linear-secondary">
