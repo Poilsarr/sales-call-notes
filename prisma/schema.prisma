@@ -32,6 +32,7 @@ model User {
   assignedCalls       Call[]   @relation("callAssignments")
   comments            CallComment[]
   auditLogs           AuditLog[]
+  apiKeys             ApiKey[]
   createdAt           DateTime @default(now())
   updatedAt           DateTime @updatedAt
 
@@ -286,4 +287,21 @@ model AuditLog {
   @@index([userId])
   @@index([action])
   @@index([createdAt])
+}
+
+model ApiKey {
+  id         String    @id @default(cuid())
+  userId     String
+  user       User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  name       String    // human label, e.g. "Zapier integration"
+  prefix     String    @unique // first 12 chars of the key, e.g. "cn_live_abcd"
+  hash       String    // sha-256 of the full key (never store the raw key)
+  scope      String    @default("read") // "read" | "read_write"
+  lastUsedAt DateTime?
+  revokedAt  DateTime?
+  createdAt  DateTime  @default(now())
+
+  @@index([userId])
+  @@index([prefix])
+  @@index([revokedAt])
 }
