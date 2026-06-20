@@ -1,9 +1,10 @@
 import type { Metadata } from "next";
-import Link from "next/link";
-import { ClerkProvider } from "@clerk/nextjs";
 import localFont from "next/font/local";
-import { Analytics } from "@vercel/analytics/next";
+import { ClerkProvider } from "@clerk/nextjs";
+import Link from "next/link";
+import { Analytics } from "@vercel/analytics/react";
 import { SpeedInsights } from "@vercel/speed-insights/next";
+import { productJsonLd } from "@/lib/seo";
 import "./globals.css";
 
 const geistSans = localFont({
@@ -19,7 +20,10 @@ const geistMono = localFont({
 });
 
 export const metadata: Metadata = {
-  title: "CallNote Pro — AI Sales Call Notes for SDRs",
+  title: {
+    default: "CallNote Pro — AI Sales Call Notes for SDRs",
+    template: "%s · CallNote Pro",
+  },
   description: "Upload your call recording. Get summary, action items, and CRM-ready notes in seconds. Built for the modern SDR.",
   manifest: "/manifest.json",
   icons: {
@@ -46,13 +50,41 @@ export const metadata: Metadata = {
     siteName: "CallNote Pro",
     type: "website",
     locale: "en_US",
+    images: [
+      {
+        url: "/og.png",
+        width: 1200,
+        height: 630,
+        alt: "CallNote Pro — Know the moment a competitor enters the deal.",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "CallNote Pro — AI Sales Call Notes for SDRs",
+    description: "Upload your call recording. Get summary, action items, and CRM-ready notes in seconds. Built for the modern SDR.",
+    images: ["/og.png"],
   },
   appleWebApp: { capable: true, title: "CallNote Pro", statusBarStyle: "default" },
+  alternates: {
+    canonical: "https://callnotepro.com",
+  },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: { index: true, follow: true, "max-snippet": -1, "max-image-preview": "large" },
+  },
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en">
+      <head>
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: productJsonLd() }}
+        />
+      </head>
       <body className={`${geistSans.variable} ${geistMono.variable} font-sans antialiased bg-white text-gray-900`}>
         <div className="noise-overlay" />
         <ClerkProvider signInUrl="/sign-in" signUpUrl="/sign-up" afterSignUpUrl="/app" afterSignInUrl="/app">
