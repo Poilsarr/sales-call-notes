@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useAuth } from "@clerk/nextjs";
 import { useRouter, useSearchParams } from "next/navigation";
 import Nav from "@/components/nav";
+import TeamBrandingForm from "@/components/team-branding-form";
 import { Calendar, Link2, CheckCircle, Loader2, Code, Download, Trash2, AlertTriangle, ShieldCheck } from "lucide-react";
 import { toast } from "sonner";
 
@@ -177,11 +178,21 @@ export default function SettingsPage() {
             >
               CRM Env Vars
             </button>
+            <button
+              onClick={() => router.replace("/settings?tab=team")}
+              className={`px-4 py-2 rounded-lg text-xs font-medium transition ${
+                tab === "team" ? "bg-white text-linear-black" : "bg-white/5 text-white/60 hover:text-white"
+              }`}
+            >
+              Team
+            </button>
           </div>
         </div>
 
         {tab === "crm" ? (
           envPanel
+        ) : tab === "team" ? (
+          <TeamBrandingForm />
         ) : (
           <div className="space-y-6">
             <div className="p-6 rounded-2xl bg-linear-surface border border-linear-secondary">
