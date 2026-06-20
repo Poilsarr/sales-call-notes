@@ -141,3 +141,12 @@ npx tsc --noEmit && npm test
 ```
 
 When all 6 pass, **GATE 1 is closed**. Move to LEVEL 2.
+
+
+---
+
+## Status (post PRs #42–#64)
+
+**SHIPPED** — All 7 tasks shipped. RBAC, GDPR, action items, audit, webhooks all live (PR #44).
+
+Last verified: 2026-06-21. See `docs/roadmap/DEVELOPMENT_FRONTIER.md` for the master list of shipped PRs.

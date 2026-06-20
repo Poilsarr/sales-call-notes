@@ -148,3 +148,12 @@ After beta ships, return to roadmap. Add to a v2 backlog:
 - HIPAA
 
 These are explicitly NOT in the frontier. See `DEVELOPMENT_FRONTIER.md` "Honest Tradeoffs" section.
+
+
+---
+
+## Status (post PRs #42–#64)
+
+**SHIPPED (with one external-blocked item)** — 6 of 7 tasks shipped. Neon paid plan blocks database backups (6.1).
+
+Last verified: 2026-06-21. See `docs/roadmap/DEVELOPMENT_FRONTIER.md` for the master list of shipped PRs.

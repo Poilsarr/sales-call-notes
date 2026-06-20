@@ -141,3 +141,12 @@ grep -rE "process.env\.[A-Z_]+_(SECRET|TOKEN|KEY)" src/ | grep -v ".test." | gre
 ```
 
 When all 6 pass, **GATE 3 is closed**. Move to LEVEL 4.
+
+
+---
+
+## Status (post PRs #42–#64)
+
+**PARTIAL** — 5 of 7 tasks shipped (Slack, Google Calendar, integration test endpoint). OAuth partial, meeting bot BLOCKED on Zoom/Meet/Teams dev accts.
+
+Last verified: 2026-06-21. See `docs/roadmap/DEVELOPMENT_FRONTIER.md` for the master list of shipped PRs.

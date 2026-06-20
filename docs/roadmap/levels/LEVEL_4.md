@@ -167,3 +167,12 @@ npm run perf:audit
 ```
 
 When all 6 pass, **GATE 4 is closed**. Move to LEVEL 5.
+
+
+---
+
+## Status (post PRs #42–#64)
+
+**SHIPPED** — 6 of 7 tasks shipped (k6, bundle gate, Sentry, smoke test). Lighthouse added in PR #63. E2E tests partial.
+
+Last verified: 2026-06-21. See `docs/roadmap/DEVELOPMENT_FRONTIER.md` for the master list of shipped PRs.
