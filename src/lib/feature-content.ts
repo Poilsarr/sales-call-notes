@@ -222,7 +222,7 @@ export const featureContent: Record<number, FeatureContent> = {
       { label: "Auth", value: "API key on Pro, OAuth on Business" },
     ],
     meta: [
-      { label: "Spec", value: "OpenAPI 3.1 spec published" },
+      { label: "Spec", value: "Documented at /api-docs/v1" },
       { label: "SLA", value: "99.9% webhook delivery, 3x retry" },
     ],
   },
