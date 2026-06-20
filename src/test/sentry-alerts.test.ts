@@ -1,6 +1,7 @@
 import { describe, it, expect } from "vitest";
-import { readFileSync, existsSync } from "node:fs";
+import { existsSync } from "node:fs";
 import { join } from "node:path";
+import { execFileSync } from "node:child_process";
 
 /**
  * Sentry alert generator (Level 6.4) — pin the catalog.
@@ -12,19 +13,16 @@ import { join } from "node:path";
 const SCRIPT_PATH = join(process.cwd(), "scripts", "sentry-alerts.mjs");
 const DOCS_PATH = join(process.cwd(), "docs", "operations", "ALERTS.md");
 
-function loadCatalog() {
-  if (!existsSync(SCRIPT_PATH)) {
-    throw new Error(`Missing ${SCRIPT_PATH}`);
-  }
-  // Strip the JSON.stringify console.log line and re-execute logic.
-  // We import the module via dynamic eval to avoid spawning child processes.
-  // (Module is a .mjs; Node's child_process keeps the test deterministic.)
-  const src = readFileSync(SCRIPT_PATH, "utf8");
-  // Quick + dirty: pull out the RULES const literal via regex.
-  const match = src.match(/const RULES = (\[[\s\S]*?\n\]);/);
-  if (!match) throw new Error("Could not find RULES const in sentry-alerts.mjs");
-  // eslint-disable-next-line no-new-func
-  return Function(`return (${match[1]});`)();
+function loadCatalog(): any[] {
+  // Spawn the script in a clean node process — guaranteed identical parser
+  // behavior in CI and locally, no regex brittleness.
+  const stdout = execFileSync("node", [SCRIPT_PATH], {
+    cwd: process.cwd(),
+    encoding: "utf8",
+    stdio: ["ignore", "pipe", "pipe"],
+  });
+  const parsed = JSON.parse(stdout);
+  return (parsed.catalog ?? parsed.rules ?? []) as any[];
 }
 
 describe("sentry-alerts.mjs", () => {
