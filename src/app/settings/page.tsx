@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { useAuth } from "@clerk/nextjs";
 import { useRouter, useSearchParams } from "next/navigation";
 import Nav from "@/components/nav";
@@ -27,52 +27,132 @@ export default function SettingsPage() {
   const [deleting, setDeleting] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(false);
 
-  const envPanel = useMemo(() => {
+  // CRM credential status (lightweight probe — server returns configuredProviders only)
+  const [credentialStatus, setCredentialStatus] = useState<Record<string, boolean> | null>(null);
+  const [credentialChecking, setCredentialChecking] = useState(true);
+
+  useEffect(() => {
+    if (tab !== "crm") return;
+    let cancelled = false;
+    setCredentialChecking(true);
+    fetch("/api/integrations", { cache: "no-store" })
+      .then(async (res) => {
+        if (!res.ok) return null;
+        try {
+          return await res.json();
+        } catch {
+          return null;
+        }
+      })
+      .then((data) => {
+        if (cancelled || !data) return;
+        setCredentialStatus(data.configuredProviders ?? null);
+      })
+      .catch(() => {
+        /* silent — fall through to "Not set" */
+      })
+      .finally(() => {
+        if (!cancelled) setCredentialChecking(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [tab]);
+
+  const renderCredentialRow = (provider: string, label: string) => {
+    const ok = credentialStatus?.[provider];
+    const isChecking = credentialChecking && ok === undefined;
     return (
-      <div className="space-y-6">
-        <div className="p-6 rounded-2xl bg-linear-surface border border-linear-secondary">
-          <div className="flex items-start justify-between mb-6">
-            <div>
-              <div className="flex items-center gap-3 mb-2">
-                <Code className="w-5 h-5 text-linear-indigo" />
-                <h2 className="text-lg font-medium">CRM Sync (Environment Variables)</h2>
-              </div>
-              <p className="text-sm text-white/50">
-                Add the required OAuth credentials for HubSpot and/or Salesforce. After updating your env vars, reconnect from the Integrations page.
-              </p>
+      <div className="flex items-center justify-between py-2 border-b border-white/5 last:border-b-0">
+        <span className="text-sm text-white/70">{label}</span>
+        {isChecking ? (
+          <span className="text-[11px] text-white/40 flex items-center gap-1.5">
+            <Loader2 className="w-3 h-3 animate-spin" /> Checking…
+          </span>
+        ) : ok ? (
+          <span className="inline-flex items-center gap-1.5 text-[11px] font-medium text-emerald-400">
+            <CheckCircle className="w-3 h-3" /> Configured
+          </span>
+        ) : (
+          <span className="inline-flex items-center gap-1.5 text-[11px] font-medium text-amber-400">
+            <AlertTriangle className="w-3 h-3" /> Not set
+          </span>
+        )}
+      </div>
+    );
+  };
+
+  const envPanel = (
+    <div className="space-y-6">
+      <div className="p-6 rounded-2xl bg-linear-surface border border-linear-secondary">
+        <div className="flex items-start justify-between mb-6">
+          <div>
+            <div className="flex items-center gap-3 mb-2">
+              <Code className="w-5 h-5 text-linear-indigo" />
+              <h2 className="text-lg font-medium">CRM Sync (Environment Variables)</h2>
             </div>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <EnvItem
-              title="HubSpot"
-              items={[
-                "HUBSPOT_CLIENT_ID",
-                "HUBSPOT_CLIENT_SECRET",
-              ]}
-            />
-            <EnvItem
-              title="Salesforce"
-              items={[
-                "SALESFORCE_CLIENT_ID",
-                "SALESFORCE_CLIENT_SECRET",
-                "SALESFORCE_AUTH_URL (optional, defaults to login.salesforce.com)",
-              ]}
-            />
-          </div>
-
-          <div className="mt-5 p-4 rounded-xl bg-white/5 border border-white/5">
-            <p className="text-sm text-white/70">
-              Redirect URI used for OAuth: <span className="text-white/90">/integrations</span>
-            </p>
-            <p className="text-xs text-white/40 mt-2">
-              Tip: keep <span className="text-white/60">NEXT_PUBLIC_APP_URL</span> set so OAuth redirects correctly.
+            <p className="text-sm text-white/50">
+              Add the required OAuth credentials for HubSpot and/or Salesforce. After updating your env vars, reconnect from the Integrations page.
             </p>
           </div>
         </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <EnvItem
+            title="HubSpot"
+            items={[
+              "HUBSPOT_CLIENT_ID",
+              "HUBSPOT_CLIENT_SECRET",
+            ]}
+          />
+          <EnvItem
+            title="Salesforce"
+            items={[
+              "SALESFORCE_CLIENT_ID",
+              "SALESFORCE_CLIENT_SECRET",
+              "SALESFORCE_AUTH_URL (optional, defaults to login.salesforce.com)",
+            ]}
+          />
+        </div>
+
+        <div className="mt-6 p-4 rounded-xl bg-white/5 border border-white/5">
+          <h3 className="text-sm font-medium mb-3">Credential status</h3>
+          {renderCredentialRow("hubspot", "HubSpot")}
+          {renderCredentialRow("salesforce", "Salesforce")}
+          <p className="text-[11px] text-white/40 mt-3">
+            Status reflects server env vars, not your local .env. After updating Vercel env vars, restart the deployment or wait for redeploy.
+          </p>
+        </div>
+
+        <div className="mt-5 p-4 rounded-xl bg-white/5 border border-white/5">
+          <p className="text-sm text-white/70">
+            Redirect URI used for OAuth: <span className="text-white/90">/integrations</span>
+          </p>
+          <p className="text-xs text-white/40 mt-2">
+            Tip: keep <span className="text-white/60">NEXT_PUBLIC_APP_URL</span> set so OAuth redirects correctly.
+          </p>
+        </div>
+
+        <div className="mt-5 flex flex-wrap items-center gap-3">
+          <a
+            href="/integrations"
+            className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-[#F26522] hover:bg-[#e05a1a] text-white text-xs font-semibold transition"
+          >
+            <Link2 className="w-3.5 h-3.5" />
+            Open Integrations page
+          </a>
+          <a
+            href="https://vercel.com/dashboard"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-xs text-white/50 hover:text-white underline underline-offset-2"
+          >
+            Manage Vercel env vars →
+          </a>
+        </div>
       </div>
-    );
-  }, []);
+    </div>
+  );
 
   const connectCalendar = async () => {
     setConnecting(true);

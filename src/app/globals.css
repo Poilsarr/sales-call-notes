@@ -57,11 +57,20 @@
   }
 
   .doppel-outer {
-    @apply p-1.5 rounded-[2rem] ring-1 ring-white/[0.04] bg-white/[0.02];
+    @apply p-1.5 rounded-[2rem] ring-1 ring-black/[0.06] bg-white;
   }
 
   .doppel-inner {
-    @apply rounded-[calc(2rem-0.375rem)] bg-zinc-900/80 shadow-[inset_0_1px_1px_rgba(255,255,255,0.04)];
+    @apply rounded-[calc(2rem-0.375rem)] bg-white shadow-[inset_0_1px_0_rgba(0,0,0,0.04),0_1px_2px_rgba(0,0,0,0.04)];
+  }
+
+  /* Dark-surface variant for settings/dashboard pages that use the linear-black bg. */
+  .doppel-outer-dark {
+    @apply p-1.5 rounded-[2rem] ring-1 ring-white/[0.06] bg-white/[0.02];
+  }
+
+  .doppel-inner-dark {
+    @apply rounded-[calc(2rem-0.375rem)] bg-linear-surface border border-linear-secondary shadow-[inset_0_1px_1px_rgba(255,255,255,0.04)];
   }
 
   .btn-island {

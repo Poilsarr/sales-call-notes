@@ -7,6 +7,24 @@ vi.mock('@clerk/nextjs', () => ({
   useUser: () => ({
     user: { id: 'user_123' },
   }),
+  useAuth: () => ({
+    isLoaded: true,
+    isSignedIn: true,
+    userId: 'user_123',
+  }),
+  UserButton: () => <div data-testid="user-button-mock" />,
+  SignInButton: ({ children }: { children?: React.ReactNode }) => <>{children}</>,
+  SignOutButton: ({ children }: { children?: React.ReactNode }) => <>{children}</>,
+  SignUpButton: ({ children }: { children?: React.ReactNode }) => <>{children}</>,
+  ClerkProvider: ({ children }: { children?: React.ReactNode }) => <>{children}</>,
+}));
+
+vi.mock('next/link', () => ({
+  default: ({ children, href, ...rest }: any) => (
+    <a href={href} {...rest}>
+      {children}
+    </a>
+  ),
 }));
 
 describe('DashboardPage', () => {

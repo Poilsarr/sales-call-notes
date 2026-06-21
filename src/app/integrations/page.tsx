@@ -334,7 +334,9 @@ function IntegrationsContent() {
                                   <AlertCircle size={15} />
                                   <span>Credentials not set</span>
                                 </div>
-                                <p className="text-[11px] text-gray-400 mt-0.5">Add OAuth env vars to enable.</p>
+                                <p className="text-[11px] text-gray-400 mt-0.5">
+                                  <Link href="/settings?tab=crm" className="underline underline-offset-2 hover:text-gray-600">Add OAuth credentials</Link> to enable.
+                                </p>
                               </>
                             )}
                           </div>

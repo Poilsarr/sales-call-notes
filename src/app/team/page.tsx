@@ -57,22 +57,46 @@ export default function TeamPage() {
   const fetchMembers = async () => {
     try {
       const res = await fetch("/api/team");
-      const data = await res.json();
+      let data: any = null;
+      try {
+        data = await res.json();
+      } catch {
+        /* empty body */
+      }
       if (res.ok) {
-        setMembers(data.members ?? []);
-        setTeamName(data.teamName);
-        setSharedCalls(data.sharedCalls ?? []);
-        setTeamAnalytics(data.teamAnalytics ?? {
+        setMembers(data?.members ?? []);
+        setTeamName(data?.teamName ?? null);
+        setSharedCalls(data?.sharedCalls ?? []);
+        setTeamAnalytics(data?.teamAnalytics ?? {
           sharedCalls: 0,
           avgHealthScore: 0,
           openActionItems: 0,
           assignedCalls: 0,
         });
+      } else if (res.status === 401) {
+        // Auth race — bounce to sign-in instead of showing an error.
+        router.replace("/sign-in");
+        return;
       } else {
-        setError(data.error);
+        // Render empty state, not a banner, so the page still works.
+        setMembers([]);
+        setSharedCalls([]);
+        setTeamAnalytics({
+          sharedCalls: 0,
+          avgHealthScore: 0,
+          openActionItems: 0,
+          assignedCalls: 0,
+        });
       }
     } catch {
-      setError("Failed to load team");
+      setMembers([]);
+      setSharedCalls([]);
+      setTeamAnalytics({
+        sharedCalls: 0,
+        avgHealthScore: 0,
+        openActionItems: 0,
+        assignedCalls: 0,
+      });
     } finally {
       setLoading(false);
     }
@@ -268,7 +292,30 @@ export default function TeamPage() {
             ))}
 
             {members.length === 0 && !error && (
-              <p className="text-sm text-white/30 text-center py-8">No team members yet.</p>
+              <div className="flex flex-col items-center justify-center text-center py-10 px-4 rounded-xl bg-white/[0.02] border border-dashed border-white/10">
+                <div className="w-10 h-10 rounded-full bg-linear-indigo/10 flex items-center justify-center mb-3">
+                  <UserPlus className="w-4 h-4 text-linear-indigo" />
+                </div>
+                <p className="text-sm font-medium text-white/80 mb-1">No teammates yet</p>
+                <p className="text-[12px] text-white/40 mb-4 max-w-sm">
+                  Share call summaries, action items, and coaching insights across your team.
+                </p>
+                {currentUserMember ? (
+                  <button
+                    onClick={() => {
+                      const el = document.querySelector<HTMLInputElement>('input[placeholder="colleague@company.com"]');
+                      el?.focus();
+                      el?.scrollIntoView({ behavior: "smooth", block: "center" });
+                    }}
+                    className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-linear-indigo text-white text-[11px] font-semibold hover:bg-linear-indigo/80 transition"
+                  >
+                    <UserPlus className="w-3 h-3" />
+                    Invite your first teammate
+                  </button>
+                ) : (
+                  <p className="text-[11px] text-white/30">Sign in to invite teammates.</p>
+                )}
+              </div>
             )}
           </div>
         </div>
