@@ -481,7 +481,18 @@ export async function GET(req: NextRequest) {
         })
       : [];
 
-    return NextResponse.json({ integrations: serializeStatuses(records) });
+    const configuredProviders = SUPPORTED_PROVIDERS.reduce(
+      (acc, provider) => {
+        acc[provider] = isProviderConfigured(provider);
+        return acc;
+      },
+      {} as Record<SupportedProvider, boolean>,
+    );
+
+    return NextResponse.json({
+      integrations: serializeStatuses(records),
+      configuredProviders,
+    });
   } catch (error) {
     return NextResponse.json(
       { error: error instanceof Error ? error.message : "Failed to load integrations" },

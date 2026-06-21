@@ -138,27 +138,66 @@ export default function DashboardPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-linear-black text-white flex items-center justify-center">
-        <div className="relative w-16 h-16">
-          <div className="absolute inset-0 rounded-full border-t-2 border-linear-indigo animate-spin" />
-          <Brain className="absolute inset-0 m-auto w-6 h-6 text-linear-indigo animate-pulse" />
+      <div className="min-h-screen bg-linear-black text-white flex flex-col">
+        <Nav />
+        <div className="flex-1 flex items-center justify-center">
+          <div className="relative w-16 h-16">
+            <div className="absolute inset-0 rounded-full border-t-2 border-linear-indigo animate-spin" />
+            <Brain className="absolute inset-0 m-auto w-6 h-6 text-linear-indigo animate-pulse" />
+          </div>
         </div>
       </div>
     );
   }
 
-  if (error) {
+  if (error || !data) {
+    const message = error || "No analytics data available yet.";
     return (
-      <div className="min-h-screen bg-linear-black text-white flex items-center justify-center">
-        <p className="text-red-400">{error}</p>
-      </div>
-    );
-  }
-
-  if (!data) {
-    return (
-      <div className="min-h-screen bg-linear-black text-white flex items-center justify-center">
-        <p className="text-white/40">No analytics data available</p>
+      <div className="min-h-screen bg-linear-black text-white flex flex-col">
+        <Nav />
+        <div className="flex-1 flex items-center justify-center px-6 py-24">
+          <div className="max-w-md w-full text-center">
+            <div className="w-12 h-12 rounded-2xl bg-red-500/10 border border-red-500/20 flex items-center justify-center mx-auto mb-5">
+              <BarChart3 className="w-5 h-5 text-red-400" />
+            </div>
+            <h2 className="text-lg font-medium mb-2">Analytics unavailable</h2>
+            <p className="text-sm text-white/50 mb-6">{message}</p>
+            <div className="flex items-center justify-center gap-3">
+              <button
+                onClick={() => {
+                  if (!user?.id) return;
+                  setLoading(true);
+                  setError(null);
+                  fetch(`/api/analytics?userId=${user.id}&days=${days}&scope=${scope}`)
+                    .then(async (response) => {
+                      const payload = await response.json();
+                      if (!response.ok) {
+                        throw new Error(payload?.error || "Failed to load analytics");
+                      }
+                      return payload;
+                    })
+                    .then((payload) => {
+                      setData(normalizeAnalyticsData(payload));
+                      setLoading(false);
+                    })
+                    .catch((err: unknown) => {
+                      setError(err instanceof Error ? err.message : "Failed to load analytics");
+                      setLoading(false);
+                    });
+                }}
+                className="px-4 py-2 rounded-full bg-white text-linear-black text-xs font-semibold hover:bg-white/90 transition"
+              >
+                Try again
+              </button>
+              <a
+                href="/dashboard"
+                className="px-4 py-2 rounded-full bg-white/5 border border-white/10 text-white/70 text-xs font-semibold hover:bg-white/10 hover:text-white transition"
+              >
+                Go to dashboard
+              </a>
+            </div>
+          </div>
+        </div>
       </div>
     );
   }
@@ -475,7 +514,7 @@ function StatCard({
   accent?: string;
 }) {
   return (
-    <div className="p-5 rounded-2xl bg-linear-surface border border-linear-secondary">
+    <div className="p-5 rounded-2xl bg-linear-surface border border-linear-secondary doppel-inner-dark">
       <div className="flex items-center gap-2 mb-3">
         <span className="text-white/40">{icon}</span>
         <span className="text-[11px] font-medium text-white/40 uppercase tracking-wider">{label}</span>
