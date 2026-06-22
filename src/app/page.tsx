@@ -4,6 +4,7 @@ import SocialProof from "@/components/social-proof";
 import RoiCalculator from "@/components/roi-calculator";
 import HowItWorks from "@/components/how-it-works";
 import FinalCta from "@/components/final-cta";
+import SiteFooter from "@/components/site-footer";
 import { HeroCTA } from "@/components/hero-cta";
 import { Crosshair, Upload, BarChart3, Shield, Check, ArrowRight } from "lucide-react";
 
@@ -254,20 +255,7 @@ export default function Home() {
       <FinalCta />
 
       {/* FOOTER */}
-      <footer className="bg-[#0a0a0b] text-white/40 py-10 text-center text-[12px]">
-        <div className="max-w-[1440px] mx-auto px-5 sm:px-8 lg:px-12 flex flex-col sm:flex-row items-center justify-between gap-3">
-          <div className="flex items-center gap-2">
-            <div className="w-5 h-5 rounded-lg bg-[#F26522] rotate-45" />
-            <span className="text-white text-[13px] font-medium">CallNote Pro</span>
-          </div>
-          <div className="flex items-center gap-5">
-            <Link href="/privacy" className="hover:text-white">Privacy</Link>
-            <Link href="/terms" className="hover:text-white">Terms</Link>
-            <Link href="/refund" className="hover:text-white">Refund</Link>
-          </div>
-          <div>© {new Date().getFullYear()} CallNote Pro</div>
-        </div>
-      </footer>
+      <SiteFooter />
     </main>
   );
 }
