@@ -78,9 +78,9 @@ const steps = [
 ];
 
 const featureCategories = [
-  { start: 0, end: 4, name: "Core Platform", desc: "The essential pipeline from raw audio to structured insights" },
-  { start: 4, end: 8, name: "Analytics & Intelligence", desc: "Deep understanding of every customer conversation" },
-  { start: 8, end: 12, name: "Enterprise & Security", desc: "Scale with confidence across your entire organization" },
+  { start: 0, end: 4, name: "Core Platform", id: "core-platform", desc: "The essential pipeline from raw audio to structured insights" },
+  { start: 4, end: 8, name: "Analytics & Intelligence", id: "analytics-intelligence", desc: "Deep understanding of every customer conversation" },
+  { start: 8, end: 12, name: "Enterprise & Security", id: "enterprise-security", desc: "Scale with confidence across your entire organization" },
 ];
 
 function ParticleCanvas() {
@@ -726,7 +726,7 @@ export default function FeaturesPage() {
           style={{ background: "radial-gradient(ellipse at 50% 0%, rgba(242,101,34,0.04) 0%, transparent 60%)" }} />
         <div className="max-w-[1440px] mx-auto relative">
           {featureCategories.map((cat, ci) => (
-            <div key={ci} className="mb-12 sm:mb-16 last:mb-0">
+            <div key={ci} id={cat.id} className="mb-12 sm:mb-16 last:mb-0 scroll-mt-24">
               <div className="text-center mb-8 reveal-card" style={{ opacity: 0, transform: "translateY(30px)" }}>
                 <div className="inline-flex items-center gap-3 mb-3">
                   <div className="h-px w-8 bg-gray-200" />

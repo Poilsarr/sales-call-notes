@@ -4,7 +4,6 @@ import SocialProof from "@/components/social-proof";
 import RoiCalculator from "@/components/roi-calculator";
 import HowItWorks from "@/components/how-it-works";
 import FinalCta from "@/components/final-cta";
-import SiteFooter from "@/components/site-footer";
 import { HeroCTA } from "@/components/hero-cta";
 import { Crosshair, Upload, BarChart3, Shield, Check, ArrowRight } from "lucide-react";
 
@@ -320,9 +319,6 @@ export default function Home() {
 
       {/* FINAL CTA — closing conversion touchpoint before footer */}
       <FinalCta />
-
-      {/* FOOTER */}
-      <SiteFooter />
     </main>
   );
 }
