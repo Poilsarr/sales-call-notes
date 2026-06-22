@@ -24,23 +24,89 @@ export default function Home() {
         <Nav />
         <div className="flex-1" />
         <div className="relative z-20 w-full max-w-[1440px] mx-auto px-5 sm:px-8 lg:px-12 pb-14 sm:pb-16 lg:pb-20">
-          <p className="text-[13px] leading-[14px] text-gray-900 tracking-wide mb-5 sm:mb-8">CallNote Pro</p>
-          <h1 className="text-[clamp(1.75rem,7vw,4.2rem)] sm:text-[clamp(2.5rem,5vw,4.2rem)] font-medium leading-[1.08] tracking-[-0.03em] text-gray-900">
-            Know the moment a<br className="hidden sm:block" />
-            <span className="sm:hidden"> </span>competitor enters the deal.
-          </h1>
-          <p className="text-[15px] text-gray-500 max-w-xl mt-4 mb-8">
-            CallNote Pro turns every sales call into structured notes, action items, and a real-time
-            competitive signal. Upload, record, or capture from Google Meet. $9/mo after a free forever tier.
-          </p>
-          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 sm:gap-5">
-            <HeroCTA />
-            <Link href="/pricing" className="text-[13px] text-gray-600 hover:text-gray-900 font-medium underline-offset-4 hover:underline">
-              See pricing →
-            </Link>
-            <Link href="/demo" className="text-[13px] text-gray-600 hover:text-gray-900 font-medium underline-offset-4 hover:underline">
-              See it live →
-            </Link>
+          <div className="grid grid-cols-1 lg:grid-cols-[1.1fr_0.9fr] gap-10 lg:gap-16 items-end">
+            {/* LEFT: headline + sub + CTAs */}
+            <div>
+              <p className="text-[13px] leading-[14px] text-gray-900 tracking-wide mb-5 sm:mb-8">CallNote Pro</p>
+              <h1 className="text-[clamp(1.75rem,7vw,4.2rem)] sm:text-[clamp(2.5rem,5vw,4.2rem)] font-medium leading-[1.08] tracking-[-0.03em] text-gray-900">
+                Know the moment a<br className="hidden sm:block" />
+                <span className="sm:hidden"> </span>competitor enters the deal.
+              </h1>
+              <p className="text-[15px] text-gray-500 max-w-xl mt-4 mb-8">
+                CallNote Pro turns every sales call into structured notes, action items, and a real-time
+                competitive signal. Upload, record, or capture from Google Meet. $9/mo after a free forever tier.
+              </p>
+              <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 sm:gap-5">
+                <HeroCTA />
+                <Link href="/pricing" className="text-[13px] text-gray-600 hover:text-gray-900 font-medium underline-offset-4 hover:underline">
+                  See pricing →
+                </Link>
+                <Link href="/demo" className="text-[13px] text-gray-600 hover:text-gray-900 font-medium underline-offset-4 hover:underline">
+                  See it live →
+                </Link>
+              </div>
+            </div>
+
+            {/* RIGHT: product preview card — what a real call summary looks like */}
+            <div className="relative hidden lg:block">
+              <div className="doppel-outer">
+                <div className="doppel-inner p-5 sm:p-6">
+                  <div className="flex items-center gap-2 mb-4">
+                    <div className="w-2 h-2 rounded-full bg-[#F26522] animate-pulse" />
+                    <span className="text-[10px] font-mono tracking-wider text-gray-400 font-medium uppercase">Live summary</span>
+                    <span className="ml-auto text-[9px] font-mono text-gray-300">00:24:18</span>
+                  </div>
+
+                  <div className="space-y-2.5">
+                    <div className="flex items-start gap-2.5">
+                      <span className="shrink-0 text-[10px] font-mono font-medium text-[#F26522] bg-[#F26522]/[0.08] px-2 py-0.5 rounded-full leading-none mt-0.5">Sarah</span>
+                      <p className="text-[12.5px] text-gray-600 leading-snug">Pricing decision is going to come from procurement, not us. They want to consolidate vendors next quarter.</p>
+                    </div>
+                    <div className="flex items-start gap-2.5">
+                      <span className="shrink-0 text-[10px] font-mono font-medium text-[#2563eb] bg-[#2563eb]/[0.08] px-2 py-0.5 rounded-full leading-none mt-0.5">Mike</span>
+                      <p className="text-[12.5px] text-gray-600 leading-snug">Understood. Want me to loop in your procurement lead next call, or send a one-pager for the consolidation review?</p>
+                    </div>
+                  </div>
+
+                  <div className="mt-4 pt-3 border-t border-gray-100">
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="text-[10px] font-mono text-gray-400 uppercase tracking-wider">Action items</span>
+                      <span className="text-[10px] font-mono text-gray-300">3 found</span>
+                    </div>
+                    <ul className="space-y-1.5">
+                      <li className="flex items-center gap-2 text-[11.5px] text-gray-700">
+                        <span className="w-1 h-1 rounded-full bg-[#F26522]" />
+                        <span className="flex-1">Send procurement one-pager</span>
+                        <span className="text-[9px] font-mono text-gray-400">THU</span>
+                      </li>
+                      <li className="flex items-center gap-2 text-[11.5px] text-gray-700">
+                        <span className="w-1 h-1 rounded-full bg-[#F26522]" />
+                        <span className="flex-1">Loop in procurement lead</span>
+                        <span className="text-[9px] font-mono text-gray-400">FRI</span>
+                      </li>
+                      <li className="flex items-center gap-2 text-[11.5px] text-gray-700">
+                        <span className="w-1 h-1 rounded-full bg-[#F26522]" />
+                        <span className="flex-1">Schedule Q3 vendor review</span>
+                        <span className="text-[9px] font-mono text-gray-400">NEXT</span>
+                      </li>
+                    </ul>
+                  </div>
+
+                  <div className="mt-4 pt-3 border-t border-gray-100 flex items-center justify-between text-[10px] text-gray-400">
+                    <span className="flex items-center gap-1.5">
+                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+                      Health 8.2
+                    </span>
+                    <span className="flex items-center gap-1.5">
+                      Sentiment positive
+                    </span>
+                    <span className="flex items-center gap-1.5">
+                      Talk ratio 42 / 58
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </section>
