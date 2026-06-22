@@ -479,6 +479,99 @@ function StatsSection() {
   );
 }
 
+function ComparisonSection() {
+  // Honest competitor matrix. Public pricing pulled from each vendor's
+  // public pricing page; "—" means the feature is not part of the listed
+  // plan. Last reviewed 2026-06-22. Update on plan changes.
+  const rows: { label: string; us: string; otter: string; fireflies: string; highlight?: boolean }[] = [
+    { label: "Free tier", us: "300 min/mo forever", otter: "300 min/mo", fireflies: "800 min/mo" },
+    { label: "Pro price", us: "$9/user/mo", otter: "$8.33/user/mo (annual)", fireflies: "$10/user/mo (annual)" },
+    { label: "AI credits", us: "No credit pool", otter: "Limits on free", fireflies: "Shared 20–50 pool", highlight: true },
+    { label: "Transcription model", us: "Whisper Large V3", otter: "Otter proprietary", fireflies: "Whisper + proprietary" },
+    { label: "Languages", us: "99 + auto-detect", otter: "English + 3", fireflies: "69" },
+    { label: "Speaker labels", us: "Auto, per call", otter: "Auto, per call", fireflies: "Auto, per call" },
+    { label: "Competitive-intel alerts", us: "Real-time Slack ping", otter: "—", fireflies: "—", highlight: true },
+    { label: "CRM export (HubSpot + SF)", us: "One click on Pro", otter: "Enterprise only", fireflies: "Included all plans" },
+    { label: "Microsoft Teams", us: "Yes (Business+)", otter: "Yes", fireflies: "Yes" },
+    { label: "SSO / SAML", us: "Enterprise", otter: "Enterprise", fireflies: "Enterprise" },
+    { label: "API access", us: "Business+", otter: "Enterprise", fireflies: "Business+" },
+    { label: "Data used to train models", us: "Never", otter: "Opt-in only", fireflies: "Opt-in only", highlight: true },
+  ];
+
+  return (
+    <section className="py-16 sm:py-20 lg:py-24 px-5 sm:px-8 lg:px-12">
+      <div className="max-w-[1440px] mx-auto">
+        <div className="text-center mb-12">
+          <div className="eyebrow inline-flex items-center gap-2 mb-4">
+            <BarChart3 size={12} /> How we stack up
+          </div>
+          <h2 className="text-[clamp(1.5rem,4vw,2.75rem)] font-medium leading-[1.1] tracking-[-0.02em] mb-3">
+            CallNote Pro vs Otter.ai vs Fireflies.ai
+          </h2>
+          <p className="text-gray-500 text-[14px] max-w-xl mx-auto">
+            Public pricing and feature data, side by side. Updated
+            monthly. Spotted something stale?{" "}
+            <a href="mailto:hello@callnotepro.com" className="underline underline-offset-2 hover:text-gray-900">
+              Tell us
+            </a>
+            .
+          </p>
+        </div>
+
+        <div className="doppel-outer overflow-hidden">
+          <div className="doppel-inner overflow-x-auto p-0">
+            <table className="w-full min-w-[720px] text-left">
+              <thead>
+                <tr className="border-b border-gray-200">
+                  <th className="py-4 pl-6 pr-3 text-[11px] uppercase tracking-[0.12em] text-gray-500 font-medium">
+                    Capability
+                  </th>
+                  <th className="py-4 px-3 text-[12px] uppercase tracking-[0.12em] text-[#F26522] font-semibold">
+                    CallNote Pro
+                  </th>
+                  <th className="py-4 px-3 text-[11px] uppercase tracking-[0.12em] text-gray-500 font-medium">
+                    Otter.ai
+                  </th>
+                  <th className="py-4 pr-6 pl-3 text-[11px] uppercase tracking-[0.12em] text-gray-500 font-medium">
+                    Fireflies.ai
+                  </th>
+                </tr>
+              </thead>
+              <tbody>
+                {rows.map((r, i) => (
+                  <tr
+                    key={i}
+                    className={`border-b border-gray-100 last:border-b-0 ${r.highlight ? "bg-[#F26522]/[0.04]" : ""}`}
+                  >
+                    <td className="py-3.5 pl-6 pr-3 text-[13px] text-gray-700">
+                      {r.label}
+                    </td>
+                    <td className="py-3.5 px-3 text-[13px] text-gray-900 font-medium">
+                      {r.us}
+                    </td>
+                    <td className="py-3.5 px-3 text-[13px] text-gray-500">
+                      {r.otter}
+                    </td>
+                    <td className="py-3.5 pr-6 pl-3 text-[13px] text-gray-500">
+                      {r.fireflies}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <p className="text-[11px] text-gray-400 mt-4 max-w-2xl mx-auto text-center">
+          Competitor data is from public pricing pages and product pages
+          as of 2026-06-22. We try to keep this honest — if you spot
+          something we got wrong, we&apos;ll fix it in the next update.
+        </p>
+      </div>
+    </section>
+  );
+}
+
 function WorkflowSection() {
   const sectionRef = useRef<HTMLDivElement>(null);
 
@@ -683,6 +776,8 @@ export default function FeaturesPage() {
       </div>
 
       <WorkflowSection />
+
+      <ComparisonSection />
 
       <section className="pb-16 sm:pb-20 lg:pb-28 px-5 sm:px-8 lg:px-12">
         <div className="max-w-[1440px] mx-auto">
