@@ -5,7 +5,7 @@ import { usePathname } from "next/navigation";
 import { useUser, UserButton } from "@clerk/nextjs";
 import { Show } from "@/components/show";
 import { useState, useEffect } from "react";
-import { ArrowRight, Clock, Menu, X } from "lucide-react";
+import { ArrowRight, Menu, X } from "lucide-react";
 
 const links = [
   { href: "/features", label: "Features" },
@@ -13,39 +13,6 @@ const links = [
   { href: "/pricing", label: "Pricing" },
   { href: "/demo", label: "Live demo" },
 ];
-
-function LiveClock({ mobileId }: { mobileId?: string }) {
-  const [time, setTime] = useState("");
-
-  useEffect(() => {
-    function update() {
-      const now = new Date();
-      const london = now.toLocaleString("en-GB", {
-        timeZone: "Europe/London",
-        hour: "2-digit",
-        minute: "2-digit",
-        hour12: false,
-      });
-      setTime(london);
-      if (mobileId) {
-        const el = document.getElementById(mobileId);
-        if (el) el.textContent = london;
-      }
-    }
-    update();
-    const id = setInterval(update, 1000);
-    return () => clearInterval(id);
-  }, [mobileId]);
-
-  if (!time) return null;
-
-  return (
-    <span className="hidden lg:inline-flex items-center gap-1 text-[13px] text-gray-600">
-      <Clock size={14} />
-      {time} in London
-    </span>
-  );
-}
 
 export default function Nav() {
   const pathname = usePathname();
@@ -81,8 +48,6 @@ export default function Nav() {
 
           {/* Right Desktop */}
           <div className="hidden md:flex items-center gap-4">
-            <span className="hidden lg:inline text-[13px] text-gray-600">Track every competitor mention</span>
-            <LiveClock />
             {!mounted ? (
               <Link href="/sign-in" className="text-[13px] text-gray-600 hover:text-gray-900 transition-colors duration-300 font-medium">
                 Sign In
@@ -102,9 +67,9 @@ export default function Nav() {
             <Link href="/sign-up" className="group bg-gray-900 text-white text-[13px] font-medium rounded-full pl-5 pr-2 py-2 inline-flex items-center gap-1.5 transition-all duration-300">
               <span className="flex flex-col overflow-hidden h-[20px]">
                 <span className="transition-transform duration-500 ease-[cubic-bezier(0.25,0.1,0.25,1)] group-hover:-translate-y-1/2 leading-[20px]">
-                  Start free trial
+                  Start free
                 </span>
-                <span className="leading-[20px]">Start free trial</span>
+                <span className="leading-[20px]">Start free</span>
               </span>
               <span className="w-6 h-6 bg-white rounded-full flex items-center justify-center transition-transform duration-500 ease-[cubic-bezier(0.25,0.1,0.25,1)] group-hover:-rotate-45">
                 <ArrowRight size={14} className="text-gray-900" />
@@ -136,12 +101,6 @@ export default function Nav() {
               open ? "translate-y-0" : "translate-y-full"
             }`}
           >
-            <div className="mb-6">
-              <span className="inline-flex items-center gap-1 text-[13px] text-gray-600">
-                <Clock size={14} />
-                <span id="mobile-clock" />
-              </span>
-            </div>
             <nav className="flex flex-col gap-4 mb-8">
               {links.map((link) => (
                 <Link
@@ -161,9 +120,9 @@ export default function Nav() {
             >
               <span className="flex flex-col overflow-hidden h-[20px]">
                 <span className="transition-transform duration-500 ease-[cubic-bezier(0.25,0.1,0.25,1)] group-hover:-translate-y-1/2 leading-[20px]">
-                  Start free trial
+                  Start free
                 </span>
-                <span className="leading-[20px]">Start free trial</span>
+                <span className="leading-[20px]">Start free</span>
               </span>
               <span className="w-6 h-6 bg-white rounded-full flex items-center justify-center transition-transform duration-500 ease-[cubic-bezier(0.25,0.1,0.25,1)] group-hover:-rotate-45">
                 <ArrowRight size={14} className="text-gray-900" />
