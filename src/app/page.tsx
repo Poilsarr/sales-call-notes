@@ -138,7 +138,7 @@ export default function Home() {
         </div>
       </section>
 
-      {/* COMPETITIVE INTEL DEMO */}
+      {/* COMPETITIVE INTEL DEMO — live alert feed */}
       <section className="bg-[#0a0a0b] text-white pt-16 sm:pt-20 lg:pt-28 pb-16 sm:pb-20 lg:pb-28">
         <div className="max-w-[1440px] mx-auto px-5 sm:px-8 lg:px-12">
           <div className="max-w-2xl mb-14">
@@ -153,30 +153,97 @@ export default function Home() {
               the speaker, and the line where it happened.
             </p>
           </div>
-          <div className="doppel-outer">
-            <div className="doppel-inner bg-zinc-900/80 p-6 sm:p-8 md:p-10">
-              <div className="flex items-center gap-2 mb-6">
-                <div className="w-2 h-2 rounded-full bg-[#F26522] animate-pulse" />
-                <span className="text-[11px] uppercase tracking-[0.18em] text-white/40">Live alert</span>
-              </div>
-              <div className="space-y-3 font-mono text-[13px]">
-                <div className="flex items-start gap-4">
-                  <span className="text-white/30 shrink-0 w-16">00:14:22</span>
-                  <span className="text-white/55">Prospect:</span>
-                  <span className="text-white/90">&ldquo;We&rsquo;re also evaluating Gong and Chorus for the rollout.&rdquo;</span>
-                </div>
-                <div className="border-t border-white/10 my-4" />
-                <div className="flex items-start gap-3 text-[12px]">
-                  <Crosshair size={14} className="text-[#F26522] mt-0.5 shrink-0" />
-                  <div>
-                    <div className="text-white font-semibold mb-1">Competitor detected: Gong</div>
-                    <div className="text-white/40">Call: Acme Corp / Discovery / Sarah Chen &middot; confidence 0.96</div>
-                    <div className="text-white/30 mt-1">Slack ping sent to #deal-room-acme</div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+            {[
+              {
+                time: "00:14:22",
+                call: "Acme Corp · Discovery",
+                speaker: "Sarah Chen",
+                quote: "We're also evaluating Gong and Chorus for the rollout.",
+                detected: "Gong",
+                confidence: 0.96,
+                slack: "#deal-room-acme",
+                age: "2 min ago",
+                accent: "#F26522",
+              },
+              {
+                time: "11:42:08",
+                call: "Vandelay Industries · Demo",
+                speaker: "Priya Shah",
+                quote: "Our current contract with Otter expires in Q3 — what would migration look like?",
+                detected: "Otter.ai",
+                confidence: 0.91,
+                slack: "#deal-room-vandelay",
+                age: "18 min ago",
+                accent: "#2563eb",
+              },
+              {
+                time: "09:03:51",
+                call: "Stark Industries · Closing",
+                speaker: "Marcus Lee",
+                quote: "Fireflies is cheaper but your competitive-intel alerts are the deciding factor for us.",
+                detected: "Fireflies.ai",
+                confidence: 0.99,
+                slack: "#deal-room-stark",
+                age: "1 hr ago",
+                accent: "#7c3aed",
+              },
+            ].map((alert, i) => (
+              <div key={i} className="doppel-outer">
+                <div className="doppel-inner bg-zinc-900/80 p-5 sm:p-6 h-full flex flex-col">
+                  <div className="flex items-center gap-2 mb-5">
+                    <div
+                      className="w-2 h-2 rounded-full animate-pulse"
+                      style={{ backgroundColor: alert.accent }}
+                    />
+                    <span className="text-[10px] uppercase tracking-[0.18em] text-white/40 font-mono">
+                      Live alert
+                    </span>
+                    <span className="ml-auto text-[10px] font-mono text-white/30">
+                      {alert.age}
+                    </span>
+                  </div>
+
+                  <div className="font-mono text-[12px] space-y-2.5 mb-5">
+                    <div className="flex items-start gap-3">
+                      <span className="text-white/30 shrink-0 w-14">{alert.time}</span>
+                      <div>
+                        <span className="text-white/55">{alert.speaker}: </span>
+                        <span className="text-white/90">&ldquo;{alert.quote}&rdquo;</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="border-t border-white/10 pt-4 mt-auto">
+                    <div className="flex items-start gap-2.5 text-[11.5px]">
+                      <Crosshair
+                        size={13}
+                        className="mt-0.5 shrink-0"
+                        style={{ color: alert.accent }}
+                      />
+                      <div className="flex-1 min-w-0">
+                        <div className="text-white font-semibold mb-0.5">
+                          Competitor detected: {alert.detected}
+                        </div>
+                        <div className="text-white/40 text-[10.5px]">
+                          {alert.call} · confidence {alert.confidence}
+                        </div>
+                        <div className="text-white/30 text-[10.5px] mt-0.5 truncate">
+                          Slack ping → {alert.slack}
+                        </div>
+                      </div>
+                    </div>
                   </div>
                 </div>
               </div>
-            </div>
+            ))}
           </div>
+
+          <p className="text-[11px] text-white/30 mt-6 max-w-2xl">
+            Sample alerts — shown for product demo. In production,
+            alerts fire in real time across all your active calls.
+          </p>
         </div>
       </section>
 
