@@ -95,15 +95,15 @@ export default function PricingPage() {
                   </div>
                   {plan.enterprise ? (
                     <a href="mailto:sales@callnotepro.com?subject=Enterprise%20Plan%20Inquiry"
-                      className="block w-full text-center py-3 rounded-full text-[12px] font-semibold bg-gray-100 text-gray-600 hover:text-gray-900 hover:bg-gray-200 transition-all duration-300">
+                      className="block w-full text-center py-3 rounded-full text-[12px] font-semibold bg-white text-gray-900 border border-gray-300 hover:border-gray-900 hover:bg-gray-50 transition-all duration-300">
                       {plan.cta}
                     </a>
                   ) : (
                     <Link href="/sign-up"
                       className={`block w-full text-center py-3 rounded-full text-[12px] font-semibold transition-all duration-300 ${
                         plan.popular
-                          ? "bg-[#F26522] text-white hover:bg-[#e05a1a]"
-                          : "bg-gray-100 text-gray-600 hover:text-gray-900 hover:bg-gray-200"
+                          ? "bg-[#F26522] text-white hover:bg-[#e05a1a] border border-transparent"
+                          : "bg-white text-gray-900 border border-gray-300 hover:border-gray-900 hover:bg-gray-50"
                       }`}>
                       {plan.cta}
                     </Link>
