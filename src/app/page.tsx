@@ -2,6 +2,8 @@ import Link from "next/link";
 import Nav from "@/components/nav";
 import SocialProof from "@/components/social-proof";
 import RoiCalculator from "@/components/roi-calculator";
+import HowItWorks from "@/components/how-it-works";
+import FinalCta from "@/components/final-cta";
 import { HeroCTA } from "@/components/hero-cta";
 import { Crosshair, Upload, BarChart3, Shield, Check, ArrowRight } from "lucide-react";
 
@@ -114,6 +116,9 @@ export default function Home() {
       {/* WHO IT'S FOR (social proof — honest, no fake brand names) */}
       <SocialProof />
 
+      {/* HOW IT WORKS — 4-step process from upload to CRM push */}
+      <HowItWorks />
+
       {/* ROI CALCULATOR (honest math, all inputs user-controlled) */}
       <RoiCalculator />
 
@@ -178,6 +183,9 @@ export default function Home() {
           </div>
         </div>
       </section>
+
+      {/* FINAL CTA — closing conversion touchpoint before footer */}
+      <FinalCta />
 
       {/* FOOTER */}
       <footer className="bg-[#0a0a0b] text-white/40 py-10 text-center text-[12px]">
