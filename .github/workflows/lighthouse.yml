@@ -34,16 +34,18 @@ jobs:
             const vercel = comments.find(c =>
               c.user && c.user.login && c.user.login.toLowerCase().includes('vercel')
             );
-            if (!vercel) {
-              core.setFailed('No Vercel bot comment found on this PR.');
-              return;
+            let url = null;
+            if (vercel) {
+              const m = (vercel.body || '').match(/https:\/\/[a-z0-9-]+\.vercel\.app\/?/i);
+              if (m) url = m[0].replace(/\/$/, '');
             }
-            const m = (vercel.body || '').match(/https:\/\/[a-z0-9-]+\.vercel\.app\/?/i);
-            if (!m) {
-              core.setFailed('Could not parse preview URL from Vercel comment.');
-              return;
+            // Fallback: target the production deployment so perf/a11y regressions
+            // on merged code still get caught when Vercel bot is silent.
+            if (!url) {
+              url = 'https://callnotepro.com';
+              core.notice('No Vercel preview URL found — falling back to production.');
             }
-            core.setOutput('url', m[0].replace(/\/$/, ''));
+            core.setOutput('url', url);
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
@@ -64,7 +66,7 @@ jobs:
             const fs = require('fs');
             const path = require('path');
             const dir = path.join(process.cwd(), '.lighthouseci');
-            const thresholds = { performance: 85, accessibility: 90, 'best-practices': 90, seo: 90 };
+            const thresholds = { performance: 90, accessibility: 95, 'best-practices': 90, seo: 95 };
             let body = `## :lighthouse: Lighthouse preview\n\nPreview: \`${{ steps.preview.outputs.url }}\`\n\n`;
             let anyWarn = false;
             try {

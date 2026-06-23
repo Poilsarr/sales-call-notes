@@ -12,11 +12,11 @@
 
 | Metric | Today | After Frontier |
 |---|---|---|
-| Spec completion | ~78% | 100% |
-| Honest "ships in prod" | ~75% | ~95% |
-| Working features (no mocks) | ~88% | ~98% |
-| Open critical issues | 2 | 0 |
-| Test coverage | 59 test files / 498 tests | 30+ test files (exceeded) |
+| Spec completion | ~85% | 100% |
+| Honest "ships in prod" | ~80% | ~95% |
+| Working features (no mocks) | ~92% | ~98% |
+| Open critical issues | 1 | 0 |
+| Test coverage | 64 test files / 531 tests | 30+ test files (exceeded) |
 | CI/CD | GitHub Actions | GitHub Actions |
 
 **7 Levels · 30+ work items · 12 explicit "do-not-break" checkpoints · 6 honest "gate" reviews**
@@ -35,36 +35,46 @@ The principle: **never advance a level with a known break, mock-leak, or uncommi
 
 ---
 
-## Recently Shipped (PRs #42–#59)
+## Recently Shipped (PRs #42–#80)
 
 > Session log. Updated as PRs merge. Honest: only lists PRs verified
 > merged on `main` with green CI. Run `git log --oneline -25 main` to
 > confirm.
 
-| PR | Date | Title | What it closed |
-|---|---|---|---|
-| #42 | 2026-06-19 | ui rewrite: landing, $9 price, kill ghost + lies | Ghost route + fake "500+ SDR teams" lie |
-| #43 | 2026-06-19 | /demo money page | Marketing proof + 5 sample calls |
-| #44 | 2026-06-19 | level-1 GDPR close | Download route + token + settings UI |
-| #45 | 2026-06-19 | level 0/3/4 gate proofs | OpenAI/Groq call, k6 load, chrome ext bridge |
-| #46 | 2026-06-19 | level 6 ops + 5.5 onboarding + 5.7 API docs | /api/health, Sentry release, smoke test, /onboarding, /api-docs |
-| #47 | 2026-06-20 | feat(team): per-team branding | 5.1 |
-| #48 | 2026-06-20 | docs(compliance): SOC2 + DPA + VENDORS + SECURITY | 6.5 |
-| #49 | 2026-06-20 | docs(ops): incident runbook + SLO | 6.6 |
-| #50 | 2026-06-20 | chore(obs): Sentry alert rules + ALERTS.md | 6.4 |
-| #51 | 2026-06-20 | perf: landing → server component (-38 kB) | 4 (perf) |
-| #52 | 2026-06-20 | feat(api): v1 public API + scoped API keys | 5.3 |
-| #53 | 2026-06-20 | feat(marketing): SEO + JSON-LD + OG + social proof | 5.4 partial |
-| #54 | 2026-06-20 | feat(settings): API keys management UI | 5.3 user-facing loop |
-| #55 | 2026-06-20 | perf(pricing): server component (-2.4 kB) | 4 |
-| #56 | 2026-06-20 | perf(demo): client island split (-0.5 kB) | 4 |
-| #57 | 2026-06-20 | chore(perf): bundle-size CI gate | 4 (regression guard) |
-| #58 | 2026-06-20 | feat(api): per-key rate limiting (60/600 req/min) | 5.3 hardening |
-| #59 | 2026-06-20 | feat(marketing): ROI calculator on / | 5.4 close |
-| #61 | 2026-06-21 | feat(api-docs): dedicated v1 public API docs page | 5.7 v1 + audit fix |
-
+| PR  | Date       | Title                                                              | What it closed                          |
+| --- | ---------- | ------------------------------------------------------------------ | --------------------------------------- |
+| #42 | 2026-06-19 | ui rewrite: landing, $9 price, kill ghost + lies                   | Ghost route + fake "500+ SDR teams" lie |
+| #43 | 2026-06-19 | /demo money page                                                   | Marketing proof + 5 sample calls        |
+| #44 | 2026-06-19 | level-1 GDPR close                                                 | Download route + token + settings UI    |
+| #45 | 2026-06-19 | level 0/3/4 gate proofs                                            | OpenAI/Groq call, k6 load, chrome ext   |
+| #46 | 2026-06-19 | level 6 ops + 5.5 onboarding + 5.7 API docs                         | /api/health, Sentry, smoke, /api-docs   |
+| #47 | 2026-06-20 | feat(team): per-team branding                                      | 5.1                                     |
+| #48 | 2026-06-20 | docs(compliance): SOC2 + DPA + VENDORS + SECURITY                  | 6.5                                     |
+| #49 | 2026-06-20 | docs(ops): incident runbook + SLO                                 | 6.6                                     |
+| #50 | 2026-06-20 | chore(obs): Sentry alert rules + ALERTS.md                         | 6.4                                     |
+| #51 | 2026-06-20 | perf: landing → server component (-38 kB)                          | 4 (perf)                                |
+| #52 | 2026-06-20 | feat(api): v1 public API + scoped API keys                         | 5.3                                     |
+| #53 | 2026-06-20 | feat(marketing): SEO + JSON-LD + OG + social proof                 | 5.4 partial                             |
+| #54 | 2026-06-20 | feat(settings): API keys management UI                             | 5.3 user-facing loop                    |
+| #55 | 2026-06-20 | perf(pricing): server component (-2.4 kB)                          | 4                                       |
+| #56 | 2026-06-20 | perf(demo): client island split (-0.5 kB)                          | 4                                       |
+| #57 | 2026-06-20 | chore(perf): bundle-size CI gate                                   | 4 (regression guard)                    |
+| #58 | 2026-06-20 | feat(api): per-key rate limiting (60/600 req/min)                  | 5.3 hardening                           |
+| #59 | 2026-06-20 | feat(marketing): ROI calculator on /                               | 5.4 close                               |
+| #61 | 2026-06-21 | feat(api-docs): dedicated v1 public API docs page                  | 5.7 v1 + audit fix                      |
+| #69 | 2026-06-22 | fix(ui): restore light-card legibility + dashboard/team error states | UX blocker on gated pages            |
+| #71 | 2026-06-22 | fix(ui): pricing secondary CTA contrast + clean up nav            | Pricing CTAs invisible + nav cruft     |
+| #72 | 2026-06-22 | feat(home): add 'How it works' 4-step section + closing CTA banner | Home narrative missing                   |
+| #73 | 2026-06-22 | feat(features): add competitor comparison table                    | /features missing vs Otter/Fireflies    |
+| #74 | 2026-06-22 | feat(home): add product preview card to hero                       | Hero lacked product visual              |
+| #75 | 2026-06-22 | feat(home): replace minimal footer with 5-column site footer       | Home footer bare                        |
+| #76 | 2026-06-22 | feat(home): wedge section now shows 3-card live alert feed         | Single static alert felt like a screenshot|
+| #77 | 2026-06-22 | feat(pricing): unify CTAs + monthly/annual toggle + FAQ            | Pricing copy + missing FAQ              |
+| #79 | 2026-06-22 | feat(site): add /status page (client-side health probe)            | Footer linked to 404                    |
+| #80 | 2026-06-22 | feat(site): anchor IDs on /features + globalize SiteFooter         | Broken anchor links + per-page footer   |
 
 ---
+
 
 ## Per-Level Current Status
 
@@ -75,8 +85,8 @@ The principle: **never advance a level with a known break, mock-leak, or uncommi
 | **2 — Real intelligence** | ~ PARTIAL | Knowledge graph + analytics queryable. Real diarization BLOCKED (pyannote/Deepgram key). |
 | **3 — Integrations that pay** | ✓ MOSTLY | OAuth live; meeting bot BLOCKED (Zoom/Meet/Teams dev accts). |
 | **4 — Performance & reliability** | ✓ SHIPPED | Perf budget + k6 + bundle gate + smoke test all in CI. |
-| **5 — Sell the product** | ✓ MOSTLY | All shipped except: 5.2 SSO (Clerk Enterprise), 5.6 Paddle pricing live. |
-| **6 — Production hardening** | ✓ SHIPPED | Sentry, uptime, alerts, compliance docs, runbook, smoke test. 6.1 backups BLOCKED (Neon paid). |
+| **5 — Sell the product** | ✓ MOSTLY | All shipped except: 5.2 SSO (Clerk Enterprise), 5.6 Paddle pricing live. Pricing UI now has annual toggle + FAQ (PR #77). |
+| **6 — Production hardening** | ✓ SHIPPED | Sentry, uptime, alerts, compliance docs, runbook, smoke test, public /status page (PR #79). 6.1 backups BLOCKED (Neon paid). |
 
 ---
 
@@ -100,10 +110,11 @@ The principle: **never advance a level with a known break, mock-leak, or uncommi
 
 | Item | Effort | Value |
 |---|---|---|
-| Public API docs page (`/api-docs/v1`) | LOW | Real customer value for API keys feature |
-| Lighthouse CI workflow | MED | Catches SEO/perf regressions |
+| Lighthouse CI workflow (currently runs as soft-warn only) | MED | Catches SEO/perf regressions before merge |
 | `/features` deep server-component refactor | HIGH | Diminishing returns — not on k6 hot path |
-| Update LEVEL_*.md task checklists to reflect shipped work | LOW | Hygiene |
+| Update per-level `LEVEL_*.md` task checklists to reflect shipped work | LOW | Hygiene |
+| Playwright signed-in visual verification of /integrations, /team, /app | MED | Replaces manual screenshot-based audit |
+| Audit gated pages for any UI inconsistencies surfaced in 2026-06-22 screenshots | LOW | Closes last visual feedback loop |
 
 ---
 
