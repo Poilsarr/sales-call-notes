@@ -355,10 +355,10 @@ function IntegrationsContent() {
                               ) : (
                                 <button
                                   onClick={redirectToCrmEnv}
-                                  className="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-gray-200 text-[11px] font-medium text-gray-600 hover:text-gray-900 hover:bg-gray-50 transition-all"
+                                  className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-[#F26522] text-white text-[11px] font-semibold hover:bg-[#e05a1a] transition-all"
                                 >
                                   <Link2 size={14} />
-                                  Env Vars
+                                  Add credentials
                                 </button>
                               )}
                               {providerStates[int.provider].connected ? (
