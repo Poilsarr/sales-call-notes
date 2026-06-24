@@ -302,6 +302,24 @@ export default function DashboardPage() {
               </div>
             </div>
 
+            {data.totalCalls === 0 && (
+              <div className="mb-8 p-6 rounded-2xl border border-dashed border-white/15 bg-white/[0.02] flex flex-col sm:flex-row items-start sm:items-center gap-4">
+                <div className="flex-1">
+                  <h3 className="text-sm font-semibold text-white mb-1">No calls yet</h3>
+                  <p className="text-xs text-white/50">
+                    Upload an MP3, record in browser, or pipe from the Chrome extension.
+                    Your first call shows up here in under 60 seconds.
+                  </p>
+                </div>
+                <a
+                  href="/app/record"
+                  className="px-4 py-2 rounded-full bg-linear-indigo text-white text-xs font-semibold hover:bg-linear-indigo/80 transition shrink-0"
+                >
+                  Upload your first call
+                </a>
+              </div>
+            )}
+
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 mb-8">
               <StatCard
                 icon={<Phone className="w-4 h-4" />}
