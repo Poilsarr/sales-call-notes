@@ -1,0 +1,51 @@
+name: Lighthouse (prod nightly)
+
+on:
+  schedule:
+    # Nightly at 06:00 UTC = 11:30 IST = 23:00 ET (off-peak)
+    - cron: "0 6 * * *"
+  workflow_dispatch: # allow manual trigger from the Actions tab
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}
+  cancel-in-progress: true
+
+jobs:
+  lighthouse-prod:
+    name: Lighthouse on production
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+
+      # Targets the Vercel production alias, not a preview. This
+      # catches regressions on merged code that the PR-time
+      # lighthouse.yml may have missed (preview ≠ prod perf).
+      - name: Run Lighthouse against production
+        id: lh
+        continue-on-error: true
+        uses: treosh/lighthouse-ci-action@v11
+        with:
+          url: https://sales-call-notes.vercel.app
+          uploadArtifacts: true
+          temporaryPublicStorage: true
+
+      - name: Upload report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: lighthouse-prod-report
+          path: .lighthouseci/
+          if-no-files-found: ignore
+
+      - name: Summary
+        if: always()
+        run: |
+          if [ "${{ steps.lh.outcome }}" = "failure" ]; then
+            echo "::warning::Lighthouse prod run scored below thresholds."
+          else
+            echo "Lighthouse prod OK."
+          fi
