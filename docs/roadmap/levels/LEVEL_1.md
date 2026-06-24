@@ -3,6 +3,7 @@
 
 **Pre-reqs:** GATE 0 closed (real OpenAI + real DB working).
 **Goal:** RBAC, GDPR, audit logs, action items API, per-provider webhooks.
+**Status:** ✓ SHIPPED (GATE 1 closed). RBAC + GDPR + audit + action items all live. Full table: see `DEVELOPMENT_FRONTIER.md` "Per-Level Current Status".
 **Gate:** See `DEVELOPMENT_FRONTIER.md` GATE 1.
 
 ---

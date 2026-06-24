@@ -3,6 +3,7 @@
 
 **Pre-reqs:** GATE 5 closed.
 **Goal:** SOC2-readiness, backup/recovery, monitoring, runbooks.
+**Status:** ✓ SHIPPED (GATE 6 closed). Sentry, uptime, alerts, compliance docs, runbook, smoke test, public /status page (PR #79). 6.1 backups BLOCKED on Neon paid plan. Full table: see `DEVELOPMENT_FRONTIER.md` "Per-Level Current Status".
 **Gate:** See `DEVELOPMENT_FRONTIER.md` GATE 6.
 
 ---

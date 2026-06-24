@@ -3,6 +3,7 @@
 
 **Pre-reqs:** GATE 3 closed.
 **Goal:** P95 < 200ms, 5-min transcribe < 30s, E2E tests, CI/CD.
+**Status:** ✓ SHIPPED (GATE 4 closed). Perf budget + k6 + bundle gate + smoke test all in CI. Live prod p95: home 345ms, demo 285ms, api 82ms (PR #88). Full table: see `DEVELOPMENT_FRONTIER.md` "Per-Level Current Status".
 **Gate:** See `DEVELOPMENT_FRONTIER.md` GATE 4.
 
 ---

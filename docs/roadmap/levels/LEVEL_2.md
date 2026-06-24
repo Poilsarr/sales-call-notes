@@ -3,7 +3,7 @@
 
 **Pre-reqs:** GATE 1 closed.
 **Goal:** Real diarization, multi-stage analysis, knowledge graph, personalization, trend analytics.
-**Status:** ✅ COMPLETE — GATE 2 closed.
+**Status:** ~ PARTIAL (GATE 2 conditionally closed). Knowledge graph + analytics queryable. Real diarization BLOCKED on pyannote/Deepgram key. Full table: see `DEVELOPMENT_FRONTIER.md` "Per-Level Current Status".
 **Gate:** See `DEVELOPMENT_FRONTIER.md` GATE 2.
 
 ---
