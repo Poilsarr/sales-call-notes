@@ -3,6 +3,7 @@
 
 **Pre-reqs:** GATE 2 closed.
 **Goal:** Real OAuth, meeting bot, Slack end-to-end.
+**Status:** ✓ MOSTLY (GATE 3 conditionally closed). OAuth live; meeting bot BLOCKED on Zoom/Meet/Teams dev accounts. Full table: see `DEVELOPMENT_FRONTIER.md` "Per-Level Current Status".
 **Gate:** See `DEVELOPMENT_FRONTIER.md` GATE 3.
 
 ---

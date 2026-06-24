@@ -3,6 +3,7 @@
 
 **Pre-reqs:** GATE 4 closed.
 **Goal:** Team branding, SAML SSO, public API, marketing site polish, onboarding.
+**Status:** ✓ MOSTLY (GATE 5 conditionally closed). All shipped except: 5.2 SSO (Clerk Enterprise), 5.6 Paddle pricing live. Pricing UI now has annual toggle + FAQ (PR #77). Full table: see `DEVELOPMENT_FRONTIER.md` "Per-Level Current Status".
 **Gate:** See `DEVELOPMENT_FRONTIER.md` GATE 5.
 
 ---

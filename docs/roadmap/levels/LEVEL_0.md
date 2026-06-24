@@ -3,6 +3,7 @@
 
 **Pre-reqs:** None. This is level zero.
 **Goal:** Replace mocks with real services. Get one full call from upload → real OpenAI → real DB → display.
+**Status:** ✓ SHIPPED (GATE 0 closed). OpenAI quota still external-blocked; Groq fallback works (PR #45). Full table: see `DEVELOPMENT_FRONTIER.md` "Per-Level Current Status".
 **Gate:** See `DEVELOPMENT_FRONTIER.md` GATE 0.
 
 ---
