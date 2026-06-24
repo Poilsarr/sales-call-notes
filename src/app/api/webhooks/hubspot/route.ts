@@ -56,6 +56,12 @@ export async function POST(req: NextRequest) {
     });
   }
 
-  // TODO: dispatch to CRM-sync worker for actual reconciliation
+  // Reconciliation deferred: the webhook payload shape (HubSpot
+  // contact/company/deal events) does not map to the existing
+  // crmSyncQueue (which requires callId + provider + accessToken).
+  // The AuditLog entry above ("hubspot_webhook_received" with
+  // subscriptionType + portalId in metadata) is the durable record
+  // any future reconciliation worker will poll. Adding a
+  // dispatcher here without a defined target is a no-op.
   return NextResponse.json({ status: "received", eventId }, { status: 200 });
 }
