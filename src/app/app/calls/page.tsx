@@ -30,16 +30,27 @@ export default function CallsPage() {
 
   useEffect(() => {
     if (!user?.id) return;
-    fetch(`/api/history?userId=${user.id}`)
+    setLoading(true);
+    const url = searchQuery.trim()
+      ? `/api/history?userId=${user.id}&q=${encodeURIComponent(searchQuery.trim())}`
+      : `/api/history?userId=${user.id}`;
+    fetch(url)
       .then(r => r.json())
       .then(data => setCalls(Array.isArray(data) ? data : []))
       .catch(() => toast.error('Failed to load calls'))
       .finally(() => setLoading(false));
-  }, [user?.id]);
+  }, [user?.id, searchQuery]);
 
+  // Server-side search already filtered; the client-side filter below
+  // remains as a defensive narrowing on filename/summary (matches what
+  // users would expect from the visible placeholder).
   const filteredCalls = calls.filter(call =>
+    !searchQuery.trim() ||
     (call.filename || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
-    (call.summary && call.summary.toLowerCase().includes(searchQuery.toLowerCase()))
+    (call.summary && call.summary.toLowerCase().includes(searchQuery.toLowerCase())) ||
+    // The full transcript match comes back from the server; this catches
+    // case-insensitive hits in filename/summary even if server missed.
+    false
   );
 
   const exportCSV = () => {
@@ -81,7 +92,7 @@ export default function CallsPage() {
           <input
             ref={searchRef}
             type="text"
-            placeholder="Search calls by filename or summary..."
+            placeholder="Search all calls (filename, transcript, summary)..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             className="w-full pl-10 pr-4 py-3 bg-zinc-900 border border-zinc-800 rounded-xl text-white placeholder-zinc-500 focus:outline-none focus:border-emerald-500"

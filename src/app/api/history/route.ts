@@ -11,15 +11,35 @@ export async function GET(req: Request) {
 
     const user = await getUserByClerkId(clerkUserId);
 
+    const url = new URL(req.url);
+    const rawQuery = (url.searchParams.get('q') || '').trim().slice(0, 100);
+    const query = rawQuery.replace(/[%_\\]/g, ' ');
+
+    const baseWhere = user.teamId
+      ? {
+          OR: [
+            { userId: user.id },
+            { teamId: user.teamId, sharedWithTeam: true },
+          ],
+        }
+      : { userId: user.id };
+
+    const textFilter = query
+      ? {
+          OR: [
+            { filename: { contains: query, mode: 'insensitive' as const } },
+            { transcript: { contains: query, mode: 'insensitive' as const } },
+            { summary: { contains: query, mode: 'insensitive' as const } },
+          ],
+        }
+      : {};
+
+    const where = textFilter
+      ? { AND: [baseWhere, textFilter] }
+      : baseWhere;
+
     const calls = await prisma.call.findMany({
-      where: user.teamId
-        ? {
-            OR: [
-              { userId: user.id },
-              { teamId: user.teamId, sharedWithTeam: true },
-            ],
-          }
-        : { userId: user.id },
+      where,
       include: {
         actionItems: true,
         decisions: true,

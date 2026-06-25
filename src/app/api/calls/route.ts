@@ -32,21 +32,36 @@ export async function GET(req: NextRequest) {
     const { searchParams } = new URL(req.url);
     const limit = Math.min(Math.max(Number(searchParams.get('limit')) || 20, 1), 100);
     const offset = Math.max(Number(searchParams.get('offset')) || 0, 0);
+    const rawQuery = (searchParams.get('q') || '').trim().slice(0, 100);
+    // Sanitize for Postgres ILIKE: strip % and _ so users can't
+    // accidentally (or intentionally) inject wildcard patterns.
+    const query = rawQuery.replace(/[%_\\]/g, ' ');
 
-    const cacheKey = makeCacheKey('calls', user.id, 'list', `${limit}`, `${offset}`);
+    const cacheKey = makeCacheKey('calls', user.id, 'list', `${limit}`, `${offset}`, query);
     const cached = await cacheGet<{ calls: unknown[]; total: number }>(cacheKey);
     if (cached) {
       return NextResponse.json(cached);
     }
 
+    const where = query
+      ? {
+          userId: user.id,
+          OR: [
+            { filename: { contains: query, mode: 'insensitive' as const } },
+            { transcript: { contains: query, mode: 'insensitive' as const } },
+            { summary: { contains: query, mode: 'insensitive' as const } },
+          ],
+        }
+      : { userId: user.id };
+
     const [calls, total] = await Promise.all([
       prisma.call.findMany({
-        where: { userId: user.id },
+        where,
         orderBy: { createdAt: 'desc' },
         take: limit,
         skip: offset,
       }),
-      prisma.call.count({ where: { userId: user.id } }),
+      prisma.call.count({ where }),
     ]);
 
     const result = { calls, total };
