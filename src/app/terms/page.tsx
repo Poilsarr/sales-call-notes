@@ -23,6 +23,14 @@ export default function TermsPage() {
           <section>
             <h2 className="text-[15px] font-semibold text-gray-900 mb-3">3. User Responsibilities</h2>
             <p>You are responsible for all content you upload. You must ensure you have the necessary consent to record and analyze calls. You may not use the Service for any unlawful purpose.</p>
+            <p className="mt-3">
+              <strong>Browser extension:</strong> by installing our Chrome extension,
+              you confirm that you have consent from all meeting participants to
+              capture the live captions from any meeting where the extension is
+              active. The extension is a convenience tool for users who already
+              have the right to record the meeting; it does not grant any
+              recording rights you would not otherwise have.
+            </p>
           </section>
           <section>
             <h2 className="text-[15px] font-semibold text-gray-900 mb-3">4. Subscription & Billing</h2>
