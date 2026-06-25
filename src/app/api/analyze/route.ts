@@ -437,6 +437,9 @@ export async function POST(req: Request) {
     }
     captureApiError('/api/analyze', error, { method: 'POST' });
     console.error('Analyze route error:', error?.message);
-    return NextResponse.json({ error: 'Analysis failed: ' + error?.message }, { status: 500 });
+    return NextResponse.json(
+      { error: 'Analysis failed. Please try again or contact support.' },
+      { status: 500 }
+    );
   }
 }
