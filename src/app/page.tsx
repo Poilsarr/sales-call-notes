@@ -319,6 +319,37 @@ export default function Home() {
 
       {/* FINAL CTA — closing conversion touchpoint before footer */}
       <FinalCta />
+
+      {/* CHROME EXTENSION — for users who don't want to upload/record */}
+      <section className="px-5 sm:px-8 lg:px-12 py-12 sm:py-16">
+        <div className="max-w-[1100px] mx-auto p-6 sm:p-8 rounded-2xl border border-zinc-200 bg-zinc-50 flex flex-col sm:flex-row items-start sm:items-center gap-6">
+          <div className="w-12 h-12 rounded-xl bg-white border border-zinc-200 flex items-center justify-center shrink-0">
+            <svg className="w-6 h-6" viewBox="0 0 24 24" fill="none">
+              <circle cx="12" cy="12" r="11" fill="#fff" stroke="#4285F4" strokeWidth="1.5" />
+              <circle cx="12" cy="12" r="3.5" fill="#4285F4" />
+              <path d="M12 8.5 L20.5 12 L12 15.5 Z" fill="#EA4335" />
+              <path d="M12 8.5 L3.5 12 L12 15.5 Z" fill="#FBBC04" />
+              <path d="M12 8.5 L12 1 L18 12 Z" fill="#34A853" />
+            </svg>
+          </div>
+          <div className="flex-1 min-w-0">
+            <h3 className="text-[16px] font-semibold tracking-tight text-zinc-900 mb-1">
+              New: Chrome extension for Google Meet
+            </h3>
+            <p className="text-[13px] text-zinc-600">
+              Captures live captions automatically. Your call appears in the
+              dashboard seconds after the meeting ends — no upload, no
+              post-call work.
+            </p>
+          </div>
+          <a
+            href="/extension"
+            className="inline-flex items-center gap-1.5 px-5 py-2.5 rounded-full bg-zinc-900 text-white text-[12px] font-semibold hover:bg-zinc-700 transition shrink-0"
+          >
+            Get the extension →
+          </a>
+        </div>
+      </section>
     </main>
   );
 }

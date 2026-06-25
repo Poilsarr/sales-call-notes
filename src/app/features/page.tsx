@@ -490,6 +490,7 @@ function ComparisonSection() {
     { label: "Transcription model", us: "Whisper Large V3", otter: "Otter proprietary", fireflies: "Whisper + proprietary" },
     { label: "Languages", us: "Auto-detect", otter: "English + 3", fireflies: "69", highlight: true },
     { label: "Speaker labels", us: "Auto, per call", otter: "Auto, per call", fireflies: "Auto, per call" },
+    { label: "Chrome extension (Meet)", us: "Live", otter: "Live", fireflies: "Live", highlight: true },
     { label: "Zapier (5,000+ apps)", us: "Live", otter: "Live", fireflies: "Live", highlight: true },
     { label: "Competitive-intel alerts", us: "Real-time Slack ping", otter: "—", fireflies: "—", highlight: true },
     { label: "CRM export (HubSpot + SF)", us: "One click on Pro", otter: "Enterprise only", fireflies: "Included all plans" },
