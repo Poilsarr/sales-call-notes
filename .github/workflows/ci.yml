@@ -46,6 +46,7 @@ jobs:
       - run: npm test
         env:
           DATABASE_URL: postgresql://testuser:testpass@localhost:5432/testdb
+          EXPORT_TOKEN_SECRET: test_secret_at_least_16_chars_for_ci
 
   Lint:
     runs-on: ubuntu-latest
