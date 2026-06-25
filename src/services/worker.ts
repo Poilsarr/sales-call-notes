@@ -3,6 +3,7 @@ import IORedis from "ioredis";
 import { createHash } from "crypto";
 import { getSecret } from "@/lib/secrets";
 import { buildUserExport } from "@/lib/gdpr-export";
+import { issueExportToken } from "@/lib/gdpr-token";
 import prisma from "@/lib/prisma";
 import { buildGraphFromText } from "@/services/ai/knowledge-extract";
 import { HubSpotService } from "@/services/crm/hubspot";
@@ -167,8 +168,12 @@ const dataExportWorker = new Worker("data-export", async (job) => {
   // Persist a record in DB so we can serve it via signed URL
   // (In production, this would upload to S3 and return a presigned URL.
   //  For now, we store inline and return a tokenized download URL.)
-  const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000); // 7 days
-  const token = `exp_${expiresAt.getTime()}_${hash}_${userId}`;
+  const ttlMs = 7 * 24 * 60 * 60 * 1000; // 7 days
+  const token = issueExportToken(userId, ttlMs);
+  if (!token) {
+    throw new Error("EXPORT_TOKEN_SECRET not configured; cannot mint export token");
+  }
+  const expiresAt = new Date(Date.now() + ttlMs);
 
   // Store the export payload server-side (size-limited; in prod use S3)
   const record = await prisma.auditLog.create({
@@ -177,7 +182,7 @@ const dataExportWorker = new Worker("data-export", async (job) => {
       action: "gdpr_export_completed",
       entityId: userId,
       entityType: "user",
-      metadata: { hash, token, expiresAt: expiresAt.toISOString(), sizeBytes: json.length },
+      metadata: { token, expiresAt: expiresAt.toISOString(), sizeBytes: json.length },
     },
   });
 

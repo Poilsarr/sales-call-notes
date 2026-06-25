@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { getExportTokenExpiryMs, isExportTokenValid } from "@/lib/gdpr-token";
+import { getExportTokenExpiryMs, isExportTokenValid, issueExportToken, computeExportTokenHash } from "@/lib/gdpr-token";
 
 // Pure unit tests — no DB, no HTTP. Token shape is the
 // single most failure-prone part of the export pipeline
@@ -35,11 +35,17 @@ describe("isExportTokenValid", () => {
   const pastMs = Date.now() - 1000;
 
   it("accepts a non-expired token with matching userId", () => {
-    expect(isExportTokenValid(`exp_${futureMs}_hash_${userId}`, userId, Date.now())).toBe(true);
+    const token = issueExportToken(userId, 24 * 60 * 60 * 1000);
+    expect(token).not.toBeNull();
+    expect(isExportTokenValid(token!, userId, Date.now())).toBe(true);
   });
 
   it("rejects an expired token", () => {
-    expect(isExportTokenValid(`exp_${pastMs}_hash_${userId}`, userId, Date.now())).toBe(false);
+    const pastMs = Date.now() - 1000;
+    // Forge a token whose expiry is in the past but hash is correct
+    // for that userId+expiry. This proves expiry alone can deny access.
+    const pastHash = computeExportTokenHash(userId, pastMs);
+    expect(isExportTokenValid(`exp_${pastMs}_${pastHash}_${userId}`, userId, Date.now())).toBe(false);
   });
 
   it("rejects a token whose userId does not match", () => {
@@ -48,5 +54,35 @@ describe("isExportTokenValid", () => {
 
   it("rejects a malformed token", () => {
     expect(isExportTokenValid("garbage", userId, Date.now())).toBe(false);
+  });
+
+  // Regression: previously, isExportTokenValid accepted any hash
+  // value as long as expiry + userId matched. The download route
+  // shared the same bug. A malicious caller who knows a victim
+  // userId could mint `exp_<futureMs>_anything_<victim>` and
+  // download the victim's full data export. This test pins the
+  // contract: an unknown hash MUST be rejected.
+  it("rejects a token whose hash was not issued (REGRESSION)", () => {
+    expect(isExportTokenValid(`exp_${futureMs}_FAKE_HASH_${userId}`, userId, Date.now())).toBe(false);
+  });
+});
+
+describe("issueExportToken", () => {
+  const userId = "u1";
+
+  it("produces a token that round-trips through isExportTokenValid", () => {
+    const token = issueExportToken(userId, 24 * 60 * 60 * 1000);
+    expect(isExportTokenValid(token, userId, Date.now())).toBe(true);
+  });
+
+  it("produces a token that fails validation for a different userId", () => {
+    const token = issueExportToken(userId, 24 * 60 * 60 * 1000);
+    expect(isExportTokenValid(token, "attacker-id", Date.now())).toBe(false);
+  });
+
+  it("produced tokens are distinct for distinct users (no collision)", () => {
+    const a = issueExportToken("user-a", 60_000);
+    const b = issueExportToken("user-b", 60_000);
+    expect(a).not.toBe(b);
   });
 });
