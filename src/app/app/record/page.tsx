@@ -36,6 +36,7 @@ export default function RecordPage() {
   const [liveSessionId, setLiveSessionId] = useState(() => crypto.randomUUID());
   const [speechSupported, setSpeechSupported] = useState(false);
   const [removeFillers, setRemoveFillers] = useState(true);
+  const [language, setLanguage] = useState(''); // '' = auto-detect (Whisper default)
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const recognitionRef = useRef<BrowserSpeechRecognition | null>(null);
   const isRecordingRef = useRef(false);
@@ -125,6 +126,7 @@ export default function RecordPage() {
     const formData = new FormData();
     formData.append('file', blob, 'recording.webm');
     formData.append('removeFillers', String(removeFillers));
+    formData.append('language', language);
     
     toast.promise(
       fetch('/api/analyze', { method: 'POST', body: formData }).then(async res => {
@@ -267,6 +269,7 @@ export default function RecordPage() {
                 />
                 Polish transcript by removing filler words
               </label>
+              <LanguagePicker value={language} onChange={setLanguage} />
             </div>
           </div>
 
@@ -288,6 +291,7 @@ export default function RecordPage() {
                 />
                 Polish transcript by removing filler words
               </label>
+              <LanguagePicker value={language} onChange={setLanguage} />
               {uploadedCallId && (
                 <a
                   href={`/app/calls/${uploadedCallId}`}
@@ -313,5 +317,56 @@ export default function RecordPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+/**
+ * Language picker for transcription.
+ *
+ * Defaults to "Auto-detect" (Whisper's default behavior).
+ * The values here cover the languages most common in B2B
+ * sales calls globally — Whisper itself supports 99 languages;
+ * for any language not on this list, the auto-detect path
+ * picks it up from the audio.
+ */
+const SUPPORTED_LANGUAGES: Array<{ code: string; label: string }> = [
+  { code: "", label: "Auto-detect" },
+  { code: "en", label: "English" },
+  { code: "es", label: "Spanish" },
+  { code: "fr", label: "French" },
+  { code: "de", label: "German" },
+  { code: "pt", label: "Portuguese" },
+  { code: "it", label: "Italian" },
+  { code: "nl", label: "Dutch" },
+  { code: "pl", label: "Polish" },
+  { code: "ja", label: "Japanese" },
+  { code: "ko", label: "Korean" },
+  { code: "zh", label: "Chinese (Mandarin)" },
+  { code: "hi", label: "Hindi" },
+  { code: "ar", label: "Arabic" },
+];
+
+function LanguagePicker({
+  value,
+  onChange,
+}: {
+  value: string;
+  onChange: (v: string) => void;
+}) {
+  return (
+    <label className="mt-4 flex items-center gap-3 text-sm text-zinc-300">
+      <span className="text-zinc-400">Transcription language:</span>
+      <select
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        className="px-3 py-1.5 rounded-lg border border-zinc-700 bg-zinc-900 text-sm text-white focus:outline-none focus:border-emerald-500/50"
+      >
+        {SUPPORTED_LANGUAGES.map((l) => (
+          <option key={l.code} value={l.code}>
+            {l.label}
+          </option>
+        ))}
+      </select>
+    </label>
   );
 }
