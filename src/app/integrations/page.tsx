@@ -31,7 +31,7 @@ const integrations = [
   { icon: <Globe size={22} />, name: "Zoom", desc: "Record and transcribe Zoom meetings directly from the platform.", status: "Coming Soon" },
   { icon: <Globe size={22} />, name: "Google Meet", desc: "Live transcription and note-taking for Google Meet calls.", status: "Coming Soon" },
   { icon: <Layers size={22} />, name: "Slack", desc: "Post call summaries, action items, and weekly digests to Slack.", status: "Live", provider: "slack" as const },
-  { icon: <Share2 size={22} />, name: "Zapier", desc: "Connect CallNote Pro to 5,000+ apps via Zapier workflows.", status: "Coming Soon" },
+  { icon: <Share2 size={22} />, name: "Zapier", desc: "Push CallNote Pro events into 5,000+ apps via Zapier workflows.", status: "Live", href: "/integrations/zapier" },
   { icon: <Code size={22} />, name: "REST API", desc: "Build custom integrations with our full-featured REST API.", status: "Business+" },
   { icon: <Download size={22} />, name: "Webhooks", desc: "Receive real-time events when calls are transcribed and analyzed.", status: "Business+" },
   { icon: <Users size={22} />, name: "SSO / SAML 2.0", desc: "Enterprise single sign-on via SAML 2.0, Google, or Microsoft.", status: "Enterprise" },
@@ -298,7 +298,16 @@ function IntegrationsContent() {
                     </div>
                     <h3 className="text-[14px] font-semibold tracking-tight mb-1.5">{int.name}</h3>
                     <p className="text-[13px] text-gray-500 leading-relaxed flex-1">{int.desc}</p>
-                    {int.provider ? (
+                    {int.href ? (
+                      <div className="mt-5 pt-4 border-t border-gray-100 flex justify-end">
+                        <a
+                          href={int.href}
+                          className="inline-flex items-center gap-1.5 text-[11px] font-semibold text-[#F26522] hover:underline"
+                        >
+                          Set up →
+                        </a>
+                      </div>
+                    ) : int.provider ? (
                       <div className="mt-5 pt-4 border-t border-gray-100">
                         {providerStates[int.provider].error && (
                           <div className="flex items-start gap-2 mb-3 text-[12px] text-red-600 bg-red-50 px-3 py-2 rounded-lg">

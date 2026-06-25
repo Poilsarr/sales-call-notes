@@ -8,6 +8,7 @@ import { PostProcessingService } from '@/services/ai/post-processing';
 import { AnalysisService } from '@/services/ai/analysis';
 import { DiarizationService } from '@/services/ai/diarization';
 import { SlackService } from '@/services/slack';
+import { WebhookService } from '@/services/webhooks';
 import { parseRemoveFillers } from '@/lib/transcription-options';
 import { getUserByClerkId } from '@/lib/get-user';
 import { AnalyticsService } from '@/services/ai/analytics';
@@ -379,6 +380,35 @@ export async function POST(req: Request) {
       } catch (err) {
         console.error("CRM auto-sync setup failed (non-fatal):", err);
       }
+    }
+
+    // Fire webhook to subscribed endpoints (Zapier, custom).
+    // Fire-and-forget; failures are logged in WebhookService, not blocking the response.
+    try {
+      const webhooks = new WebhookService();
+      void webhooks.trigger({
+        event: "call.analyzed",
+        callId: call.id,
+        userId: user.id,
+        data: {
+          summary: analysisResult.executiveSummary ?? null,
+          healthScore: analysisResult.salesScorecard?.overallScore ?? null,
+          actionItems: (analysisResult.actionItems ?? []).map((a: any) => ({
+            task: a.task || "",
+            owner: a.owner || null,
+            due: a.due || null,
+          })),
+          competitors: competitors.map((c) => ({
+            name: c.competitor,
+            context: c.context,
+          })),
+          duration: call.duration ?? null,
+          language: transcription.language || null,
+          recordedAt: call.createdAt?.toISOString() ?? null,
+        },
+      });
+    } catch (e) {
+      console.warn("Webhook trigger setup failed (non-fatal):", e);
     }
 
     return NextResponse.json({

@@ -1,10 +1,26 @@
 import prisma from "@/lib/prisma";
 
+/**
+ * Payload posted to user-registered webhooks (and by extension
+ * any Zap that subscribes to call.* events).
+ *
+ * Zapier users can map these fields directly in their Zaps.
+ * Adding a field here is backwards-compatible — existing webhooks
+ * will simply ignore fields they don't recognize.
+ */
 export interface WebhookPayload {
   event: "call.created" | "call.analyzed" | "call.deleted";
   callId: string;
   userId: string;
-  data: Record<string, any>;
+  data: {
+    summary?: string | null;
+    healthScore?: number | null;
+    actionItems?: Array<{ task: string; owner?: string | null; due?: string | null }>;
+    competitors?: Array<{ name: string; context?: string | null }>;
+    duration?: number | null;
+    language?: string | null;
+    recordedAt?: string | null;
+  };
 }
 
 export class WebhookService {
@@ -27,7 +43,10 @@ export class WebhookService {
 
         await fetch(url, {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
+          headers: {
+            "Content-Type": "application/json",
+            "User-Agent": "CallNotePro-Webhook/1.0",
+          },
           body: JSON.stringify(payload),
           signal: AbortSignal.timeout(5000),
         });
