@@ -103,11 +103,11 @@ export default function ZapierSetupPage() {
             <span className="text-xs font-mono text-zinc-400 mt-0.5">01</span>
             <div>
               <h2 className="text-sm font-semibold mb-1">
-                Create a Zap with a "Catch Hook" trigger
+                Create a Zap with a &ldquo;Catch Hook&rdquo; trigger
               </h2>
               <p className="text-xs text-zinc-600">
-                In Zapier, create a new Zap. Search for "Webhooks by Zapier",
-                choose "Catch Hook" as the trigger. Copy the URL Zapier gives you.
+                In Zapier, create a new Zap. Search for &ldquo;Webhooks by Zapier&rdquo;,
+                choose &ldquo;Catch Hook&rdquo; as the trigger. Copy the URL Zapier gives you.
               </p>
               <a
                 href="https://zapier.com/apps/webhook/integrations#triggers-and-actions"
@@ -173,7 +173,7 @@ export default function ZapierSetupPage() {
               <p className="text-xs text-zinc-600">
                 Upload or record a new call in CallNote Pro. Within ~60 seconds
                 (transcription + analysis), your Zap will fire with the payload
-                below. Map fields in Zapier's action step.
+                below. Map fields in Zapier&rsquo;s action step.
               </p>
             </div>
           </div>
