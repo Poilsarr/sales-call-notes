@@ -235,17 +235,24 @@ export default function LiveTranscriptionPage() {
     recognition.onerror = (event) => {
       const code = event?.error;
       if (code === 'not-allowed' || code === 'service-not-allowed') {
-        toast.error('Microphone permission denied for live captions');
+        toast.error('Microphone permission denied for live captions. Recording still saves to disk.');
         return;
       }
       if (code === 'no-speech') {
         return;
       }
       if (code === 'audio-capture') {
-        toast.error('No microphone available for live captions');
+        toast.error('No microphone available for live captions. Recording still saves to disk.');
         return;
       }
-      toast.error('Live caption stream interrupted');
+      if (code === 'network') {
+        toast.error('Network error during live captions. Recording still saves to disk.');
+        return;
+      }
+      if (code === 'aborted') {
+        return;
+      }
+      toast.error('Live caption stream interrupted. Recording still saves to disk.');
     };
 
     recognition.onend = () => {
