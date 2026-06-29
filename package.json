@@ -11,6 +11,8 @@
     "test:watch": "vitest",
     "e2e": "playwright test",
     "postinstall": "prisma generate",
+    "db:deploy": "prisma migrate deploy",
+    "vercel-build": "prisma migrate deploy && next build",
     "perf:audit": "bash scripts/bundle-audit.sh",
     "bundle:proof": "./scripts/refresh-bundle-proof.sh"
   },
