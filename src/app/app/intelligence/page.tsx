@@ -31,6 +31,18 @@ interface CIResponse {
   summary: { total: number; uniqueCompetitors: number; days: number };
 }
 
+interface FetchState {
+  data: CIResponse | null;
+  errorCode: "PLAN_REQUIRED" | "NETWORK" | "SERVER" | null;
+  errorMessage: string | null;
+}
+
+const EMPTY_RESPONSE: CIResponse = {
+  mentions: [],
+  trend: [],
+  summary: { total: 0, uniqueCompetitors: 0, days: 30 },
+};
+
 function getSentimentColor(sentiment: string | null) {
   if (sentiment === 'negative') return 'text-red-400 bg-red-500/10 border-red-500/20';
   if (sentiment === 'positive') return 'text-emerald-400 bg-emerald-500/10 border-emerald-500/20';
@@ -44,17 +56,61 @@ function getSentimentLabel(sentiment: string | null) {
 }
 
 export default function IntelligencePage() {
-  const [data, setData] = useState<CIResponse | null>(null);
+  const [state, setState] = useState<FetchState>({
+    data: null,
+    errorCode: null,
+    errorMessage: null,
+  });
   const [loading, setLoading] = useState(true);
   const [selectedCompetitor, setSelectedCompetitor] = useState<string | null>(null);
 
   useEffect(() => {
-    const params = selectedCompetitor ? `?competitor=${encodeURIComponent(selectedCompetitor)}` : '';
-    fetch(`/api/competitive-intelligence${params}`)
-      .then((r) => r.json())
-      .then(setData)
-      .catch(() => setData({ mentions: [], trend: [], summary: { total: 0, uniqueCompetitors: 0, days: 30 } }))
+    setLoading(true);
+    const params = selectedCompetitor
+      ? `?competitor=${encodeURIComponent(selectedCompetitor)}`
+      : "";
+    const controller = new AbortController();
+    fetch(`/api/competitive-intelligence${params}`, { signal: controller.signal })
+      .then(async (r) => {
+        if (r.status === 403) {
+          const payload = await r.json().catch(() => ({}));
+          if (payload?.code === "PLAN_REQUIRED") {
+            setState({
+              data: null,
+              errorCode: "PLAN_REQUIRED",
+              errorMessage:
+                payload.error ||
+                "Upgrade to Pro to access competitive intelligence",
+            });
+            return;
+          }
+        }
+        if (!r.ok) {
+          const payload = await r.json().catch(() => ({}));
+          setState({
+            data: null,
+            errorCode: "SERVER",
+            errorMessage:
+              payload?.error || `Request failed (${r.status})`,
+          });
+          return;
+        }
+        return r.json();
+      })
+      .then((payload) => {
+        if (payload) setState({ data: payload, errorCode: null, errorMessage: null });
+      })
+      .catch((err) => {
+        if (err?.name === "AbortError") return;
+        setState({
+          data: null,
+          errorCode: "NETWORK",
+          errorMessage:
+            err instanceof Error ? err.message : "Network error",
+        });
+      })
       .finally(() => setLoading(false));
+    return () => controller.abort();
   }, [selectedCompetitor]);
 
   if (loading) {
@@ -65,9 +121,80 @@ export default function IntelligencePage() {
     );
   }
 
-  const mentions = data?.mentions ?? [];
-  const trend = data?.trend ?? [];
-  const summary = data?.summary ?? { total: 0, uniqueCompetitors: 0, days: 30 };
+  // PLAN_REQUIRED is a real state — show the upgrade prompt,
+  // not a fake "no data yet" empty card. The previous version
+  // silently swallowed 403 and rendered zeros, which made
+  // the page look broken.
+  if (state.errorCode === "PLAN_REQUIRED") {
+    return (
+      <div className="space-y-8">
+        <div>
+          <h1 className="text-3xl font-semibold text-white mb-2">Competitive Intelligence</h1>
+          <p className="text-zinc-400">
+            Track competitor mentions across all your calls. Know what prospects are saying.
+          </p>
+        </div>
+        <div className="doppel-outer">
+          <div className="doppel-inner p-8 text-center">
+            <div className="w-12 h-12 rounded-2xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center mx-auto mb-4">
+              <Crosshair className="w-5 h-5 text-amber-400" />
+            </div>
+            <h2 className="text-lg font-medium text-white mb-2">
+              Pro plan required
+            </h2>
+            <p className="text-sm text-zinc-400 mb-6 max-w-md mx-auto">
+              {state.errorMessage ||
+                "Upgrade to Pro to access competitive intelligence."}
+            </p>
+            <a
+              href="/billing"
+              className="inline-flex items-center gap-2 rounded-full px-5 py-2.5 bg-amber-500 hover:bg-amber-400 text-black text-sm font-semibold transition-colors"
+            >
+              See Pro plan
+            </a>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // SERVER / NETWORK — show a real error with retry, not zeros.
+  if (state.errorCode === "SERVER" || state.errorCode === "NETWORK") {
+    return (
+      <div className="space-y-8">
+        <div>
+          <h1 className="text-3xl font-semibold text-white mb-2">Competitive Intelligence</h1>
+          <p className="text-zinc-400">
+            Track competitor mentions across all your calls. Know what prospects are saying.
+          </p>
+        </div>
+        <div className="doppel-outer">
+          <div className="doppel-inner p-8 text-center">
+            <div className="w-12 h-12 rounded-2xl bg-red-500/10 border border-red-500/20 flex items-center justify-center mx-auto mb-4">
+              <AlertTriangle className="w-5 h-5 text-red-400" />
+            </div>
+            <h2 className="text-lg font-medium text-white mb-2">
+              Couldn&apos;t load intelligence
+            </h2>
+            <p className="text-sm text-zinc-400 mb-6 max-w-md mx-auto">
+              {state.errorMessage || "Please try again."}
+            </p>
+            <button
+              onClick={() => setSelectedCompetitor((c) => c)}
+              className="inline-flex items-center gap-2 rounded-full px-5 py-2.5 bg-white text-black text-sm font-semibold hover:bg-white/90 transition-colors"
+            >
+              Try again
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  const data = state.data ?? EMPTY_RESPONSE;
+  const mentions = data.mentions;
+  const trend = data.trend;
+  const summary = data.summary;
 
   return (
     <div className="space-y-8">

@@ -34,11 +34,26 @@ export default function CallsPage() {
     const url = searchQuery.trim()
       ? `/api/history?userId=${user.id}&q=${encodeURIComponent(searchQuery.trim())}`
       : `/api/history?userId=${user.id}`;
-    fetch(url)
-      .then(r => r.json())
-      .then(data => setCalls(Array.isArray(data) ? data : []))
-      .catch(() => toast.error('Failed to load calls'))
+    const controller = new AbortController();
+    fetch(url, { signal: controller.signal })
+      .then(async (r) => {
+        const data = await r.json();
+        if (!r.ok) {
+          throw new Error(
+            (data && (data.error || data.message)) ||
+              `Failed to load calls (${r.status})`,
+          );
+        }
+        return data;
+      })
+      .then((data) => setCalls(Array.isArray(data) ? data : []))
+      .catch((err) => {
+        if (err?.name === "AbortError") return;
+        toast.error(err instanceof Error ? err.message : "Failed to load calls");
+        setCalls([]);
+      })
       .finally(() => setLoading(false));
+    return () => controller.abort();
   }, [user?.id, searchQuery]);
 
   // Server-side search already filtered; the client-side filter below
