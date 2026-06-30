@@ -34,16 +34,21 @@ jobs:
             const vercel = comments.find(c =>
               c.user && c.user.login && c.user.login.toLowerCase().includes('vercel')
             );
-            let url = null;
+            // Default to the public production URL. Vercel preview deployments
+            // are behind the user's workspace SSO, so Lighthouse (running
+            // unauthenticated) gets redirected to vercel.com/login — the score
+            // it produces is the login page, not the product. The user-facing
+            // marketing score they care about is on the public domain.
+            let url = 'https://callnotepro.com';
             if (vercel) {
               const m = (vercel.body || '').match(/https:\/\/[a-z0-9-]+\.vercel\.app\/?/i);
-              if (m) url = m[0].replace(/\/$/, '');
-            }
-            // Fallback: target the production deployment so perf/a11y regressions
-            // on merged code still get caught when Vercel bot is silent.
-            if (!url) {
-              url = 'https://callnotepro.com';
-              core.notice('No Vercel preview URL found — falling back to production.');
+              if (m) {
+                core.notice('Preview URL found but auditing production ' + url + ' to avoid the Vercel SSO login redirect.');
+              } else {
+                core.notice('No Vercel preview URL found — auditing production ' + url + '.');
+              }
+            } else {
+              core.notice('No Vercel comment — auditing production ' + url + '.');
             }
             core.setOutput('url', url);
         env:
@@ -54,7 +59,11 @@ jobs:
         continue-on-error: true
         uses: treosh/lighthouse-ci-action@v11
         with:
-          url: ${{ steps.preview.outputs.url }}
+          # Action input is `urls` (plural), not `url`. Passing the wrong
+          # key silently dropped the URL and `lhci collect` failed with
+          # "No URLs provided to collect" — so the previous runs reported
+          # a fake "Lighthouse OK" status while never scoring anything.
+          urls: ${{ steps.preview.outputs.url }}
           uploadArtifacts: true
           temporaryPublicStorage: true
 
