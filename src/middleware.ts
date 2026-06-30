@@ -12,10 +12,36 @@ const isPublicApi = createRouteMatcher([
 ]);
 const isProtectedRoute = createRouteMatcher(["/api/(.*)", "/dashboard(.*)", "/app(.*)", "/team(.*)", "/integrations(.*)", "/settings(.*)", "/billing(.*)"]);
 
+// Public marketing routes never see the Redis rate-limit hop. The previous
+// version ran `checkRateLimit` on every HTML request, which (a) added a
+// synchronous network roundtrip to TTFB and (b) could return a 429 JSON
+// body for the marketing site when the Upstash bucket was tight —
+// killing the Vercel Speed Index / LCP score.
+const isMarketingRoute = createRouteMatcher([
+  "/",
+  "/pricing",
+  "/features",
+  "/demo",
+  "/extension",
+  "/security",
+  "/privacy",
+  "/terms",
+  "/refund",
+  "/api-docs",
+  "/api-docs/(.*)",
+  "/blog",
+  "/blog/(.*)",
+  "/status",
+  "/sign-in(.*)",
+  "/sign-up(.*)",
+]);
+
 export default clerkMiddleware(async (auth, req: NextRequest) => {
   try {
-    const rateLimitResponse = await rateLimitMiddleware(req);
-    if (rateLimitResponse) return rateLimitResponse;
+    if (!isMarketingRoute(req)) {
+      const rateLimitResponse = await rateLimitMiddleware(req);
+      if (rateLimitResponse) return rateLimitResponse;
+    }
 
     if (isProtectedRoute(req) && !isPublicApi(req)) {
       const { userId } = auth();
