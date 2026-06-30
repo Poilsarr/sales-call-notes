@@ -1,7 +1,7 @@
 {
   "ok": true,
   "provider": "groq",
-  "latencyMs": 156,
+  "latencyMs": 296,
   "status": 200,
   "reply": "pong",
   "results": [
@@ -9,23 +9,30 @@
       "provider": "openai",
       "ok": false,
       "status": 429,
-      "latencyMs": 529,
+      "latencyMs": 1625,
       "model": "gpt-4o-mini",
-      "error": "You exceeded your current quota, please check your plan and billing details."
+      "usage": null,
+      "reply": null,
+      "error": "You exceeded your current quota, please check your plan and billing details. For more information on this error, read the docs: https://platform.openai.com/docs/guides/error-codes/api-errors."
     },
     {
       "provider": "groq",
       "ok": true,
       "status": 200,
-      "latencyMs": 156,
+      "latencyMs": 296,
       "model": "llama-3.1-8b-instant",
       "usage": {
+        "queue_time": 0.158591819,
         "prompt_tokens": 43,
+        "prompt_time": 0.002135901,
         "completion_tokens": 2,
-        "total_tokens": 45
+        "completion_time": 0.00823132,
+        "total_tokens": 45,
+        "total_time": 0.010367221
       },
-      "reply": "pong"
+      "reply": "pong",
+      "error": null
     }
   ],
-  "timestamp": "2026-06-19T13:04:59.567Z"
+  "timestamp": "2026-06-30T07:57:51.246Z"
 }
