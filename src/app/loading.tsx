@@ -1,9 +1,27 @@
 export default function Loading() {
+  // Branded loading state — was the default Next.js "Loading..." text
+  // with a generic spinner (caught on the 2026-06-30 video walkthrough,
+  // frames 26 + 35). Now: a doppel-outer card with the brand mark,
+  // a small brand-tinted pulsing dot, and a single line of monospace
+  // text. Reuses the same visual vocabulary as the rest of the app
+  // (orange #F26522, mono font, doppel depth) so it never feels
+  // like a generic scaffold.
   return (
-    <main className="min-h-screen bg-[#EFEFEF] flex items-center justify-center">
-      <div className="flex flex-col items-center gap-4">
-        <div className="w-8 h-8 border-2 border-gray-900 border-t-transparent rounded-full animate-spin" />
-        <p className="text-sm text-gray-500 animate-pulse">Loading...</p>
+    <main className="min-h-screen bg-[#EFEFEF] flex items-center justify-center p-6">
+      <div className="doppel-outer">
+        <div className="doppel-inner px-6 sm:px-8 py-7 sm:py-8 flex items-center gap-4 bg-white">
+          <div className="relative w-10 h-10 rounded-xl bg-[#F26522]/[0.08] flex items-center justify-center shrink-0">
+            <div className="w-2 h-2 rounded-full bg-[#F26522] animate-pulse" />
+          </div>
+          <div>
+            <p className="text-[14px] font-medium text-gray-900 leading-tight">
+              CallNote Pro
+            </p>
+            <p className="text-[11px] font-mono text-gray-500 mt-0.5">
+              Loading your workspace...
+            </p>
+          </div>
+        </div>
       </div>
     </main>
   );
