@@ -53,6 +53,8 @@ jobs:
       - run: npx prisma db push
       - run: npx tsc --noEmit
       - run: npm test
+        env:
+          EXPORT_TOKEN_SECRET: test_secret_at_least_16_chars_for_ci
       - name: Check schema/migration drift
         env:
           SHADOW_DATABASE_URL: postgresql://testuser:testpass@localhost:5432/shadowdb?schema=public
