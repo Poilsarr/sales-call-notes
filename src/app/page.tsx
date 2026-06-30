@@ -54,16 +54,16 @@ export default function Home() {
                   <div className="flex items-center gap-2 mb-4">
                     <div className="w-2 h-2 rounded-full bg-[#F26522] animate-pulse" />
                     <span className="text-[10px] font-mono tracking-wider text-gray-400 font-medium uppercase">Live summary</span>
-                    <span className="ml-auto text-[9px] font-mono text-gray-300">00:24:18</span>
+                    <span className="ml-auto text-[9px] font-mono text-gray-300">Acme Corp · Discovery</span>
                   </div>
 
                   <div className="space-y-2.5">
                     <div className="flex items-start gap-2.5">
-                      <span className="shrink-0 text-[10px] font-mono font-medium text-[#F26522] bg-[#F26522]/[0.08] px-2 py-0.5 rounded-full leading-none mt-0.5">Sarah</span>
+                      <span className="shrink-0 text-[10px] font-mono font-medium text-[#F26522] bg-[#F26522]/[0.08] px-2 py-0.5 rounded-full leading-none mt-0.5">Priya S.</span>
                       <p className="text-[12.5px] text-gray-600 leading-snug">Pricing decision is going to come from procurement, not us. They want to consolidate vendors next quarter.</p>
                     </div>
                     <div className="flex items-start gap-2.5">
-                      <span className="shrink-0 text-[10px] font-mono font-medium text-[#2563eb] bg-[#2563eb]/[0.08] px-2 py-0.5 rounded-full leading-none mt-0.5">Mike</span>
+                      <span className="shrink-0 text-[10px] font-mono font-medium text-[#2563eb] bg-[#2563eb]/[0.08] px-2 py-0.5 rounded-full leading-none mt-0.5">You</span>
                       <p className="text-[12.5px] text-gray-600 leading-snug">Understood. Want me to loop in your procurement lead next call, or send a one-pager for the consolidation review?</p>
                     </div>
                   </div>
