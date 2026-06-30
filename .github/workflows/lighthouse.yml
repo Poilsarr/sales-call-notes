@@ -54,7 +54,11 @@ jobs:
         continue-on-error: true
         uses: treosh/lighthouse-ci-action@v11
         with:
-          url: ${{ steps.preview.outputs.url }}
+          # Action input is `urls` (plural), not `url`. Passing the wrong
+          # key silently dropped the URL and `lhci collect` failed with
+          # "No URLs provided to collect" — so the previous runs reported
+          # a fake "Lighthouse OK" status while never scoring anything.
+          urls: ${{ steps.preview.outputs.url }}
           uploadArtifacts: true
           temporaryPublicStorage: true
 
