@@ -80,6 +80,20 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="en">
       <head>
+        <link
+          rel="preload"
+          as="font"
+          type="font/woff2"
+          href="/_next/static/media/27834908180db20f-s.p.woff2"
+          crossOrigin="anonymous"
+        />
+        <link
+          rel="preload"
+          as="font"
+          type="font/woff2"
+          href="/_next/static/media/78fec81b34c4a365-s.p.woff2"
+          crossOrigin="anonymous"
+        />
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: productJsonLd() }}
@@ -95,11 +109,18 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           <script
             dangerouslySetInnerHTML={{
               __html: `
-                if ('serviceWorker' in navigator) {
-                  window.addEventListener('load', () => {
-                    navigator.serviceWorker.register('/sw.js').catch(() => {});
-                  });
-                }
+                // Defer service-worker registration until the browser is idle so
+                // it never blocks LCP / Speed Index. requestIdleCallback isn't
+                // available everywhere; fall back to a 2s timeout.
+                (function() {
+                  if (!('serviceWorker' in navigator)) return;
+                  var reg = function() { navigator.serviceWorker.register('/sw.js').catch(function() {}); };
+                  if ('requestIdleCallback' in window) {
+                    window.requestIdleCallback(reg, { timeout: 2000 });
+                  } else {
+                    window.addEventListener('load', function() { setTimeout(reg, 1500); });
+                  }
+                })();
               `,
             }}
           />

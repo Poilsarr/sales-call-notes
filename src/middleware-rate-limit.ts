@@ -2,9 +2,21 @@ import { checkRateLimit } from "@/lib/rate-limit";
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 
+/**
+ * Rate-limit gate. The marketing site (public HTML routes) is short-
+ * circuited one level up in `middleware.ts`; this function is only
+ * invoked for `/api/*` and protected routes. We still defend in depth
+ * by also short-circuiting any non-`/api/*` request here.
+ */
 export async function rateLimitMiddleware(req: NextRequest) {
-  const ip = req.ip ?? req.headers.get("x-forwarded-for") ?? req.headers.get("x-real-ip") ?? "anonymous";
   const url = req.nextUrl.pathname;
+  const isApi = url.startsWith('/api/');
+
+  if (!isApi) {
+    return null;
+  }
+
+  const ip = req.ip ?? req.headers.get("x-forwarded-for") ?? req.headers.get("x-real-ip") ?? "anonymous";
 
   let type = 'default';
   if (url.startsWith('/api/analyze')) {
