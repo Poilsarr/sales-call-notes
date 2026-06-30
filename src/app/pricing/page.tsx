@@ -300,8 +300,11 @@ export default function PricingPage() {
                   <thead>
                     <tr className="border-b border-gray-200">
                       <th className="text-left py-3 pr-4 text-gray-500 font-medium">Feature</th>
-                      <th className="text-center py-3 px-4 text-gray-900 font-semibold">
-                        CallNote Pro
+                      <th className="text-center py-3 px-4 text-white font-semibold bg-[#F26522]/[0.06] rounded-t-lg">
+                        <div className="flex items-center justify-center gap-1.5">
+                          <span>CallNote Pro</span>
+                          <span className="w-1 h-1 rounded-full bg-[#F26522]" />
+                        </div>
                       </th>
                       <th className="text-center py-3 px-4 text-gray-500 font-medium">Otter.ai</th>
                       <th className="text-center py-3 px-4 text-gray-500 font-medium">
@@ -311,13 +314,20 @@ export default function PricingPage() {
                   </thead>
                   <tbody>
                     {COMPARISON.map((row, i) => (
-                      <tr key={i} className="border-b border-gray-100">
+                      <tr key={i} className="border-b border-gray-100 last:border-0">
                         <td className="py-3 pr-4 text-gray-600">{row[0]}</td>
-                        <td className="text-center py-3 px-4 text-[#F26522] font-medium">
-                          {row[1]}
+                        <td className="text-center py-3 px-4 bg-[#F26522]/[0.04] text-gray-900">
+                          <div className="flex items-center justify-center gap-1.5">
+                            <span className="w-1 h-1 rounded-full bg-[#F26522] shrink-0" />
+                            <span className="font-medium">{row[1]}</span>
+                          </div>
                         </td>
-                        <td className="text-center py-3 px-4 text-gray-400">{row[2]}</td>
-                        <td className="text-center py-3 px-4 text-gray-400">{row[3]}</td>
+                        <td className="text-center py-3 px-4 text-gray-500">
+                          {row[2]}
+                        </td>
+                        <td className="text-center py-3 px-4 text-gray-500">
+                          {row[3]}
+                        </td>
                       </tr>
                     ))}
                   </tbody>

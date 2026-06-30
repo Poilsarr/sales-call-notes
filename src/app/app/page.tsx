@@ -5,6 +5,7 @@ import { useUser } from '@clerk/nextjs';
 import { StatCard, BentoGrid } from '@/components/bento-stats';
 import { motion } from 'framer-motion';
 import Link from 'next/link';
+import { Upload } from 'lucide-react';
 
 interface AnalyticsData {
   totalCalls: number;
@@ -132,7 +133,66 @@ export default function DashboardPage() {
           ) : loading ? (
             <p className="text-zinc-500">Loading...</p>
           ) : !data || data.recentCalls.length === 0 ? (
-            <p className="text-zinc-500 text-center py-8">No calls analyzed yet. Upload your first call to get started.</p>
+            // Visual empty state — not a single line of "no calls yet".
+            // Three concrete actions the user can take to get their first
+            // call on the dashboard, with the most impactful (upload) at
+            // the top. Replaces the one-line message that made the
+            // dashboard feel empty/broken (the "made through vibecoding"
+            // feel from the 2026-06-30 video walkthrough).
+            <div className="rounded-xl border border-dashed border-zinc-800 bg-zinc-900/30 p-6 sm:p-8">
+              <div className="flex items-center gap-3 mb-5">
+                <div className="w-9 h-9 rounded-lg bg-[#F26522]/10 flex items-center justify-center">
+                  <Upload className="w-4 h-4 text-[#F26522]" />
+                </div>
+                <div>
+                  <p className="text-[15px] font-medium text-white">
+                    Your first call shows up here in under 60 seconds.
+                  </p>
+                  <p className="text-[12.5px] text-zinc-500 mt-0.5">
+                    Pick whichever path is easiest &mdash; same result either way.
+                  </p>
+                </div>
+              </div>
+              <ol className="space-y-2.5 text-[13px]">
+                <li className="flex items-center gap-3 p-3 rounded-lg bg-zinc-900/60 border border-zinc-800/60 hover:border-zinc-700 transition-colors">
+                  <span className="shrink-0 w-6 h-6 rounded-full bg-[#F26522] text-white text-[11px] font-mono font-semibold flex items-center justify-center">
+                    1
+                  </span>
+                  <Link
+                    href="/app/record"
+                    className="flex-1 flex items-center justify-between"
+                  >
+                    <span className="text-white font-medium">
+                      Upload an MP3 / record in browser
+                    </span>
+                    <span className="text-[11px] text-zinc-500">~30s</span>
+                  </Link>
+                </li>
+                <li className="flex items-center gap-3 p-3 rounded-lg bg-zinc-900/60 border border-zinc-800/60 hover:border-zinc-700 transition-colors">
+                  <span className="shrink-0 w-6 h-6 rounded-full bg-zinc-800 text-zinc-300 text-[11px] font-mono font-semibold flex items-center justify-center">
+                    2
+                  </span>
+                  <Link
+                    href="/extension"
+                    className="flex-1 flex items-center justify-between"
+                  >
+                    <span className="text-white font-medium">
+                      Capture live from Google Meet
+                    </span>
+                    <span className="text-[11px] text-zinc-500">auto-save</span>
+                  </Link>
+                </li>
+                <li className="flex items-center gap-3 p-3 rounded-lg bg-zinc-900/60 border border-zinc-800/60">
+                  <span className="shrink-0 w-6 h-6 rounded-full bg-zinc-800 text-zinc-300 text-[11px] font-mono font-semibold flex items-center justify-center">
+                    3
+                  </span>
+                  <span className="flex-1 text-zinc-400">
+                    <span className="text-white font-medium">Paste a Zoom/Meet link</span>
+                    <span className="text-zinc-600"> &mdash; coming soon</span>
+                  </span>
+                </li>
+              </ol>
+            </div>
           ) : (
             <div className="space-y-3">
               {data?.recentCalls.map((call) => {

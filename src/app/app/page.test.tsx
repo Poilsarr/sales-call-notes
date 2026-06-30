@@ -107,10 +107,11 @@ describe('AppDashboardPage (/app)', () => {
 
     // The fix: once Clerk hydrates and the user is signed in, the
     // dashboard fetches and resolves. The recent-calls list should
-    // show the empty-state copy, NOT a permanent "Loading...".
+    // show the visual empty-state (with the upload/extension CTAs),
+    // NOT a permanent "Loading...".
     await waitFor(() => {
       expect(
-        screen.getByText(/no calls analyzed yet/i),
+        screen.getByText(/your first call shows up here/i),
       ).toBeInTheDocument();
     });
     // And the stat cards should show real numbers (0, not "…").
@@ -118,7 +119,7 @@ describe('AppDashboardPage (/app)', () => {
     expect(values.every(v => v === '0' || v === '0%')).toBe(true);
   });
 
-  it('shows the empty state when the user is signed out (rare — layout would normally redirect)', async () => {
+  it('shows the visual empty state when the user is signed out (rare — layout would normally redirect)', async () => {
     mockClerk({ loaded: true });
 
     const { default: DashboardPage } = await import('./page');
@@ -130,7 +131,7 @@ describe('AppDashboardPage (/app)', () => {
     // happen.
     await waitFor(() => {
       expect(
-        screen.getByText(/no calls analyzed yet/i),
+        screen.getByText(/your first call shows up here/i),
       ).toBeInTheDocument();
     });
   });
