@@ -4,7 +4,7 @@ import { useState, useEffect, useRef } from 'react';
 import { useUser } from '@clerk/nextjs';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
-import { Search, Filter, Phone, Download } from 'lucide-react';
+import { Search, Filter, Phone, Download, Upload, Mic, Chrome } from 'lucide-react';
 import UpgradePrompt from '@/components/upgrade-prompt';
 import { toast } from 'sonner';
 
@@ -109,9 +109,85 @@ export default function CallsPage() {
         {loading ? (
           <p className="text-zinc-500 text-center py-12">Loading calls...</p>
         ) : filteredCalls.length === 0 ? (
-          <p className="text-zinc-500 text-center py-12">
-            {calls.length === 0 ? 'No calls found. Upload your first call to get started.' : 'No calls match your search.'}
-          </p>
+          // Visual empty state — same pattern as the /app dashboard
+          // recent-calls empty state. Was a one-liner that made the
+          // page feel "unbuilt". Now: header with icon + h-line +
+          // body + 3 numbered onboarding steps (Upload, Record, Chrome
+          // extension), the most impactful (Upload) styled as the
+          // primary action. Distinguishes "no calls yet" (empty data)
+          // from "no search results" (defensive).
+          <div className="rounded-xl border border-dashed border-zinc-800 bg-zinc-900/30 p-6 sm:p-8">
+            {calls.length === 0 ? (
+              <>
+                <div className="flex items-center gap-3 mb-5">
+                  <div className="w-9 h-9 rounded-lg bg-[#F26522]/10 flex items-center justify-center">
+                    <Phone className="w-4 h-4 text-[#F26522]" />
+                  </div>
+                  <div>
+                    <p className="text-[15px] font-medium text-white">
+                      No calls yet.
+                    </p>
+                    <p className="text-[12.5px] text-zinc-500 mt-0.5">
+                      Every call you upload shows up here, fully transcribed and searchable.
+                    </p>
+                  </div>
+                </div>
+                <ol className="space-y-2.5 text-[13px]">
+                  <li className="flex items-center gap-3 p-3 rounded-lg bg-zinc-900/60 border border-zinc-800/60 hover:border-zinc-700 transition-colors">
+                    <span className="shrink-0 w-6 h-6 rounded-full bg-[#F26522] text-white text-[11px] font-mono font-semibold flex items-center justify-center">
+                      1
+                    </span>
+                    <Link
+                      href="/app/record"
+                      className="flex-1 flex items-center justify-between"
+                    >
+                      <span className="text-white font-medium inline-flex items-center gap-1.5">
+                        <Upload className="w-3.5 h-3.5 text-[#F26522]" />
+                        Upload an MP3 / paste a URL
+                      </span>
+                      <span className="text-[11px] text-zinc-500">~30s</span>
+                    </Link>
+                  </li>
+                  <li className="flex items-center gap-3 p-3 rounded-lg bg-zinc-900/60 border border-zinc-800/60 hover:border-zinc-700 transition-colors">
+                    <span className="shrink-0 w-6 h-6 rounded-full bg-zinc-800 text-zinc-300 text-[11px] font-mono font-semibold flex items-center justify-center">
+                      2
+                    </span>
+                    <Link
+                      href="/app/record"
+                      className="flex-1 flex items-center justify-between"
+                    >
+                      <span className="text-white font-medium inline-flex items-center gap-1.5">
+                        <Mic className="w-3.5 h-3.5 text-zinc-300" />
+                        Record a call in the browser
+                      </span>
+                      <span className="text-[11px] text-zinc-500">live transcript</span>
+                    </Link>
+                  </li>
+                  <li className="flex items-center gap-3 p-3 rounded-lg bg-zinc-900/60 border border-zinc-800/60 hover:border-zinc-700 transition-colors">
+                    <span className="shrink-0 w-6 h-6 rounded-full bg-zinc-800 text-zinc-300 text-[11px] font-mono font-semibold flex items-center justify-center">
+                      3
+                    </span>
+                    <Link
+                      href="/extension"
+                      className="flex-1 flex items-center justify-between"
+                    >
+                      <span className="text-white font-medium inline-flex items-center gap-1.5">
+                        <Chrome className="w-3.5 h-3.5 text-zinc-300" />
+                        Capture live from Google Meet
+                      </span>
+                      <span className="text-[11px] text-zinc-500">auto-save</span>
+                    </Link>
+                  </li>
+                </ol>
+              </>
+            ) : (
+              // Defensive: the server returned calls but the client-side
+              // filter excluded all of them. Plain "no results" state.
+              <p className="text-zinc-500 text-center py-6">
+                No calls match &ldquo;{searchQuery}&rdquo;. Try a shorter search.
+              </p>
+            )}
+          </div>
         ) : (
           filteredCalls.map((call, index) => (
             <motion.div
