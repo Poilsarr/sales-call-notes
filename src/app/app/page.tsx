@@ -24,24 +24,48 @@ interface AnalyticsData {
 }
 
 export default function DashboardPage() {
-  const { user } = useUser();
+  // `isLoaded` distinguishes "Clerk hasn't hydrated yet" from
+  // "Clerk hydrated and the user is not signed in". Without this,
+  // the previous useEffect bailed out on `!user?.id` and never set
+  // `loading=false`, leaving the dashboard stuck on "..." / "Loading..."
+  // forever on a hard refresh of a signed-in tab (the bug from the
+  // 2026-06-30 video walkthrough).
+  const { user, isLoaded: clerkLoaded } = useUser();
   const [data, setData] = useState<AnalyticsData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    if (!user?.id) return;
+    if (!clerkLoaded) return;
+    if (!user?.id) {
+      // Clerk is done hydrating and there's no signed-in user. The
+      // route is gated, so this branch is rare (the layout would
+      // normally redirect), but handle it gracefully instead of
+      // leaving the cards stuck on "...".
+      setLoading(false);
+      return;
+    }
     setError(null);
+    setLoading(true);
     fetch(`/api/analytics?userId=${user.id}&days=30`)
       .then(r => { if (!r.ok) throw new Error('Failed to load analytics'); return r.json(); })
       .then(setData)
       .catch(e => setError(e.message))
       .finally(() => setLoading(false));
-  }, [user?.id]);
+  }, [user?.id, clerkLoaded]);
 
   const pendingActions = data
     ? data.totalActionItems - Math.round(data.totalActionItems * data.completionRate)
     : 0;
+
+  // Show real numbers, not "..." placeholders. The previous version
+  // showed "..." while loading AND when data was null, which made
+  // signed-in users see an empty dashboard that looked broken
+  // (the second bug from the 2026-06-30 video walkthrough).
+  const num = (getter: () => number, format: (n: number) => string = String): string => {
+    if (loading) return '…';
+    return format(getter());
+  };
 
   return (
     <div className="space-y-8">
@@ -53,42 +77,42 @@ export default function DashboardPage() {
       <BentoGrid>
         <StatCard
           title="Total Calls"
-          value={loading ? '...' : data?.totalCalls ?? 0}
+          value={num(() => data?.totalCalls ?? 0)}
           subtitle="Last 30 days"
           trend={data && data.totalCalls > 0 ? 'up' : 'neutral'}
           delay={0}
         />
         <StatCard
           title="Avg Health Score"
-          value={loading ? '...' : `${data?.avgHealthScore ?? 0}%`}
+          value={num(() => data?.avgHealthScore ?? 0, n => `${n}%`)}
           subtitle="Across all calls"
           trend={data && (data.avgHealthScore ?? 0) >= 50 ? 'up' : 'neutral'}
           delay={0.1}
         />
         <StatCard
           title="Pending Actions"
-          value={loading ? '...' : pendingActions}
+          value={pendingActions}
           subtitle="Require attention"
           trend={pendingActions > 0 ? 'neutral' : 'up'}
           delay={0.2}
         />
         <StatCard
           title="Avg Close Rate"
-          value={loading ? '...' : `${data?.avgCloseProbability ?? 0}%`}
+          value={num(() => data?.avgCloseProbability ?? 0, n => `${n}%`)}
           subtitle="Enrollment calls"
           trend={data && (data.avgCloseProbability ?? 0) >= 30 ? 'up' : 'neutral'}
           delay={0.3}
         />
         <StatCard
           title="Completion Rate"
-          value={loading ? '...' : `${Math.round((data?.completionRate ?? 0) * 100)}%`}
+          value={num(() => data?.completionRate ?? 0, n => `${Math.round(n * 100)}%`)}
           subtitle="Action items completed"
           trend={data && (data.completionRate ?? 0) >= 0.5 ? 'up' : 'neutral'}
           delay={0.4}
         />
         <StatCard
           title="Recent Calls"
-          value={loading ? '...' : data?.recentCalls.length ?? 0}
+          value={num(() => data?.recentCalls.length ?? 0)}
           subtitle="In last 30 days"
           trend="neutral"
           delay={0.5}
@@ -107,7 +131,7 @@ export default function DashboardPage() {
             <p className="text-red-400 text-center py-8">{error}</p>
           ) : loading ? (
             <p className="text-zinc-500">Loading...</p>
-          ) : data?.recentCalls.length === 0 ? (
+          ) : !data || data.recentCalls.length === 0 ? (
             <p className="text-zinc-500 text-center py-8">No calls analyzed yet. Upload your first call to get started.</p>
           ) : (
             <div className="space-y-3">
