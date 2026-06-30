@@ -46,14 +46,48 @@ function getSentimentLabel(sentiment: string | null) {
 export default function IntelligencePage() {
   const [data, setData] = useState<CIResponse | null>(null);
   const [loading, setLoading] = useState(true);
+  const [isPlanLocked, setIsPlanLocked] = useState(false);
+  const [isAuthError, setIsAuthError] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const [selectedCompetitor, setSelectedCompetitor] = useState<string | null>(null);
 
   useEffect(() => {
     const params = selectedCompetitor ? `?competitor=${encodeURIComponent(selectedCompetitor)}` : '';
     fetch(`/api/competitive-intelligence${params}`)
-      .then((r) => r.json())
-      .then(setData)
-      .catch(() => setData({ mentions: [], trend: [], summary: { total: 0, uniqueCompetitors: 0, days: 30 } }))
+      .then((r) => {
+        // Check r.ok BEFORE parsing — per the karpathy pitfall, a
+        // `.then(r => r.json()).then(setData)` pattern would
+        // happily treat a 403 PLAN_REQUIRED or 500 error payload
+        // as a valid CIResponse, and the page would render
+        // empty/garbage. Distinguish the three failure modes:
+        //   403 PLAN_REQUIRED → "data" is null, isPlanLocked true
+        //                       → render the upgrade prompt only,
+        //                         no stat cards (the user can't
+        //                         use this feature on their plan)
+        //   401 → "data" null, isAuthError true → re-auth prompt
+        //   4xx/5xx → "data" null, error string set → error card
+        //   network → fallback empty data
+        if (!r.ok) {
+          return r.json().catch(() => ({})).then((body) => {
+            if (r.status === 403 && body?.code === 'PLAN_REQUIRED') {
+              setData(null);
+              setIsPlanLocked(true);
+              return;
+            }
+            if (r.status === 401) {
+              setData(null);
+              setIsAuthError(true);
+              return;
+            }
+            setData(null);
+            setError(body?.message || `Request failed (${r.status})`);
+          });
+        }
+        return r.json().then(setData);
+      })
+      .catch(() =>
+        setData({ mentions: [], trend: [], summary: { total: 0, uniqueCompetitors: 0, days: 30 } })
+      )
       .finally(() => setLoading(false));
   }, [selectedCompetitor]);
 
@@ -61,6 +95,66 @@ export default function IntelligencePage() {
     return (
       <div className="flex items-center justify-center h-64">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-white" />
+      </div>
+    );
+  }
+
+  // 403 PLAN_REQUIRED — render the upgrade prompt only, no stat
+  // cards (the user can't use this feature on their plan and the
+  // stat cards would all show 0, which lies about what the page is
+  // doing). Use the full upgrade prompt (not the minimal banner) so
+  // the user gets a clear path forward.
+  if (isPlanLocked) {
+    return (
+      <div className="space-y-6">
+        <div>
+          <h1 className="text-3xl font-semibold text-white mb-2">Competitive Intelligence</h1>
+          <p className="text-zinc-400">
+            Track competitor mentions across all your calls. Know what prospects are saying.
+          </p>
+        </div>
+        <UpgradePrompt feature="competitive_intelligence" featureName="Competitive Intelligence" />
+      </div>
+    );
+  }
+
+  // 401 — session expired. Clear message, sign-back-in CTA.
+  if (isAuthError) {
+    return (
+      <div className="space-y-6">
+        <div>
+          <h1 className="text-3xl font-semibold text-white mb-2">Competitive Intelligence</h1>
+        </div>
+        <div className="doppel-outer">
+          <div className="doppel-inner p-6 sm:p-8">
+            <p className="text-zinc-200 font-medium mb-1">Your session expired.</p>
+            <p className="text-zinc-500 text-sm mb-5">Sign back in to load your competitive data.</p>
+            <a
+              href="/sign-in"
+              className="inline-flex items-center gap-1.5 px-4 py-2 rounded-full bg-[#F26522] hover:bg-[#e05a1a] text-white text-sm font-semibold transition"
+            >
+              Sign in
+            </a>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // 4xx/5xx — real error card. Replaces the "blank stat + dead void"
+  // failure mode from the 2026-06-30 video.
+  if (error) {
+    return (
+      <div className="space-y-6">
+        <div>
+          <h1 className="text-3xl font-semibold text-white mb-2">Competitive Intelligence</h1>
+        </div>
+        <div className="doppel-outer">
+          <div className="doppel-inner p-6 sm:p-8">
+            <p className="text-zinc-200 font-medium mb-1">Couldn&rsquo;t load competitive data.</p>
+            <p className="text-zinc-500 text-sm font-mono">{error}</p>
+          </div>
+        </div>
       </div>
     );
   }
