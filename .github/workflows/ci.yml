@@ -57,6 +57,7 @@ jobs:
           EXPORT_TOKEN_SECRET: test_secret_at_least_16_chars_for_ci
       - name: Check schema/migration drift
         env:
+          DATABASE_URL: postgresql://testuser:testpass@localhost:5432/testdb
           SHADOW_DATABASE_URL: postgresql://testuser:testpass@localhost:5432/shadowdb?schema=public
         run: |
           PGPASSWORD=testpass psql -h localhost -U testuser -d postgres -c 'CREATE DATABASE shadowdb;' 2>/dev/null || true
