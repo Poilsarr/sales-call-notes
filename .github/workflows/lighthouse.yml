@@ -29,9 +29,15 @@ jobs:
         run: |
           set -e
           mkdir -p psi-reports
+          # The production deployment is at sales-call-notes.vercel.app
+          # (public, no SSO). The user's "callnotepro.com" custom
+          # domain is not yet registered (DNS doesn't resolve), so
+          # PSI cannot audit it -- net::ERR_CONNECTION_FAILED. Audit
+          # the actual prod URL instead.
+          BASE="https://sales-call-notes.vercel.app"
           for strategy in mobile desktop; do
             for path in "" "pricing" "extension"; do
-              url="https://callnotepro.com/${path}"
+              url="${BASE}/${path}"
               encoded=$(python3 -c "import urllib.parse,sys;print(urllib.parse.quote(sys.argv[1], safe=''))" "$url")
               out="psi-reports/${strategy}_$(echo ${path:-home} | tr / _).json"
               echo "Fetching ${url} (${strategy}) -> ${out}"
@@ -56,7 +62,7 @@ jobs:
             const path = require('path');
             const dir = path.join(process.cwd(), 'psi-reports');
             const thresholds = { performance: 70, accessibility: 90, 'best-practices': 85, seo: 90 };
-            let body = `## :lighthouse: Lighthouse (PageSpeed Insights)\n\nReal Chrome in Google's data center, no headless cert issues.\n\n`;
+            let body = `## :lighthouse: Lighthouse (PageSpeed Insights)\n\nReal Chrome in Google's data center, audited against \`sales-call-notes.vercel.app\` (the actual production URL — \`callnotepro.com\` is not yet registered so DNS doesn't resolve).\n\n`;
             let anyWarn = false;
             const strategyEmoji = { mobile: ':iphone:', desktop: ':desktop_computer:' };
             const files = fs.existsSync(dir) ? fs.readdirSync(dir).filter(f => f.endsWith('.json')) : [];
