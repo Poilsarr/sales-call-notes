@@ -14,7 +14,7 @@
           "--disable-dev-shm-usage",
           "--ignore-certificate-errors",
           "--ignore-certificate-errors-spki-list=",
-          "--disable-features=IsolateOrigins,site-per-process,SameSiteByDefaultCookies,CookiesWithoutSameSiteMustBeSecure",
+          "--disable-features=HSTSUpgradedRequests,HSTSPrimingRequireInteraction,IsolateOrigins,site-per-process,SameSiteByDefaultCookies,CookiesWithoutSameSiteMustBeSecure",
           "--disable-web-security",
           "--no-first-run",
           "--no-default-browser-check"

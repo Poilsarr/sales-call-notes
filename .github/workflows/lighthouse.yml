@@ -54,16 +54,23 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Run Lighthouse CI (soft-warn)
+      - name: Run Lighthouse CI (real gate)
         id: lh
         continue-on-error: true
         uses: treosh/lighthouse-ci-action@v11
         with:
-          # Action input is `urls` (plural), not `url`. Passing the wrong
-          # key silently dropped the URL and `lhci collect` failed with
-          # "No URLs provided to collect" — so the previous runs reported
-          # a fake "Lighthouse OK" status while never scoring anything.
-          urls: ${{ steps.preview.outputs.url }}
+          # configPath points to lighthouserc.json, which carries:
+          #   - chromeFlags to bypass CHROME_INTERSTITIAL_ERROR
+          #     (--ignore-certificate-errors + the empty spki-list
+          #     fix the HSTS interstitial on callnotepro.com;
+          #     --disable-features=HSTSUpgradedRequests kills the
+          #     HSTS upgrade that still fires after the cert is OK)
+          #   - explicit URLs (home + pricing) so we audit the
+          #     real product, not the Vercel login redirect
+          #   - chromeFlags --no-sandbox for the ubuntu CI runner
+          #   - numberOfRuns: 1 (median of 3 wastes 6min for no
+          #     extra signal at PR time)
+          configPath: ./lighthouserc.json
           uploadArtifacts: true
           temporaryPublicStorage: true
 
