@@ -87,9 +87,35 @@ export default clerkMiddleware(async (auth, req: NextRequest) => {
   }
 });
 
+// The matcher is the biggest single perf lever for the marketing site.
+// Previously this was the default Next.js catch-all pattern, which
+// caused clerkMiddleware to run on EVERY request — including the static
+// marketing HTML pages. Clerk middleware does a session-cookie read + a
+// crypto verification on every request; on a cold Vercel function (first
+// request after idle) that adds 1-4 seconds of TTFB. The Vercel Speed
+// Insights mobile RES dropped to 30 because the mobile HTML request was
+// the cold-start path. By restricting the matcher to protected routes
+// only, the marketing HTML never touches middleware: it goes straight
+// from the Vercel CDN edge to the static HTML. Static HTML + edge cache
+// = sub-50ms TTFB on every device.
+//
+// /sign-in and /sign-up are Clerk-managed pages and MUST run through
+// middleware so Clerk can detect the "after sign-in" redirect. They're
+// in the matcher explicitly. /api/webhooks, /api/paddle/webhook,
+// /api/health, and /api/v1/* are public APIs that don't need Clerk
+// auth or rate-limit middleware.
 export const config = {
   matcher: [
-    "/((?!_next|[^?]*\\.(?:html?|css|js(?!on)|jpe?g|webp|png|gif|svg|ttf|woff2?|ico|csv|docx?|xlsx?|zip|webmanifest)).*)",
-    "/(api|trpc)(.*)",
+    "/api/((?!webhooks|paddle|health|v1/).*)",
+    "/dashboard/:path*",
+    "/app/:path*",
+    "/team/:path*",
+    "/integrations/:path*",
+    "/settings/:path*",
+    "/billing/:path*",
+    "/sign-in",
+    "/sign-in/:path*",
+    "/sign-up",
+    "/sign-up/:path*",
   ],
 };
