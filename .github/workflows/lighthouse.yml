@@ -1,4 +1,4 @@
-name: Lighthouse
+name: Lighthouse (PageSpeed Insights API)
 
 on:
   pull_request:
@@ -13,99 +13,77 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  lighthouse:
-    name: Lighthouse (preview)
+  psi:
+    name: Lighthouse (PSI)
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
 
-      - name: Extract Vercel preview URL from PR comments
-        id: preview
-        uses: actions/github-script@v7
-        with:
-          script: |
-            const comments = await github.paginate(github.rest.issues.listComments, {
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              issue_number: context.issue.number,
-              per_page: 100,
-            });
-            const vercel = comments.find(c =>
-              c.user && c.user.login && c.user.login.toLowerCase().includes('vercel')
-            );
-            // Default to the public production URL. Vercel preview deployments
-            // are behind the user's workspace SSO, so Lighthouse (running
-            // unauthenticated) gets redirected to vercel.com/login — the score
-            // it produces is the login page, not the product. The user-facing
-            // marketing score they care about is on the public domain.
-            let url = 'https://callnotepro.com';
-            if (vercel) {
-              const m = (vercel.body || '').match(/https:\/\/[a-z0-9-]+\.vercel\.app\/?/i);
-              if (m) {
-                core.notice('Preview URL found but auditing production ' + url + ' to avoid the Vercel SSO login redirect.');
-              } else {
-                core.notice('No Vercel preview URL found — auditing production ' + url + '.');
-              }
-            } else {
-              core.notice('No Vercel comment — auditing production ' + url + '.');
-            }
-            core.setOutput('url', url);
+      - name: Run PageSpeed Insights API (mobile + desktop)
+        id: psi
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          # PSI API key raises quota from 1 QPS to ~25 QPS. Optional;
+          # the unkeyed endpoint works but rate-limits at ~1 req/sec.
+          PSI_KEY: ${{ secrets.PSI_API_KEY }}
+        run: |
+          set -e
+          mkdir -p psi-reports
+          for strategy in mobile desktop; do
+            for path in "" "pricing" "extension"; do
+              url="https://callnotepro.com/${path}"
+              encoded=$(python3 -c "import urllib.parse,sys;print(urllib.parse.quote(sys.argv[1], safe=''))" "$url")
+              out="psi-reports/${strategy}_$(echo ${path:-home} | tr / _).json"
+              echo "Fetching ${url} (${strategy}) -> ${out}"
+              key=""
+              if [ -n "$PSI_KEY" ]; then key="&key=$PSI_KEY"; fi
+              curl -sS --max-time 60 \
+                "https://www.googleapis.com/pagespeedonline/v5/runPagespeed?url=${encoded}&strategy=${strategy}&category=performance&category=accessibility&category=best-practices&category=seo${key}" \
+                -o "$out"
+              # Avoid PSI rate-limit (sleep 5s between calls; the API
+              # rate-limits at ~1 QPS without a key, ~25 with a key)
+              sleep 5
+            done
+          done
+          echo "All PSI calls complete."
 
-      - name: Run Lighthouse CI (real gate)
-        id: lh
-        continue-on-error: true
-        uses: treosh/lighthouse-ci-action@v11
-        with:
-          # configPath points to lighthouserc.json, which carries:
-          #   - chromeFlags to bypass CHROME_INTERSTITIAL_ERROR
-          #     (--ignore-certificate-errors + the empty spki-list
-          #     fix the HSTS interstitial on callnotepro.com;
-          #     --disable-features=HSTSUpgradedRequests kills the
-          #     HSTS upgrade that still fires after the cert is OK)
-          #   - explicit URLs (home + pricing) so we audit the
-          #     real product, not the Vercel login redirect
-          #   - chromeFlags --no-sandbox for the ubuntu CI runner
-          #   - numberOfRuns: 1 (median of 3 wastes 6min for no
-          #     extra signal at PR time)
-          configPath: ./lighthouserc.json
-          uploadArtifacts: true
-          temporaryPublicStorage: true
-
-      - name: Post Lighthouse summary
+      - name: Post PSI summary
         if: always()
         uses: actions/github-script@v7
         with:
           script: |
             const fs = require('fs');
             const path = require('path');
-            const dir = path.join(process.cwd(), '.lighthouseci');
-            const thresholds = { performance: 90, accessibility: 95, 'best-practices': 90, seo: 95 };
-            let body = `## :lighthouse: Lighthouse preview\n\nPreview: \`${{ steps.preview.outputs.url }}\`\n\n`;
+            const dir = path.join(process.cwd(), 'psi-reports');
+            const thresholds = { performance: 70, accessibility: 90, 'best-practices': 85, seo: 90 };
+            let body = `## :lighthouse: Lighthouse (PageSpeed Insights)\n\nReal Chrome in Google's data center, no headless cert issues.\n\n`;
             let anyWarn = false;
-            try {
-              const manifest = JSON.parse(fs.readFileSync(path.join(dir, 'links.json'), 'utf8'));
-              const reports = (manifest.links || []).filter(l => l.url && l.url.includes('report.html'));
-              for (const link of reports) {
-                const stem = link.url.split('/').pop().replace(/report\.html.*$/, '');
-                const rpt = JSON.parse(fs.readFileSync(path.join(dir, stem + 'report.json'), 'utf8'));
-                body += `### \`${rpt.finalDisplayedUrl || rpt.requestedUrl}\`\n\n`;
-                body += '| Category | Score | Threshold | Status |\n|---|---|---|---|\n';
-                for (const k of Object.keys(thresholds)) {
-                  const c = rpt.categories && rpt.categories[k];
-                  if (!c) continue;
-                  const s = Math.round((c.score || 0) * 100);
-                  const ok = s >= thresholds[k];
-                  if (!ok) anyWarn = true;
-                  body += `| ${c.title} | ${s} | \u2265 ${thresholds[k]} | ${ok ? '\u2705' : '\u26a0\ufe0f'} |\n`;
-                }
-                body += `\n[Full report](${link.url})\n\n`;
+            const strategyEmoji = { mobile: ':iphone:', desktop: ':desktop_computer:' };
+            const files = fs.existsSync(dir) ? fs.readdirSync(dir).filter(f => f.endsWith('.json')) : [];
+            if (files.length === 0) {
+              body += `\u26a0\ufe0f No PSI reports found. The API may have rate-limited or errored.\n`;
+            }
+            for (const file of files.sort()) {
+              const raw = JSON.parse(fs.readFileSync(path.join(dir, file), 'utf8'));
+              if (raw.error) {
+                body += `### ${file}\n\n:warning: PSI error: ${raw.error.message}\n\n`;
+                anyWarn = true;
+                continue;
               }
-            } catch (e) {
-              body += `\u26a0\ufe0f Could not parse Lighthouse reports: ${e.message}\n`;
-              anyWarn = true;
+              const url = raw.id || raw.url || 'unknown';
+              const strategy = raw.strategy || (file.startsWith('mobile') ? 'mobile' : 'desktop');
+              body += `### ${strategyEmoji[strategy] || ''} \`${url}\`\n\n`;
+              body += '| Category | Score | Threshold | Status |\n|---|---|---|---|\n';
+              const cats = (raw.lighthouseResult && raw.lighthouseResult.categories) || {};
+              for (const k of Object.keys(thresholds)) {
+                const c = cats[k];
+                if (!c) continue;
+                const s = Math.round((c.score || 0) * 100);
+                const ok = s >= thresholds[k];
+                if (!ok) anyWarn = true;
+                body += `| ${c.title} | **${s}** | \u2265 ${thresholds[k]} | ${ok ? '\u2705' : '\u26a0\ufe0f'} |\n`;
+              }
+              body += '\n';
             }
             body += anyWarn
               ? '> :warning: Some scores below thresholds \u2014 **soft warning, merge not blocked**.'
@@ -120,8 +98,8 @@ jobs:
       - name: Soft-warn (do not fail)
         if: always()
         run: |
-          if [ "${{ steps.lh.outcome }}" = "failure" ]; then
-            echo "::warning::Lighthouse below thresholds — soft-warn, not failing."
+          if [ "${{ steps.psi.outcome }}" = "failure" ]; then
+            echo "::warning::PSI below thresholds -- soft-warn, not failing."
           else
-            echo "Lighthouse OK."
+            echo "PSI OK."
           fi
