@@ -87,6 +87,10 @@ function ParticleCanvas() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
   useEffect(() => {
+    // ponytail: skip particle sim on mobile — 10k dist-checks/frame @60fps
+    // is the dominant mobile cost on this page. viewport check at mount
+    // is enough; user rarely flips between mobile/desktop mid-session.
+    if (window.matchMedia("(max-width: 767px)").matches) return;
     const canvas = canvasRef.current;
     if (!canvas) return;
     const ctx = canvas.getContext("2d");
@@ -166,9 +170,15 @@ function HeroMockup() {
       { y: 60, opacity: 0, scale: 0.95 },
       { y: 0, opacity: 1, scale: 1, duration: 1.2, delay: 1, ease: "power3.out" }
     );
-    gsap.to(mockupRef.current, {
-      y: -8, duration: 3, ease: "sine.inOut", yoyo: true, repeat: -1, delay: 2.2,
+    // ponytail: yoyo float is desktop-only. matches GSAP's own matchMedia
+    // pattern. mobile gets the static mockup, no infinite paint.
+    const mm = gsap.matchMedia();
+    mm.add("(min-width: 768px)", () => {
+      gsap.to(mockupRef.current, {
+        y: -8, duration: 3, ease: "sine.inOut", yoyo: true, repeat: -1, delay: 2.2,
+      });
     });
+    return () => mm.revert();
   }, { scope: mockupRef });
 
   return (
