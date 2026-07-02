@@ -195,8 +195,33 @@ export default function RecordPage() {
       }
     };
 
-    recognition.onerror = () => {
-      toast.error('Live captions encountered an error');
+    recognition.onerror = (event) => {
+      // Map known SpeechRecognition error codes to actionable
+      // messages. "no-speech" is normal mid-conversation silence
+      // and not surfaced. Everything else is shown, plus a
+      // fallback for unknown codes so the user is never left
+      // wondering why captions disappeared.
+      const code = event?.error as string | undefined;
+      if (code === 'not-allowed' || code === 'service-not-allowed') {
+        toast.error('Microphone permission denied for live captions. Recording still saves to disk.');
+        return;
+      }
+      if (code === 'audio-capture') {
+        toast.error('No microphone available for live captions. Recording still saves to disk.');
+        return;
+      }
+      if (code === 'network') {
+        toast.error('Network error during live captions. Recording still saves to disk.');
+        return;
+      }
+      if (code === 'aborted') {
+        // User-initiated stop. Not an error.
+        return;
+      }
+      if (code === 'no-speech') {
+        return;
+      }
+      toast.error('Live captions unavailable. Recording still saves to disk.');
     };
 
     recognition.onend = () => {

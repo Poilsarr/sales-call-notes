@@ -37,15 +37,23 @@ jobs:
         with:
           node-version: 20
           cache: 'npm'
+      - name: Write CI .env (override the prod .env that ships in the repo)
+        run: |
+          # The repo commits a .env with the prod DATABASE_URL so local
+          # dev works without setup. CI must NOT touch prod — wipe it
+          # and write a test-only .env before any Prisma or test step.
+          rm -f .env
+          cat > .env <<'EOF'
+          DATABASE_URL=postgresql://testuser:testpass@localhost:5432/testdb
+          EXPORT_TOKEN_SECRET=test_secret_at_least_16_chars_for_ci
+          NEXT_PUBLIC_APP_URL=http://localhost:3000
+          EOF
       - run: npm ci
       - run: npx prisma generate
       - run: npx prisma db push
-        env:
-          DATABASE_URL: postgresql://testuser:testpass@localhost:5432/testdb
       - run: npx tsc --noEmit
       - run: npm test
         env:
-          DATABASE_URL: postgresql://testuser:testpass@localhost:5432/testdb
           EXPORT_TOKEN_SECRET: test_secret_at_least_16_chars_for_ci
       - name: Check schema/migration drift
         env:
@@ -74,11 +82,17 @@ jobs:
         with:
           node-version: 20
           cache: 'npm'
+      - name: Write CI .env
+        run: |
+          rm -f .env
+          cat > .env <<'EOF'
+          DATABASE_URL=postgresql://testuser:testpass@localhost:5432/testdb
+          NEXT_PUBLIC_APP_URL=http://localhost:3000
+          EOF
       - run: npm ci
       - run: npx prisma generate
       - run: npm run build
         env:
-          DATABASE_URL: ${{ secrets.DATABASE_URL || 'postgresql://testuser:testpass@localhost:5432/testdb' }}
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY || 'sk-dummy' }}
           GROQ_API_KEY: ${{ secrets.GROQ_API_KEY || 'gsk_dummy' }}
           NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: ${{ secrets.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY || 'pk_test_dummy' }}
