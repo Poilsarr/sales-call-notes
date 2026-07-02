@@ -18,17 +18,19 @@ const capabilities = [
 
 export default function Home() {
   return (
-    <main className="min-h-screen bg-[#EFEFEF] text-gray-900">
-      {/* HERO */}
-      <section className="relative min-h-[100dvh] flex flex-col">
+    <main className="min-h-screen bg-[#EFEFEF] text-gray-900 pb-20 lg:pb-0">
+      {/* HERO — on tall viewports the column flex stretches the hero; on mobile
+          we use natural flow so the content doesn't sit in the middle of a
+          sea of empty space. */}
+      <section className="relative lg:min-h-[100dvh] flex flex-col">
         <Nav />
-        <div className="flex-1" />
-        <div className="relative z-20 w-full max-w-[1440px] mx-auto px-5 sm:px-8 lg:px-12 pb-14 sm:pb-16 lg:pb-20">
+        <div className="hidden lg:block flex-1" />
+        <div className="relative z-20 w-full max-w-[1440px] mx-auto px-5 sm:px-8 lg:px-12 pt-10 pb-14 sm:pb-16 lg:pb-20">
           <div className="grid grid-cols-1 lg:grid-cols-[1.1fr_0.9fr] gap-10 lg:gap-16 items-end">
             {/* LEFT: headline + sub + CTAs */}
             <div>
               <p className="text-[13px] leading-[14px] text-gray-900 tracking-wide mb-5 sm:mb-8">CallNote Pro</p>
-              <h1 className="text-[clamp(1.75rem,7vw,4.2rem)] sm:text-[clamp(2.5rem,5vw,4.2rem)] font-medium leading-[1.08] tracking-[-0.03em] text-gray-900">
+              <h1 className="text-[clamp(1.75rem,7vw,4.2rem)] sm:text-[clamp(2.5rem,5vw,4.2rem)] font-semibold sm:font-medium leading-[1.08] tracking-[-0.03em] text-gray-900">
                 Know the moment a<br className="hidden sm:block" />
                 <span className="sm:hidden"> </span>competitor enters the deal.
               </h1>
@@ -47,8 +49,11 @@ export default function Home() {
               </div>
             </div>
 
-            {/* RIGHT: product preview card — what a real call summary looks like */}
-            <div className="relative hidden lg:block">
+            {/* RIGHT: product preview card — what a real call summary looks like.
+                Shown on mobile too (capped to a sensible height) so visitors get
+                visual product proof above the fold instead of an empty right
+                column. */}
+            <div className="relative lg:block">
               <div className="doppel-outer">
                 <div className="doppel-inner p-5 sm:p-6">
                   <div className="flex items-center gap-2 mb-4">
@@ -112,7 +117,7 @@ export default function Home() {
       </section>
 
       {/* CAPABILITIES */}
-      <section className="bg-white pt-16 sm:pt-20 lg:pt-28 pb-16 sm:pb-20 lg:pb-28">
+      <section className="bg-white pt-16 sm:pt-20 lg:pt-28 pb-16 sm:pb-20 lg:pb-28 border-t border-gray-200">
         <div className="max-w-[1440px] mx-auto px-5 sm:px-8 lg:px-12">
           <div className="max-w-2xl mb-14">
             <p className="text-[11px] uppercase tracking-[0.18em] text-gray-400 mb-3">Capabilities</p>
@@ -256,7 +261,7 @@ export default function Home() {
       <RoiCalculator />
 
       {/* PRICING + CTA */}
-      <section className="bg-white pt-16 sm:pt-20 lg:pt-28 pb-16 sm:pb-20 lg:pb-28">
+      <section className="bg-white pt-16 sm:pt-20 lg:pt-28 pb-16 sm:pb-20 lg:pb-28 border-t border-gray-200">
         <div className="max-w-[1440px] mx-auto px-5 sm:px-8 lg:px-12">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-center">
             <div>
@@ -350,6 +355,13 @@ export default function Home() {
           </a>
         </div>
       </section>
+
+      {/* STICKY MOBILE CTA — bottom bar, hidden on lg+. Always-visible
+          conversion touchpoint. Reuses the existing HeroCTA island (it
+          already handles signed-in vs signed-out state). */}
+      <div className="fixed bottom-0 inset-x-0 z-40 lg:hidden border-t border-gray-200 bg-white/95 backdrop-blur px-4 py-3 pb-[max(0.75rem,env(safe-area-inset-bottom))]">
+        <HeroCTA />
+      </div>
     </main>
   );
 }
