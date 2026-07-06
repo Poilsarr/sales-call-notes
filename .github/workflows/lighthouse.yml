@@ -22,18 +22,18 @@ jobs:
 
       - name: Run PageSpeed Insights API (mobile + desktop)
         id: psi
+        # ponytail: continue-on-error so a single curl timeout doesn't fail the
+        # whole job. Downstream classifies the empty/missing report as API error.
+        continue-on-error: true
         env:
           # PSI API key raises quota from 1 QPS to ~25 QPS. Optional;
           # the unkeyed endpoint works but rate-limits at ~1 req/sec.
           PSI_KEY: ${{ secrets.PSI_API_KEY }}
         run: |
-          set -e
           mkdir -p psi-reports
-          # The production deployment is at sales-call-notes.vercel.app
-          # (public, no SSO). The user's "callnotepro.com" custom
-          # domain is not yet registered (DNS doesn't resolve), so
-          # PSI cannot audit it -- net::ERR_CONNECTION_FAILED. Audit
-          # the actual prod URL instead.
+          # ponytail: removed `set -e` — a single curl timeout (PSI rate-limit)
+          # would kill the script and skip processing the 5 reports that DID
+          # succeed. Let downstream classify empty/missing as API error.
           BASE="https://sales-call-notes.vercel.app"
           for strategy in mobile desktop; do
             for path in "" "pricing" "extension"; do
@@ -43,9 +43,9 @@ jobs:
               echo "Fetching ${url} (${strategy}) -> ${out}"
               key=""
               if [ -n "$PSI_KEY" ]; then key="&key=$PSI_KEY"; fi
-              curl -sS --max-time 60 \
+              curl -sS --max-time 60 --fail-with-body \
                 "https://www.googleapis.com/pagespeedonline/v5/runPagespeed?url=${encoded}&strategy=${strategy}&category=performance&category=accessibility&category=best-practices&category=seo${key}" \
-                -o "$out"
+                -o "$out" || echo "  curl exited non-zero on ${url} -- downstream will treat as API error"
               # Avoid PSI rate-limit (sleep 5s between calls; the API
               # rate-limits at ~1 QPS without a key, ~25 with a key)
               sleep 5
@@ -131,3 +131,4 @@ jobs:
           else
             echo "PSI OK."
           fi
+
