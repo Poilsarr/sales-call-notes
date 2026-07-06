@@ -54,6 +54,7 @@ jobs:
           echo "All PSI calls complete."
 
       - name: Post PSI summary
+        id: summary
         if: always()
         uses: actions/github-script@v7
         with:
@@ -63,17 +64,24 @@ jobs:
             const dir = path.join(process.cwd(), 'psi-reports');
             const thresholds = { performance: 70, accessibility: 90, 'best-practices': 85, seo: 90 };
             let body = `## :lighthouse: Lighthouse (PageSpeed Insights)\n\nReal Chrome in Google's data center, audited against \`sales-call-notes.vercel.app\` (the actual production URL — \`callnotepro.com\` is not yet registered so DNS doesn't resolve).\n\n`;
+            // ponytail: distinguish API errors from real low scores.
+            // PSI rate-limits often return "Unable to process request" — that's
+            // an infra error, not a perf regression. Don't conflate.
             let anyWarn = false;
+            let anyApiError = false;
+            let anyLowScore = false;
             const strategyEmoji = { mobile: ':iphone:', desktop: ':desktop_computer:' };
             const files = fs.existsSync(dir) ? fs.readdirSync(dir).filter(f => f.endsWith('.json')) : [];
             if (files.length === 0) {
               body += `\u26a0\ufe0f No PSI reports found. The API may have rate-limited or errored.\n`;
+              anyApiError = true;
             }
             for (const file of files.sort()) {
               const raw = JSON.parse(fs.readFileSync(path.join(dir, file), 'utf8'));
               if (raw.error) {
                 body += `### ${file}\n\n:warning: PSI error: ${raw.error.message}\n\n`;
                 anyWarn = true;
+                anyApiError = true;
                 continue;
               }
               const url = raw.id || raw.url || 'unknown';
@@ -86,26 +94,40 @@ jobs:
                 if (!c) continue;
                 const s = Math.round((c.score || 0) * 100);
                 const ok = s >= thresholds[k];
-                if (!ok) anyWarn = true;
+                if (!ok) { anyWarn = true; anyLowScore = true; }
                 body += `| ${c.title} | **${s}** | \u2265 ${thresholds[k]} | ${ok ? '\u2705' : '\u26a0\ufe0f'} |\n`;
               }
               body += '\n';
             }
-            body += anyWarn
-              ? '> :warning: Some scores below thresholds \u2014 **soft warning, merge not blocked**.'
-              : '> :white_check_mark: All scores meet thresholds.';
+            // ponytail: classify the outcome. API errors are soft (infra flake).
+            // Low scores are HARD — block merge. (was: conflated, both soft.)
+            let verdict;
+            if (anyLowScore) {
+              verdict = '> :no_entry: Real Lighthouse score regression detected — **merge BLOCKED**. Re-run after fixing the perf/accessibility/best-practices/SEO regression.';
+            } else if (anyApiError) {
+              verdict = '> :warning: PSI API errors only (rate-limit or transient) — **soft warning, merge not blocked**. Real scores not available; re-run later.';
+            } else {
+              verdict = '> :white_check_mark: All scores meet thresholds.';
+            }
+            body += verdict + '\n';
             await github.rest.issues.createComment({
               owner: context.repo.owner, repo: context.repo.repo,
               issue_number: context.issue.number, body,
             });
+            // ponytail: expose outcome to the next step via outputs
+            core.setOutput('lowScore', anyLowScore ? 'true' : 'false');
+            core.setOutput('apiError', anyApiError ? 'true' : 'false');
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Soft-warn (do not fail)
+      - name: Block on real low score (not API errors)
         if: always()
         run: |
-          if [ "${{ steps.psi.outcome }}" = "failure" ]; then
-            echo "::warning::PSI below thresholds -- soft-warn, not failing."
+          if [ "${{ steps.summary.outputs.lowScore }}" = "true" ]; then
+            echo "::error::Lighthouse score regression — blocking merge."
+            exit 1
+          elif [ "${{ steps.summary.outputs.apiError }}" = "true" ]; then
+            echo "::warning::PSI API errors only (rate-limit). Not blocking."
           else
             echo "PSI OK."
           fi
