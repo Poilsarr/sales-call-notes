@@ -32,7 +32,7 @@ export default function BillingPage() {
   useEffect(() => {
     initializePaddle({
       environment: process.env.NODE_ENV === "production" ? "production" : "sandbox",
-      token: process.env.NEXT_PUBLIC_PADDLE_CLIENT_TOKEN || "",
+      token: process.env.NEXT_PUBLIC_PADDLE_CLIENT_KEY || "",
     }).then(paddleInstance => {
       if (paddleInstance) {
         setPaddle(paddleInstance);

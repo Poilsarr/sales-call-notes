@@ -14,10 +14,11 @@
     "db:deploy": "prisma migrate deploy",
     "vercel-build": "prisma migrate deploy && next build",
     "perf:audit": "bash scripts/bundle-audit.sh",
-    "bundle:proof": "./scripts/refresh-bundle-proof.sh"
+    "bundle:proof": "./scripts/refresh-bundle-proof.sh",
+    "doctor": "npx react-doctor@latest"
   },
   "dependencies": {
-    "@clerk/nextjs": "^5.0.0",
+    "@clerk/nextjs": "^5.7.6",
     "@deepgram/sdk": "^5.4.0",
     "@gsap/react": "^2.1.2",
     "@paddle/paddle-js": "^1.6.4",

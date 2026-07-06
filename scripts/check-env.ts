@@ -104,7 +104,7 @@ export const ENV_GROUPS: readonly EnvGroup[] = [
     description: "Billing",
     vars: [
       { key: "PADDLE_API_KEY", level: "required" },
-      { key: "NEXT_PUBLIC_PADDLE_CLIENT_TOKEN", level: "required" },
+      { key: "NEXT_PUBLIC_PADDLE_CLIENT_KEY", level: "required" },
       { key: "PADDLE_WEBHOOK_SECRET", level: "required" },
     ],
   },

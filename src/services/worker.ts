@@ -1,5 +1,4 @@
 import { Worker } from "bullmq";
-import IORedis from "ioredis";
 import { createHash } from "crypto";
 import { getSecret } from "@/lib/secrets";
 import { buildUserExport } from "@/lib/gdpr-export";
@@ -10,11 +9,13 @@ import { HubSpotService } from "@/services/crm/hubspot";
 import { SalesforceService } from "@/services/crm/salesforce";
 import { logAuditAction } from "@/lib/audit-logger";
 
-const connection = new IORedis({
+// ponytail: pass RedisOptions to BullMQ Worker (it owns the connection).
+// Avoids ioredis/bullmq version-skew TS error.
+const connection = {
   host: getSecret("REDIS_HOST") || "localhost",
   port: Number(getSecret("REDIS_PORT")) || 6379,
   maxRetriesPerRequest: null,
-});
+};
 
 const transcriptionWorker = new Worker("transcription", async (job) => {
   const { filePath, userId } = job.data;
