@@ -16,4 +16,4 @@ export function getPaddleClient(): PaddleSDK {
   return paddleClient;
 }
 
-export const PADDLE_CLIENT_TOKEN = getSecret("NEXT_PUBLIC_PADDLE_CLIENT_TOKEN") || "";
+export const PADDLE_CLIENT_TOKEN = getSecret("NEXT_PUBLIC_PADDLE_CLIENT_KEY") || "";

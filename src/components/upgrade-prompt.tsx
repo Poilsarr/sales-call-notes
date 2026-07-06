@@ -26,7 +26,7 @@ export default function UpgradePrompt({ feature, featureName, onClose, minimal }
   useEffect(() => {
     initializePaddle({
       environment: process.env.NODE_ENV === "production" ? "production" : "sandbox",
-      token: process.env.NEXT_PUBLIC_PADDLE_CLIENT_TOKEN || "",
+      token: process.env.NEXT_PUBLIC_PADDLE_CLIENT_KEY || "",
     }).then(paddleInstance => {
       if (paddleInstance) setPaddle(paddleInstance);
     }).catch(err => {
@@ -93,7 +93,7 @@ export default function UpgradePrompt({ feature, featureName, onClose, minimal }
     // Minimal mode is used as a "feature requires plan X" banner.
     // The Paddle Checkout button was previously disabled with the
     // text "Unavailable" when paddleError was true (e.g. the
-    // NEXT_PUBLIC_PADDLE_CLIENT_TOKEN env var is missing or
+    // NEXT_PUBLIC_PADDLE_CLIENT_KEY env var is missing or
     // Paddle failed to init in the user's region). That was a
     // dead-end — user couldn't upgrade. Fix: when Paddle is
     // unavailable, swap the button to a /pricing link so the

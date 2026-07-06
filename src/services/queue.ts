@@ -1,12 +1,13 @@
 import { Queue } from "bullmq";
-import IORedis from "ioredis";
 import { getSecret } from "@/lib/secrets";
 
-const connection = new IORedis({
+// ponytail: pass RedisOptions to BullMQ (it owns the connection).
+// Avoids ioredis/bullmq version-skew TS error (ioredis 5.11 vs bullmq 5.10 type).
+const connection = {
   host: getSecret("REDIS_HOST") || "localhost",
   port: Number(getSecret("REDIS_PORT")) || 6379,
   maxRetriesPerRequest: null,
-});
+};
 
 export const transcriptionQueue = new Queue("transcription", { connection });
 export const analysisQueue = new Queue("analysis", { connection });
