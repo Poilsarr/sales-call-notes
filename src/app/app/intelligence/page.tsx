@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
+import { useRouter } from 'next/navigation';
 import { BarChart3, TrendingUp, Crosshair, ExternalLink } from 'lucide-react';
 import UpgradePrompt from '@/components/upgrade-prompt';
 
@@ -44,12 +45,15 @@ function getSentimentLabel(sentiment: string | null) {
 }
 
 export default function IntelligencePage() {
+  const router = useRouter();
   const [data, setData] = useState<CIResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [isPlanLocked, setIsPlanLocked] = useState(false);
   const [isAuthError, setIsAuthError] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [selectedCompetitor, setSelectedCompetitor] = useState<string | null>(null);
+  // ponytail: close = leave page. No content behind the prompt anyway.
+  const handleUpgradeClose = () => router.push("/dashboard");
 
   useEffect(() => {
     const params = selectedCompetitor ? `?competitor=${encodeURIComponent(selectedCompetitor)}` : '';
@@ -113,7 +117,7 @@ export default function IntelligencePage() {
             Track competitor mentions across all your calls. Know what prospects are saying.
           </p>
         </div>
-        <UpgradePrompt feature="competitive_intelligence" featureName="Competitive Intelligence" />
+        <UpgradePrompt feature="competitive_intelligence" featureName="Competitive Intelligence" onClose={handleUpgradeClose} />
       </div>
     );
   }
