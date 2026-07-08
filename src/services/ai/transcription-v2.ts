@@ -24,7 +24,10 @@ export class TranscriptionServiceV2 {
 
   async transcribe(
     audioBuffer: Buffer,
-    model: 'whisper-1' | 'whisper-large-v3' = 'whisper-1',
+    // ponytail: default to Groq whisper-large-v3 (~$0.005/call vs $0.18 on openai whisper-1).
+    // Caller can still pass 'whisper-1' if they need it. Existing fallback retry at line 48
+    // remains — when this call is 'whisper-1' and OpenAI fails, we still escalate.
+    model: 'whisper-1' | 'whisper-large-v3' = 'whisper-large-v3',
     language?: string,
     options: { removeFillers?: boolean } = {},
     attempted: string[] = [],
