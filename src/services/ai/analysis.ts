@@ -23,8 +23,11 @@ export class AnalysisService {
     const prompt = await this.loadPrompt('enrollment-calls');
 
     try {
+      // ponytail: gpt-4o-mini for cost (~$0.001/call vs $0.01 gpt-4o).
+      // JSON mode, low temperature, same schema — quality holds for our prompts.
+      // Groq path remains as overflow if OpenAI rate-limits.
       const response = await this.openai.chat.completions.create({
-        model: 'gpt-4o',
+        model: 'gpt-4o-mini',
         messages: [
           { role: 'system', content: prompt },
           { role: 'user', content: transcript }
