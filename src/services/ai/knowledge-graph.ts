@@ -21,7 +21,10 @@ export class KnowledgeGraphService {
 
     if (!call) throw new Error('Call not found');
 
-    const textToEmbed = `${call.summary || ''} ${call.transcript || ''}`;
+    // ponytail: char-cap the embedding input. 16k chars ≈ 4k tokens,
+    // matches the analysis cap. text-embedding-3-small is $0.02/1M tokens
+    // so a 4k-token embed ≈ $0.00008/call (cap from ~$0.0002-0.0005).
+    const textToEmbed = `${call.summary || ''} ${call.transcript || ''}`.slice(0, 16000);
     const embedding = await this.generateEmbedding(textToEmbed);
 
     await prisma.call.update({
