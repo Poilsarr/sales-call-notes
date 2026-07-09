@@ -5,6 +5,14 @@ import path from 'path';
 import { createOpenAIClient } from '@/lib/openai-client';
 import { getSecret } from '@/lib/secrets';
 
+// ponytail: char-cap on transcript sent to the LLM. ~4 chars/token →
+// 16000 chars ≈ 4k tokens, enough headroom for 60-min calls.
+// gpt-4o-mini input is $0.15/1M tokens, so this caps each LLM call
+// at ~$0.0006 input. 4 sends/call × $0.0006 = $0.0024 (was $0.003-0.005).
+// Add proper tiktoken-based token counting when accuracy matters.
+const MAX_TRANSCRIPT_CHARS = 16000;
+const cap = (s: string) => (s.length > MAX_TRANSCRIPT_CHARS ? s.slice(0, MAX_TRANSCRIPT_CHARS) : s);
+
 export class AnalysisService {
   private openai: OpenAI;
   private groqOpenai: OpenAI | null = null;
@@ -30,9 +38,9 @@ export class AnalysisService {
         model: 'gpt-4o-mini',
         messages: [
           { role: 'system', content: prompt },
-          { role: 'user', content: transcript }
+          { role: "user", content: cap(transcript) }
         ],
-        response_format: { type: 'json_object' },
+        response_format: { type: "json_object" },
         temperature: 0.3
       });
       return this.parseResponse(response, segments);
@@ -47,7 +55,7 @@ export class AnalysisService {
         model: 'llama-3.3-70b-versatile',
         messages: [
           { role: 'system', content: prompt },
-          { role: 'user', content: transcript }
+          { role: 'user', content: cap(transcript) }
         ],
         response_format: { type: 'json_object' },
         temperature: 0.3
