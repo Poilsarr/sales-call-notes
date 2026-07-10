@@ -52,8 +52,8 @@ export default function IntelligencePage() {
   const [isAuthError, setIsAuthError] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [selectedCompetitor, setSelectedCompetitor] = useState<string | null>(null);
-  // ponytail: close = leave page. No content behind the prompt anyway.
-  const handleUpgradeClose = () => router.push("/dashboard");
+  // ponytail: close = back to workspace root, not /dashboard.
+  const handleUpgradeClose = () => router.push("/app");
 
   useEffect(() => {
     const params = selectedCompetitor ? `?competitor=${encodeURIComponent(selectedCompetitor)}` : '';
