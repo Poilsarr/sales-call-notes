@@ -43,6 +43,7 @@ export class AnalysisService {
         response_format: { type: "json_object" },
         temperature: 0.3
       });
+      if (response.usage) console.log('[ai] openai usage:', JSON.stringify(response.usage));
       return this.parseResponse(response, segments);
     } catch (openaiError: any) {
       console.log('OpenAI analysis failed, trying Groq:', openaiError?.message?.slice(0, 100));
