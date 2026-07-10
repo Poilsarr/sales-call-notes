@@ -19,8 +19,9 @@ function MetricRow({ name, metric }: { name: string; metric: Metric }) {
       </div>
       <div className="h-1 bg-zinc-800 rounded-full overflow-hidden">
         <motion.div
-          initial={{ width: 0 }}
-          animate={{ width: `${percentage}%` }}
+          initial={{ scaleX: 0 }}
+          animate={{ scaleX: percentage / 100 }}
+          style={{ transformOrigin: "left" }}
           className={`h-full ${percentage > 70 ? 'bg-emerald-500' : percentage > 40 ? 'bg-amber-500' : 'bg-red-500'}`}
         />
       </div>
@@ -114,9 +115,10 @@ export function AnalysisPanel({ analysis }: AnalysisPanelProps) {
           </div>
           <div className="mt-2 h-2 bg-zinc-800 rounded-full overflow-hidden">
             <motion.div
-              initial={{ width: 0 }}
-              animate={{ width: `${analysis.healthScore}%` }}
+              initial={{ scaleX: 0 }}
+              animate={{ scaleX: analysis.healthScore / 100 }}
               transition={{ duration: 1, ease: [0.32, 0.72, 0, 1] }}
+              style={{ transformOrigin: "left" }}
               className="h-full bg-emerald-500 rounded-full"
             />
           </div>
