@@ -1,0 +1,19 @@
+{
+  "$schema": "https://react.doctor/schema/config.json",
+  "ignore": {
+    "overrides": [
+      {
+        "files": [
+          "src/app/api/integrations/google/connect/route.ts",
+          "src/app/api/integrations/slack/connect/route.ts",
+          "src/app/api/integrations/teams/connect/route.ts"
+        ],
+        "rules": ["nextjs-no-side-effect-in-get-handler"]
+      },
+      {
+        "files": ["src/app/api/team/route.ts"],
+        "rules": ["nextjs-no-side-effect-in-get-handler"]
+      }
+    ]
+  }
+}
