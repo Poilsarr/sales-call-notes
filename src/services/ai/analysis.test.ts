@@ -40,7 +40,8 @@ describe('AnalysisService', () => {
     });
 
     vi.mock('fs', () => ({
-      default: { readFileSync: vi.fn().mockReturnValue('# Test Prompt\nAnalyze this call.') }
+      default: { readFileSync: vi.fn().mockReturnValue('# Test Prompt\nAnalyze this call.') },
+      promises: { readFile: vi.fn().mockResolvedValue('# Test Prompt\nAnalyze this call.') }
     }));
 
     const { OpenAI } = await import('openai');
@@ -90,7 +91,8 @@ describe('AnalysisService', () => {
     });
 
     vi.mock('fs', () => ({
-      default: { readFileSync: vi.fn().mockReturnValue('# Test Prompt\nAnalyze this call.') }
+      default: { readFileSync: vi.fn().mockReturnValue('# Test Prompt\nAnalyze this call.') },
+      promises: { readFile: vi.fn().mockResolvedValue('# Test Prompt\nAnalyze this call.') }
     }));
 
     const { OpenAI } = await import('openai');
@@ -132,7 +134,8 @@ describe('AnalysisService', () => {
     });
 
     vi.mock('fs', () => ({
-      default: { readFileSync: vi.fn().mockReturnValue('# Test Prompt\nAnalyze this call.') }
+      default: { readFileSync: vi.fn().mockReturnValue('# Test Prompt\nAnalyze this call.') },
+      promises: { readFile: vi.fn().mockResolvedValue('# Test Prompt\nAnalyze this call.') }
     }));
 
     const { OpenAI } = await import('openai');
@@ -183,7 +186,8 @@ describe('AnalysisService', () => {
     });
 
     vi.mock('fs', () => ({
-      default: { readFileSync: vi.fn().mockReturnValue('# Test Prompt\nAnalyze this call.') }
+      default: { readFileSync: vi.fn().mockReturnValue('# Test Prompt\nAnalyze this call.') },
+      promises: { readFile: vi.fn().mockResolvedValue('# Test Prompt\nAnalyze this call.') }
     }));
 
     const { OpenAI } = await import('openai');
