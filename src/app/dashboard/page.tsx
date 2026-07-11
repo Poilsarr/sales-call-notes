@@ -471,7 +471,7 @@ export default function DashboardPage() {
               data.recentCalls.map((call) => (
                 <a
                   key={call.id}
-                  href={`/calls/${call.id}`}
+                  href={`/app/calls/${call.id}`}
                   className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 p-3 rounded-lg bg-white/5 border border-white/5 text-xs hover:bg-white/10 hover:border-white/10 transition"
                 >
                   <div className="flex items-center gap-3 min-w-0">
