@@ -26,9 +26,9 @@ const PLANS = [
   },
   {
     name: "Pro",
-    monthly: { price: "$9", period: "/month per user" },
-    annual: { price: "$7.50", period: "/month per user, billed annually" },
-    desc: "For serious SDRs who need CRM integration.",
+    monthly: { price: "$9", period: "/month flat" },
+    annual: { price: "$7.50", period: "/month flat, billed annually" },
+    desc: "For serious SDRs who need CRM integration. One price — bring your whole team.",
     features: [
       "1,200 transcription minutes/mo",
       "Unlimited AI summaries",
@@ -44,9 +44,9 @@ const PLANS = [
   },
   {
     name: "Business",
-    monthly: { price: "$29", period: "/month per user" },
-    annual: { price: "$24", period: "/month per user, billed annually" },
-    desc: "For sales teams scaling up.",
+    monthly: { price: "$29", period: "/month flat" },
+    annual: { price: "$24", period: "/month flat, billed annually" },
+    desc: "For sales teams scaling up. Flat-rate — no per-seat math.",
     features: [
       "6,000 transcription minutes/mo",
       "Microsoft Teams integration",
@@ -54,11 +54,12 @@ const PLANS = [
       "Team analytics & coaching",
       "Unlimited file imports",
       "4-hour call limit",
+      "Unlimited team members",
       "Admin controls & usage logs",
       "API access",
     ],
-    cta: "Contact sales",
-    ctaHref: "mailto:sales@callnotepro.com?subject=Business%20Plan%20Inquiry",
+    cta: "Start free",
+    ctaHref: "/sign-up",
     popular: false,
   },
   {
@@ -275,15 +276,24 @@ export default function PricingPage() {
 
       {/* Plans */}
       <section className="pt-8 pb-16 sm:pt-12 sm:pb-20 lg:pt-16 lg:pb-28 px-5 sm:px-8 lg:px-12">
+        <div className="max-w-[1440px] mx-auto mb-6 flex items-center justify-center gap-2 flex-wrap">
+          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#F26522]/10 text-[#F26522] text-[11px] font-semibold">
+            <CheckCircle size={11} /> Flat-rate pricing
+          </span>
+          <span className="text-[12px] text-gray-500">
+            5 reps on Fireflies = <strong className="text-gray-700">$50/mo</strong>. 5 reps on us ={" "}
+            <strong className="text-gray-900">$9/mo</strong>. No per-seat games.
+          </span>
+        </div>
         <div className="max-w-[1440px] mx-auto grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           {PLANS.map((plan, i) => (
             <PlanCard key={plan.name} plan={plan} cycle={cycle} />
           ))}
         </div>
         <p className="text-center text-[11px] text-gray-400 mt-8">
-          All paid plans include unlimited team members on Free + Pro. Business and Enterprise
-          have user limits — see the <a href="#faq" className="underline hover:text-gray-600">FAQ</a>{" "}
-          below.
+          All paid plans are <strong className="text-gray-600">flat-rate</strong> — no per-seat
+          math. Free + Pro have a small team cap; Business and Enterprise include unlimited
+          members. See the <a href="#faq" className="underline hover:text-gray-600">FAQ</a> below.
         </p>
       </section>
 

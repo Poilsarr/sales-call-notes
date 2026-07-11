@@ -1,9 +1,8 @@
 import OpenAI from 'openai';
 import { CallAnalysis, TranscriptionSegment } from '@/types';
-import fs from 'fs';
-import path from 'path';
 import { createOpenAIClient } from '@/lib/openai-client';
 import { getSecret } from '@/lib/secrets';
+import { loadPromptTemplate, isValidTemplate, PromptTemplateId } from '@/lib/prompts-registry';
 
 // ponytail: char-cap on transcript sent to the LLM. ~4 chars/token →
 // 16000 chars ≈ 4k tokens, enough headroom for 60-min calls.
@@ -27,8 +26,8 @@ export class AnalysisService {
     }
   }
 
-  async analyze(transcript: string, segments?: TranscriptionSegment[]): Promise<CallAnalysis> {
-    const prompt = await this.loadPrompt('enrollment-calls');
+  async analyze(transcript: string, segments?: TranscriptionSegment[], templateId?: string): Promise<CallAnalysis> {
+    const prompt = await this.loadPrompt(templateId || 'enrollment-calls');
 
     try {
       // ponytail: gpt-4o-mini for cost (~$0.001/call vs $0.01 gpt-4o).
@@ -87,8 +86,10 @@ export class AnalysisService {
   }
 
   private async loadPrompt(domain: string): Promise<string> {
-    const promptPath = path.resolve(process.cwd(), 'src/lib/prompts', `${domain}.md`);
-    return fs.readFileSync(promptPath, 'utf-8');
+    if (isValidTemplate(domain)) {
+      return loadPromptTemplate(domain);
+    }
+    return loadPromptTemplate('enrollment-calls');
   }
 
   private analyzeSentiment(segments: TranscriptionSegment[]): { timestamp: number; sentiment: string }[] {
