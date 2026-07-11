@@ -1,16 +1,75 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useAuth } from "@clerk/nextjs";
+import { useAuth, useUser } from "@clerk/nextjs";
 import { useRouter, useSearchParams } from "next/navigation";
 import Nav from "@/components/nav";
 import TeamBrandingForm from "@/components/team-branding-form";
 import APIKeysSettings from "@/components/api-keys-settings";
-import { Calendar, Link2, CheckCircle, Loader2, Code, Download, Trash2, AlertTriangle, ShieldCheck } from "lucide-react";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
+import { Section } from "@/components/ui/section";
+import { ProgressBar } from "@/components/ui/progress-bar";
+import { Toggle } from "@/components/ui/toggle";
+import { Badge } from "@/components/ui/badge";
+import { NavTabs } from "@/components/ui/nav-tabs";
+import { Avatar } from "@/components/ui/avatar";
+import { getPlan, hasFeature, type FeatureId, type PlanTier } from "@/lib/plans";
 import { toast } from "sonner";
+import {
+  User,
+  CreditCard,
+  Bell,
+  Sliders,
+  Link2,
+  ShieldCheck,
+  Download,
+  Trash2,
+  AlertTriangle,
+  Loader2,
+  CheckCircle,
+  Calendar,
+  Palette,
+  Key,
+  Code,
+  Zap,
+  Globe,
+  Clock,
+  Mail,
+  Crown,
+  Users,
+  ExternalLink,
+  AlertCircle,
+} from "lucide-react";
+
+interface BillingInfo {
+  plan: PlanTier;
+  usage: number;
+  minuteUsage: number;
+  limit: number | "unlimited";
+  minuteLimit: number | "unlimited";
+  teamMemberCount: number;
+  teamMemberLimit: number | "unlimited";
+  features: Partial<Record<FeatureId, boolean | number>>;
+  subscriptionStatus: string | null;
+  subscriptionPlan: string | null;
+  trialEndsAt: string | null;
+  cancellationEffectiveDate: string | null;
+}
+
+const INTEGRATIONS = [
+  { id: "hubspot", name: "HubSpot", category: "CRM", status: "live", description: "Sync contacts, deals, and notes" },
+  { id: "salesforce", name: "Salesforce", category: "CRM", status: "live", description: "Push calls to Opportunities" },
+  { id: "teams", name: "Microsoft Teams", category: "Meetings", status: "live", description: "Join and transcribe Teams calls" },
+  { id: "slack", name: "Slack", category: "Messaging", status: "live", description: "Share summaries to channels" },
+  { id: "google", name: "Google Calendar", category: "Calendar", status: "live", description: "Auto-detect meetings" },
+  { id: "zoom", name: "Zoom", category: "Meetings", status: "soon", description: "Native bot joining" },
+  { id: "meet", name: "Google Meet", category: "Meetings", status: "soon", description: "Native bot joining" },
+  { id: "zapier", name: "Zapier", category: "Automation", status: "soon", description: "Trigger 5,000+ apps" },
+];
 
 export default function SettingsPage() {
   const { isLoaded: authLoaded, isSignedIn } = useAuth();
+  const { user } = useUser();
   const router = useRouter();
   const searchParams = useSearchParams();
   const tab = searchParams.get("tab") || "general";
@@ -19,151 +78,69 @@ export default function SettingsPage() {
     if (authLoaded && !isSignedIn) router.replace("/sign-in");
   }, [authLoaded, isSignedIn, router]);
 
+  const [billing, setBilling] = useState<BillingInfo | null>(null);
+  const [billingLoading, setBillingLoading] = useState(true);
+
+  // Notifications
+  const [emailDigest, setEmailDigest] = useState(true);
+  const [actionReminders, setActionReminders] = useState(true);
+  const [teamAlerts, setTeamAlerts] = useState(true);
+
+  // Preferences
+  const [autoShare, setAutoShare] = useState(false);
+  const [language, setLanguage] = useState("en");
+  const [tone, setTone] = useState("balanced");
+
+  // Calendar
   const [calendarConnected, setCalendarConnected] = useState(false);
   const [connecting, setConnecting] = useState(false);
+
+  // GDPR
   const [exporting, setExporting] = useState(false);
   const [exportStatus, setExportStatus] = useState<string | null>(null);
   const [exportDownloadUrl, setExportDownloadUrl] = useState<string | null>(null);
   const [deleting, setDeleting] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(false);
 
-  // CRM credential status (lightweight probe — server returns configuredProviders only)
-  const [credentialStatus, setCredentialStatus] = useState<Record<string, boolean> | null>(null);
-  const [credentialChecking, setCredentialChecking] = useState(true);
-
   useEffect(() => {
-    if (tab !== "crm") return;
-    let cancelled = false;
-    setCredentialChecking(true);
-    fetch("/api/integrations", { cache: "no-store" })
-      .then(async (res) => {
-        if (!res.ok) return null;
-        try {
-          return await res.json();
-        } catch {
-          return null;
-        }
-      })
-      .then((data) => {
-        if (cancelled || !data) return;
-        setCredentialStatus(data.configuredProviders ?? null);
-      })
-      .catch(() => {
-        /* silent — fall through to "Not set" */
-      })
-      .finally(() => {
-        if (!cancelled) setCredentialChecking(false);
-      });
-    return () => {
-      cancelled = true;
-    };
-  }, [tab]);
+    fetch("/api/billing", { cache: "no-store" })
+      .then((r) => r.json())
+      .then((d) => setBilling(d))
+      .catch(() => setBilling(null))
+      .finally(() => setBillingLoading(false));
+  }, []);
 
-  const renderCredentialRow = (provider: string, label: string) => {
-    const ok = credentialStatus?.[provider];
-    const isChecking = credentialChecking && ok === undefined;
-    return (
-      <div className="flex items-center justify-between py-2 border-b border-white/5 last:border-b-0">
-        <span className="text-sm text-white/70">{label}</span>
-        {isChecking ? (
-          <span className="text-[11px] text-white/40 flex items-center gap-1.5">
-            <Loader2 className="w-3 h-3 animate-spin" /> Checking…
-          </span>
-        ) : ok ? (
-          <span className="inline-flex items-center gap-1.5 text-[11px] font-medium text-emerald-400">
-            <CheckCircle className="w-3 h-3" /> Configured
-          </span>
-        ) : (
-          <span className="inline-flex items-center gap-1.5 text-[11px] font-medium text-amber-400">
-            <AlertTriangle className="w-3 h-3" /> Not set
-          </span>
-        )}
-      </div>
-    );
-  };
+  const setTab = (id: string) => router.replace(`/settings?tab=${id}`);
 
-  const envPanel = (
-    <div className="space-y-6">
-      <div className="p-6 rounded-2xl bg-linear-surface border border-linear-secondary">
-        <div className="flex items-start justify-between mb-6">
-          <div>
-            <div className="flex items-center gap-3 mb-2">
-              <Code className="w-5 h-5 text-linear-indigo" />
-              <h2 className="text-lg font-medium">CRM Sync (Environment Variables)</h2>
-            </div>
-            <p className="text-sm text-white/50">
-              Add the required OAuth credentials for HubSpot and/or Salesforce. After updating your env vars, reconnect from the Integrations page.
-            </p>
-          </div>
-        </div>
+  const tabs = [
+    { id: "general", label: "General", icon: <User className="w-4 h-4" /> },
+    { id: "workspace", label: "Workspace", icon: <Users className="w-4 h-4" /> },
+    { id: "integrations", label: "Integrations", icon: <Link2 className="w-4 h-4" /> },
+    { id: "api-keys", label: "API Keys", icon: <Key className="w-4 h-4" /> },
+    { id: "security", label: "Security", icon: <ShieldCheck className="w-4 h-4" /> },
+  ];
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <EnvItem
-            title="HubSpot"
-            items={[
-              "HUBSPOT_CLIENT_ID",
-              "HUBSPOT_CLIENT_SECRET",
-            ]}
-          />
-          <EnvItem
-            title="Salesforce"
-            items={[
-              "SALESFORCE_CLIENT_ID",
-              "SALESFORCE_CLIENT_SECRET",
-              "SALESFORCE_AUTH_URL (optional, defaults to login.salesforce.com)",
-            ]}
-          />
-        </div>
-
-        <div className="mt-6 p-4 rounded-xl bg-white/5 border border-white/5">
-          <h3 className="text-sm font-medium mb-3">Credential status</h3>
-          {renderCredentialRow("hubspot", "HubSpot")}
-          {renderCredentialRow("salesforce", "Salesforce")}
-          <p className="text-[11px] text-white/40 mt-3">
-            Status reflects server env vars, not your local .env. After updating Vercel env vars, restart the deployment or wait for redeploy.
-          </p>
-        </div>
-
-        <div className="mt-5 p-4 rounded-xl bg-white/5 border border-white/5">
-          <p className="text-sm text-white/70">
-            Redirect URI used for OAuth: <span className="text-white/90">/integrations</span>
-          </p>
-          <p className="text-xs text-white/40 mt-2">
-            Tip: keep <span className="text-white/60">NEXT_PUBLIC_APP_URL</span> set so OAuth redirects correctly.
-          </p>
-        </div>
-
-        <div className="mt-5 flex flex-wrap items-center gap-3">
-          <a
-            href="/integrations"
-            className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-[#F26522] hover:bg-[#e05a1a] text-white text-xs font-semibold transition"
-          >
-            <Link2 className="w-3.5 h-3.5" />
-            Open Integrations page
-          </a>
-          <a
-            href="https://vercel.com/dashboard"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="text-xs text-white/50 hover:text-white underline underline-offset-2"
-          >
-            Manage Vercel env vars →
-          </a>
-        </div>
-      </div>
-    </div>
-  );
+  const plan = billing ? getPlan(billing.plan) : getPlan("free");
+  const usagePct =
+    typeof billing?.limit === "number" && billing.limit > 0
+      ? Math.min(100, (billing.usage / billing.limit) * 100)
+      : 0;
+  const minutePct =
+    typeof billing?.minuteLimit === "number" && billing.minuteLimit > 0
+      ? Math.min(100, (billing.minuteUsage / billing.minuteLimit) * 100)
+      : 0;
+  const teamPct =
+    typeof billing?.teamMemberLimit === "number" && billing.teamMemberLimit > 0
+      ? Math.min(100, (billing.teamMemberCount / billing.teamMemberLimit) * 100)
+      : 0;
 
   const connectCalendar = async () => {
     setConnecting(true);
     try {
       const res = await fetch("/api/calendar");
       const data = await res.json();
-      if (data.authUrl) {
-        window.open(data.authUrl, "_blank");
-      } else {
-        toast.error("Failed to get calendar auth URL");
-      }
+      if (data.authUrl) window.open(data.authUrl, "_blank");
+      else toast.error("Failed to get calendar auth URL");
     } catch {
       toast.error("Could not connect to calendar service");
     }
@@ -184,7 +161,6 @@ export default function SettingsPage() {
       }
       const jobId = data.jobId;
       setExportStatus("Building export... (typically under 30s)");
-      // Poll status endpoint until completed
       for (let i = 0; i < 30; i++) {
         await new Promise((r) => setTimeout(r, 2000));
         const statusRes = await fetch(`/api/user/export/${jobId}`);
@@ -239,225 +215,436 @@ export default function SettingsPage() {
   return (
     <main className="min-h-screen bg-linear-black text-white">
       <Nav />
-      <div className="max-w-4xl mx-auto px-6 pt-32 pb-20">
-        <div className="flex items-center justify-between mb-10 gap-4">
-          <h1 className="text-3xl font-medium tracking-tight">Settings</h1>
-          <div className="flex items-center gap-2">
-            <button
-              onClick={() => router.replace("/settings?tab=general")}
-              className={`px-4 py-2 rounded-lg text-xs font-medium transition ${
-                tab === "general" ? "bg-white text-linear-black" : "bg-white/5 text-white/60 hover:text-white"
-              }`}
-            >
-              General
-            </button>
-            <button
-              onClick={() => router.replace("/settings?tab=crm")}
-              className={`px-4 py-2 rounded-lg text-xs font-medium transition ${
-                tab === "crm" ? "bg-white text-linear-black" : "bg-white/5 text-white/60 hover:text-white"
-              }`}
-            >
-              CRM Env Vars
-            </button>
-            <button
-              onClick={() => router.replace("/settings?tab=team")}
-              className={`px-4 py-2 rounded-lg text-xs font-medium transition ${
-                tab === "team" ? "bg-white text-linear-black" : "bg-white/5 text-white/60 hover:text-white"
-              }`}
-            >
-              Team
-            </button>
-            <button
-              onClick={() => router.replace("/settings?tab=api-keys")}
-              className={`px-4 py-2 rounded-lg text-xs font-medium transition ${
-                tab === "api-keys" ? "bg-white text-linear-black" : "bg-white/5 text-white/60 hover:text-white"
-              }`}
-            >
-              API Keys
-            </button>
+      <div className="max-w-7xl mx-auto px-6 pt-28 pb-24">
+        <div className="flex flex-col lg:flex-row gap-8">
+          {/* Sidebar */}
+          <aside className="lg:w-64 shrink-0">
+            <div className="sticky top-28">
+              <h1 className="text-2xl font-medium tracking-tight mb-6">Settings</h1>
+              <NavTabs tabs={tabs} active={tab} onChange={setTab} orientation="vertical" />
+            </div>
+          </aside>
+
+          {/* Content */}
+          <div className="flex-1 min-w-0">
+            {tab === "workspace" && (
+              <>
+                <Section title="Workspace" description="Team branding and workspace identity.">
+                  <TeamBrandingForm />
+                </Section>
+              </>
+            )}
+
+            {tab === "integrations" && (
+              <>
+                <Section title="Connected apps" description="Manage integrations with your sales stack.">
+                  <Card>
+                    <CardHeader>
+                      <div className="flex items-center gap-3">
+                        <div className="w-9 h-9 rounded-xl bg-linear-indigo/10 flex items-center justify-center text-linear-indigo">
+                          <Calendar className="w-4 h-4" />
+                        </div>
+                        <div>
+                          <CardTitle>Google Calendar</CardTitle>
+                          <CardDescription>Auto-detect meetings and join them for transcription.</CardDescription>
+                        </div>
+                      </div>
+                      {calendarConnected ? (
+                        <Badge variant="success">
+                          <CheckCircle className="w-3 h-3" /> Connected
+                        </Badge>
+                      ) : (
+                        <button
+                          onClick={connectCalendar}
+                          disabled={connecting}
+                          className="px-4 py-2 rounded-full bg-white text-linear-black text-xs font-semibold hover:bg-white/90 transition disabled:opacity-50 flex items-center gap-2"
+                        >
+                          {connecting ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Link2 className="w-3.5 h-3.5" />}
+                          Connect
+                        </button>
+                      )}
+                    </CardHeader>
+                  </Card>
+                </Section>
+
+                <Section title="Integrations directory" description="Available connections for your workspace.">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {INTEGRATIONS.map((integration) => (
+                      <Card key={integration.id} className="group hover:border-white/10 transition-colors">
+                        <CardContent className="p-5">
+                          <div className="flex items-start justify-between mb-3">
+                            <IntegrationIcon id={integration.id} />
+                            <Badge variant={integration.status === "live" ? "success" : "warning"}>
+                              {integration.status === "live" ? "Live" : "Coming soon"}
+                            </Badge>
+                          </div>
+                          <div className="text-sm font-medium text-white mb-1">{integration.name}</div>
+                          <div className="text-xs text-white/40 mb-3">{integration.description}</div>
+                          <div className="text-[10px] text-white/30 uppercase tracking-wider">{integration.category}</div>
+                        </CardContent>
+                      </Card>
+                    ))}
+                  </div>
+                </Section>
+              </>
+            )}
+
+            {tab === "api-keys" && (
+              <Section title="API Keys" description="Manage programmatic access to your CallNote Pro account.">
+                <APIKeysSettings />
+              </Section>
+            )}
+
+            {tab === "security" && (
+              <>
+                <Section title="Data & privacy" description="Export or permanently delete your account data.">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <Card>
+                      <CardHeader>
+                        <div className="flex items-center gap-3">
+                          <div className="w-9 h-9 rounded-xl bg-linear-indigo/10 flex items-center justify-center text-linear-indigo">
+                            <Download className="w-4 h-4" />
+                          </div>
+                          <div>
+                            <CardTitle>Export my data</CardTitle>
+                            <CardDescription>Download everything we store about you.</CardDescription>
+                          </div>
+                        </div>
+                      </CardHeader>
+                      <CardContent>
+                        <p className="text-sm text-white/50 mb-4">
+                          We bundle all your calls, summaries, action items, comments, and audit logs into a single
+                          JSON file. Link is valid for 7 days.
+                        </p>
+                        <button
+                          onClick={requestExport}
+                          disabled={exporting}
+                          className="px-4 py-2.5 rounded-full bg-white text-linear-black text-xs font-semibold hover:bg-white/90 transition disabled:opacity-50 flex items-center gap-2"
+                        >
+                          {exporting ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Download className="w-3.5 h-3.5" />}
+                          {exporting ? "Building export..." : "Request export"}
+                        </button>
+                        {exportStatus && <p className="text-xs text-white/50 mt-3">{exportStatus}</p>}
+                        {exportDownloadUrl && (
+                          <a href={exportDownloadUrl} className="text-xs text-linear-indigo hover:underline mt-2 inline-block">
+                            Download JSON &darr;
+                          </a>
+                        )}
+                      </CardContent>
+                    </Card>
+
+                    <Card variant="danger">
+                      <CardHeader>
+                        <div className="flex items-center gap-3">
+                          <div className="w-9 h-9 rounded-xl bg-red-500/10 flex items-center justify-center text-red-400">
+                            <Trash2 className="w-4 h-4" />
+                          </div>
+                          <div>
+                            <CardTitle>Delete account</CardTitle>
+                            <CardDescription>Permanently remove your data.</CardDescription>
+                          </div>
+                        </div>
+                      </CardHeader>
+                      <CardContent>
+                        <p className="text-sm text-white/50 mb-4">
+                          Your PII is anonymized immediately. After a 7-day grace period, all calls, comments, and team
+                          memberships are permanently deleted.
+                        </p>
+                        <button
+                          onClick={requestDelete}
+                          disabled={deleting}
+                          className={`px-4 py-2.5 rounded-full text-xs font-semibold transition disabled:opacity-50 flex items-center gap-2 ${
+                            confirmDelete
+                              ? "bg-red-500 text-white hover:bg-red-600"
+                              : "bg-white/5 text-white/70 hover:bg-white/10 border border-white/10"
+                          }`}
+                        >
+                          {deleting ? (
+                            <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                          ) : confirmDelete ? (
+                            <AlertTriangle className="w-3.5 h-3.5" />
+                          ) : (
+                            <Trash2 className="w-3.5 h-3.5" />
+                          )}
+                          {deleting ? "Scheduling..." : confirmDelete ? "Click again to confirm" : "Request deletion"}
+                        </button>
+                      </CardContent>
+                    </Card>
+                  </div>
+                </Section>
+              </>
+            )}
+
+            {tab === "general" && (
+              <>
+                {/* Profile */}
+                <Section title="Profile">
+                  <Card>
+                    <CardContent className="p-6">
+                      <div className="flex items-center gap-4 mb-6">
+                        <Avatar src={user?.imageUrl} name={user?.fullName} size="lg" />
+                        <div>
+                          <div className="text-lg font-medium text-white">{user?.fullName || "Your account"}</div>
+                          <div className="text-sm text-white/40">{user?.primaryEmailAddress?.emailAddress}</div>
+                        </div>
+                        <a
+                          href="/user-profile"
+                          className="ml-auto px-4 py-2 rounded-full bg-white/5 border border-white/10 text-white/70 text-xs font-medium hover:bg-white/10 hover:text-white transition flex items-center gap-2"
+                        >
+                          Edit profile <ExternalLink className="w-3 h-3" />
+                        </a>
+                      </div>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                          <label className="block text-sm text-white/60 mb-2">Display name</label>
+                          <input
+                            type="text"
+                            defaultValue={user?.fullName || ""}
+                            readOnly
+                            className="w-full px-3 py-2 rounded-xl bg-linear-black border border-linear-secondary text-white text-sm"
+                          />
+                          <p className="text-xs text-white/30 mt-2">Managed by Clerk. Click Edit profile to update.</p>
+                        </div>
+                        <div>
+                          <label className="block text-sm text-white/60 mb-2">Email</label>
+                          <input
+                            type="email"
+                            defaultValue={user?.primaryEmailAddress?.emailAddress || ""}
+                            readOnly
+                            className="w-full px-3 py-2 rounded-xl bg-linear-black border border-linear-secondary text-white text-sm"
+                          />
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </Section>
+
+                {/* Plan & usage */}
+                <Section title="Plan & usage" description="Your current plan and monthly consumption.">
+                  <Card variant={billing?.plan === "free" ? "default" : "accent"}>
+                    <CardHeader>
+                      <div className="flex items-center gap-3">
+                        <div className="w-9 h-9 rounded-xl bg-white/5 flex items-center justify-center">
+                          <Crown className="w-4 h-4 text-linear-indigo" />
+                        </div>
+                        <div>
+                          <CardTitle>{plan.name} plan</CardTitle>
+                          <CardDescription>
+                            {billing?.trialEndsAt
+                              ? `Trial ends ${new Date(billing.trialEndsAt).toLocaleDateString()}`
+                              : billing?.cancellationEffectiveDate
+                                ? `Cancels ${new Date(billing.cancellationEffectiveDate).toLocaleDateString()}`
+                                : "Manage your subscription and limits"}
+                          </CardDescription>
+                        </div>
+                      </div>
+                      <a
+                        href="/pricing"
+                        className="px-4 py-2 rounded-full bg-[#F26522] hover:bg-[#e05a1a] text-white text-xs font-semibold transition"
+                      >
+                        Upgrade
+                      </a>
+                    </CardHeader>
+                    <CardContent className="space-y-5">
+                      {billingLoading ? (
+                        <div className="flex items-center gap-2 text-sm text-white/40">
+                          <Loader2 className="w-4 h-4 animate-spin" /> Loading usage…
+                        </div>
+                      ) : billing ? (
+                        <>
+                          <ProgressBar
+                            label="Call uploads"
+                            sublabel={`${billing.usage} / ${billing.limit}${typeof billing.limit === "number" ? "" : ""}`}
+                            value={billing.usage}
+                            max={typeof billing.limit === "number" ? billing.limit : 100}
+                            color={usagePct > 90 ? "red" : usagePct > 70 ? "amber" : "indigo"}
+                          />
+                          <ProgressBar
+                            label="Transcription minutes"
+                            sublabel={`${billing.minuteUsage} / ${billing.minuteLimit}`}
+                            value={billing.minuteUsage}
+                            max={typeof billing.minuteLimit === "number" ? billing.minuteLimit : 100}
+                            color={minutePct > 90 ? "red" : minutePct > 70 ? "amber" : "indigo"}
+                          />
+                          <ProgressBar
+                            label="Team members"
+                            sublabel={`${billing.teamMemberCount} / ${billing.teamMemberLimit}`}
+                            value={billing.teamMemberCount}
+                            max={typeof billing.teamMemberLimit === "number" ? billing.teamMemberLimit : 100}
+                            color={teamPct > 90 ? "red" : teamPct > 70 ? "amber" : "indigo"}
+                          />
+                        </>
+                      ) : (
+                        <p className="text-sm text-white/40">Unable to load usage.</p>
+                      )}
+                    </CardContent>
+                    <CardFooter className="border-t border-white/5 pt-4 mt-2">
+                      <div className="flex flex-wrap gap-2">
+                        {Object.entries(plan.features).slice(0, 8).map(([key, val]) => (
+                          <Badge key={key} variant={val ? "info" : "outline"}>
+                            {val ? <CheckCircle className="w-3 h-3" /> : <Clock className="w-3 h-3" />}
+                            {formatFeatureKey(key)}
+                          </Badge>
+                        ))}
+                      </div>
+                    </CardFooter>
+                  </Card>
+                </Section>
+
+                {/* Preferences */}
+                <Section title="Preferences" description="Customize how CallNote Pro works for you.">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <Card>
+                      <CardHeader>
+                        <div className="flex items-center gap-3">
+                          <Sliders className="w-4 h-4 text-linear-indigo" />
+                          <CardTitle>Transcription</CardTitle>
+                        </div>
+                      </CardHeader>
+                      <CardContent className="space-y-4">
+                        <div>
+                          <label className="block text-sm text-white/60 mb-2">Default language</label>
+                          <select
+                            value={language}
+                            onChange={(e) => setLanguage(e.target.value)}
+                            className="w-full px-3 py-2 rounded-xl bg-linear-black border border-linear-secondary text-white text-sm"
+                          >
+                            <option value="en">English</option>
+                            <option value="es">Spanish</option>
+                            <option value="fr">French</option>
+                            <option value="de">German</option>
+                            <option value="pt">Portuguese</option>
+                            <option value="it">Italian</option>
+                            <option value="nl">Dutch</option>
+                            <option value="pl">Polish</option>
+                            <option value="sv">Swedish</option>
+                            <option value="da">Danish</option>
+                            <option value="fi">Finnish</option>
+                            <option value="hi">Hindi</option>
+                            <option value="auto">Auto-detect</option>
+                          </select>
+                        </div>
+                        <div>
+                          <label className="block text-sm text-white/60 mb-2">Summary tone</label>
+                          <select
+                            value={tone}
+                            onChange={(e) => setTone(e.target.value)}
+                            className="w-full px-3 py-2 rounded-xl bg-linear-black border border-linear-secondary text-white text-sm"
+                          >
+                            <option value="concise">Concise</option>
+                            <option value="balanced">Balanced</option>
+                            <option value="detailed">Detailed</option>
+                            <option value="executive">Executive summary</option>
+                          </select>
+                        </div>
+                      </CardContent>
+                    </Card>
+
+                    <Card>
+                      <CardHeader>
+                        <div className="flex items-center gap-3">
+                          <Bell className="w-4 h-4 text-linear-indigo" />
+                          <CardTitle>Notifications</CardTitle>
+                        </div>
+                      </CardHeader>
+                      <CardContent className="space-y-5">
+                        <Toggle
+                          checked={emailDigest}
+                          onChange={setEmailDigest}
+                          label="Weekly digest"
+                          description="A summary of your calls and action items every Monday."
+                        />
+                        <Toggle
+                          checked={actionReminders}
+                          onChange={setActionReminders}
+                          label="Action item reminders"
+                          description="Remind me about overdue tasks."
+                        />
+                        <Toggle
+                          checked={teamAlerts}
+                          onChange={setTeamAlerts}
+                          label="Team alerts"
+                          description="Notify when teammates mention me or assign calls."
+                        />
+                      </CardContent>
+                    </Card>
+                  </div>
+                </Section>
+              </>
+            )}
           </div>
         </div>
-
-        {tab === "crm" ? (
-          envPanel
-        ) : tab === "team" ? (
-          <TeamBrandingForm />
-        ) : tab === "api-keys" ? (
-          <APIKeysSettings />
-        ) : (
-          <div className="space-y-6">
-            <div className="p-6 rounded-2xl bg-linear-surface border border-linear-secondary">
-              <div className="flex items-start justify-between mb-6">
-                <div>
-                  <div className="flex items-center gap-3 mb-2">
-                    <Calendar className="w-5 h-5 text-linear-indigo" />
-                    <h2 className="text-lg font-medium">Calendar Integration</h2>
-                  </div>
-                  <p className="text-sm text-white/50">Auto-detect meetings from your calendar and join them for transcription.</p>
-                </div>
-                {calendarConnected ? (
-                  <div className="flex items-center gap-2 text-xs text-green-400">
-                    <CheckCircle className="w-3.5 h-3.5" /> Connected
-                  </div>
-                ) : null}
-              </div>
-
-              {calendarConnected ? (
-                <div className="p-4 rounded-xl bg-white/5 border border-white/5">
-                  <div className="flex items-center gap-3 text-sm">
-                    <Calendar className="w-4 h-4 text-linear-indigo" />
-                    <span className="text-white/70">Google Calendar connected</span>
-                  </div>
-                  <p className="text-xs text-white/40 mt-2">
-                    CallNote Pro will automatically detect upcoming meetings with Zoom, Google Meet, and Microsoft Teams links.
-                  </p>
-                </div>
-              ) : (
-                <button
-                  onClick={connectCalendar}
-                  disabled={connecting}
-                  className="flex items-center gap-2 px-6 py-3 bg-white text-linear-black rounded-full text-xs font-semibold hover:bg-white/90 transition disabled:opacity-50"
-                >
-                  {connecting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Link2 className="w-4 h-4" />}
-                  {connecting ? "Connecting..." : "Connect Google Calendar"}
-                </button>
-              )}
-            </div>
-
-            <div className="p-6 rounded-2xl bg-linear-surface border border-linear-secondary">
-              <div className="flex items-center gap-3 mb-4">
-                <Link2 className="w-5 h-5 text-linear-indigo" />
-                <h2 className="text-lg font-medium">Integrations</h2>
-              </div>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                {[
-                  { name: "HubSpot", status: "Live" },
-                  { name: "Salesforce", status: "Live" },
-                  { name: "Microsoft Teams", status: "Live" },
-                  { name: "Google Meet", status: "Coming Soon" },
-                  { name: "Zoom", status: "Coming Soon" },
-                  { name: "Slack", status: "Coming Soon" },
-                ].map((int, i) => (
-                  <div key={i} className="flex items-center justify-between p-3 rounded-xl bg-white/5 border border-white/5">
-                    <span className="text-sm font-medium">{int.name}</span>
-                    <span
-                      className={`text-[10px] font-medium px-2 py-0.5 rounded-full ${
-                        int.status === "Live" ? "bg-green-500/10 text-green-400" : "bg-yellow-500/10 text-yellow-400"
-                      }`}
-                    >
-                      {int.status}
-                    </span>
-                  </div>
-                ))}
-              </div>
-
-            <div className="mt-5 text-xs text-white/40">
-              Need to configure CRM OAuth? Go to <button className="underline hover:text-white" onClick={() => router.replace("/settings?tab=crm")}>CRM Env Vars</button>.
-            </div>
-          </div>
-
-          {/* GDPR / Privacy */}
-          <div className="p-6 rounded-2xl bg-linear-surface border border-linear-secondary">
-            <div className="flex items-start justify-between mb-6 gap-4 flex-wrap">
-              <div>
-                <div className="flex items-center gap-3 mb-2">
-                  <ShieldCheck className="w-5 h-5 text-linear-indigo" />
-                  <h2 className="text-lg font-medium">Your data &amp; privacy</h2>
-                </div>
-                <p className="text-sm text-white/50">
-                  Export every call, action item, and audit record we hold for you — or delete your
-                  account. Required by GDPR &amp; CCPA.
-                </p>
-              </div>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {/* EXPORT */}
-              <div className="p-5 rounded-xl bg-white/[0.03] border border-white/5">
-                <div className="flex items-center gap-2 mb-3">
-                  <Download className="w-4 h-4 text-linear-indigo" />
-                  <h3 className="text-sm font-medium">Export my data</h3>
-                </div>
-                <p className="text-xs text-white/50 mb-4 leading-relaxed">
-                  We bundle all your calls, summaries, action items, comments, and audit logs into a
-                  single JSON file. Link is valid for 7 days.
-                </p>
-                <button
-                  onClick={requestExport}
-                  disabled={exporting}
-                  className="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-white text-linear-black rounded-full text-xs font-semibold hover:bg-white/90 transition disabled:opacity-50"
-                >
-                  {exporting ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Download className="w-3.5 h-3.5" />}
-                  {exporting ? "Building export..." : "Request export"}
-                </button>
-                {exportStatus && (
-                  <p className="text-[11px] text-white/60 mt-3">{exportStatus}</p>
-                )}
-                {exportDownloadUrl && (
-                  <a
-                    href={exportDownloadUrl}
-                    className="text-[11px] text-linear-indigo hover:underline mt-2 inline-block break-all"
-                  >
-                    Download JSON &darr;
-                  </a>
-                )}
-              </div>
-
-              {/* DELETE */}
-              <div className="p-5 rounded-xl bg-red-500/[0.04] border border-red-500/10">
-                <div className="flex items-center gap-2 mb-3">
-                  <Trash2 className="w-4 h-4 text-red-400" />
-                  <h3 className="text-sm font-medium">Delete my account</h3>
-                </div>
-                <p className="text-xs text-white/50 mb-4 leading-relaxed">
-                  Your PII is anonymized immediately. After a 7-day grace period, all your calls,
-                  comments, and team memberships are permanently deleted.
-                </p>
-                <button
-                  onClick={requestDelete}
-                  disabled={deleting}
-                  className={`w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-full text-xs font-semibold transition disabled:opacity-50 ${
-                    confirmDelete
-                      ? "bg-red-500 text-white hover:bg-red-600"
-                      : "bg-white/5 text-white/70 hover:bg-white/10 border border-white/10"
-                  }`}
-                >
-                  {deleting ? (
-                    <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                  ) : confirmDelete ? (
-                    <AlertTriangle className="w-3.5 h-3.5" />
-                  ) : (
-                    <Trash2 className="w-3.5 h-3.5" />
-                  )}
-                  {deleting ? "Scheduling..." : confirmDelete ? "Click again to confirm" : "Request deletion"}
-                </button>
-                {confirmDelete && (
-                  <p className="text-[11px] text-red-300/80 mt-3">
-                    Warning: this begins an irreversible 7-day countdown.
-                  </p>
-                )}
-              </div>
-            </div>
-          </div>
-        </div>
-        )}
       </div>
     </main>
   );
 }
 
-function EnvItem({ title, items }: { title: string; items: string[] }) {
-  return (
-    <div className="p-4 rounded-xl bg-white/5 border border-white/5">
-      <div className="text-sm font-medium mb-3">{title}</div>
-      <ul className="space-y-2">
-        {items.map((it) => (
-          <li key={it} className="flex items-start gap-2 text-sm text-white/70">
-            <span className="w-1.5 h-1.5 rounded-full mt-2 bg-linear-indigo" />
-            <span>{it}</span>
-          </li>
-        ))}
-      </ul>
-    </div>
-  );
+function formatFeatureKey(key: string): string {
+  return key
+    .replace(/_/g, " ")
+    .replace(/\b\w/g, (c) => c.toUpperCase())
+    .replace(/crm/i, "CRM")
+    .replace(/Ai\b/i, "AI")
+    .replace(/Sso/i, "SSO")
+    .replace(/Api/i, "API");
+}
+
+function IntegrationIcon({ id }: { id: string }) {
+  const className = "w-6 h-6 text-white";
+  switch (id) {
+    case "hubspot":
+      return (
+        <div className="w-10 h-10 rounded-xl bg-[#ff7a59]/10 flex items-center justify-center text-[#ff7a59] font-bold text-xs">
+          HS
+        </div>
+      );
+    case "salesforce":
+      return (
+        <div className="w-10 h-10 rounded-xl bg-[#00a1e0]/10 flex items-center justify-center text-[#00a1e0] font-bold text-xs">
+          SF
+        </div>
+      );
+    case "teams":
+      return (
+        <div className="w-10 h-10 rounded-xl bg-[#6264a7]/10 flex items-center justify-center text-[#6264a7] font-bold text-xs">
+          TM
+        </div>
+      );
+    case "slack":
+      return (
+        <div className="w-10 h-10 rounded-xl bg-[#4a154b]/10 flex items-center justify-center text-[#e01e5a] font-bold text-xs">
+          SL
+        </div>
+      );
+    case "google":
+      return (
+        <div className="w-10 h-10 rounded-xl bg-white/5 flex items-center justify-center text-white font-bold text-xs">
+          GC
+        </div>
+      );
+    case "zoom":
+      return (
+        <div className="w-10 h-10 rounded-xl bg-[#2d8cff]/10 flex items-center justify-center text-[#2d8cff] font-bold text-xs">
+          ZM
+        </div>
+      );
+    case "meet":
+      return (
+        <div className="w-10 h-10 rounded-xl bg-[#00832d]/10 flex items-center justify-center text-[#00832d] font-bold text-xs">
+          GM
+        </div>
+      );
+    case "zapier":
+      return (
+        <div className="w-10 h-10 rounded-xl bg-[#ff4a00]/10 flex items-center justify-center text-[#ff4a00] font-bold text-xs">
+          ZP
+        </div>
+      );
+    default:
+      return (
+        <div className="w-10 h-10 rounded-xl bg-white/5 flex items-center justify-center text-white font-bold text-xs">
+          <Link2 className="w-4 h-4" />
+        </div>
+      );
+  }
 }

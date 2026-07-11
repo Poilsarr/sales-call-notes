@@ -1,8 +1,16 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useUser } from "@clerk/nextjs";
 import Nav from "@/components/nav";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { Section } from "@/components/ui/section";
+import { StatGrid } from "@/components/ui/stat-grid";
+import { ProgressBar } from "@/components/ui/progress-bar";
+import { AreaChart } from "@/components/ui/area-chart";
+import { DonutChart } from "@/components/ui/donut-chart";
+import { Badge } from "@/components/ui/badge";
+import { getPlan, type PlanTier } from "@/lib/plans";
 import {
   BarChart3,
   TrendingUp,
@@ -22,6 +30,10 @@ import {
   MessageSquare,
   Send,
   FileText,
+  Crown,
+  Activity,
+  Clock,
+  Layers,
 } from "lucide-react";
 
 type AnalyticsData = {
@@ -56,9 +68,15 @@ type AnalyticsData = {
   }>;
 };
 
-function normalizeAnalyticsData(
-  payload: Partial<AnalyticsData> | null | undefined,
-): AnalyticsData {
+type BillingInfo = {
+  plan: PlanTier;
+  usage: number;
+  minuteUsage: number;
+  limit: number | "unlimited";
+  minuteLimit: number | "unlimited";
+};
+
+function normalizeAnalyticsData(payload: Partial<AnalyticsData> | null | undefined): AnalyticsData {
   return {
     scope: payload?.scope || "personal",
     totalCalls: payload?.totalCalls || 0,
@@ -70,25 +88,28 @@ function normalizeAnalyticsData(
     scoresByDay: payload?.scoresByDay || {},
     sentimentCounts: payload?.sentimentCounts || { positive: 0, neutral: 0, negative: 0 },
     signals: payload?.signals || { budgetSignals: 0, timelineSignals: 0, dmSignals: 0 },
-    conversationSignals: payload?.conversationSignals || {
-      totalInterruptions: 0,
-      totalQuestionsAsked: 0,
-    },
+    conversationSignals: payload?.conversationSignals || { totalInterruptions: 0, totalQuestionsAsked: 0 },
     speakerLeaderboard: payload?.speakerLeaderboard || [],
     recentCalls: payload?.recentCalls || [],
   };
+}
+
+function formatDateLabel(iso: string) {
+  const d = new Date(iso);
+  return `${d.getMonth() + 1}/${d.getDate()}`;
 }
 
 export default function DashboardPage() {
   const { user } = useUser();
 
   const [data, setData] = useState<AnalyticsData | null>(null);
+  const [billing, setBilling] = useState<BillingInfo | null>(null);
   const [days, setDays] = useState(30);
   const [scope, setScope] = useState<"personal" | "team">("personal");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  // AI Meeting Assistant state (moved from settings)
+  // AI Meeting Assistant state
   const [chatQuery, setChatQuery] = useState("");
   const [chatLoading, setChatLoading] = useState(false);
   const [chatResult, setChatResult] = useState<{ answer: string; relevantCalls: any[] } | null>(null);
@@ -117,16 +138,19 @@ export default function DashboardPage() {
     setLoading(true);
     setError(null);
 
-    fetch(`/api/analytics?userId=${user.id}&days=${days}&scope=${scope}`)
-      .then(async (response) => {
+    Promise.all([
+      fetch(`/api/analytics?userId=${user.id}&days=${days}&scope=${scope}`).then(async (response) => {
         const payload = await response.json();
-        if (!response.ok) {
-          throw new Error(payload?.error || "Failed to load analytics");
-        }
+        if (!response.ok) throw new Error(payload?.error || "Failed to load analytics");
         return payload;
-      })
-      .then((payload) => {
-        setData(normalizeAnalyticsData(payload));
+      }),
+      fetch("/api/billing", { cache: "no-store" })
+        .then((r) => r.json())
+        .catch(() => null),
+    ])
+      .then(([analyticsPayload, billingPayload]) => {
+        setData(normalizeAnalyticsData(analyticsPayload));
+        if (billingPayload) setBilling(billingPayload);
         setLoading(false);
       })
       .catch((err: unknown) => {
@@ -135,6 +159,28 @@ export default function DashboardPage() {
         setLoading(false);
       });
   }, [user?.id, days, scope]);
+
+  const chartData = useMemo(() => {
+    if (!data) return [];
+    const sorted = Object.keys(data.callsByDay).sort();
+    return sorted.map((day) => ({ label: formatDateLabel(day), value: data.callsByDay[day] || 0 }));
+  }, [data]);
+
+  const scoreTrendData = useMemo(() => {
+    if (!data) return [];
+    const sorted = Object.keys(data.scoresByDay).sort();
+    return sorted.map((day) => ({ label: formatDateLabel(day), value: data.scoresByDay[day] || 0 }));
+  }, [data]);
+
+  const plan = billing ? getPlan(billing.plan) : getPlan("free");
+  const usagePct =
+    billing && typeof billing.limit === "number" && billing.limit > 0
+      ? Math.min(100, (billing.usage / billing.limit) * 100)
+      : 0;
+  const minutePct =
+    billing && typeof billing.minuteLimit === "number" && billing.minuteLimit > 0
+      ? Math.min(100, (billing.minuteUsage / billing.minuteLimit) * 100)
+      : 0;
 
   if (loading) {
     return (
@@ -162,40 +208,12 @@ export default function DashboardPage() {
             </div>
             <h2 className="text-lg font-medium mb-2">Analytics unavailable</h2>
             <p className="text-sm text-white/50 mb-6">{message}</p>
-            <div className="flex items-center justify-center gap-3">
-              <button
-                onClick={() => {
-                  if (!user?.id) return;
-                  setLoading(true);
-                  setError(null);
-                  fetch(`/api/analytics?userId=${user.id}&days=${days}&scope=${scope}`)
-                    .then(async (response) => {
-                      const payload = await response.json();
-                      if (!response.ok) {
-                        throw new Error(payload?.error || "Failed to load analytics");
-                      }
-                      return payload;
-                    })
-                    .then((payload) => {
-                      setData(normalizeAnalyticsData(payload));
-                      setLoading(false);
-                    })
-                    .catch((err: unknown) => {
-                      setError(err instanceof Error ? err.message : "Failed to load analytics");
-                      setLoading(false);
-                    });
-                }}
-                className="px-4 py-2 rounded-full bg-white text-linear-black text-xs font-semibold hover:bg-white/90 transition"
-              >
-                Try again
-              </button>
-              <a
-                href="/dashboard"
-                className="px-4 py-2 rounded-full bg-white/5 border border-white/10 text-white/70 text-xs font-semibold hover:bg-white/10 hover:text-white transition"
-              >
-                Go to dashboard
-              </a>
-            </div>
+            <button
+              onClick={() => window.location.reload()}
+              className="px-4 py-2 rounded-full bg-white text-linear-black text-xs font-semibold hover:bg-white/90 transition"
+            >
+              Try again
+            </button>
           </div>
         </div>
       </div>
@@ -206,31 +224,32 @@ export default function DashboardPage() {
     <div className="min-h-screen bg-linear-black text-white">
       <Nav />
       <div className="max-w-7xl mx-auto px-6 py-12">
-        <div className="flex items-center justify-between mb-10">
+        {/* Header */}
+        <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 mb-10">
           <div>
-            <h1 className="text-3xl font-medium tracking-tight">Analytics</h1>
-            <p className="text-white/40 text-sm mt-1">Call performance overview</p>
+            <h1 className="text-2xl font-medium tracking-tight">Analytics</h1>
+            <p className="text-white/40 text-sm mt-1">Understand your calls, pipeline, and team performance.</p>
           </div>
 
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2 p-1 rounded-xl bg-linear-black border border-linear-secondary">
             {(["personal", "team"] as const).map((value) => (
               <button
                 key={value}
                 onClick={() => setScope(value)}
-                className={`px-3 py-1.5 rounded-lg text-xs font-medium transition ${
-                  scope === value ? "bg-linear-indigo text-white" : "bg-white/5 text-white/60 hover:text-white"
+                className={`px-4 py-2 rounded-lg text-xs font-medium transition ${
+                  scope === value ? "bg-white text-linear-black" : "text-white/50 hover:text-white"
                 }`}
               >
                 {value === "personal" ? "Personal" : "Team"}
               </button>
             ))}
-            <div className="w-px h-5 bg-white/10" />
+            <div className="w-px h-5 bg-white/10 mx-1" />
             {[7, 30, 90].map((d) => (
               <button
                 key={d}
                 onClick={() => setDays(d)}
-                className={`px-3 py-1.5 rounded-lg text-xs font-medium transition ${
-                  days === d ? "bg-white/10 text-white" : "bg-white/5 text-white/40 hover:text-white"
+                className={`px-3 py-2 rounded-lg text-xs font-medium transition ${
+                  days === d ? "bg-white/10 text-white" : "text-white/40 hover:text-white"
                 }`}
               >
                 {d}d
@@ -240,12 +259,11 @@ export default function DashboardPage() {
         </div>
 
         {data.totalCalls === 0 && (
-          <div className="mb-8 p-6 rounded-2xl border border-dashed border-white/15 bg-white/[0.02] flex flex-col sm:flex-row items-start sm:items-center gap-4">
+          <div className="mb-8 p-5 rounded-2xl border border-dashed border-white/15 bg-white/[0.02] flex flex-col sm:flex-row items-start sm:items-center gap-4">
             <div className="flex-1">
               <h3 className="text-sm font-semibold text-white mb-1">No calls yet</h3>
               <p className="text-xs text-white/50">
-                Upload an MP3, record in browser, or pipe from the Chrome extension.
-                Your first call shows up here in under 60 seconds.
+                Upload an MP3, record in browser, or pipe from the Chrome extension. Your first call shows up here in under 60 seconds.
               </p>
             </div>
             <a
@@ -257,31 +275,66 @@ export default function DashboardPage() {
           </div>
         )}
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
-          {/* AI Meeting Assistant */}
-          <div className="lg:col-span-1 lg:row-span-2 p-6 rounded-2xl bg-linear-surface border border-linear-secondary flex flex-col">
-            <h3 className="text-xs font-medium text-white/40 uppercase tracking-widest mb-4 flex items-center gap-2">
-              <Brain className="w-4 h-4 text-linear-indigo" />
-              AI Meeting Assistant
-            </h3>
+        {/* KPI grid */}
+        <Section>
+          <StatGrid
+            stats={[
+              {
+                label: "Avg health score",
+                value: `${data.avgHealthScore}%`,
+                icon: <Activity className="w-4 h-4" />,
+                change: data.avgHealthScore >= 60 ? "Healthy" : "Needs work",
+                changeType: data.avgHealthScore >= 60 ? "positive" : "negative",
+              },
+              {
+                label: "Avg close probability",
+                value: `${data.avgCloseProbability}%`,
+                icon: <TrendingUp className="w-4 h-4" />,
+                change: data.avgCloseProbability >= 50 ? "Strong pipeline" : "Nurture needed",
+                changeType: data.avgCloseProbability >= 50 ? "positive" : "negative",
+              },
+              {
+                label: "Total calls",
+                value: data.totalCalls,
+                icon: <Phone className="w-4 h-4" />,
+              },
+              {
+                label: "Action items",
+                value: `${data.totalActionItems} · ${Math.round(data.completionRate * 100)}% done`,
+                icon: <Target className="w-4 h-4" />,
+              },
+            ]}
+          />
+        </Section>
 
-            <div className="space-y-3 flex-1 flex flex-col">
-              <div className="text-sm text-white/50">
-                Ask questions about your meeting history. Get instant answers with source calls.
+        {/* Charts row */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-10">
+          {/* AI Assistant */}
+          <Card className="lg:row-span-2">
+            <CardHeader>
+              <div className="flex items-center gap-3">
+                <div className="w-9 h-9 rounded-xl bg-linear-indigo/10 flex items-center justify-center text-linear-indigo">
+                  <Brain className="w-4 h-4" />
+                </div>
+                <div>
+                  <CardTitle>AI Meeting Assistant</CardTitle>
+                  <CardDescription>Ask anything about your calls.</CardDescription>
+                </div>
               </div>
-
-              <div className="flex gap-2">
+            </CardHeader>
+            <CardContent className="flex flex-col h-[calc(100%-80px)]">
+              <div className="flex gap-2 mb-4">
                 <input
                   value={chatQuery}
                   onChange={(e) => setChatQuery(e.target.value)}
                   onKeyDown={(e) => e.key === "Enter" && askChat()}
-                  placeholder='Ask anything... e.g., "What objections came up last week?"'
-                  className="flex-1 px-4 py-3 rounded-xl bg-white/5 border border-white/10 text-sm text-white placeholder-white/30 focus:outline-none focus:border-linear-indigo/50"
+                  placeholder='e.g. "What objections came up last week?"'
+                  className="flex-1 px-4 py-2.5 rounded-xl bg-linear-black border border-linear-secondary text-sm text-white placeholder-white/30 focus:outline-none focus:border-linear-indigo/50"
                 />
                 <button
                   onClick={askChat}
                   disabled={chatLoading || !chatQuery.trim()}
-                  className="px-5 py-3 bg-linear-indigo rounded-xl text-xs font-semibold hover:bg-linear-indigo/80 transition disabled:opacity-50"
+                  className="px-4 py-2.5 bg-linear-indigo rounded-xl text-xs font-semibold hover:bg-linear-indigo/80 transition disabled:opacity-50"
                 >
                   {chatLoading ? (
                     <div className="w-4 h-4 rounded-full border-2 border-white/70 border-t-transparent animate-spin" />
@@ -291,258 +344,245 @@ export default function DashboardPage() {
                 </button>
               </div>
 
-              {chatResult && (
-                <div className="p-4 rounded-xl bg-white/5 border border-white/5 flex-1 overflow-y-auto max-h-96">
+              {chatResult ? (
+                <div className="flex-1 p-4 rounded-xl bg-linear-black border border-linear-secondary overflow-y-auto max-h-[360px]">
                   <div className="flex items-start gap-2 mb-3">
                     <MessageSquare className="w-4 h-4 text-linear-indigo shrink-0 mt-0.5" />
                     <p className="text-sm text-white/80 leading-relaxed">{chatResult.answer}</p>
                   </div>
-
                   {chatResult.relevantCalls?.length > 0 && (
                     <div className="mt-3 pt-3 border-t border-white/5">
                       <div className="text-[11px] text-white/40 uppercase tracking-wider mb-2">Source calls</div>
                       {chatResult.relevantCalls.map((c: any) => (
                         <div key={c.id} className="flex items-center gap-2 text-xs text-white/60 py-1">
                           <FileText className="w-3 h-3" />
-                          <span>{c.filename}</span>
-                          <span className="text-white/30">{new Date(c.date).toLocaleDateString()}</span>
+                          <span className="truncate">{c.filename}</span>
+                          <span className="text-white/30 shrink-0">{new Date(c.date).toLocaleDateString()}</span>
                         </div>
                       ))}
                     </div>
                   )}
-
-                  <div className="text-[11px] text-white/30 mt-2">
-                    Searched {chatResult.relevantCalls?.length ? chatResult.relevantCalls.length : "0"} calls
-                  </div>
+                </div>
+              ) : (
+                <div className="flex-1 flex flex-col justify-center items-center text-center p-6 rounded-xl bg-linear-black border border-linear-secondary border-dashed">
+                  <Brain className="w-8 h-8 text-white/10 mb-3" />
+                  <p className="text-sm text-white/40">Ask about objections, next steps, or buyer sentiment.</p>
                 </div>
               )}
-            </div>
-          </div>
+            </CardContent>
+          </Card>
 
-          {/* Stat cards: actionables first, neutral second row */}
-          <StatCard
-            icon={<TrendingUp className="w-4 h-4" />}
-            label="Avg Health Score"
-            value={`${data.avgHealthScore}%`}
-            accent={
-              data.avgHealthScore >= 60
-                ? "text-green-400"
-                : data.avgHealthScore >= 40
-                  ? "text-yellow-400"
-                  : "text-red-400"
-            }
-            emphasis
-          />
-          <StatCard
-            icon={<Zap className="w-4 h-4" />}
-            label="Avg Close Probability"
-            value={`${data.avgCloseProbability}%`}
-            accent={
-              data.avgCloseProbability >= 60
-                ? "text-green-400"
-                : data.avgCloseProbability >= 40
-                  ? "text-yellow-400"
-                  : "text-red-400"
-            }
-            emphasis
-          />
+          {/* Call volume */}
+          <Card className="lg:col-span-2">
+            <CardHeader>
+              <div className="flex items-center justify-between">
+                <CardTitle>Call volume</CardTitle>
+                <Badge variant="info">{chartData.reduce((a, b) => a + b.value, 0)} calls</Badge>
+              </div>
+            </CardHeader>
+            <CardContent>
+              <AreaChart data={chartData} height={200} />
+            </CardContent>
+          </Card>
 
-          <div className="col-span-1 lg:col-span-1 grid grid-cols-3 gap-4">
-            <StatCard
-              icon={<Phone className="w-4 h-4" />}
-              label="Calls"
-              value={data.totalCalls.toString()}
-            />
-            <StatCard
-              icon={<Target className="w-4 h-4" />}
-              label="Action Items"
-              value={data.totalActionItems.toString()}
-            />
-            <StatCard
-              icon={<CheckCircle className="w-4 h-4" />}
-              label="Completed"
-              value={`${Math.round(data.completionRate * 100)}%`}
-            />
-          </div>
+          {/* Health trend */}
+          <Card className="lg:col-span-2">
+            <CardHeader>
+              <div className="flex items-center justify-between">
+                <CardTitle>Health score trend</CardTitle>
+                <span className="text-xs text-white/40">Avg {data.avgHealthScore}%</span>
+              </div>
+            </CardHeader>
+            <CardContent>
+              <AreaChart data={scoreTrendData} height={140} color="#22d3a8" />
+            </CardContent>
+          </Card>
+        </div>
 
-          <div className="lg:col-span-2 p-6 rounded-2xl bg-linear-surface border border-linear-secondary">
-            <h3 className="text-xs font-medium text-white/40 uppercase tracking-widest mb-4">
-              Call Signals
-            </h3>
-            <div className="grid grid-cols-3 gap-4">
-              <SignalBar
-                label="Budget"
-                count={data.signals.budgetSignals}
-                total={data.totalCalls}
-                icon={<DollarSign className="w-3.5 h-3.5" />}
-              />
-              <SignalBar
-                label="Timeline"
-                count={data.signals.timelineSignals}
-                total={data.totalCalls}
-                icon={<Calendar className="w-3.5 h-3.5" />}
-              />
-              <SignalBar
-                label="Decision Maker"
-                count={data.signals.dmSignals}
-                total={data.totalCalls}
-                icon={<Users className="w-3.5 h-3.5" />}
-              />
-            </div>
-          </div>
+        {/* Usage + signals + sentiment */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-10">
+          {/* Plan usage */}
+          <Card>
+            <CardHeader>
+              <div className="flex items-center gap-3">
+                <Layers className="w-4 h-4 text-linear-indigo" />
+                <CardTitle>Usage</CardTitle>
+              </div>
+            </CardHeader>
+            <CardContent className="space-y-5">
+              {billing ? (
+                <>
+                  <ProgressBar
+                    label="Call uploads"
+                    sublabel={`${billing.usage} / ${billing.limit}`}
+                    value={billing.usage}
+                    max={typeof billing.limit === "number" ? billing.limit : 100}
+                    color={usagePct > 90 ? "red" : usagePct > 70 ? "amber" : "indigo"}
+                  />
+                  <ProgressBar
+                    label="Minutes"
+                    sublabel={`${billing.minuteUsage} / ${billing.minuteLimit}`}
+                    value={billing.minuteUsage}
+                    max={typeof billing.minuteLimit === "number" ? billing.minuteLimit : 100}
+                    color={minutePct > 90 ? "red" : minutePct > 70 ? "amber" : "indigo"}
+                  />
+                  <div className="pt-3 border-t border-white/5">
+                    <div className="flex items-center justify-between text-sm">
+                      <span className="text-white/50">Plan</span>
+                      <span className="text-white font-medium">{plan.name}</span>
+                    </div>
+                  </div>
+                </>
+              ) : (
+                <p className="text-sm text-white/40">Unable to load usage.</p>
+              )}
+            </CardContent>
+          </Card>
 
-          <div className="p-6 rounded-2xl bg-linear-surface border border-linear-secondary">
-            <h3 className="text-xs font-medium text-white/40 uppercase tracking-widest mb-4">
-              Sentiment
-            </h3>
-            <div className="space-y-3">
-              <SentimentRow
-                label="Positive"
-                count={data.sentimentCounts.positive}
-                color="text-green-400"
-                icon={<ArrowUp className="w-3 h-3" />}
-              />
-              <SentimentRow
-                label="Neutral"
-                count={data.sentimentCounts.neutral}
-                color="text-yellow-400"
-                icon={<ArrowUp className="w-3 h-3 opacity-0" />}
-              />
-              <SentimentRow
-                label="Negative"
-                count={data.sentimentCounts.negative}
-                color="text-red-400"
-                icon={<ArrowDown className="w-3 h-3" />}
-              />
-            </div>
-          </div>
+          {/* Signals */}
+          <Card>
+            <CardHeader>
+              <div className="flex items-center gap-3">
+                <Zap className="w-4 h-4 text-linear-indigo" />
+                <CardTitle>Buying signals</CardTitle>
+              </div>
+              <CardDescription>How often key intent signals appeared.</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-5">
+              <SignalBar label="Budget" count={data.signals.budgetSignals} total={data.totalCalls} icon={<DollarSign className="w-3.5 h-3.5" />} />
+              <SignalBar label="Timeline" count={data.signals.timelineSignals} total={data.totalCalls} icon={<Calendar className="w-3.5 h-3.5" />} />
+              <SignalBar label="Decision maker" count={data.signals.dmSignals} total={data.totalCalls} icon={<Users className="w-3.5 h-3.5" />} />
+            </CardContent>
+          </Card>
 
-          <div className="lg:col-span-2 p-6 rounded-2xl bg-linear-surface border border-linear-secondary">
-            <h3 className="text-xs font-medium text-white/40 uppercase tracking-widest mb-4">
-              Conversation Flow
-            </h3>
-            <div className="grid grid-cols-2 gap-4">
-              <StatCard
-                icon={<AlertTriangle className="w-4 h-4" />}
-                label="Interruptions"
-                value={String(data.conversationSignals.totalInterruptions)}
+          {/* Sentiment */}
+          <Card>
+            <CardHeader>
+              <div className="flex items-center gap-3">
+                <Shield className="w-4 h-4 text-linear-indigo" />
+                <CardTitle>Sentiment</CardTitle>
+              </div>
+            </CardHeader>
+            <CardContent>
+              <DonutChart
+                data={[
+                  { label: "Positive", value: data.sentimentCounts.positive, color: "#34d399" },
+                  { label: "Neutral", value: data.sentimentCounts.neutral, color: "#fbbf24" },
+                  { label: "Negative", value: data.sentimentCounts.negative, color: "#f87171" },
+                ]}
+                size={120}
+                centerValue={data.totalCalls}
+                centerLabel="calls"
               />
-              <StatCard
-                icon={<Lightbulb className="w-4 h-4" />}
-                label="Questions Asked"
-                value={String(data.conversationSignals.totalQuestionsAsked)}
-              />
-            </div>
-          </div>
+            </CardContent>
+          </Card>
+        </div>
 
-          <div className="lg:col-span-3 p-6 rounded-2xl bg-linear-surface border border-linear-secondary">
-            <h3 className="text-xs font-medium text-white/40 uppercase tracking-widest mb-4">
-              Speaker Leaderboard
-            </h3>
-            <div className="space-y-3">
+        {/* Conversation + leaderboard */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-10">
+          <Card>
+            <CardHeader>
+              <div className="flex items-center gap-3">
+                <MessageSquare className="w-4 h-4 text-linear-indigo" />
+                <CardTitle>Conversation flow</CardTitle>
+              </div>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <MiniStat label="Interruptions" value={data.conversationSignals.totalInterruptions} icon={<AlertTriangle className="w-4 h-4" />} />
+              <MiniStat label="Questions asked" value={data.conversationSignals.totalQuestionsAsked} icon={<Lightbulb className="w-4 h-4" />} />
+            </CardContent>
+          </Card>
+
+          <Card className="lg:col-span-2">
+            <CardHeader>
+              <div className="flex items-center gap-3">
+                <Crown className="w-4 h-4 text-linear-indigo" />
+                <CardTitle>Top performers</CardTitle>
+              </div>
+              <CardDescription>Ranked by questions asked across calls.</CardDescription>
+            </CardHeader>
+            <CardContent>
               {data.speakerLeaderboard.length === 0 ? (
                 <p className="text-sm text-white/30">No speaker analytics available yet.</p>
               ) : (
-                data.speakerLeaderboard.map((speaker) => (
-                  <div key={speaker.speaker} className="flex items-center justify-between text-sm">
-                    <div>
-                      <div className="text-white">{speaker.speaker}</div>
-                      <div className="text-white/35 text-xs">{speaker.calls} calls</div>
-                    </div>
-                    <div className="text-right text-xs text-white/50">
-                      <div>{speaker.questionsAsked} questions</div>
-                      <div>{speaker.interruptions} interruptions</div>
-                    </div>
-                  </div>
-                ))
-              )}
-            </div>
-          </div>
-        </div>
-
-        <div className="p-6 rounded-2xl bg-linear-surface border border-linear-secondary">
-          <h3 className="text-xs font-medium text-white/40 uppercase tracking-widest mb-4">
-            Recent Calls
-          </h3>
-          <div className="space-y-2">
-            {data.recentCalls.length === 0 ? (
-              <p className="text-sm text-white/30">No recent calls. Upload one to get started.</p>
-            ) : (
-              data.recentCalls.map((call) => (
-                <a
-                  key={call.id}
-                  href={`/app/calls/${call.id}`}
-                  className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 p-3 rounded-lg bg-white/5 border border-white/5 text-xs hover:bg-white/10 hover:border-white/10 transition"
-                >
-                  <div className="flex items-center gap-3 min-w-0">
-                    <Phone className="w-3.5 h-3.5 text-white/40 shrink-0" />
-                    <span className="font-medium truncate">{call.filename}</span>
-                    <span className="text-white/30 shrink-0">{new Date(call.date).toLocaleDateString()}</span>
-                  </div>
-                  <div className="flex items-center flex-wrap gap-x-4 gap-y-1 sm:justify-end">
-                    {call.ownerName && <span className="text-white/30">Owner: {call.ownerName}</span>}
-                    <span
-                      className={`font-medium ${
-                        call.healthScore !== null && call.healthScore !== undefined && call.healthScore >= 60
-                          ? "text-green-400"
-                          : call.healthScore !== null &&
-                              call.healthScore !== undefined &&
-                              call.healthScore >= 40
-                            ? "text-yellow-400"
-                            : "text-red-400"
-                      }`}
+                <div className="space-y-2">
+                  {data.speakerLeaderboard.map((speaker, idx) => (
+                    <div
+                      key={speaker.speaker}
+                      className="flex items-center justify-between p-3 rounded-xl bg-linear-black border border-linear-secondary"
                     >
-                      {call.healthScore !== null && call.healthScore !== undefined
-                        ? `${Math.round(call.healthScore * 100)}% health`
-                        : "N/A"}
-                    </span>
-                    <span className="text-white/40">{call.actionItemCount} items</span>
-                    {call.closeProbability && (
-                      <span className="text-linear-indigo">{Math.round(call.closeProbability)}% close</span>
-                    )}
-                    {call.topObjection && (
-                      <span className="text-red-400/70 flex items-center gap-1">
-                        <AlertTriangle className="w-3 h-3" />
-                        <span className="truncate max-w-[180px]">{call.topObjection}</span>
-                      </span>
-                    )}
-                  </div>
-                </a>
-              ))
-            )}
-          </div>
+                      <div className="flex items-center gap-3">
+                        <div className="w-6 h-6 rounded-lg bg-white/5 flex items-center justify-center text-xs text-white/50 font-medium">
+                          {idx + 1}
+                        </div>
+                        <div>
+                          <div className="text-sm font-medium text-white">{speaker.speaker}</div>
+                          <div className="text-[11px] text-white/40">{speaker.calls} calls</div>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-4 text-xs text-white/50">
+                        <span>{speaker.questionsAsked} questions</span>
+                        <span>{speaker.interruptions} interruptions</span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </CardContent>
+          </Card>
         </div>
-      </div>
-    </div>
-  );
-}
 
-function StatCard({
-  icon,
-  label,
-  value,
-  accent,
-  emphasis = false,
-}: {
-  icon: React.ReactNode;
-  label: string;
-  value: string;
-  accent?: string;
-  emphasis?: boolean;
-}) {
-  return (
-    <div
-      className={`p-5 rounded-2xl border doppel-inner-dark ${
-        emphasis
-          ? "bg-linear-indigo/[0.08] border-linear-indigo/30"
-          : "bg-linear-surface border-linear-secondary"
-      }`}
-    >
-      <div className="flex items-center gap-2 mb-3">
-        <span className="text-white/40">{icon}</span>
-        <span className="text-[11px] font-medium text-white/40 uppercase tracking-wider">{label}</span>
+        {/* Recent calls */}
+        <Section title="Recent calls" description="Latest calls with health, sentiment, and action items.">
+          <Card>
+            <CardContent className="p-0">
+              {data.recentCalls.length === 0 ? (
+                <div className="p-8 text-center text-sm text-white/30">No recent calls.</div>
+              ) : (
+                <div className="divide-y divide-white/5">
+                  {data.recentCalls.map((call) => (
+                    <a
+                      key={call.id}
+                      href={`/app/calls/${call.id}`}
+                      className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 px-6 py-4 hover:bg-white/[0.02] transition group"
+                    >
+                      <div className="flex items-center gap-4 min-w-0">
+                        <div className="w-9 h-9 rounded-xl bg-linear-indigo/10 flex items-center justify-center text-linear-indigo shrink-0">
+                          <Phone className="w-4 h-4" />
+                        </div>
+                        <div className="min-w-0">
+                          <p className="text-sm font-medium text-white truncate group-hover:text-linear-indigo transition">
+                            {call.filename}
+                          </p>
+                          <p className="text-[11px] text-white/40">
+                            {new Date(call.date).toLocaleDateString()}
+                            {call.ownerName ? ` · ${call.ownerName}` : ""}
+                          </p>
+                        </div>
+                      </div>
+                      <div className="flex items-center flex-wrap gap-2 sm:gap-3">
+                        <Badge variant={getHealthVariant(call.healthScore)}>{formatHealth(call.healthScore)}</Badge>
+                        {call.sentiment && (
+                          <Badge variant={getSentimentVariant(call.sentiment)}>{call.sentiment}</Badge>
+                        )}
+                        <span className="text-xs text-white/40">{call.actionItemCount} items</span>
+                        {call.closeProbability && (
+                          <span className="text-xs text-linear-indigo">{Math.round(call.closeProbability)}% close</span>
+                        )}
+                        {call.topObjection && (
+                          <span className="text-xs text-red-400/70 flex items-center gap-1 truncate max-w-[200px]">
+                            <AlertTriangle className="w-3 h-3" /> {call.topObjection}
+                          </span>
+                        )}
+                      </div>
+                    </a>
+                  ))}
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </Section>
       </div>
-      <span className={`text-2xl font-semibold tracking-tight ${accent || "text-white"}`}>{value}</span>
     </div>
   );
 }
@@ -569,33 +609,39 @@ function SignalBar({
         </span>
       </div>
       <div className="h-2 rounded-full bg-white/5 overflow-hidden">
-        <div
-          className="h-full rounded-full bg-linear-indigo transition-all duration-500"
-          style={{ width: `${pct}%` }}
-        />
+        <div className="h-full rounded-full bg-linear-indigo transition-all duration-500" style={{ width: `${pct}%` }} />
       </div>
     </div>
   );
 }
 
-function SentimentRow({
-  label,
-  count,
-  color,
-  icon,
-}: {
-  label: string;
-  count: number;
-  color: string;
-  icon: React.ReactNode;
-}) {
+function MiniStat({ label, value, icon }: { label: string; value: number; icon: React.ReactNode }) {
   return (
-    <div className="flex items-center justify-between text-xs">
-      <span className="flex items-center gap-2">
-        <span className={color}>{icon}</span>
-        <span className="text-white/60">{label}</span>
-      </span>
-      <span className={`font-medium ${color}`}>{count}</span>
+    <div className="flex items-center justify-between p-4 rounded-xl bg-linear-black border border-linear-secondary">
+      <div className="flex items-center gap-3">
+        <span className="text-white/30">{icon}</span>
+        <span className="text-sm text-white/60">{label}</span>
+      </div>
+      <span className="text-lg font-semibold text-white">{value}</span>
     </div>
   );
+}
+
+function formatHealth(score: number | null): string {
+  if (score === null || score === undefined) return "N/A";
+  return `${Math.round(score * 100)}%`;
+}
+
+function getHealthVariant(score: number | null): "success" | "warning" | "danger" | "default" {
+  if (score === null || score === undefined) return "default";
+  const s = score * 100;
+  if (s >= 70) return "success";
+  if (s >= 45) return "warning";
+  return "danger";
+}
+
+function getSentimentVariant(sentiment: string): "success" | "warning" | "danger" | "default" {
+  if (sentiment === "positive") return "success";
+  if (sentiment === "negative") return "danger";
+  return "warning";
 }

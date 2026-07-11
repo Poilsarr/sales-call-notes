@@ -27,6 +27,10 @@ vi.mock('next/link', () => ({
   ),
 }));
 
+vi.mock('@/components/nav', () => ({
+  default: () => <nav data-testid="nav-mock" />,
+}));
+
 describe('DashboardPage', () => {
   beforeEach(() => {
     vi.stubGlobal('fetch', vi.fn());
