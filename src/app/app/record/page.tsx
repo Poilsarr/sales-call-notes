@@ -249,8 +249,8 @@ export default function RecordPage() {
 
       <div className="grid grid-cols-1 xl:grid-cols-[1.2fr_0.8fr] gap-6 items-start">
         <div className="space-y-6">
-          <div className="doppel-outer">
-            <div className="doppel-inner p-12 flex flex-col items-center justify-center">
+          <div className="doppel-outer-dark">
+            <div className="doppel-inner-dark p-12 flex flex-col items-center justify-center">
               <motion.div
                 animate={isRecording ? { scale: [1, 1.1, 1] } : { scale: 1 }}
                 transition={{ repeat: isRecording ? Infinity : 0, duration: 1.5 }}
@@ -298,8 +298,8 @@ export default function RecordPage() {
             </div>
           </div>
 
-          <div className="doppel-outer">
-            <div className="doppel-inner p-6">
+          <div className="doppel-outer-dark">
+            <div className="doppel-inner-dark p-6">
               <h2 className="text-lg font-medium text-white mb-4">Or Upload Audio</h2>
               <label className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed border-zinc-700 rounded-xl cursor-pointer hover:border-emerald-500/50 transition-colors">
                 <Upload className="w-8 h-8 text-zinc-500 mb-2" />
@@ -332,8 +332,8 @@ export default function RecordPage() {
 
         <div className="space-y-4">
           {extensionSource && extensionSessionId ? (
-            <div className="doppel-outer">
-              <div className="doppel-inner p-4 text-sm text-zinc-300">
+            <div className="doppel-outer-dark">
+              <div className="doppel-inner-dark p-4 text-sm text-zinc-300">
                 Viewing a live Google Meet stream from the Chrome extension.
               </div>
             </div>

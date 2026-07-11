@@ -16,9 +16,9 @@ export function StatCard({ title, value, subtitle, trend, delay = 0 }: StatCardP
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5, delay, ease: [0.32, 0.72, 0, 1] }}
-      className="doppel-outer"
+      className="doppel-outer-dark"
     >
-      <div className="doppel-inner p-6">
+      <div className="doppel-inner-dark p-6">
         <p className="text-sm text-zinc-400 mb-1">{title}</p>
         <p className="text-3xl font-semibold text-white">{value}</p>
         {subtitle && (

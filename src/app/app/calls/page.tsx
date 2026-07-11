@@ -212,8 +212,8 @@ export default function CallsPage() {
               transition={{ delay: index * 0.05 }}
             >
               <Link href={`/app/calls/${call.id}`}>
-                <div className="doppel-outer hover:ring-emerald-500/30 transition-all cursor-pointer">
-                  <div className="doppel-inner p-4 flex items-center justify-between">
+                <div className="doppel-outer-dark hover:ring-emerald-500/30 transition-all cursor-pointer">
+                  <div className="doppel-inner-dark p-4 flex items-center justify-between">
                     <div className="flex items-center gap-4">
                       <div className="w-10 h-10 rounded-full bg-zinc-800 flex items-center justify-center">
                         <Phone className="w-5 h-5 text-zinc-400" />

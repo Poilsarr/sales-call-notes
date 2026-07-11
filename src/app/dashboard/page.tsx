@@ -218,7 +218,7 @@ export default function DashboardPage() {
                 key={value}
                 onClick={() => setScope(value)}
                 className={`px-3 py-1.5 rounded-lg text-xs font-medium transition ${
-                  scope === value ? "bg-white text-black" : "bg-white/5 text-white/60 hover:text-white"
+                  scope === value ? "bg-linear-indigo text-white" : "bg-white/5 text-white/60 hover:text-white"
                 }`}
               >
                 {value === "personal" ? "Personal" : "Team"}

@@ -70,8 +70,8 @@ export function AnalysisPanel({ analysis }: AnalysisPanelProps) {
       </div>
 
       {analysis.salesScorecard && (
-        <div className="doppel-outer">
-          <div className="doppel-inner p-6 space-y-6">
+        <div className="doppel-outer-dark">
+          <div className="doppel-inner-dark p-6 space-y-6">
             <div className="flex items-center justify-between mb-2">
               <h2 className="text-lg font-medium text-white flex items-center gap-2">
                 <Target className="w-4 h-4 text-emerald-400" />
@@ -107,8 +107,8 @@ export function AnalysisPanel({ analysis }: AnalysisPanelProps) {
         </div>
       )}
 
-      <div className="doppel-outer">
-        <div className="doppel-inner p-4">
+      <div className="doppel-outer-dark">
+        <div className="doppel-inner-dark p-4">
           <div className="flex items-center justify-between">
             <span className="text-sm text-zinc-400">Health Score</span>
             <span className="text-2xl font-semibold text-emerald-400">{analysis.healthScore}%</span>
@@ -126,8 +126,8 @@ export function AnalysisPanel({ analysis }: AnalysisPanelProps) {
       </div>
 
       <div className="grid grid-cols-2 gap-3">
-        <div className="doppel-outer">
-          <div className="doppel-inner p-4">
+        <div className="doppel-outer-dark">
+          <div className="doppel-inner-dark p-4">
             <div className="flex items-center gap-2 text-zinc-400 text-sm mb-1">
               <Users2 className="w-4 h-4" />
               Interruptions
@@ -135,8 +135,8 @@ export function AnalysisPanel({ analysis }: AnalysisPanelProps) {
             <div className="text-2xl font-semibold text-white">{analysis.interruptions ?? 0}</div>
           </div>
         </div>
-        <div className="doppel-outer">
-          <div className="doppel-inner p-4">
+        <div className="doppel-outer-dark">
+          <div className="doppel-inner-dark p-4">
             <div className="flex items-center gap-2 text-zinc-400 text-sm mb-1">
               <MessageSquareText className="w-4 h-4" />
               Questions Asked

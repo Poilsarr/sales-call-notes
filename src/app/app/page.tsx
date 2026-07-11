@@ -124,9 +124,9 @@ export default function DashboardPage() {
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5, delay: 0.6, ease: [0.32, 0.72, 0, 1] }}
-        className="doppel-outer"
+        className="doppel-outer-dark"
       >
-        <div className="doppel-inner p-6">
+        <div className="doppel-inner-dark p-6">
           <h2 className="text-lg font-medium text-white mb-4">Recent Calls</h2>
           {error ? (
             <p className="text-red-400 text-center py-8">{error}</p>

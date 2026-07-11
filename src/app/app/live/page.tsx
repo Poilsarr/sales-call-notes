@@ -499,9 +499,9 @@ export default function LiveTranscriptionPage() {
         initial={{ opacity: 0, y: 12 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.4, ease: [0.32, 0.72, 0, 1] }}
-        className="doppel-outer"
+        className="doppel-outer-dark"
       >
-        <div className="doppel-inner p-10 flex flex-col items-center justify-center text-center">
+        <div className="doppel-inner-dark p-10 flex flex-col items-center justify-center text-center">
           <motion.div
             animate={isRecording ? { scale: [1, 1.06, 1] } : { scale: 1 }}
             transition={{ repeat: isRecording ? Infinity : 0, duration: 1.4 }}
@@ -536,7 +536,7 @@ export default function LiveTranscriptionPage() {
             className={`px-8 py-3 rounded-full font-medium text-white transition-all active:scale-[0.98] ${
               isRecording
                 ? 'bg-[#F26522] hover:bg-[#e05a1a]'
-                : 'bg-gray-900 hover:bg-black'
+                : 'bg-white/5 hover:bg-white/10 border border-white/10'
             }`}
           >
             {isRecording ? 'Stop session' : 'Start live session'}
@@ -555,9 +555,9 @@ export default function LiveTranscriptionPage() {
         initial={{ opacity: 0, y: 12 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.4, delay: 0.1, ease: [0.32, 0.72, 0, 1] }}
-        className="doppel-outer"
+        className="doppel-outer-dark"
       >
-        <div className="doppel-inner p-6">
+        <div className="doppel-inner-dark p-6">
           <div className="flex items-start justify-between gap-4 mb-4 flex-wrap">
             <div>
               <div className="flex items-center gap-2 text-[11px] uppercase tracking-[0.16em] text-zinc-500 mb-1">
@@ -655,9 +655,9 @@ export default function LiveTranscriptionPage() {
         initial={{ opacity: 0, y: 12 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.4, delay: 0.2, ease: [0.32, 0.72, 0, 1] }}
-        className="doppel-outer"
+        className="doppel-outer-dark"
       >
-        <div className="doppel-inner p-6">
+        <div className="doppel-inner-dark p-6">
           <div className="flex items-start gap-3">
             <div className="w-9 h-9 rounded-full bg-[#F26522]/10 flex items-center justify-center shrink-0">
               <Save className="w-4 h-4 text-[#F26522]" />

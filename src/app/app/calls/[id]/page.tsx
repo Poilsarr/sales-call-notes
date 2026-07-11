@@ -175,15 +175,15 @@ export default function CallDetailPage({ params }: { params: { id: string } }) {
       transition={{ duration: 0.5 }}
       className="min-h-[calc(100vh-4rem)] grid grid-cols-1 xl:grid-cols-[0.95fr_0.95fr_0.7fr] gap-6"
     >
-      <div className="doppel-outer">
-        <div className="doppel-inner p-6 lg:h-full overflow-hidden flex flex-col">
+      <div className="doppel-outer-dark">
+        <div className="doppel-inner-dark p-6 lg:h-full overflow-hidden flex flex-col">
           <TranscriptViewer segments={segments} />
         </div>
       </div>
 
       <div className="space-y-6">
-        <div className="doppel-outer">
-          <div className="doppel-inner p-6 lg:h-full overflow-y-auto">
+        <div className="doppel-outer-dark">
+          <div className="doppel-inner-dark p-6 lg:h-full overflow-y-auto">
             <AnalysisPanel
               analysis={{
                 executiveSummary: data.summary,
@@ -207,8 +207,8 @@ export default function CallDetailPage({ params }: { params: { id: string } }) {
           </div>
         </div>
 
-        <div className="doppel-outer">
-          <div className="doppel-inner p-6 space-y-4">
+        <div className="doppel-outer-dark">
+          <div className="doppel-inner-dark p-6 space-y-4">
             <div className="flex items-center gap-2 text-white">
               <Share2 className="w-4 h-4 text-emerald-400" />
               <h2 className="text-lg font-medium">Collaboration</h2>
@@ -303,8 +303,8 @@ export default function CallDetailPage({ params }: { params: { id: string } }) {
         </div>
       </div>
 
-      <div className="doppel-outer">
-        <div className="doppel-inner p-6 lg:h-full overflow-hidden flex flex-col">
+      <div className="doppel-outer-dark">
+        <div className="doppel-inner-dark p-6 lg:h-full overflow-hidden flex flex-col">
           <ChatSidebar />
         </div>
       </div>

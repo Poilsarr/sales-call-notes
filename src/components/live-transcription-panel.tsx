@@ -68,8 +68,8 @@ export function LiveTranscriptionPanel({ active, sessionId }: LiveTranscriptionP
   }, [status]);
 
   return (
-    <div className="doppel-outer">
-      <div className="doppel-inner p-6 space-y-4 min-h-[320px]">
+    <div className="doppel-outer-dark">
+      <div className="doppel-inner-dark p-6 space-y-4 min-h-[320px]">
         <div className="flex items-start justify-between gap-4">
           <div>
             <div className="flex items-center gap-2 text-[11px] uppercase tracking-[0.16em] text-white/35 mb-2">
