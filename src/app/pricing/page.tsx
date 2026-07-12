@@ -3,6 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { Sparkles, CheckCircle, ArrowRight, Zap, Plus, Minus } from "lucide-react";
+import { useAuth } from "@clerk/nextjs";
 
 type BillingCycle = "monthly" | "annual";
 
@@ -168,9 +169,11 @@ function BillingToggle({
 function PlanCard({
   plan,
   cycle,
+  onCheckout,
 }: {
   plan: (typeof PLANS)[number];
   cycle: BillingCycle;
+  onCheckout?: (planSlug: string) => void;
 }) {
   const tier = cycle === "annual" ? plan.annual : plan.monthly;
   const showStrike = cycle === "annual" && plan.monthly.price !== plan.annual.price;
@@ -214,16 +217,30 @@ function PlanCard({
             </div>
           ))}
         </div>
-        <Link
-          href={plan.ctaHref}
-          className={`block w-full text-center py-3 rounded-full text-[12px] font-semibold transition-all duration-300 ${
-            plan.popular
-              ? "bg-[#F26522] text-white hover:bg-[#e05a1a] border border-transparent"
-              : "bg-white text-gray-900 border border-gray-300 hover:border-gray-900 hover:bg-gray-50"
-          }`}
-        >
-          {plan.cta}
-        </Link>
+        {onCheckout ? (
+          <button
+            type="button"
+            onClick={() => onCheckout(plan.name.toLowerCase())}
+            className={`block w-full text-center py-3 rounded-full text-[12px] font-semibold transition-all duration-300 ${
+              plan.popular
+                ? "bg-[#F26522] text-white hover:bg-[#e05a1a] border border-transparent"
+                : "bg-white text-gray-900 border border-gray-300 hover:border-gray-900 hover:bg-gray-50"
+            }`}
+          >
+            {plan.cta}
+          </button>
+        ) : (
+          <Link
+            href={plan.ctaHref}
+            className={`block w-full text-center py-3 rounded-full text-[12px] font-semibold transition-all duration-300 ${
+              plan.popular
+                ? "bg-[#F26522] text-white hover:bg-[#e05a1a] border border-transparent"
+                : "bg-white text-gray-900 border border-gray-300 hover:border-gray-900 hover:bg-gray-50"
+            }`}
+          >
+            {plan.cta}
+          </Link>
+        )}
       </div>
     </div>
   );
@@ -252,6 +269,27 @@ function FaqItem({ q, a }: { q: string; a: string }) {
 
 export default function PricingPage() {
   const [cycle, setCycle] = useState<BillingCycle>("monthly");
+  const { isSignedIn } = useAuth();
+
+  // ponytail: signed-in paid tiers → checkout endpoint. Free/Enterprise unchanged.
+  const handleCheckout = async (planSlug: string) => {
+    if (!isSignedIn) {
+      window.location.href = `/sign-up?redirect=/pricing`;
+      return;
+    }
+    try {
+      const res = await fetch("/api/billing/checkout", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ plan: planSlug }),
+      });
+      const data = await res.json();
+      if (data.checkoutUrl) window.location.href = data.checkoutUrl;
+      else alert("Checkout unavailable. Please try again.");
+    } catch {
+      alert("Failed to start checkout.");
+    }
+  };
 
   return (
     <main className="min-h-screen bg-white text-gray-900">
@@ -286,9 +324,18 @@ export default function PricingPage() {
           </span>
         </div>
         <div className="max-w-[1440px] mx-auto grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          {PLANS.map((plan, i) => (
-            <PlanCard key={plan.name} plan={plan} cycle={cycle} />
-          ))}
+          {PLANS.map((plan, i) => {
+            const needsCheckout =
+              isSignedIn && plan.name !== "Free" && plan.name !== "Enterprise";
+            return (
+              <PlanCard
+                key={plan.name}
+                plan={plan}
+                cycle={cycle}
+                onCheckout={needsCheckout ? handleCheckout : undefined}
+              />
+            );
+          })}
         </div>
         <p className="text-center text-[11px] text-gray-400 mt-8">
           All paid plans are <strong className="text-gray-600">flat-rate</strong> — no per-seat
