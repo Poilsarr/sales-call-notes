@@ -61,6 +61,23 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: validation.error }, { status: 400 });
     }
 
+    // Upload original audio to Vercel Blob before any preprocessing.
+    // This preserves the unmodified file for re-processing with different templates.
+    // ponytail: eval-require defeats webpack static analysis of undici@6 #private fields.
+    let audioUrl: string | null = null;
+    try {
+      const { put: blobPut } = eval("require('@vercel/blob')") as { put: (path: string, body: Buffer, opts: { access: string; addRandomSuffix: boolean }) => Promise<{ url: string }> };
+      const blobResult = await blobPut(fileName, fileBuffer, {
+        access: 'public',
+        addRandomSuffix: true,
+      });
+      audioUrl = blobResult.url;
+      console.log(`Audio uploaded to Blob: ${audioUrl}`);
+    } catch (e: any) {
+      console.error(`Audio upload failed (non-fatal): ${e?.message}`);
+      // Continue without audio persistence rather than blocking the entire pipeline.
+    }
+
     console.log(`Processing file: ${fileName}, size: ${fileBuffer.length}`);
 
     // --- TRANSCRIPTION PIPELINE ---
@@ -264,6 +281,7 @@ export async function POST(req: Request) {
         teamId: user.teamId,
         sharedWithTeam: Boolean(user.teamId),
         filename: fileName,
+        audioUrl: audioUrl,
         transcript: finalTranscriptWithSpeakers,
         language: transcription.language || requestedLanguage || 'en',
         summary: analysisResult.executiveSummary || correctedText.slice(0, 500),
