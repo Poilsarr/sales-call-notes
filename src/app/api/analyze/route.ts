@@ -7,8 +7,9 @@ import { TranscriptionServiceV2 } from '@/services/ai/transcription-v2';
 import { PostProcessingService } from '@/services/ai/post-processing';
 import { AnalysisService } from '@/services/ai/analysis';
 import { DiarizationService } from '@/services/ai/diarization';
-import { SlackService } from '@/services/slack';
-import { WebhookService } from '@/services/webhooks';
+import { SlackService } from "@/services/slack";
+import { WebhookService } from "@/services/webhooks";
+import { sendTranscriptReadyEmail } from "@/services/email";
 import { parseRemoveFillers } from '@/lib/transcription-options';
 import { getUserByClerkId } from '@/lib/get-user';
 import { AnalyticsService } from '@/services/ai/analytics';
@@ -350,6 +351,9 @@ export async function POST(req: Request) {
         personalization: personalization,
       }
     });
+
+    // ponytail: fire-and-forget email, don't block response
+    void sendTranscriptReadyEmail(user.email, call.id, fileName);
 
     if (competitors.length > 0) {
       const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://sales-call-notes.vercel.app';

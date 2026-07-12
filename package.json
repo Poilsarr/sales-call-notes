@@ -45,6 +45,7 @@
     "openai": "^4.47.0",
     "react": "^18",
     "react-dom": "^18",
+    "resend": "^6.17.1",
     "shaders": "^2.5.128",
     "sonner": "^2.0.7",
     "tailwind-merge": "^2.3.0",
