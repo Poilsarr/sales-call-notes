@@ -27,6 +27,11 @@ vi.mock('next/link', () => ({
   ),
 }));
 
+vi.mock('next/navigation', () => ({
+  useRouter: () => ({ replace: vi.fn(), push: vi.fn() }),
+  usePathname: () => '/',
+}));
+
 vi.mock('@/components/nav', () => ({
   default: () => <nav data-testid="nav-mock" />,
 }));

@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useMemo } from "react";
 import { useUser } from "@clerk/nextjs";
+import { useRouter } from "next/navigation";
 import Nav from "@/components/nav";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Section } from "@/components/ui/section";
@@ -101,6 +102,8 @@ function formatDateLabel(iso: string) {
 
 export default function DashboardPage() {
   const { user } = useUser();
+  const router = useRouter();
+  const [onboardChecked, setOnboardChecked] = useState(false);
 
   const [data, setData] = useState<AnalyticsData | null>(null);
   const [billing, setBilling] = useState<BillingInfo | null>(null);
@@ -108,6 +111,21 @@ export default function DashboardPage() {
   const [scope, setScope] = useState<"personal" | "team">("personal");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
+  // ponytail: onboarding gate — same pattern as /app/layout.tsx
+  useEffect(() => {
+    if (!user?.id) return;
+    fetch("/api/user")
+      .then(r => r.json())
+      .then(d => {
+        if (d.hasOnboarded === false) {
+          router.replace("/onboarding");
+        } else {
+          setOnboardChecked(true);
+        }
+      })
+      .catch(() => setOnboardChecked(true));
+  }, [user?.id, router]);
 
   // AI Meeting Assistant state
   const [chatQuery, setChatQuery] = useState("");
@@ -182,7 +200,7 @@ export default function DashboardPage() {
       ? Math.min(100, (billing.minuteUsage / billing.minuteLimit) * 100)
       : 0;
 
-  if (loading) {
+  if (loading || !onboardChecked) {
     return (
       <div className="min-h-screen bg-linear-black text-white flex flex-col">
         <Nav />
