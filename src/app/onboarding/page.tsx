@@ -25,13 +25,22 @@ export default function OnboardingPage() {
     localStorage.setItem(STORAGE_KEY, String(next));
   };
 
+  const markOnboarded = () =>
+    fetch("/api/user", {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ hasOnboarded: true }),
+    }).catch(() => {});
+
   const finish = () => {
     localStorage.setItem(STORAGE_KEY, "2");
+    markOnboarded();
     window.location.href = "/app";
   };
 
   const skip = () => {
     localStorage.setItem(STORAGE_KEY, "2");
+    markOnboarded();
     window.location.href = "/app";
   };
 

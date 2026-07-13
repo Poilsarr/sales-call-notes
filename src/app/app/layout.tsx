@@ -16,10 +16,26 @@ export default function AppLayout({
   const { isLoaded, isSignedIn, userId } = useAuth();
   const router = useRouter();
   const [trialEndsAt, setTrialEndsAt] = useState<string | null>(null);
+  const [onboardChecked, setOnboardChecked] = useState(false);
 
   useEffect(() => {
     if (isLoaded && !isSignedIn) router.replace("/sign-in");
   }, [isLoaded, isSignedIn, router]);
+
+  // ponytail: onboarding gate — redirect to /onboarding if user hasn't completed it
+  useEffect(() => {
+    if (!userId) return;
+    fetch("/api/user")
+      .then(r => r.json())
+      .then(d => {
+        if (d.hasOnboarded === false) {
+          router.replace("/onboarding");
+        } else {
+          setOnboardChecked(true);
+        }
+      })
+      .catch(() => setOnboardChecked(true)); // fail open
+  }, [userId, router]);
 
   useEffect(() => {
     if (!userId) return;
@@ -31,7 +47,7 @@ export default function AppLayout({
       .catch(() => {});
   }, [userId]);
 
-  if (!isLoaded || !isSignedIn) return null;
+  if (!isLoaded || !isSignedIn || !onboardChecked) return null;
 
   return (
     <div className="flex h-screen bg-linear-black">
