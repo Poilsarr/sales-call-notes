@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { useClerk } from '@clerk/nextjs';
+import { useUser, useClerk } from '@clerk/nextjs';
 import {
   LayoutDashboard,
   Phone,
@@ -30,16 +30,41 @@ const navItems = [
 
 export function AppSidebar() {
   const pathname = usePathname();
+  const { user, isLoaded } = useUser();
   const { signOut } = useClerk();
+
+  function getDisplayName() {
+    if (!isLoaded || !user) return null;
+    if (user.firstName) {
+      return user.lastName ? `${user.firstName} ${user.lastName}` : user.firstName;
+    }
+    const email = user.emailAddresses?.[0]?.emailAddress;
+    if (email) return email.split("@")[0];
+    return null;
+  }
+
+  const displayName = getDisplayName();
 
   return (
     <aside className="w-64 bg-linear-surface border-r border-linear-secondary flex flex-col">
       <div className="p-6">
-        <Link href="/" className="flex items-center gap-2.5">
-          <div className="w-8 h-8 bg-linear-indigo rounded-full flex items-center justify-center">
-            <span className="text-white font-bold text-[9px] tracking-tight">G</span>
+        <Link href="/" className="flex items-center gap-2.5 min-w-0">
+          <div className="w-8 h-8 bg-linear-indigo rounded-full flex items-center justify-center shrink-0">
+            {user?.imageUrl ? (
+              <img
+                src={user.imageUrl}
+                alt={displayName ?? "Gauge"}
+                className="w-8 h-8 rounded-full object-cover"
+              />
+            ) : (
+              <span className="text-white font-bold text-[9px] tracking-tight">
+                {isLoaded && user ? (user.firstName?.charAt(0)?.toUpperCase() ?? user.emailAddresses?.[0]?.emailAddress?.charAt(0)?.toUpperCase()) : "G"}
+              </span>
+            )}
           </div>
-          <span className="text-[15px] font-semibold tracking-tight text-white">Gauge</span>
+          <span className="text-[15px] font-semibold tracking-tight text-white truncate">
+            {displayName ?? "Gauge"}
+          </span>
         </Link>
       </div>
       
