@@ -8,9 +8,17 @@
  *
  * Scope: public assets only. We do NOT cache /api/* responses —
  * those are auth-gated and freshness matters more than speed.
+ *
+ * Versioning: bump VERSION on every deploy that changes cached
+ * shell contents. The cache name embeds the version, so the
+ * activate handler nukes any old `gauge-shell-*` and
+ * `callnotepro-shell-*` caches automatically. Bumping from v1
+ * to v2 was required after the CallNote Pro → Gauge rebrand
+ * to force users whose browsers were still controlling with
+ * the old service worker to pick up the new code on next load.
  */
 
-const VERSION = "v1";
+const VERSION = "v2";
 const CACHE = `gauge-shell-${VERSION}`;
 const SHELL = [
   "/",
