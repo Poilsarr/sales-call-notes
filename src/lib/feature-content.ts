@@ -92,7 +92,7 @@ export const featureContent: Record<number, FeatureContent> = {
       "Field-mapped templates for HubSpot, Salesforce, Teams",
       "Paste-ready formatting with the right line breaks",
       "Auto-attaches the call recording link and transcript",
-      "Two-way sync keeps CRM notes in step with CallNote",
+      "Two-way sync keeps CRM notes in step with Gauge",
       "Per-team custom templates with merge fields",
     ],
     specs: [
@@ -216,7 +216,7 @@ export const featureContent: Record<number, FeatureContent> = {
       "Webhooks fire on every completed call",
     ],
     specs: [
-      { label: "Schema", value: "CallNote Call v1, semver-locked" },
+      { label: "Schema", value: "Gauge Call v1, semver-locked" },
       { label: "Delivery", value: "S3, GCS, webhook, or signed URL" },
       { label: "Format", value: "JSON Lines for bulk, JSON for single" },
       { label: "Auth", value: "API key on Pro, OAuth on Business" },

@@ -18,7 +18,7 @@ const SERVICES: Omit<ServiceState, "status" | "latencyMs" | "detail">[] = [
   {
     id: "web",
     name: "Web app",
-    description: "callnotepro.com dashboard and all authenticated pages.",
+    description: "usegauge.com dashboard and all authenticated pages.",
   },
   {
     id: "api",

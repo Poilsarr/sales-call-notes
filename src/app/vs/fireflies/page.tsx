@@ -2,14 +2,14 @@ import type { Metadata } from "next";
 import { VsComparisonPage, type ComparisonData } from "@/components/vs-comparison";
 
 export const metadata: Metadata = {
-  title: "Fireflies.ai Alternative: CallNote Pro — Flat-Rate vs Per-Seat (2026)",
+  title: "Fireflies.ai Alternative: Gauge — Flat-Rate vs Per-Seat (2026)",
   description:
-    "Fireflies charges $10/seat/mo — 5 reps = $50/mo. CallNote Pro is $9 flat. 600 free minutes, no bot auto-joining, BANT/MEDDIC sales extraction built in.",
-  alternates: { canonical: "https://callnotepro.com/vs/fireflies" },
+    "Fireflies charges $10/seat/mo — 5 reps = $50/mo. Gauge is $9 flat. 600 free minutes, no bot auto-joining, BANT/MEDDIC sales extraction built in.",
+  alternates: { canonical: "https://usegauge.com/vs/fireflies" },
   openGraph: {
-    title: "Fireflies.ai Alternative: CallNote Pro — Flat-Rate vs Per-Seat (2026)",
+    title: "Fireflies.ai Alternative: Gauge — Flat-Rate vs Per-Seat (2026)",
     description: "5 reps on Fireflies Pro = $50/mo. 5 reps on us = $9/mo flat. No bot auto-joining.",
-    url: "https://callnotepro.com/vs/fireflies",
+    url: "https://usegauge.com/vs/fireflies",
   },
 };
 
@@ -20,11 +20,11 @@ const data: ComparisonData = {
   competitorFounded: "2016",
   competitorFunding: "$19M+ raised",
   competitorUsers: "3M+ users",
-  metaTitle: "Fireflies.ai Alternative: CallNote Pro — Flat-Rate vs Per-Seat (2026)",
+  metaTitle: "Fireflies.ai Alternative: Gauge — Flat-Rate vs Per-Seat (2026)",
   metaDescription: "5 reps on Fireflies Pro = $50/mo. 5 reps on us = $9/mo flat. No bot auto-joining.",
   heroHeadline: "The Fireflies alternative that doesn't charge you per seat.",
   heroSubhead:
-    "Fireflies is a serious conversation-intelligence product — 3M+ users, 500+ integrations, deep CRM sync. But their per-seat pricing kills small teams. 5 reps on Fireflies Pro = $50/mo. 5 reps on CallNote Pro = $9/mo flat. Same features, half the bloat.",
+    "Fireflies is a serious conversation-intelligence product — 3M+ users, 500+ integrations, deep CRM sync. But their per-seat pricing kills small teams. 5 reps on Fireflies Pro = $50/mo. 5 reps on Gauge = $9/mo flat. Same features, half the bloat.",
   talkingPoints: [
     "Fireflies charges per-seat. We charge flat-rate. 5 users on Fireflies Pro = $50/mo. 5 users on us = $9/mo. Same math at any team size.",
     "Fireflies' free tier loses your meetings after 800 minutes of storage. Ours: keep them, 300 minutes/mo with unlimited imports.",
@@ -53,7 +53,7 @@ const data: ComparisonData = {
   ourWins: [
     {
       title: "Flat-rate pricing destroys per-seat math",
-      detail: "5 reps on Fireflies Pro = $50/mo. 5 reps on Business = $95/mo. Same 5 reps on CallNote Pro = $9 flat. Same 5 reps on Business = $29 flat. The bigger your team, the bigger our win.",
+      detail: "5 reps on Fireflies Pro = $50/mo. 5 reps on Business = $95/mo. Same 5 reps on Gauge = $9 flat. Same 5 reps on Business = $29 flat. The bigger your team, the bigger our win.",
     },
     {
       title: "No bot in your meeting",
@@ -94,11 +94,11 @@ const data: ComparisonData = {
   ],
   faq: [
     {
-      q: "Is CallNote Pro really cheaper than Fireflies?",
+      q: "Is Gauge really cheaper than Fireflies?",
       a: "For solo users, it's close — $9 flat vs $10/seat. For teams, it's not close. 5 reps on Fireflies Pro = $50/mo. 5 reps on us = $9/mo flat. At 10 reps on Fireflies Business, you're paying $190/mo. At 10 reps on us, still $29/mo.",
     },
     {
-      q: "Does CallNote Pro have Fireflies' 500 integrations?",
+      q: "Does Gauge have Fireflies' 500 integrations?",
       a: "No. We have 10+ deep integrations (HubSpot, Salesforce, Slack, Teams, Calendar, Chrome, API, webhooks). Fireflies wins on integration count. If you need a specific niche integration, check our /integrations page or email us — we ship integrations in days, not quarters.",
     },
     {
@@ -106,12 +106,12 @@ const data: ComparisonData = {
       a: "Fireflies' conversation intelligence is genuinely better at enterprise scale — deal tracking, scorecards, manager coaching workflows. We have BANT/MEDDIC extraction and a 0-100 call score at $9 flat. If you need Gong-level RevOps tooling, Fireflies Business is the right call. If you need sales AI for a small team, we win.",
     },
     {
-      q: "Does CallNote Pro auto-join meetings like Fireflies?",
+      q: "Does Gauge auto-join meetings like Fireflies?",
       a: "No. Both Fireflies and Otter auto-join as bot participants — which is what triggered the 2025 Otter consent lawsuit. We never auto-join. You record, you upload, we analyze. Privacy-first is the whole point.",
     },
     {
       q: "Can I migrate my Fireflies history?",
-      a: "Yes — export audio from Fireflies, upload to CallNote Pro. We accept MP3, WAV, M4A, WebM. For bulk migration, email hello@callnotepro.com.",
+      a: "Yes — export audio from Fireflies, upload to Gauge. We accept MP3, WAV, M4A, WebM. For bulk migration, email hello@usegauge.com.",
     },
   ],
 };

@@ -10,10 +10,10 @@ export default function SignInPage() {
       <div className="w-full max-w-[400px]">
         <div className="text-center mb-8">
           <div className="w-10 h-10 bg-gray-900 rounded-full flex items-center justify-center mx-auto mb-4">
-            <span className="text-white text-[11px] font-bold tracking-tight">CP</span>
+            <span className="text-white text-[11px] font-bold tracking-tight">G</span>
           </div>
           <h1 className="text-[20px] font-semibold tracking-tight text-gray-900">Welcome back</h1>
-          <p className="text-[13px] text-gray-500 mt-1">Sign in to CallNote Pro</p>
+          <p className="text-[13px] text-gray-500 mt-1">Sign in to Gauge</p>
         </div>
         {isLoaded ? (
           <SignIn

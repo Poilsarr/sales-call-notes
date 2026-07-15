@@ -1,6 +1,6 @@
 {
-  "name": "CallNote Pro",
-  "short_name": "CallNote",
+  "name": "Gauge",
+  "short_name": "Gauge",
   "description": "Turn sales call recordings into actionable notes in seconds.",
   "start_url": "/",
   "display": "standalone",

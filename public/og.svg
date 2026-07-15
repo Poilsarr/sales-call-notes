@@ -14,7 +14,7 @@
   <!-- Brand mark -->
   <g transform="translate(80, 80)">
     <rect width="56" height="56" rx="14" fill="url(#brand)" transform="rotate(45 28 28)"/>
-    <text x="76" y="40" font-family="-apple-system,BlinkMacSystemFont,Inter,sans-serif" font-size="28" font-weight="600" fill="#ffffff">CallNote Pro</text>
+    <text x="76" y="40" font-family="-apple-system,BlinkMacSystemFont,Inter,sans-serif" font-size="28" font-weight="600" fill="#ffffff">Gauge</text>
   </g>
   <!-- Eyebrow -->
   <text x="80" y="240" font-family="-apple-system,BlinkMacSystemFont,Inter,sans-serif" font-size="20" font-weight="500" letter-spacing="3" fill="#F26522" text-transform="uppercase">SALES CALL INTELLIGENCE</text>
@@ -39,5 +39,5 @@
     <text x="32" y="180" font-family="ui-monospace,SFMono-Regular,monospace" font-size="13" fill="#52525b">00:14:22  Sarah Chen  →  #deal-room-acme</text>
   </g>
   <!-- URL -->
-  <text x="1120" y="595" font-family="-apple-system,BlinkMacSystemFont,Inter,sans-serif" font-size="14" fill="#52525b" text-anchor="end">callnotepro.com</text>
+  <text x="1120" y="595" font-family="-apple-system,BlinkMacSystemFont,Inter,sans-serif" font-size="14" fill="#52525b" text-anchor="end">usegauge.com</text>
 </svg>

@@ -290,7 +290,7 @@ export default function SettingsPage() {
             )}
 
             {tab === "api-keys" && (
-              <Section title="API Keys" description="Manage programmatic access to your CallNote Pro account.">
+              <Section title="API Keys" description="Manage programmatic access to your Gauge account.">
                 <APIKeysSettings />
               </Section>
             )}
@@ -492,7 +492,7 @@ export default function SettingsPage() {
                 </Section>
 
                 {/* Preferences */}
-                <Section title="Preferences" description="Customize how CallNote Pro works for you.">
+                <Section title="Preferences" description="Customize how Gauge works for you.">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <Card>
                       <CardHeader>

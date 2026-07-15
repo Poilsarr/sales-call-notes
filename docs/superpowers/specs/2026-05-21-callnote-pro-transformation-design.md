@@ -1,4 +1,4 @@
-# CallNote Pro — Best-in-Class Transformation Design Spec
+# Gauge — Best-in-Class Transformation Design Spec
 
 **Date:** 2026-05-21
 **Status:** Approved for Implementation
@@ -8,7 +8,7 @@
 
 ## Overview
 
-Transform CallNote Pro from a functional but generic sales call analysis tool into a best-in-class product that rivals Otter.ai in transcription accuracy, summary depth, and UI polish.
+Transform Gauge from a functional but generic sales call analysis tool into a best-in-class product that rivals Otter.ai in transcription accuracy, summary depth, and UI polish.
 
 **Three pillars:**
 1. **Transcription Pipeline** — Audio preprocessing, multi-model strategy, speaker diarization, post-processing correction

@@ -1,4 +1,4 @@
-# SLOs and Error Budget — CallNote Pro
+# SLOs and Error Budget — Gauge
 
 > **Last reviewed:** 2026-06-20.
 > Owner: founder (today).

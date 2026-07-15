@@ -39,7 +39,7 @@ export async function GET() {
   const ok = dbOk;
   const body = {
     ok,
-    service: "callnote-pro",
+    service: "gauge",
     version: process.env.VERCEL_GIT_COMMIT_SHA?.slice(0, 7) ?? "dev",
     env: process.env.VERCEL_ENV ?? process.env.NODE_ENV ?? "development",
     uptimeSeconds: Math.floor((Date.now() - START_TIME) / 1000),

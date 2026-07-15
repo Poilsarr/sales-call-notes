@@ -2,14 +2,14 @@ import type { Metadata } from "next";
 import { VsComparisonPage, type ComparisonData } from "@/components/vs-comparison";
 
 export const metadata: Metadata = {
-  title: "tl;dv Alternative: CallNote Pro — Global Data + Flat Pricing (2026)",
+  title: "tl;dv Alternative: Gauge — Global Data + Flat Pricing (2026)",
   description:
-    "tl;dv: $20/mo Pro with AI throttled, $60/mo Business for 3 users, EU-only data. CallNote Pro: $9 flat, global US/EU/Asia regions, unlimited AI summaries.",
-  alternates: { canonical: "https://callnotepro.com/vs/tldv" },
+    "tl;dv: $20/mo Pro with AI throttled, $60/mo Business for 3 users, EU-only data. Gauge: $9 flat, global US/EU/Asia regions, unlimited AI summaries.",
+  alternates: { canonical: "https://usegauge.com/vs/tldv" },
   openGraph: {
-    title: "tl;dv Alternative: CallNote Pro — Global Data + Flat Pricing (2026)",
+    title: "tl;dv Alternative: Gauge — Global Data + Flat Pricing (2026)",
     description: "tl;dv Pro $20/mo, Business $60/3 users, EU-only. Us: $9 flat, global, unlimited AI.",
-    url: "https://callnotepro.com/vs/tldv",
+    url: "https://usegauge.com/vs/tldv",
   },
 };
 
@@ -20,7 +20,7 @@ const data: ComparisonData = {
   competitorFounded: "2020",
   competitorFunding: "$28M+ raised",
   competitorUsers: "1M+ users",
-  metaTitle: "tl;dv Alternative: CallNote Pro — Global Data + Flat Pricing (2026)",
+  metaTitle: "tl;dv Alternative: Gauge — Global Data + Flat Pricing (2026)",
   metaDescription: "tl;dv Pro $20/mo, Business $60/3 users, EU-only. Us: $9 flat, global, unlimited AI.",
   heroHeadline: "The tl;dv alternative with global data residency and flat pricing.",
   heroSubhead:
@@ -95,12 +95,12 @@ const data: ComparisonData = {
   ],
   faq: [
     {
-      q: "Is CallNote Pro cheaper than tl;dv?",
+      q: "Is Gauge cheaper than tl;dv?",
       a: "Yes, at every tier. Solo: $9 flat vs $20. 3 users: $9 flat vs $60 (tl;dv Business 3-user min). 10 users: $29 flat vs $200. The bigger your team, the bigger the gap — tl;dv charges per-seat, we don't.",
     },
     {
-      q: "Does CallNote Pro have tl;dv's AI agents?",
-      a: "Not yet — tl;dv shipped AI agents in 2024 and it's a real feature. We have the infrastructure (embeddings, vector search) and 'Ask CallNote' is on our roadmap. If conversational AI chat with meetings is a must-have today, tl;dv wins. If $9 flat matters more, we ship it next.",
+      q: "Does Gauge have tl;dv's AI agents?",
+      a: "Not yet — tl;dv shipped AI agents in 2024 and it's a real feature. We have the infrastructure (embeddings, vector search) and 'Ask Gauge' is on our roadmap. If conversational AI chat with meetings is a must-have today, tl;dv wins. If $9 flat matters more, we ship it next.",
     },
     {
       q: "What about EU data residency?",

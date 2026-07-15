@@ -4,8 +4,8 @@ import fs from "fs";
 import path from "path";
 
 export const metadata = {
-  title: "Changelog — CallNote Pro",
-  description: "Every notable change to CallNote Pro, from security fixes to new features. Follows Keep a Changelog format.",
+  title: "Changelog — Gauge",
+  description: "Every notable change to Gauge, from security fixes to new features. Follows Keep a Changelog format.",
 };
 
 interface ChangelogEntry {
@@ -73,7 +73,7 @@ export default function ChangelogPage() {
             </span>
           </div>
 
-          <h1 className="text-4xl font-bold tracking-tight mb-3">What&apos;s new in CallNote Pro</h1>
+          <h1 className="text-4xl font-bold tracking-tight mb-3">What&apos;s new in Gauge</h1>
           <p className="text-zinc-500 text-lg mb-12">
             Every notable change — security fixes, new features, improvements. Follows{" "}
             <a href="https://keepachangelog.com" className="text-[#F26522] hover:underline">

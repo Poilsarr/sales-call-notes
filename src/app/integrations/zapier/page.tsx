@@ -12,7 +12,7 @@ import { toast } from "sonner";
  * Flow:
  *   1. User pastes their Zap's "Catch Hook" URL (from Zapier)
  *   2. We register it via /api/webhooks (existing infrastructure)
- *   3. When CallNote Pro analyzes a call, we POST the payload
+ *   3. When Gauge analyzes a call, we POST the payload
  *      to all registered webhooks — Zapier receives it as a trigger
  *   4. User maps fields in their Zap to downstream actions
  *
@@ -89,11 +89,11 @@ export default function ZapierSetupPage() {
             <Zap className="w-5 h-5 text-[#FF4F00]" />
           </div>
           <h1 className="text-2xl font-semibold tracking-tight">
-            Connect CallNote Pro to Zapier
+            Connect Gauge to Zapier
           </h1>
         </div>
         <p className="text-sm text-zinc-600 mb-10">
-          Push CallNote Pro call events into 5,000+ apps — Notion, Airtable,
+          Push Gauge call events into 5,000+ apps — Notion, Airtable,
           Google Sheets, your custom CRM, anywhere.
         </p>
 
@@ -171,7 +171,7 @@ export default function ZapierSetupPage() {
             <div>
               <h2 className="text-sm font-semibold mb-1">Test your Zap</h2>
               <p className="text-xs text-zinc-600">
-                Upload or record a new call in CallNote Pro. Within ~60 seconds
+                Upload or record a new call in Gauge. Within ~60 seconds
                 (transcription + analysis), your Zap will fire with the payload
                 below. Map fields in Zapier&rsquo;s action step.
               </p>
@@ -188,7 +188,7 @@ export default function ZapierSetupPage() {
           <pre className="p-4 rounded-2xl bg-zinc-950 text-zinc-100 text-xs font-mono overflow-x-auto leading-relaxed">
 {`POST https://hooks.zapier.com/your-hook-url
 Content-Type: application/json
-User-Agent: CallNotePro-Webhook/1.0
+User-Agent: Gauge-Webhook/1.0
 
 {
   "event": "call.analyzed",
@@ -255,10 +255,10 @@ User-Agent: CallNotePro-Webhook/1.0
           <p className="mt-3 text-xs text-zinc-500">
             Need a custom event? Email{" "}
             <a
-              href="mailto:support@callnotepro.com"
+              href="mailto:support@usegauge.com"
               className="text-[#F26522] hover:underline"
             >
-              support@callnotepro.com
+              support@usegauge.com
             </a>
             .
           </p>

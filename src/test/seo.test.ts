@@ -10,12 +10,12 @@ describe("productJsonLd", () => {
   });
 
   it("names the product", () => {
-    expect(ld.name).toBe("CallNote Pro");
-    expect(ld.url).toBe("https://callnotepro.com");
+    expect(ld.name).toBe("Gauge");
+    expect(ld.url).toBe("https://usegauge.com");
   });
 
   it("links the OG image", () => {
-    expect(ld.image).toBe("https://callnotepro.com/og.png");
+    expect(ld.image).toBe("https://usegauge.com/og.png");
   });
 
   it("exposes Free + Pro offers with real prices", () => {

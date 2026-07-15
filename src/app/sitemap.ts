@@ -1,6 +1,6 @@
 import type { MetadataRoute } from "next";
 
-const SITE_URL = "https://callnotepro.com";
+const SITE_URL = "https://usegauge.com";
 
 /**
  * Dynamic sitemap.xml — public marketing pages only.

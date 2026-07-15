@@ -51,7 +51,7 @@ export default function OnboardingPage() {
   return (
     <main className="min-h-screen bg-white text-gray-900">
       <header className="border-b border-gray-100 px-6 py-4 flex items-center justify-between">
-        <Link href="/" className="text-[13px] font-semibold tracking-tight">CallNote Pro</Link>
+        <Link href="/" className="text-[13px] font-semibold tracking-tight">Gauge</Link>
         <button onClick={skip} className="text-[12px] text-gray-400 hover:text-gray-700 transition-colors">
           Skip onboarding
         </button>
@@ -150,7 +150,7 @@ export default function OnboardingPage() {
               Ready
             </div>
             <h1 className="text-[clamp(1.75rem,4vw,2.5rem)] font-medium tracking-tight mb-3">
-              You&apos;re set. Welcome to CallNote Pro.
+              You&apos;re set. Welcome to Gauge.
             </h1>
             <p className="text-gray-600 text-[15px] leading-relaxed mb-8">
               Your dashboard is ready. Upload a real call or pipe captions from Google Meet with our

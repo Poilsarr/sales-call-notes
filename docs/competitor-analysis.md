@@ -14,7 +14,7 @@
 
 ## Feature Comparison Matrix
 
-| Feature | Fireflies.ai | Otter.ai | CallNote Pro (Current) | Gap |
+| Feature | Fireflies.ai | Otter.ai | Gauge (Current) | Gap |
 |---------|-------------|----------|------------------------|-----|
 | **Transcription** |
 | Accuracy | 95% | High | Whisper (local) | ✓ |

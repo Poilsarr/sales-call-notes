@@ -33,7 +33,7 @@ export default function RefundPage() {
           </section>
           <section>
             <h2 className="text-[15px] font-semibold text-gray-900 mb-3">6. Contact</h2>
-            <p>For refund requests, email <a href="mailto:billing@callnotepro.com" className="text-[#F26522] hover:underline">billing@callnotepro.com</a> with your account email and reason for cancellation.</p>
+            <p>For refund requests, email <a href="mailto:billing@usegauge.com" className="text-[#F26522] hover:underline">billing@usegauge.com</a> with your account email and reason for cancellation.</p>
           </section>
         </div>
       </div>

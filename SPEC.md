@@ -2,7 +2,7 @@
 
 ## 1. Product Overview
 
-**Product Name:** CallNote Pro
+**Product Name:** Gauge
 **Target Users:** SDRs/BDRs at early-stage startups (2-10 person sales teams)
 **Core Value:** Turn sales call recordings into actionable notes in seconds - no manual note-taking, fast handoff to AEs
 
@@ -96,7 +96,7 @@ interface CallRecord {
 ## 5. UI/UX Design
 
 ### Layout
-- **Header:** Logo + "CallNote Pro" + History button
+- **Header:** Logo + "Gauge" + History button
 - **Main:** Upload area (hero) + Results panel
 - **Footer:** Minimal - "Free for SDRs"
 

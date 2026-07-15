@@ -1,5 +1,5 @@
 /**
- * CallNote Pro service worker.
+ * Gauge service worker.
  *
  * Strategy: precache the app shell so the install button shows up
  * in Chrome (requires SW + manifest + start_url responds 200).
@@ -11,7 +11,7 @@
  */
 
 const VERSION = "v1";
-const CACHE = `callnotepro-shell-${VERSION}`;
+const CACHE = `gauge-shell-${VERSION}`;
 const SHELL = [
   "/",
   "/offline",

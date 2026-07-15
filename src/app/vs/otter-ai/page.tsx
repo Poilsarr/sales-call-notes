@@ -2,15 +2,15 @@ import type { Metadata } from "next";
 import { VsComparisonPage, type ComparisonData } from "@/components/vs-comparison";
 
 export const metadata: Metadata = {
-  title: "Otter.ai Alternative: CallNote Pro — The Honest 2026 Comparison",
+  title: "Otter.ai Alternative: Gauge — The Honest 2026 Comparison",
   description:
-    "Otter got sued in 2025 for recording meetings without consent. CallNote Pro never auto-joins. Flat $9/mo (not per-seat), 600 free minutes, BANT/MEDDIC extraction built in.",
-  alternates: { canonical: "https://callnotepro.com/vs/otter-ai" },
+    "Otter got sued in 2025 for recording meetings without consent. Gauge never auto-joins. Flat $9/mo (not per-seat), 600 free minutes, BANT/MEDDIC extraction built in.",
+  alternates: { canonical: "https://usegauge.com/vs/otter-ai" },
   openGraph: {
-    title: "Otter.ai Alternative: CallNote Pro — The Honest 2026 Comparison",
+    title: "Otter.ai Alternative: Gauge — The Honest 2026 Comparison",
     description:
       "Flat $9/mo vs $20/seat. 600 free minutes vs 300. No bot in your meeting. GDPR-first.",
-    url: "https://callnotepro.com/vs/otter-ai",
+    url: "https://usegauge.com/vs/otter-ai",
   },
 };
 
@@ -21,14 +21,14 @@ const data: ComparisonData = {
   competitorFounded: "2016",
   competitorFunding: "$70M+ raised",
   competitorUsers: "10M+ users",
-  metaTitle: "Otter.ai Alternative: CallNote Pro — The Honest 2026 Comparison",
+  metaTitle: "Otter.ai Alternative: Gauge — The Honest 2026 Comparison",
   metaDescription:
     "Flat $9/mo vs $20/seat. 600 free minutes vs 300. No bot in your meeting. GDPR-first.",
   heroHeadline: "The Otter.ai alternative for people who don't want a bot in their meeting.",
   heroSubhead:
-    "Otter is a great product — 10M+ users, Zoom partnership, 9 years of polish. But in 2025 they were sued for recording meetings without consent. We built CallNote Pro for the people who read that headline and thought: never again.",
+    "Otter is a great product — 10M+ users, Zoom partnership, 9 years of polish. But in 2025 they were sued for recording meetings without consent. We built Gauge for the people who read that headline and thought: never again.",
   talkingPoints: [
-    "Otter got sued in 2025 for recording meetings without consent. We won't. CallNote Pro never auto-joins — you upload the recording, you stay in control.",
+    "Otter got sued in 2025 for recording meetings without consent. We won't. Gauge never auto-joins — you upload the recording, you stay in control.",
     "Otter's free tier gives you 300 minutes a month and 3 lifetime imports. Ours gives you 300 minutes a month and unlimited imports.",
     "Otter charges $20/seat/month for Business. We charge $9 flat. 5 reps on Otter Business = $100/mo. 5 reps on us = $9/mo.",
     "Otter's AI summary is generic. Ours extracts BANT, MEDDIC, action items with owners and deadlines — built for sales.",
@@ -55,7 +55,7 @@ const data: ComparisonData = {
   ourWins: [
     {
       title: "Flat-rate pricing, not per-seat",
-      detail: "5 reps on Otter Business = $100/mo. 5 reps on CallNote Pro Business = $29/mo flat. Per-seat pricing is hostile to small teams.",
+      detail: "5 reps on Otter Business = $100/mo. 5 reps on Gauge Business = $29/mo flat. Per-seat pricing is hostile to small teams.",
     },
     {
       title: "Privacy-first by default",
@@ -96,15 +96,15 @@ const data: ComparisonData = {
   ],
   faq: [
     {
-      q: "Is CallNote Pro really cheaper than Otter?",
+      q: "Is Gauge really cheaper than Otter?",
       a: "On the Free tier, no — both give 300 min/mo. On Business, yes — dramatically. 5 reps on Otter Business costs ~$100/mo ($20/seat). 5 reps on our Business plan is $29/mo flat. The bigger your team, the bigger the gap.",
     },
     {
       q: "Can I import my Otter history?",
-      a: "Yes — export from Otter as audio or text, then upload to CallNote Pro. We accept MP3, WAV, M4A, WebM. If you have a custom migration need, email hello@callnotepro.com.",
+      a: "Yes — export from Otter as audio or text, then upload to Gauge. We accept MP3, WAV, M4A, WebM. If you have a custom migration need, email hello@usegauge.com.",
     },
     {
-      q: "Does CallNote Pro auto-join meetings like OtterPilot?",
+      q: "Does Gauge auto-join meetings like OtterPilot?",
       a: "No. That's the wedge. OtterPilot auto-joins as a bot participant — which is what triggered their 2025 consent lawsuit. We never auto-join. You record, you upload, we analyze. You stay in control of every recording.",
     },
     {

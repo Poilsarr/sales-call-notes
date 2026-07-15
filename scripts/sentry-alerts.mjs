@@ -20,7 +20,7 @@
 
 const RULES = [
   {
-    name: "CallNote Pro — high error rate",
+    name: "Gauge — high error rate",
     description:
       "More than 0.5% of transactions in a 5-minute window produced a 5xx. Pages on-call.",
     severity: "high",
@@ -42,11 +42,11 @@ const RULES = [
     action: {
       type: "pagerduty",
       target: process.env.PAGERDUTY_SERVICE_KEY ?? "<set PAGERDUTY_SERVICE_KEY>",
-      fallback: { type: "email", target: process.env.OPS_EMAIL ?? "founder@callnotepro.com" },
+      fallback: { type: "email", target: process.env.OPS_EMAIL ?? "founder@usegauge.com" },
     },
   },
   {
-    name: "CallNote Pro — slow transactions (p95 > 1s)",
+    name: "Gauge — slow transactions (p95 > 1s)",
     description:
       "p95 transaction duration exceeds 1000ms for 5 minutes. Slack-only alert.",
     severity: "medium",
@@ -67,7 +67,7 @@ const RULES = [
     },
   },
   {
-    name: "CallNote Pro — quota exceeded (AI provider)",
+    name: "Gauge — quota exceeded (AI provider)",
     description:
       "More than 5 events tagged kind=quota_exceeded per minute. Indicates OpenAI/Groq limit hit. Check billing.",
     severity: "high",

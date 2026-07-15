@@ -83,7 +83,7 @@ async function uploadLiveBatch(captions, token) {
   if (captions.length === 0) return;
   const results = await Promise.all(
     captions.map((caption) => uploadLiveCaption(caption, token).catch((error) => {
-      console.warn("[CallNote Pro] Caption upload failed", error);
+      console.warn("[Gauge] Caption upload failed", error);
       return { ok: false, status: "network_error", message: error?.message || "network" };
     })),
   );
@@ -98,7 +98,7 @@ async function uploadLiveBatch(captions, token) {
   }
 
   if (hasReauth) {
-    await recordUploadError(null, "needs_reauth", "Sign in to CallNote Pro to resume uploads");
+    await recordUploadError(null, "needs_reauth", "Sign in to Gauge to resume uploads");
     await refreshAuthStatus(true);
     return;
   }
@@ -211,7 +211,7 @@ async function queueFinalize({ sessionId, meetingTitle, captions }) {
       lastUploadError: null,
     });
   } catch (error) {
-    console.warn("[CallNote Pro] Finalize failed", error);
+    console.warn("[Gauge] Finalize failed", error);
     await recordUploadError(null, "network_error", error?.message || "network error");
   } finally {
     inFlightFinalize = false;
@@ -231,7 +231,7 @@ async function retryPendingFinalize() {
 
 chrome.runtime.onMessage.addListener((message, sender) => {
   if (!sender || !sender.id) {
-    console.warn("[CallNote Pro] Ignoring message from unknown sender");
+    console.warn("[Gauge] Ignoring message from unknown sender");
     return false;
   }
 
@@ -244,7 +244,7 @@ chrome.runtime.onMessage.addListener((message, sender) => {
 
   if (message?.type === "CAPTIONS_UPDATE" || message?.type === "MEETING_END") {
     handleCaptionsMessage(message).catch((error) => {
-      console.warn("[CallNote Pro] Failed to handle captions message", error);
+      console.warn("[Gauge] Failed to handle captions message", error);
     });
     return false;
   }
@@ -306,13 +306,13 @@ async function handleCaptionsMessage(message) {
 chrome.alarms.onAlarm.addListener((alarm) => {
   if (alarm.name === "callnote_live_retry") {
     retryPendingLiveCaptions().catch((error) => {
-      console.warn("[CallNote Pro] Live retry failed", error);
+      console.warn("[Gauge] Live retry failed", error);
     });
     return;
   }
   if (alarm.name === "callnote_finalize_retry") {
     retryPendingFinalize().catch((error) => {
-      console.warn("[CallNote Pro] Finalize retry failed", error);
+      console.warn("[Gauge] Finalize retry failed", error);
     });
   }
 });

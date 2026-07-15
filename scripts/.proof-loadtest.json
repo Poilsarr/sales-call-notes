@@ -1,10 +1,10 @@
 {
   "_meta": {
     "captured_at": "2026-06-24T02:53:42Z",
-    "base_url": "https://sales-call-notes.vercel.app",
+    "base_url": "https://usegauge.vercel.app",
     "branch": "feat/cleanup-backlog",
     "commit": "1066e5d",
-    "note": "Live Vercel production measurement. Refresh with: BASE_URL=https://sales-call-notes.vercel.app k6 run --summary-export=scripts/.proof-loadtest.raw.json scripts/load-test.js && python3 scripts/convert-loadtest-proof.py"
+    "note": "Live Vercel production measurement. Refresh with: BASE_URL=https://usegauge.vercel.app k6 run --summary-export=scripts/.proof-loadtest.raw.json scripts/load-test.js && python3 scripts/convert-loadtest-proof.py"
   },
   "metrics": {
     "http_req_duration{expected_response:true}": {

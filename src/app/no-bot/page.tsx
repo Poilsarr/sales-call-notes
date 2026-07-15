@@ -3,7 +3,7 @@ import Link from "next/link";
 import { Shield, Eye, Lock, UserCheck, ArrowRight, Zap, FileText } from "lucide-react";
 
 export const metadata = {
-  title: "No Bot, No Auto-Join — CallNote Pro Privacy First",
+  title: "No Bot, No Auto-Join — Gauge Privacy First",
   description: "Otter got sued for recording without consent. We never auto-join your meetings. Upload-first, consent-first, GDPR-first.",
 };
 
@@ -96,7 +96,7 @@ export default function NoBotPage() {
                   <div className="p-2 rounded-lg bg-[#F26522]/10">
                     <Shield className="w-5 h-5 text-[#F26522]" />
                   </div>
-                  <h3 className="text-xl font-semibold">How CallNote Pro works</h3>
+                  <h3 className="text-xl font-semibold">How Gauge works</h3>
                 </div>
                 <ul className="space-y-3 text-sm text-zinc-700">
                   <li className="flex gap-3">
@@ -181,7 +181,7 @@ export default function NoBotPage() {
                 silently, and the host had to actively notice and remove it.
               </p>
               <p className="text-sm text-zinc-600 leading-relaxed">
-                We built CallNote Pro on the opposite principle: <strong className="text-zinc-900">
+                We built Gauge on the opposite principle: <strong className="text-zinc-900">
                 the user controls the recording, the upload, and the deletion.
                 We never auto-join. We never assume consent.</strong> That&apos;s not
                 just safer — it&apos;s better UX.

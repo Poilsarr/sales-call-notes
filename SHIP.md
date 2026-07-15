@@ -1,4 +1,4 @@
-# CallNote Pro — Single-Dev Ship Plan
+# Gauge — Single-Dev Ship Plan
 
 > Current state: 23 routes, 0 runtime errors, monetization wired
 > Target: Ship to production in 5 focused sessions
@@ -50,7 +50,7 @@ UPSTASH_REDIS_REST_TOKEN=...
 #### Google Calendar OAuth (1.5h)
 
 1. Go to https://console.cloud.google.com
-2. Create new project -> "CallNote Pro"
+2. Create new project -> "Gauge"
 3. APIs & Services -> Enable Library -> Google Calendar API -> Enable
 4. Credentials -> Create OAuth client ID -> Web application
 5. Add Authorized redirect URI:
@@ -108,7 +108,7 @@ vercel --prod
 
 #### Custom Domain (30 min)
 
-1. Buy domain (e.g., callnotepro.com) - ~$12/yr on Namecheap
+1. Buy domain (e.g., usegauge.com) - ~$12/yr on Namecheap
 2. Vercel dashboard -> Project -> Domains -> Add
 3. Update DNS: CNAME @ -> cname.vercel-dns.com
 4. Wait 5-10 min for SSL provisioning
@@ -150,7 +150,7 @@ Files to modify:
 Create a minimal Electron app for bot-free desktop recording:
 
 ```
-callnote-desktop/
+gauge-desktop/
   main.js            # Electron main process
   preload.js         # Secure bridge
   renderer/          # Vite + React (or just embed web app)
@@ -241,10 +241,10 @@ cd extension/
 // src/app/sitemap.ts
 export default function sitemap() {
   return [
-    { url: 'https://callnotepro.com', lastModified: new Date() },
-    { url: 'https://callnotepro.com/features', lastModified: new Date() },
-    { url: 'https://callnotepro.com/pricing', lastModified: new Date() },
-    { url: 'https://callnotepro.com/integrations', lastModified: new Date() },
+    { url: 'https://usegauge.com', lastModified: new Date() },
+    { url: 'https://usegauge.com/features', lastModified: new Date() },
+    { url: 'https://usegauge.com/pricing', lastModified: new Date() },
+    { url: 'https://usegauge.com/integrations', lastModified: new Date() },
   ];
 }
 ```
@@ -252,7 +252,7 @@ export default function sitemap() {
 #### Meta Tags Checklist
 
 ```
-[ ] Title: "CallNote Pro - Sales Call Notes, Instant"
+[ ] Title: "Gauge - Sales Call Notes, Instant"
 [ ] Description: "Turn sales call recordings into actionable notes..."
 [ ] Open Graph tags present
 [ ] Twitter card tags present
@@ -322,7 +322,7 @@ From Gong:
 ## Project Structure Map (for a single dev)
 
 ```
-callnote-pro/
+gauge/
   src/
     app/              # 23 routes (all built)
     components/       # nav, show, upgrade-prompt (3 components)

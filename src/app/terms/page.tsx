@@ -14,11 +14,11 @@ export default function TermsPage() {
         <div className="space-y-8 text-[14px] text-gray-600 leading-relaxed">
           <section>
             <h2 className="text-[15px] font-semibold text-gray-900 mb-3">1. Acceptance of Terms</h2>
-            <p>By accessing or using CallNote Pro (&quot;the Service&quot;), you agree to be bound by these Terms of Service. If you do not agree, do not use the Service.</p>
+            <p>By accessing or using Gauge (&quot;the Service&quot;), you agree to be bound by these Terms of Service. If you do not agree, do not use the Service.</p>
           </section>
           <section>
             <h2 className="text-[15px] font-semibold text-gray-900 mb-3">2. Description of Service</h2>
-            <p>CallNote Pro provides AI-powered sales call transcription, summarization, and analytics. We process audio files you upload and return transcriptions, summaries, and insights.</p>
+            <p>Gauge provides AI-powered sales call transcription, summarization, and analytics. We process audio files you upload and return transcriptions, summaries, and insights.</p>
           </section>
           <section>
             <h2 className="text-[15px] font-semibold text-gray-900 mb-3">3. User Responsibilities</h2>
@@ -42,7 +42,7 @@ export default function TermsPage() {
           </section>
           <section>
             <h2 className="text-[15px] font-semibold text-gray-900 mb-3">6. Limitation of Liability</h2>
-            <p>CallNote Pro is provided &quot;as is&quot; without warranty. We are not liable for damages arising from use of the Service, including but not limited to transcription errors or data loss.</p>
+            <p>Gauge is provided &quot;as is&quot; without warranty. We are not liable for damages arising from use of the Service, including but not limited to transcription errors or data loss.</p>
           </section>
           <section>
             <h2 className="text-[15px] font-semibold text-gray-900 mb-3">7. Changes</h2>
@@ -50,7 +50,7 @@ export default function TermsPage() {
           </section>
           <section>
             <h2 className="text-[15px] font-semibold text-gray-900 mb-3">8. Contact</h2>
-            <p>Questions? Email us at <a href="mailto:legal@callnotepro.com" className="text-[#F26522] hover:underline">legal@callnotepro.com</a>.</p>
+            <p>Questions? Email us at <a href="mailto:legal@usegauge.com" className="text-[#F26522] hover:underline">legal@usegauge.com</a>.</p>
           </section>
         </div>
       </div>

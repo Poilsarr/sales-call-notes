@@ -33,7 +33,7 @@ const COLUMNS = [
       { href: "/api-docs", label: "API documentation" },
       { href: "/api/v1/keys", label: "API keys" },
       { href: "/blog", label: "Blog" },
-      { href: "mailto:hello@callnotepro.com", label: "Contact" },
+      { href: "mailto:hello@usegauge.com", label: "Contact" },
     ],
   },
   {
@@ -57,7 +57,7 @@ export default function SiteFooter() {
             <Link href="/" className="flex items-center gap-2 mb-4">
               <div className="w-6 h-6 rounded-md bg-[#F26522] rotate-45" />
               <span className="text-white text-[14px] font-semibold tracking-tight">
-                CallNote Pro
+                Gauge
               </span>
             </Link>
             <p className="text-[12.5px] leading-relaxed text-white/50 max-w-[220px]">
@@ -97,12 +97,12 @@ export default function SiteFooter() {
         {/* Bottom bar */}
         <div className="mt-12 pt-6 border-t border-white/10 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
           <div className="text-[11px] text-white/30">
-            © {new Date().getFullYear()} CallNote Pro. All rights reserved.
+            © {new Date().getFullYear()} Gauge. All rights reserved.
           </div>
           <div className="flex items-center gap-5 text-[11px] text-white/40">
             <span>Made for SDRs who hate note-taking.</span>
             <a
-              href="https://status.callnotepro.com"
+              href="https://status.usegauge.com"
               target="_blank"
               rel="noopener noreferrer"
               className="hover:text-white/70 transition-colors"

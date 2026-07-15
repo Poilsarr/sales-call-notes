@@ -1,6 +1,6 @@
 # Changelog
 
-All notable changes to CallNote Pro are recorded here. Format follows
+All notable changes to Gauge are recorded here. Format follows
 [Keep a Changelog](https://keepachangelog.com/). Versions correspond
 to merge points on `main`.
 
@@ -25,7 +25,7 @@ to merge points on `main`.
 
 ### Added
 - **PWA installable.** Service worker + `/offline` fallback. Users
-  on Chrome / Safari iOS can install CallNote Pro as a stand-alone
+  on Chrome / Safari iOS can install Gauge as a stand-alone
   app. (#95)
 - **Chrome Web Store launch prep.** Privacy + terms updated with
   extension data flow. New `/extension` landing page. Google Meet
@@ -58,7 +58,7 @@ to merge points on `main`.
 - **SiteFooter upgraded to 5 columns.** Brand + Product + Use
   cases + Resources + Legal + status pill. (#75)
 - **Pricing comparison table.** 10 rows on `/features` showing
-  CallNote vs Otter vs Fireflies. (#73)
+  Gauge vs Otter vs Fireflies. (#73)
 - **Home hero upgraded to 2-col with live product preview card**
   (LIVE SUMMARY, dialog chips, action items, stats row). (#74)
 - **Home "wedge" section** now shows a 3-card live alert feed
@@ -101,7 +101,7 @@ to merge points on `main`.
 
 ### Infrastructure
 - **Lighthouse workflow** graceful fallback when Vercel bot is
-  silent (uses `https://callnotepro.com`), thresholds tightened to
+  silent (uses `https://usegauge.com`), thresholds tightened to
   90/95/90/95. (#82)
 - **SEO scaffolding**: robots.txt, sitemap.xml, signed-in e2e
   smoke test (skipped without Clerk creds). (#87)

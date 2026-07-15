@@ -1,11 +1,11 @@
 // scripts/load-test.js
-// k6 load test for CallNote Pro.
+// k6 load test for Gauge.
 //
 // GATE 4 demands: p95 < 200ms, error rate < 0.1%.
 // Scenarios: 5 RPS sustained for 60s against the live Vercel preview
 // URL. Targets the routes a cold visitor or logged-in user hits first.
 //
-// Run: BASE_URL=https://sales-call-notes.vercel.app k6 run scripts/load-test.js
+// Run: BASE_URL=https://usegauge.vercel.app k6 run scripts/load-test.js
 // Output: scripts/.proof-loadtest.json (parsed summary)
 
 import http from "k6/http";
@@ -14,7 +14,7 @@ import { Trend, Rate, Counter } from "k6/metrics";
 import { uuidv4 } from "https://jslib.k6.io/k6-utils/1.4.0/index.js";
 import encoding from "k6/encoding";
 
-const baseUrl = __ENV.BASE_URL || "https://sales-call-notes.vercel.app";
+const baseUrl = __ENV.BASE_URL || "https://usegauge.vercel.app";
 
 const homeLatency = new Trend("home_latency", true);
 const demoLatency = new Trend("demo_latency", true);
@@ -83,7 +83,7 @@ function textSummary(data) {
   const line = (k, v) => `${k.padEnd(28)} ${v}`;
   const lines = [
     "═══════════════════════════════════════════════════════════════",
-    "  k6 load test — CallNote Pro",
+    "  k6 load test — Gauge",
     "═══════════════════════════════════════════════════════════════",
     line("base url:", baseUrl),
     line("total requests:", p("total_requests").count || 0),

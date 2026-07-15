@@ -1,7 +1,7 @@
-# CallNote Pro — Session Handoff
+# Gauge — Session Handoff
 
 ## Live URL
-https://sales-call-notes.vercel.app
+https://usegauge.vercel.app
 
 ## GitHub
 https://github.com/Poilsarr/sales-call-notes (branch main protected — 3 CI checks: Tests, Lint, Build)
@@ -80,14 +80,14 @@ https://github.com/Poilsarr/sales-call-notes (branch main protected — 3 CI che
 | `GOOGLE_CLIENT_ID` + `GOOGLE_CLIENT_SECRET` | Google OAuth |
 | `SLACK_WEBHOOK_URL` | Slack |
 | `UPSTASH_REDIS_REST_URL` + `UPSTASH_REDIS_REST_TOKEN` | Upstash |
-| `NEXT_PUBLIC_APP_URL` | https://sales-call-notes.vercel.app |
+| `NEXT_PUBLIC_APP_URL` | https://usegauge.vercel.app |
 
 Env vars still needed: `HUBSPOT_CLIENT_ID/SECRET`, `SALESFORCE_CLIENT_ID/SECRET`, `TEAMS_CLIENT_ID/SECRET` (or `MICROSOFT_*`), `SLACK_CLIENT_ID/SECRET/SIGNING_SECRET`, `CRON_SECRET`, `NEXT_PUBLIC_SENTRY_DSN`.
 
 ## What's Still Left
 
 1. **Switch Clerk to Production** — need a custom domain first (Clerk blocks `*.vercel.app` in production)
-2. **Buy domain** — Namecheap (e.g., callnotepro.com)
+2. **Buy domain** — Namecheap (e.g., usegauge.com)
 3. **Create Paddle products** — create Pro + Business plan products in Paddle Dashboard, paste price IDs into `src/lib/plans.ts`, merge PR #2 (Paddle billing)
 4. **Add remaining OAuth env vars** to Vercel + GitHub secrets
 5. **Sentry** — create Sentry project, add `NEXT_PUBLIC_SENTRY_DSN` + `SENTRY_AUTH_TOKEN` + `SENTRY_ORG` + `SENTRY_PROJECT` to Vercel + GitHub secrets. Follow `docs/SENTRY.md`. Code is ready, no-op when DSN missing.

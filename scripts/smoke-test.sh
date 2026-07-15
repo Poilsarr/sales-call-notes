@@ -6,7 +6,7 @@
 #   - In CI after deploy (blocks bad deploys)
 #   - Manually after Vercel preview deploys
 #
-# Usage:  BASE_URL=https://sales-call-notes.vercel.app bash scripts/smoke-test.sh
+# Usage:  BASE_URL=https://usegauge.vercel.app bash scripts/smoke-test.sh
 # Exit:   0 if all critical endpoints OK, 1 otherwise.
 
 set -uo pipefail

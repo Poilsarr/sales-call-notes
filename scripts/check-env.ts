@@ -229,7 +229,7 @@ export function formatReport(summary: CheckSummary, opts: { color?: boolean } = 
   const color = opts.color ?? supportsColor();
   const lines: string[] = [];
 
-  const banner = paint("CallNote Pro - environment check", `${COLOR.bold}${COLOR.cyan}`, color);
+  const banner = paint("Gauge - environment check", `${COLOR.bold}${COLOR.cyan}`, color);
   lines.push(banner);
   lines.push("");
 

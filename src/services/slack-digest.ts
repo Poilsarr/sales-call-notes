@@ -97,7 +97,7 @@ export async function generateWeeklyDigest(): Promise<number> {
       ? `*Top Objections:* ${team.topObjections.join(", ")}\n`
       : "";
 
-    const text = `📊 *CallNote Pro Weekly Digest*
+    const text = `📊 *Gauge Weekly Digest*
 *Team:* ${team.teamName}
 *Period:* Past 7 days
 

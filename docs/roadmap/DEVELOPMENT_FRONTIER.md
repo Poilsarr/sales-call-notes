@@ -1,4 +1,4 @@
-# CallNote Pro — Development Frontier
+# Gauge — Development Frontier
 ## Master Plan: From 52% → 100% Production-Ready
 
 > **For Hermes:** This is the master roadmap. Each level is gated.

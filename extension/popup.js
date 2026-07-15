@@ -36,12 +36,12 @@ function renderAuth(authStatus) {
   if (state === "signed_in") {
     setDot("authDot", "dot-success");
     setText("authText", "Signed in");
-    setText("authSub", "Captions will upload to your CallNote Pro account");
+    setText("authSub", "Captions will upload to your Gauge account");
     setHidden("signInBtn", true);
   } else if (state === "needs_sign_in") {
     setDot("authDot", "dot-needs");
     setText("authText", "Sign-in required");
-    setText("authSub", "Captions are saved locally. Sign in to sync them to CallNote Pro.");
+    setText("authSub", "Captions are saved locally. Sign in to sync them to Gauge.");
     setHidden("signInBtn", false);
   } else {
     setDot("authDot", "dot-idle");
@@ -91,12 +91,12 @@ function renderMeetingContext(tab, data) {
     setDot("statusDot", "dot-active");
     setText("statusText", "Capturing Meeting");
     if (liveTitle) {
-      info.textContent = `${liveTitle} is streaming to CallNote Pro`;
+      info.textContent = `${liveTitle} is streaming to Gauge`;
     } else {
       info.textContent = "Google Meet detected - captions will be streamed live";
     }
   } else if (data.lastMeetingSessionId) {
-    info.textContent = "Open CallNote Pro to follow the latest live session";
+    info.textContent = "Open Gauge to follow the latest live session";
   } else {
     info.textContent = "Open Google Meet to start capturing";
   }

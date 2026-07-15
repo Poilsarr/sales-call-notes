@@ -1,4 +1,4 @@
-# CallNote Pro - Full-Stack Architecture
+# Gauge - Full-Stack Architecture
 
 ## System Overview
 

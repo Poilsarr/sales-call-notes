@@ -1,4 +1,4 @@
-# Alerts — CallNote Pro
+# Alerts — Gauge
 
 > **Last reviewed:** 2026-06-20.
 > Owner: founder (today). Each alert must have an action target and a runbook link.
@@ -29,8 +29,8 @@ node scripts/sentry-alerts.mjs > /tmp/sentry-alerts.json
 
 # Apply via sentry-cli (requires SENTRY_AUTH_TOKEN with alert:write scope)
 export SENTRY_AUTH_TOKEN=...
-export SENTRY_ORG=callnotepro
-export SENTRY_PROJECT=callnote-pro
+export SENTRY_ORG=gauge
+export SENTRY_PROJECT=gauge
 sentry-cli alerts new-rules /tmp/sentry-alerts.json
 ```
 
@@ -41,7 +41,7 @@ For the script to fill in the action targets, set these in `.env.local`:
 ```
 PAGERDUTY_SERVICE_KEY=<integration key from PagerDuty service>
 SLACK_OPS_WEBHOOK=<Slack incoming webhook URL>
-OPS_EMAIL=founder@callnotepro.com
+OPS_EMAIL=founder@usegauge.com
 ```
 
 When unset, the script emits placeholder strings; replace manually before applying.

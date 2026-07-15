@@ -74,8 +74,8 @@ export default function SecurityPage() {
             <h2 className="text-[15px] font-semibold text-gray-900 mb-3">7. Reporting a Vulnerability</h2>
             <p>
               If you have found a security issue, please email{" "}
-              <a className="text-gray-900 underline" href="mailto:security@callnotepro.com">
-                security@callnotepro.com
+              <a className="text-gray-900 underline" href="mailto:security@usegauge.com">
+                security@usegauge.com
               </a>
               . We respond within 48 hours and run a coordinated disclosure process.
             </p>

@@ -24,7 +24,7 @@ vi.mock("@/lib/secrets", () => ({
     const map: Record<string, string> = {
       SLACK_WEBHOOK_URL: "https://hooks.slack.com/test",
       SLACK_SIGNING_SECRET: "test-signing-secret",
-      NEXT_PUBLIC_APP_URL: "https://callnotepro.com",
+      NEXT_PUBLIC_APP_URL: "https://usegauge.com",
     };
     return map[key] || "";
   },
@@ -71,7 +71,7 @@ describe("SlackService", () => {
         });
 
       const service = new SlackService("team-1");
-      const result = await service.sendDirectMessage("U12345", "Hello from CallNote Pro");
+      const result = await service.sendDirectMessage("U12345", "Hello from Gauge");
 
       expect(result).toBe(true);
       expect(mockFetch).toHaveBeenNthCalledWith(
@@ -85,7 +85,7 @@ describe("SlackService", () => {
         2,
         "https://slack.com/api/chat.postMessage",
         expect.objectContaining({
-          body: expect.stringContaining("Hello from CallNote Pro"),
+          body: expect.stringContaining("Hello from Gauge"),
         }),
       );
     });
@@ -269,7 +269,7 @@ describe("SlackService", () => {
       const result = await service.sendCompetitorAlert(
         [{ name: "Acme Corp", context: "mentioned pricing", sentiment: "negative" }],
         "Q1-review.mp3",
-        "https://callnotepro.com/calls/123",
+        "https://usegauge.com/calls/123",
       );
 
       expect(result).toBe(true);

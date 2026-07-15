@@ -3,7 +3,7 @@ import { Compass, CheckCircle, Clock, ArrowRight } from "lucide-react";
 import Link from "next/link";
 
 export const metadata = {
-  title: "Roadmap — CallNote Pro",
+  title: "Roadmap — Gauge",
   description: "What we've shipped, what we're building, and what's next. Transparent product development.",
 };
 
@@ -40,7 +40,7 @@ const inProgress: RoadmapItem[] = [
 const next: RoadmapItem[] = [
   { title: "Paddle live checkout", status: "next", detail: "Create real Paddle products, wire price IDs, sandbox E2E" },
   { title: "Zoom App Marketplace", status: "next", detail: "4-week submission process, bot-free recording integration" },
-  { title: "AI chat with meetings", status: "next", detail: "RAG on existing embeddings — 'Ask CallNote' across all calls" },
+  { title: "AI chat with meetings", status: "next", detail: "RAG on existing embeddings — 'Ask Gauge' across all calls" },
   { title: "Public share links (SEO moat)", status: "next", detail: "Opt-in public transcript pages, Google-indexed" },
   { title: "Manager scorecard view", status: "next", detail: "/team page shows scores by rep with comment threads" },
   { title: "Self-host Whisper at scale", status: "next", detail: "faster-whisper on Hetzner at 3k+ users, 80% cost saving" },

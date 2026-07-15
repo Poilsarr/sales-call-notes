@@ -1,4 +1,4 @@
-# Incident Response Runbook — CallNote Pro
+# Incident Response Runbook — Gauge
 
 > **Owner:** Solo founder (today). Re-evaluate on first hire.
 > **Last reviewed:** 2026-06-20.
@@ -184,7 +184,7 @@ mitigation step is the smallest change that stops the bleeding.
 - Sentry spike on `/api/transcribe/live`.
 
 **Diagnose:**
-1. Check extension version: `chrome://extensions` → CallNote Pro → version.
+1. Check extension version: `chrome://extensions` → Gauge → version.
 2. Inspect network tab on a Meet call.
 3. Confirm the bridge (`background.js → handleCaptionsMessage`) is firing.
 
@@ -292,7 +292,7 @@ mitigation step is the smallest change that stops the bleeding.
 >
 > We'll update you within 24 hours. Reply to this email with questions.
 >
-> — [founder name], CallNote Pro
+> — [founder name], Gauge
 
 ### Status page post
 

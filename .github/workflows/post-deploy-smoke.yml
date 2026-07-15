@@ -14,7 +14,7 @@ on:
       base_url:
         description: "Base URL to smoke (default: prod)"
         required: false
-        default: "https://callnotepro.com"
+        default: "https://usegauge.com"
         type: string
 
 concurrency:
@@ -32,11 +32,11 @@ jobs:
 
       - name: Smoke test live endpoints
         env:
-          BASE_URL: ${{ inputs.base_url || 'https://callnotepro.com' }}
+          BASE_URL: ${{ inputs.base_url || 'https://usegauge.com' }}
         run: bash scripts/smoke-test.sh
 
       - name: Report (always)
         if: always()
         run: |
           echo "::notice::Smoke run finished. Exit code: $?"
-          echo "URL tested: ${{ inputs.base_url || 'https://callnotepro.com' }}"
+          echo "URL tested: ${{ inputs.base_url || 'https://usegauge.com' }}"

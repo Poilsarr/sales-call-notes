@@ -174,7 +174,7 @@ export class SlackService {
 
     blocks.push({
       type: "context",
-      elements: [{ type: "mrkdwn", text: `Sent by <${getSecret("NEXT_PUBLIC_APP_URL") || "https://callnotepro.com"}|CallNote Pro>` }],
+      elements: [{ type: "mrkdwn", text: `Sent by <${getSecret("NEXT_PUBLIC_APP_URL") || "https://usegauge.com"}|Gauge>` }],
     });
 
     return blocks;
@@ -210,7 +210,7 @@ export class SlackService {
       },
       {
         type: "context",
-        elements: [{ type: "mrkdwn", text: `Sent by <${getSecret("NEXT_PUBLIC_APP_URL") || "https://callnotepro.com"}|CallNote Pro Intelligence>` }],
+        elements: [{ type: "mrkdwn", text: `Sent by <${getSecret("NEXT_PUBLIC_APP_URL") || "https://usegauge.com"}|Gauge Intelligence>` }],
       },
     ];
 

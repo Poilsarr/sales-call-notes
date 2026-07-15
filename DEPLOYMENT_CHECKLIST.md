@@ -57,7 +57,7 @@ These are real ship-blockers not in the original checklist:
 
 - **Sentry DSN** in production env vars. → **EXTERNAL-BLOCKED.** Free Sentry account works; just needs `NEXT_PUBLIC_SENTRY_DSN` and `SENTRY_AUTH_TOKEN` (source map upload).
 - **Paddle API key + price IDs**. → **EXTERNAL-BLOCKED.** /pricing shows static numbers; live checkout needs `PADDLE_API_KEY` + price IDs from a Paddle dashboard.
-- **Custom domain DNS**. → **EXTERNAL-BLOCKED.** Vercel deployment is on the default subdomain; production needs `callnotepro.com` configured.
+- **Custom domain DNS**. → **EXTERNAL-BLOCKED.** Vercel deployment is on the default subdomain; production needs `usegauge.com` configured.
 
 ## Verification Commands
 
@@ -78,5 +78,5 @@ BASE_URL=http://localhost:3000 k6 run scripts/load-test.js
 KEY=cn_test_xxx BASE_URL=http://localhost:3000 bash scripts/smoke-rate-limit.sh
 
 # Post-deploy smoke (against the live URL)
-BASE_URL=https://callnotepro.com bash scripts/smoke-test.sh
+BASE_URL=https://usegauge.com bash scripts/smoke-test.sh
 ```

@@ -61,7 +61,7 @@ export async function GET(req: Request) {
       status: 200,
       headers: {
         "Content-Type": "application/json",
-        "Content-Disposition": `attachment; filename="callnotepro-export-${userId}-${Date.now()}.json"`,
+        "Content-Disposition": `attachment; filename="gauge-export-${userId}-${Date.now()}.json"`,
         "Cache-Control": "no-store",
       },
     });

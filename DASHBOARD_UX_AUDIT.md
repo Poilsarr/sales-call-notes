@@ -1,4 +1,4 @@
-# Dashboard UX Audit — sales-call-notes
+# Dashboard UX Audit — Gauge
 
 > **Scope:** All gated/dashboard route files + shared navigation components.  
 > **Date:** July 11, 2026  

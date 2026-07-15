@@ -4,7 +4,7 @@ import StatusClient from "@/components/status-client";
 
 export const metadata = {
   title: "System Status",
-  description: "Live operational status of CallNote Pro services.",
+  description: "Live operational status of Gauge services.",
 };
 
 export default function StatusPage() {
@@ -25,7 +25,7 @@ export default function StatusPage() {
               System status
             </h1>
             <p className="text-white/50 text-[14px] max-w-md mx-auto">
-              Real-time operational state for CallNote Pro.
+              Real-time operational state for Gauge.
               Refreshes automatically every 30 seconds.
             </p>
           </div>
@@ -37,10 +37,10 @@ export default function StatusPage() {
               Need to report an issue or check past incidents?
             </p>
             <Link
-              href="mailto:support@callnotepro.com"
+              href="mailto:support@usegauge.com"
               className="text-[13px] text-[#F26522] hover:text-[#ff8a4a] underline-offset-4 hover:underline"
             >
-              support@callnotepro.com
+              support@usegauge.com
             </Link>
           </div>
         </div>

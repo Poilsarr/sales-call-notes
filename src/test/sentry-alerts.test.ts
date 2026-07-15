@@ -37,9 +37,9 @@ describe("sentry-alerts.mjs", () => {
   it("defines the three required rules", () => {
     const rules = loadCatalog();
     const names = rules.map((r) => r.name);
-    expect(names).toContain("CallNote Pro — high error rate");
-    expect(names).toContain("CallNote Pro — slow transactions (p95 > 1s)");
-    expect(names).toContain("CallNote Pro — quota exceeded (AI provider)");
+    expect(names).toContain("Gauge — high error rate");
+    expect(names).toContain("Gauge — slow transactions (p95 > 1s)");
+    expect(names).toContain("Gauge — quota exceeded (AI provider)");
   });
 
   it("every rule has a severity, runbook, owner, and action", () => {

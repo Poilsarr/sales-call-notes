@@ -37,9 +37,9 @@ export function AppSidebar() {
       <div className="p-6">
         <Link href="/" className="flex items-center gap-2.5">
           <div className="w-8 h-8 bg-linear-indigo rounded-full flex items-center justify-center">
-            <span className="text-white font-bold text-[9px] tracking-tight">CP</span>
+            <span className="text-white font-bold text-[9px] tracking-tight">G</span>
           </div>
-          <span className="text-[15px] font-semibold tracking-tight text-white">CallNote Pro</span>
+          <span className="text-[15px] font-semibold tracking-tight text-white">Gauge</span>
         </Link>
       </div>
       

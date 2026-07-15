@@ -1,4 +1,4 @@
-# SOC2 Readiness — CallNote Pro
+# SOC2 Readiness — Gauge
 
 > **Status:** NOT READY. This is a gap inventory against SOC2 Type 1 controls.
 > Goal: know exactly what we have, what we lack, and who owns closing each gap.
@@ -8,7 +8,7 @@
 
 ## Scope
 
-CallNote Pro handles three categories of customer data:
+Gauge handles three categories of customer data:
 
 1. **Customer content**: uploaded call recordings + transcripts + AI-generated analyses.
 2. **Customer account data**: email, Clerk-managed identity, team membership, billing plan.
@@ -133,4 +133,4 @@ This is a **post-Series-A** activity. **Do NOT promise SOC2 to customers before 
 
 Until SOC2 Type 1 is in hand, **never claim SOC2 in marketing copy, sales calls, or contracts.**
 The `/security` page may list the controls we *implement* but must not say
-"CallNote Pro is SOC2 compliant" or any close paraphrase.
+"Gauge is SOC2 compliant" or any close paraphrase.

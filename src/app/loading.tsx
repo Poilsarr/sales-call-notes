@@ -15,7 +15,7 @@ export default function Loading() {
           </div>
           <div>
             <p className="text-[14px] font-medium text-gray-900 leading-tight">
-              CallNote Pro
+              Gauge
             </p>
             <p className="text-[11px] font-mono text-gray-500 mt-0.5">
               Loading your workspace...

@@ -34,7 +34,7 @@ jobs:
           # ponytail: removed `set -e` — a single curl timeout (PSI rate-limit)
           # would kill the script and skip processing the 5 reports that DID
           # succeed. Let downstream classify empty/missing as API error.
-          BASE="https://sales-call-notes.vercel.app"
+          BASE="https://usegauge.vercel.app"
           for strategy in mobile desktop; do
             for path in "" "pricing" "extension"; do
               url="${BASE}/${path}"
@@ -63,7 +63,7 @@ jobs:
             const path = require('path');
             const dir = path.join(process.cwd(), 'psi-reports');
             const thresholds = { performance: 70, accessibility: 90, 'best-practices': 85, seo: 90 };
-            let body = `## :lighthouse: Lighthouse (PageSpeed Insights)\n\nReal Chrome in Google's data center, audited against \`sales-call-notes.vercel.app\` (the actual production URL — \`callnotepro.com\` is not yet registered so DNS doesn't resolve).\n\n`;
+            let body = `## :lighthouse: Lighthouse (PageSpeed Insights)\n\nReal Chrome in Google's data center, audited against \`usegauge.vercel.app\` (the actual production URL — \`usegauge.com\` is not yet registered so DNS doesn't resolve).\n\n`;
             // ponytail: distinguish API errors from real low scores.
             // PSI rate-limits often return "Unable to process request" — that's
             // an infra error, not a perf regression. Don't conflate.

@@ -36,12 +36,12 @@ def main() -> int:
     out = {
         "_meta": {
             "captured_at": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
-            "base_url": "https://sales-call-notes.vercel.app",
+            "base_url": "https://usegauge.vercel.app",
             "branch": branch,
             "commit": commit,
             "note": (
                 "Live Vercel production measurement. Refresh with: "
-                "BASE_URL=https://sales-call-notes.vercel.app k6 run "
+                "BASE_URL=https://usegauge.vercel.app k6 run "
                 "--summary-export=scripts/.proof-loadtest.raw.json scripts/load-test.js "
                 "&& python3 scripts/convert-loadtest-proof.py"
             ),

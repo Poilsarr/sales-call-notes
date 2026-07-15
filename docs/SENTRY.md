@@ -17,8 +17,8 @@ Add these to **Vercel** (Project → Settings → Environment Variables) and **G
 |---|---|
 | `NEXT_PUBLIC_SENTRY_DSN` | Sentry → Project Settings → Client Keys → DSN |
 | `SENTRY_AUTH_TOKEN` | Sentry → Settings → Auth Tokens → Create New Token (scopes: `project:releases`, `org:read`) |
-| `SENTRY_ORG` | Sentry → Settings → Account → Organization Slug (e.g. `callnote-pro`) |
-| `SENTRY_PROJECT` | Sentry → Project Settings → Project Slug (e.g. `sales-call-notes`) |
+| `SENTRY_ORG` | Sentry → Settings → Account → Organization Slug (e.g. `gauge`) |
+| `SENTRY_PROJECT` | Sentry → Project Settings → Project Slug (e.g. `gauge`) |
 
 For Vercel: apply to **Production**, **Preview**, and **Development** environments.
 

@@ -31,10 +31,10 @@ export default function PrivacyPage() {
             <h2 className="text-[15px] font-semibold text-gray-900 mb-3">5. Chrome Extension</h2>
             <p>
               Our Chrome extension (Manifest v3, available on the Chrome Web Store as
-              &ldquo;CallNote Pro — Meeting Notes&rdquo;) runs only on
+              &ldquo;Gauge — Meeting Notes&rdquo;) runs only on
               <code className="px-1 py-0.5 mx-1 rounded bg-gray-100 text-[12px]">meet.google.com</code>
               and on our own dashboard page
-              (<code className="px-1 py-0.5 mx-1 rounded bg-gray-100 text-[12px]">sales-call-notes.vercel.app</code>).
+              (<code className="px-1 py-0.5 mx-1 rounded bg-gray-100 text-[12px]">usegauge.vercel.app</code>).
             </p>
             <p className="mt-3">
               <strong>What the extension accesses:</strong> on Google Meet pages,
@@ -48,7 +48,7 @@ export default function PrivacyPage() {
               captured caption text, the meeting title, and your auth session
               (to attribute the call to your account). The data flow is:
               your Google Meet tab → extension →
-              <code className="px-1 py-0.5 mx-1 rounded bg-gray-100 text-[12px]">https://api.callnotepro.com</code>
+              <code className="px-1 py-0.5 mx-1 rounded bg-gray-100 text-[12px]">https://api.usegauge.com</code>
               → your dashboard.
             </p>
             <p className="mt-3">
@@ -79,7 +79,7 @@ export default function PrivacyPage() {
           </section>
           <section>
             <h2 className="text-[15px] font-semibold text-gray-900 mb-3">7. Your Rights</h2>
-            <p>You may export, delete, or request a copy of your data anytime. Contact us at <a href="mailto:privacy@callnotepro.com" className="text-[#F26522] hover:underline">privacy@callnotepro.com</a>.</p>
+            <p>You may export, delete, or request a copy of your data anytime. Contact us at <a href="mailto:privacy@usegauge.com" className="text-[#F26522] hover:underline">privacy@usegauge.com</a>.</p>
           </section>
           <section>
             <h2 className="text-[15px] font-semibold text-gray-900 mb-3">8. Security</h2>
@@ -87,7 +87,7 @@ export default function PrivacyPage() {
           </section>
           <section>
             <h2 className="text-[15px] font-semibold text-gray-900 mb-3">9. Contact</h2>
-            <p>Privacy concerns: <a href="mailto:privacy@callnotepro.com" className="text-[#F26522] hover:underline">privacy@callnotepro.com</a></p>
+            <p>Privacy concerns: <a href="mailto:privacy@usegauge.com" className="text-[#F26522] hover:underline">privacy@usegauge.com</a></p>
           </section>
         </div>
       </div>

@@ -1,10 +1,10 @@
-# Security at CallNote Pro
+# Security at Gauge
 
 > **Last reviewed:** 2026-06-20.
 > This is the customer-facing security page. For internal audit notes, see
 > `SECURITY_AUDIT.md`. For compliance posture, see `docs/compliance/`.
 
-CallNote Pro is a sales-call transcription + analysis service. We handle
+Gauge is a sales-call transcription + analysis service. We handle
 sensitive business conversations and treat your data accordingly. This page
 describes what we do and what we don't do.
 
@@ -88,7 +88,7 @@ touches Personal Data.
 | Export | `Settings → Privacy → Export my data` (downloads a JSON archive). |
 | Delete | `Settings → Privacy → Delete my account` (7-day soft, then hard-delete within 30 days). |
 | Rectify | Edit directly in the UI for most fields; otherwise contact support. |
-| Object | Email `support@callnotepro.com`. We respond within 30 days. |
+| Object | Email `support@usegauge.com`. We respond within 30 days. |
 
 ## 9. Incident response
 
@@ -112,11 +112,11 @@ contact us — it's on the v2 roadmap behind an enterprise contract.
 
 ## Reporting a vulnerability
 
-Email `security@callnotepro.com` (placeholder). We respond within 5 business
+Email `security@usegauge.com` (placeholder). We respond within 5 business
 days. We do not currently run a paid bug-bounty program.
 
 ## Contact
 
-- General: `support@callnotepro.com`
-- Security: `security@callnotepro.com`
-- Privacy / DPA: `privacy@callnotepro.com`
+- General: `support@usegauge.com`
+- Security: `security@usegauge.com`
+- Privacy / DPA: `privacy@usegauge.com`

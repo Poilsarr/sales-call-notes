@@ -29,13 +29,13 @@ export default function Home() {
           <div className="grid grid-cols-1 lg:grid-cols-[1.1fr_0.9fr] gap-10 lg:gap-16 items-end">
             {/* LEFT: headline + sub + CTAs */}
             <div>
-              <p className="text-[13px] leading-[14px] text-gray-900 tracking-wide mb-5 sm:mb-8">CallNote Pro</p>
+              <p className="text-[13px] leading-[14px] text-gray-900 tracking-wide mb-5 sm:mb-8">Gauge</p>
               <h1 className="text-[clamp(1.75rem,7vw,4.2rem)] sm:text-[clamp(2.5rem,5vw,4.2rem)] font-semibold sm:font-medium leading-[1.08] tracking-[-0.03em] text-gray-900">
                 Know the moment a<br className="hidden sm:block" />
                 <span className="sm:hidden"> </span>competitor enters the deal.
               </h1>
               <p className="text-[15px] text-gray-500 max-w-xl mt-4 mb-8">
-                CallNote Pro turns every sales call into structured notes, action items, and a real-time
+                Gauge turns every sales call into structured notes, action items, and a real-time
                 competitive signal. Upload, record, or capture from Google Meet. $9/mo after a free forever tier.
               </p>
               <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 sm:gap-5">

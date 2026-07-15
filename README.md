@@ -1,10 +1,10 @@
-# CallNote Pro
+# Gauge
 
 Turn sales call recordings into structured notes, action items, and
 CRM-ready summaries in under 60 seconds.
 
-**Production:** https://sales-call-notes.vercel.app
-**Marketing:** https://callnotepro.com (custom domain — not yet attached)
+**Production:** https://usegauge.vercel.app
+**Marketing:** https://usegauge.com (custom domain — not yet attached)
 **Repo:** https://github.com/Poilsarr/sales-call-notes
 
 ---
@@ -94,7 +94,7 @@ REDIS_HOST=disabled REDIS_PORT=0 npx next start -p 3100
 
 - **Unit:** `npx vitest run` — 65 files, 541 tests
 - **E2E:** `npx playwright test` — auto-skipped without `E2E_TEST_USER_*` env
-- **Load:** `BASE_URL=https://sales-call-notes.vercel.app k6 run scripts/load-test.js`
+- **Load:** `BASE_URL=https://usegauge.vercel.app k6 run scripts/load-test.js`
   - Live prod measurement (2026-06-24): home p95 = 345ms, demo p95 = 285ms,
     /api/calls p95 = 82ms, error rate 0% over 60s × 5 RPS
 
@@ -127,7 +127,7 @@ See `CLAUDE.md` for the full recipe.
 - Sentry captures unhandled exceptions server-side only;
   client responses never leak raw `error.message`.
 
-Report vulnerabilities to `security@callnotepro.com`.
+Report vulnerabilities to `security@usegauge.com`.
 
 ---
 
@@ -150,4 +150,4 @@ External blockers (require user's keys / accounts):
 ## License
 
 Proprietary. All rights reserved.
-© 2026 CallNote Pro.
+© 2026 Gauge.

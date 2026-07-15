@@ -2,7 +2,7 @@
 
 ## System Overview
 
-CallNote Pro follows a client-server architecture with Next.js App Router.
+Gauge follows a client-server architecture with Next.js App Router.
 
 ## Components
 

@@ -12,7 +12,7 @@ warn() { echo -e "${YELLOW}[!]${NC} $1"; }
 err()  { echo -e "${RED}[✗]${NC} $1"; }
 
 echo -e "${BLUE}============================================${NC}"
-echo -e "${BLUE}  CallNote Pro - Auto Deploy${NC}"
+echo -e "${BLUE}  Gauge - Auto Deploy${NC}"
 echo -e "${BLUE}============================================${NC}"
 echo ""
 

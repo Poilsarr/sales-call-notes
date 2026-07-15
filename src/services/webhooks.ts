@@ -45,7 +45,7 @@ export class WebhookService {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
-            "User-Agent": "CallNotePro-Webhook/1.0",
+            "User-Agent": "Gauge-Webhook/1.0",
           },
           body: JSON.stringify(payload),
           signal: AbortSignal.timeout(5000),

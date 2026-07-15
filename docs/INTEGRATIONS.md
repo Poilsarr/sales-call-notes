@@ -1,11 +1,11 @@
 # Integrations Setup Guide
 
-Step-by-step instructions for registering CallNote Pro as an OAuth
+Step-by-step instructions for registering Gauge as an OAuth
 application on HubSpot, Salesforce, and Microsoft Teams (Azure AD).
 Each section covers account creation, redirect URI registration,
 scope selection, and copying credentials into Vercel + GitHub secrets.
 
-For a complete list of every environment variable CallNote Pro reads
+For a complete list of every environment variable Gauge reads
 (including non-OAuth ones), see [`.env.example`](../.env.example). To
 verify which are set in your environment, run:
 
@@ -23,7 +23,7 @@ of this document.
 All three providers share the same redirect target:
 
 ```
-https://sales-call-notes.vercel.app/integrations
+https://usegauge.vercel.app/integrations
 ```
 
 The `/integrations` page handles the `?code=...&state=provider` callback
@@ -46,16 +46,16 @@ card on `/integrations`.**
 
 2. From the top nav, click **Apps** then **Create app**. Choose the
    **Public app** template (legacy "Private app" is not supported by the
-   OAuth flow CallNote Pro uses).
+   OAuth flow Gauge uses).
 
 3. On the **Info** tab, set:
-   - **App name**: `CallNote Pro`
+   - **App name**: `Gauge`
    - **Description**: `Sync call notes, transcripts, and action items
-     from CallNote Pro into HubSpot deals and contacts.`
+     from Gauge into HubSpot deals and contacts.`
    - **Logo**: optional, but required before public listing.
 
 4. Switch to the **Auth** tab and configure:
-   - **Redirect URL**: `https://sales-call-notes.vercel.app/integrations`
+   - **Redirect URL**: `https://usegauge.vercel.app/integrations`
      (add a second entry with `http://localhost:3000/integrations` for
      local dev).
    - **Token URL**: leave the default
@@ -69,7 +69,7 @@ card on `/integrations`.**
    - `crm.objects.deals.read`
    - `crm.objects.deals.write`
 
-   (CallNote Pro only writes to the `note` association on deals, so
+   (Gauge only writes to the `note` association on deals, so
    `crm.objects.notes.write` is requested at runtime by the API
    handler but does not need to be pre-checked here.)
 
@@ -94,7 +94,7 @@ card on `/integrations`.**
 
 9. **Troubleshooting**:
    - 400 `redirect_uri_mismatch` - the URL registered on the Auth tab
-     does not exactly match the one CallNote Pro sends. Watch for
+     does not exactly match the one Gauge sends. Watch for
      trailing slashes.
    - 403 `MISSING_SCOPES` - one of the four scopes above is unchecked.
 
@@ -114,17 +114,17 @@ Salesforce card on `/integrations`.**
    icon, top right) -> **App Manager** -> **New Connected App**.
 
 3. Fill in the basics:
-   - **Connected App Name**: `CallNote Pro`
-   - **API Name**: `CallNote_Pro` (auto-derived)
+   - **Connected App Name**: `Gauge`
+   - **API Name**: `Gauge_Pro` (auto-derived)
    - **Contact Email**: the support address you want Salesforce users
      to reach.
-   - **Description**: `Sync call notes and action items from CallNote
+   - **Description**: `Sync call notes and action items from Gauge
      Pro into Salesforce opportunities and accounts.`
    - **Logo URL**: leave blank for the dev org.
 
 4. Check **Enable OAuth Settings** and configure:
    - **Callback URL**:
-     `https://sales-call-notes.vercel.app/integrations`
+     `https://usegauge.vercel.app/integrations`
      (add a second entry with `http://localhost:3000/integrations` for
      local dev; one URL per line).
    - **Selected OAuth Scopes** (move from "Available" to "Selected"):
@@ -189,21 +189,21 @@ Planner tasks + calendar meetings).**
    then click **+ New registration**.
 
 3. Fill in:
-   - **Name**: `CallNote Pro`
+   - **Name**: `Gauge`
    - **Supported account types**: pick **Accounts in any
      organizational directory (Any Microsoft Entra ID tenant - Multitenant)
      and personal Microsoft accounts (e.g. Skype, Xbox)**. This is the
      most permissive option and is required if individual users will
      sign in with personal Microsoft accounts.
    - **Redirect URI**: select **Web** from the dropdown, then enter
-     `https://sales-call-notes.vercel.app/integrations`. Add a second
+     `https://usegauge.vercel.app/integrations`. Add a second
      entry with `http://localhost:3000/integrations` for local dev.
 
 4. Click **Register**. On the app **Overview** page, copy the
    **Application (client) ID** - this is `TEAMS_CLIENT_ID`.
 
 5. In the left nav, click **Certificates & secrets** ->
-   **+ New client secret**. Add a description (`CallNote Pro prod`)
+   **+ New client secret**. Add a description (`Gauge prod`)
    and choose an expiry (24 months is the max; set a calendar reminder
    to rotate). Click **Add**. Copy the **Value** column (not the
    Secret ID) - this is `TEAMS_CLIENT_SECRET`. The value is only
@@ -240,7 +240,7 @@ Planner tasks + calendar meetings).**
 
 9. **Troubleshooting**:
    - `AADSTS50011: The reply URL specified... does not match` - the
-     Redirect URI in Azure does not exactly match the one CallNote Pro
+     Redirect URI in Azure does not exactly match the one Gauge
      sends (check scheme, host, path, and trailing slash).
    - `AADSTS65001: The user or administrator has not consented` - the
      tenant requires admin consent, or an end user is signing in
@@ -254,7 +254,7 @@ Planner tasks + calendar meetings).**
 ## Dev Sandbox Mode
 
 When `NODE_ENV=development` and real OAuth credentials are missing,
-CallNote Pro falls back to a dev sandbox so the `/integrations` page
+Gauge falls back to a dev sandbox so the `/integrations` page
 remains usable end-to-end:
 
 - The **Setup Required** badge is hidden and Connect is enabled.

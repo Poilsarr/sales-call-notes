@@ -6,19 +6,19 @@ import { ArrowRight, CheckCircle, Zap, Shield, Sparkles, X } from "lucide-react"
 export const metadata: Metadata = {
   title: "Best Otter.ai Alternative in 2026: 7 Options Compared (With Pricing)",
   description:
-    "Looking for an Otter.ai alternative? We compared 7 meeting-notetaker tools on price, privacy, AI quality, and team pricing. Free + paid options — including CallNote Pro, Fathom, Fireflies, tl;dv.",
-  alternates: { canonical: "https://callnotepro.com/otter-alternative" },
+    "Looking for an Otter.ai alternative? We compared 7 meeting-notetaker tools on price, privacy, AI quality, and team pricing. Free + paid options — including Gauge, Fathom, Fireflies, tl;dv.",
+  alternates: { canonical: "https://usegauge.com/otter-alternative" },
   openGraph: {
     title: "Best Otter.ai Alternative in 2026: 7 Options Compared (With Pricing)",
     description:
       "7 Otter alternatives compared on price, privacy, AI quality, team pricing. Free + paid.",
-    url: "https://callnotepro.com/otter-alternative",
+    url: "https://usegauge.com/otter-alternative",
   },
 };
 
 const alternatives = [
   {
-    name: "CallNote Pro",
+    name: "Gauge",
     free: "300 min/mo, unlimited imports",
     paid: "$9/mo flat (not per-seat)",
     best: "Privacy-first, flat-rate, sales-trained AI",
@@ -87,7 +87,7 @@ export default function Page() {
         name: "What is the best free Otter.ai alternative in 2026?",
         acceptedAnswer: {
           "@type": "Answer",
-          text: "Fathom offers the most generous free tier (unlimited transcription, but public-link only). CallNote Pro gives 300 min/mo with private storage. Fireflies gives 800 min storage cap. For a private, sustainable free tier, CallNote Pro wins.",
+          text: "Fathom offers the most generous free tier (unlimited transcription, but public-link only). Gauge gives 300 min/mo with private storage. Fireflies gives 800 min storage cap. For a private, sustainable free tier, Gauge wins.",
         },
       },
       {
@@ -95,7 +95,7 @@ export default function Page() {
         name: "What is the cheapest Otter.ai alternative for teams?",
         acceptedAnswer: {
           "@type": "Answer",
-          text: "CallNote Pro is $9/mo flat — bring your whole team, no per-seat math. 5 users on Otter Business is $100/mo; 5 users on Fireflies Pro is $50/mo; 5 users on CallNote Pro is $9/mo total.",
+          text: "Gauge is $9/mo flat — bring your whole team, no per-seat math. 5 users on Otter Business is $100/mo; 5 users on Fireflies Pro is $50/mo; 5 users on Gauge is $9/mo total.",
         },
       },
       {
@@ -103,7 +103,7 @@ export default function Page() {
         name: "Which Otter alternative doesn't auto-join meetings?",
         acceptedAnswer: {
           "@type": "Answer",
-          text: "CallNote Pro never auto-joins. Fathom added a bot-free mode in 2024. Tactiq is browser-only. Otter, Fireflies, and most others auto-join as bot participants — which is what triggered Otter's 2025 consent lawsuit.",
+          text: "Gauge never auto-joins. Fathom added a bot-free mode in 2024. Tactiq is browser-only. Otter, Fireflies, and most others auto-join as bot participants — which is what triggered Otter's 2025 consent lawsuit.",
         },
       },
       {
@@ -155,7 +155,7 @@ export default function Page() {
               href="/vs/otter-ai"
               className="inline-flex items-center bg-white border border-gray-300 hover:border-gray-900 text-gray-900 text-[13px] rounded-full px-5 py-2 transition-colors duration-300"
             >
-              See head-to-head: CallNote Pro vs Otter
+              See head-to-head: Gauge vs Otter
             </Link>
           </div>
         </div>
@@ -217,7 +217,7 @@ export default function Page() {
       <section className="pb-16 px-5 sm:px-8 lg:px-12">
         <div className="max-w-[1100px] mx-auto">
           <h2 className="text-[22px] font-semibold tracking-tight mb-8 text-center">
-            Why teams pick CallNote Pro over Otter
+            Why teams pick Gauge over Otter
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="doppel-outer">
@@ -292,7 +292,7 @@ export default function Page() {
               </span>
             </div>
             <div className="p-5 rounded-xl border border-[#F26522]/30 bg-[#F26522]/[0.03]">
-              <strong className="text-[14px] text-[#F26522]">Pick CallNote Pro if:</strong>
+              <strong className="text-[14px] text-[#F26522]">Pick Gauge if:</strong>
               <span className="text-[13px] text-gray-700 ml-2">
                 you want privacy (no auto-join), flat $9 (not per-seat), sales AI (BANT/MEDDIC),
                 and a vendor that&apos;s a sustainable indie business — not VC-funded free.
@@ -319,15 +319,15 @@ export default function Page() {
             {[
               {
                 q: "What is the best free Otter.ai alternative in 2026?",
-                a: "Fathom offers the most generous free tier (unlimited transcription, but public-link only). CallNote Pro gives 300 min/mo with private storage. Fireflies gives 800 min storage cap. For a private, sustainable free tier, CallNote Pro wins.",
+                a: "Fathom offers the most generous free tier (unlimited transcription, but public-link only). Gauge gives 300 min/mo with private storage. Fireflies gives 800 min storage cap. For a private, sustainable free tier, Gauge wins.",
               },
               {
                 q: "What is the cheapest Otter.ai alternative for teams?",
-                a: "CallNote Pro is $9/mo flat — bring your whole team, no per-seat math. 5 users on Otter Business is $100/mo; 5 users on Fireflies Pro is $50/mo; 5 users on CallNote Pro is $9/mo total.",
+                a: "Gauge is $9/mo flat — bring your whole team, no per-seat math. 5 users on Otter Business is $100/mo; 5 users on Fireflies Pro is $50/mo; 5 users on Gauge is $9/mo total.",
               },
               {
                 q: "Which Otter alternative doesn't auto-join meetings?",
-                a: "CallNote Pro never auto-joins. Fathom added a bot-free mode in 2024. Tactiq is browser-only. Otter, Fireflies, and most others auto-join as bot participants — which is what triggered Otter's 2025 consent lawsuit.",
+                a: "Gauge never auto-joins. Fathom added a bot-free mode in 2024. Tactiq is browser-only. Otter, Fireflies, and most others auto-join as bot participants — which is what triggered Otter's 2025 consent lawsuit.",
               },
               {
                 q: "Why was Otter.ai sued in 2025?",

@@ -1,4 +1,4 @@
-# CallNote Pro — App UI Coherence Guide
+# Gauge — App UI Coherence Guide
 
 ## 1. The Problem
 

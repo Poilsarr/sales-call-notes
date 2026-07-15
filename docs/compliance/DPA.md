@@ -1,4 +1,4 @@
-# Data Processing Addendum (DPA) Template — CallNote Pro
+# Data Processing Addendum (DPA) Template — Gauge
 
 > **Status:** TEMPLATE. Not legally signed. Review by counsel before sending to customers.
 > This document describes the data flows + sub-processors so a customer
@@ -8,16 +8,16 @@
 
 ## 1. Definitions
 
-- **"Customer"** — the business entity that has accepted CallNote Pro's Terms of Service and to whom CallNote Pro provides the Service.
+- **"Customer"** — the business entity that has accepted Gauge's Terms of Service and to whom Gauge provides the Service.
 - **"Controller"** — the Customer, who determines the purposes and means of processing Personal Data.
-- **"Processor"** — CallNote Pro (operated by Kushagarh Singh), who processes Personal Data on the Controller's behalf.
+- **"Processor"** — Gauge (operated by Kushagarh Singh), who processes Personal Data on the Controller's behalf.
 - **"Personal Data"** — has the meaning given in GDPR Art. 4(1), including call recordings, transcripts, names, emails, and any other identifiable information uploaded to the Service.
-- **"Service"** — the CallNote Pro software-as-a-service platform at sales-call-notes.vercel.app.
+- **"Service"** — the Gauge software-as-a-service platform at usegauge.vercel.app.
 
 ## 2. Scope and Roles
 
-CallNote Pro is the **Processor** of Personal Data uploaded by the Controller
-through the Service. CallNote Pro does not determine the purposes for which
+Gauge is the **Processor** of Personal Data uploaded by the Controller
+through the Service. Gauge does not determine the purposes for which
 Personal Data is processed; the Controller does.
 
 ## 3. Processing Details
@@ -33,9 +33,9 @@ Personal Data is processed; the Controller does.
 
 ## 4. Sub-Processors
 
-CallNote Pro engages the following sub-processors. The Controller is notified
+Gauge engages the following sub-processors. The Controller is notified
 via the in-app notification + a changelog entry at least 30 days before any new
-sub-processor is added. The Controller may object; on objection, CallNote Pro
+sub-processor is added. The Controller may object; on objection, Gauge
 will work in good faith to provide an alternative.
 
 | Sub-processor | Purpose | Region | DPA / SOC2 status |
@@ -60,7 +60,7 @@ will work in good faith to provide an alternative.
 
 ## 6. Security Measures
 
-CallNote Pro implements the technical and organizational measures listed in
+Gauge implements the technical and organizational measures listed in
 `SECURITY.md` and `SECURITY_AUDIT.md`, including:
 
 - HTTPS-only transit (TLS 1.2+).
@@ -80,11 +80,11 @@ The Controller may exercise data-subject rights through the Service UI:
 - **Right to rectification** — edit calls, transcripts, and account fields directly in the UI.
 - **Right to erasure** — `DELETE /api/user/delete` initiates a 7-day soft-delete followed by hard-delete. Hard-delete runs within 30 days.
 - **Right to data portability** — same `/api/user/export` endpoint emits machine-readable JSON.
-- **Right to object / restrict processing** — submit via `support@callnotepro.com` (placeholder); we respond within 30 days.
+- **Right to object / restrict processing** — submit via `support@usegauge.com` (placeholder); we respond within 30 days.
 
 ## 8. Breach Notification
 
-CallNote Pro will notify the Controller of a Personal Data breach without undue
+Gauge will notify the Controller of a Personal Data breach without undue
 delay and in any event within **72 hours** of becoming aware of it.
 Notification will be sent to the Controller's account email and posted in-app.
 

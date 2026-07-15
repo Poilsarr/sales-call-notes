@@ -15,8 +15,8 @@ function getClient(): Resend {
   return resendClient;
 }
 
-const FROM = getSecret("RESEND_FROM_EMAIL") || "CallNote Pro <hello@callnotepro.com>";
-const APP_URL = process.env.NEXT_PUBLIC_APP_URL || "https://sales-call-notes.vercel.app";
+const FROM = getSecret("RESEND_FROM_EMAIL") || "Gauge <hello@usegauge.com>";
+const APP_URL = process.env.NEXT_PUBLIC_APP_URL || "https://usegauge.vercel.app";
 
 async function send(to: string, subject: string, html: string): Promise<boolean> {
   const client = getClient();
@@ -34,10 +34,10 @@ export async function sendWelcomeEmail(email: string, name?: string | null) {
   const greeting = name ? `Hey ${name}` : "Welcome";
   return send(
     email,
-    "Your CallNote Pro account is ready",
+    "Your Gauge account is ready",
     `<div style="font-family:sans-serif;max-width:600px;margin:0 auto">
       <h2>${greeting},</h2>
-      <p>Your CallNote Pro account is live. Upload your first call recording and get AI-powered summaries, action items, and speaker identification in under 60 seconds.</p>
+      <p>Your Gauge account is live. Upload your first call recording and get AI-powered summaries, action items, and speaker identification in under 60 seconds.</p>
       <p><a href="${APP_URL}/app/record" style="background:#F26522;color:#fff;padding:12px 24px;border-radius:8px;text-decoration:none;font-weight:600">Upload your first call →</a></p>
       <p style="color:#666;font-size:13px;margin-top:32px">Free tier: 300 transcription minutes/month, no credit card required.</p>
     </div>`
@@ -60,7 +60,7 @@ export async function sendTrialExpiringEmail(email: string, daysLeft: number, na
   const greeting = name ? `Hey ${name}` : "Hey";
   return send(
     email,
-    `Your CallNote Pro trial ends in ${daysLeft} days`,
+    `Your Gauge trial ends in ${daysLeft} days`,
     `<div style="font-family:sans-serif;max-width:600px;margin:0 auto">
       <h2>${greeting},</h2>
       <p>Your free trial expires in <strong>${daysLeft} days</strong>. Upgrade to Pro ($9/mo) to keep unlimited access to AI summaries, CRM sync, and advanced analytics.</p>
@@ -81,7 +81,7 @@ export async function sendWeeklyDigestEmail(
     : "";
   return send(
     email,
-    "Your weekly CallNote Pro digest",
+    "Your weekly Gauge digest",
     `<div style="font-family:sans-serif;max-width:600px;margin:0 auto">
       <h2>${greeting},</h2>
       <p>Here's your week in calls:</p>

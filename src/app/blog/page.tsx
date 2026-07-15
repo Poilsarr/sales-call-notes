@@ -37,7 +37,7 @@ export default function BlogIndexPage() {
                 <Link className="text-gray-900 underline" href="/demo">Try the live demo</Link>
               </li>
               <li>
-                <a className="text-gray-900 underline" href="mailto:hello@callnotepro.com">
+                <a className="text-gray-900 underline" href="mailto:hello@usegauge.com">
                   Get in touch
                 </a>
               </li>

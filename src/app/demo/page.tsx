@@ -17,7 +17,7 @@ export default function DemoPage() {
         <div className="max-w-[1440px] mx-auto px-5 sm:px-8 lg:px-12 h-14 flex items-center justify-between">
           <Link href="/" className="flex items-center gap-2.5">
             <div className="w-7 h-7 rounded-lg bg-[#F26522] rotate-45" />
-            <span className="text-[14px] font-semibold tracking-tight">CallNote Pro</span>
+            <span className="text-[14px] font-semibold tracking-tight">Gauge</span>
           </Link>
           <div className="flex items-center gap-4">
             <span className="text-[11px] uppercase tracking-[0.18em] text-white/40 hidden sm:inline">
@@ -57,7 +57,7 @@ export default function DemoPage() {
 
       {/* FOOTER */}
       <footer className="border-t border-white/5 py-6 text-center text-[11px] text-white/30">
-        Sample data for product demo. Not from real customers. CallNote Pro · {new Date().getFullYear()}
+        Sample data for product demo. Not from real customers. Gauge · {new Date().getFullYear()}
       </footer>
     </main>
   );

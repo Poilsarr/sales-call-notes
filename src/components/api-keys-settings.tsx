@@ -280,7 +280,7 @@ export default function APIKeysSettings() {
             <summary className="cursor-pointer hover:text-white/60">How to use</summary>
             <pre className="mt-2 p-3 rounded-xl bg-linear-black border border-linear-secondary text-white/70 font-mono overflow-x-auto">
 {`curl -H "Authorization: Bearer ${keys[0]?.prefix ?? "cn_live_..."}YOUR_SECRET" \\
-     https://callnotepro.com/api/v1/calls`}
+     https://usegauge.com/api/v1/calls`}
             </pre>
           </details>
         </CardContent>

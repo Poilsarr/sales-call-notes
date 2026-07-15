@@ -3,7 +3,7 @@
  *
  * Inserted into the root <head> via a `<script type="application/ld+json">`
  * tag rendered in the root layout. Tells search engines "this is a SaaS
- * product called CallNote Pro, here's what it costs, here's what it does".
+ * product called Gauge, here's what it costs, here's what it does".
  *
  * Honest numbers: pricing reflects actual public tiers. No fake review
  * counts, no fabricated aggregateRating. If/when we collect real reviews,
@@ -14,14 +14,14 @@ export function productJsonLd(): string {
   const data = {
     "@context": "https://schema.org",
     "@type": "SoftwareApplication",
-    name: "CallNote Pro",
+    name: "Gauge",
     applicationCategory: "BusinessApplication",
     applicationSubCategory: "Sales Call Analytics",
     operatingSystem: "Web",
     description:
       "AI-powered sales call transcription, summarization, and competitive intelligence for SDRs.",
-    url: "https://callnotepro.com",
-    image: "https://callnotepro.com/og.png",
+    url: "https://usegauge.com",
+    image: "https://usegauge.com/og.png",
     offers: [
       {
         "@type": "Offer",
@@ -55,8 +55,8 @@ export function productJsonLd(): string {
     ],
     author: {
       "@type": "Organization",
-      name: "CallNote Pro",
-      url: "https://callnotepro.com",
+      name: "Gauge",
+      url: "https://usegauge.com",
     },
   };
   return JSON.stringify(data);

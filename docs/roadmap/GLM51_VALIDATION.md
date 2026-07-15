@@ -50,7 +50,7 @@ piece is **persistent audio storage**, not the audio pipeline itself.
 
 6. **Sentry DSN in prod** — free tier works. EXTERNAL-BLOCKED.
 
-7. **callnotepro.com DNS** — EXTERNAL-BLOCKED.
+7. **usegauge.com DNS** — EXTERNAL-BLOCKED.
 
 ## Where glm5.1 was wrong
 

@@ -1,4 +1,4 @@
-export const APP_BASE_URL = "https://sales-call-notes.vercel.app";
+export const APP_BASE_URL = "https://usegauge.vercel.app";
 export const AUTH_COOKIE_NAME = "__session";
 export const AUTH_STATUS_KEY = "authStatus";
 export const UPLOAD_STATUS_KEY = "uploadStatus";
@@ -74,7 +74,7 @@ export async function getClerkSessionToken() {
     });
     if (cookie && cookie.value) return cookie.value;
   } catch (error) {
-    console.warn("[CallNote Pro] Failed to read Clerk session cookie", error);
+    console.warn("[Gauge] Failed to read Clerk session cookie", error);
   }
   return null;
 }

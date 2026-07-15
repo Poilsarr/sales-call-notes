@@ -20,7 +20,7 @@ export async function POST(req: NextRequest) {
     const user = await getUserByClerkId(clerkId);
     const paddle = getPaddleClient();
 
-    const appUrl = process.env.NEXT_PUBLIC_APP_URL || "https://sales-call-notes.vercel.app";
+    const appUrl = process.env.NEXT_PUBLIC_APP_URL || "https://usegauge.vercel.app";
 
     // ponytail: create draft transaction with hosted checkout.
     // Paddle auto-creates subscription when checkout completes.

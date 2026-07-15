@@ -13,7 +13,7 @@ err()  { echo -e "${RED}[✗]${NC} $1"; }
 info() { echo -e "${BLUE}[i]${NC} $1"; }
 
 echo -e "${BLUE}============================================${NC}"
-echo -e "${BLUE}  CallNote Pro - Zero-Touch Setup${NC}"
+echo -e "${BLUE}  Gauge - Zero-Touch Setup${NC}"
 echo -e "${BLUE}============================================${NC}"
 echo ""
 

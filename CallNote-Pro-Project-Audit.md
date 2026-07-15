@@ -1,4 +1,4 @@
-# CallNote Pro — Complete Project Audit
+# Gauge — Complete Project Audit
 
 > Generated: May 25, 2026
 > Live: https://sales-call-notes.vercel.app
@@ -151,7 +151,7 @@ All three are LIVE per the integrations page. Extract contact info from transcri
 - **Privacy** (`/privacy`), **Terms** (`/terms`), **Refund** (`/refund`): Full legal pages
 
 ### 2.16 Chrome Extension (MV3)
-- **manifest.json**: Permissions (storage, identity, activeTab), hosts (meet.google.com, app.callnotepro.com)
+- **manifest.json**: Permissions (storage, identity, activeTab), hosts (meet.google.com, app.usegauge.com)
 - **content.js**: MutationObserver scoped to caption container, auto-enable captions (localStorage consent), 5s send interval, meeting-end detection
 - **background.js**: Service worker, CAPTIONS_UPDATE + MEETING_END listeners, storage capped at 500, sender.id verified
 - **popup.html/js**: Dark theme, status dot, meeting info, Open App / View Recent buttons
@@ -328,7 +328,7 @@ All three are LIVE per the integrations page. Extract contact info from transcri
 
 ## 7. Competitor Feature Comparison Matrix
 
-| Feature | Fireflies.ai | Otter.ai | CallNote Pro | Gap |
+| Feature | Fireflies.ai | Otter.ai | Gauge | Gap |
 |---------|-------------|----------|-------------|------|
 | **TRANSCRIPTION** |
 | Accuracy | 95% | High | Whisper (local) | ✅ Built |
@@ -488,7 +488,7 @@ All three are LIVE per the integrations page. Extract contact info from transcri
 
 | File | Lines | Status | What it does |
 |------|-------|--------|-------------|
-| `manifest.json` | 31 | ✅ Full | MV3, meet.google.com + app.callnotepro.com hosts |
+| `manifest.json` | 31 | ✅ Full | MV3, meet.google.com + app.usegauge.com hosts |
 | `background.js` | 19 | ✅ Full | CAPTIONS_UPDATE + MEETING_END listeners, storage capped at 500 |
 | `content.js` | 89 | ✅ Full | MutationObserver, auto-captions, 5s send, meeting-end detection |
 | `popup.html` | 55 | ✅ Full | Dark theme, status dot, buttons |
@@ -604,7 +604,7 @@ Actual:   Missing
 ### 🔴 P0 — Must do (MVP blockers)
 | # | Task | Effort | Dependencies |
 |---|------|--------|-------------|
-| 1 | **Buy domain** (callnotepro.com, Namecheap) | 15 min | None |
+| 1 | **Buy domain** (usegauge.com, Namecheap) | 15 min | None |
 | 2 | **Switch Clerk to Production** | 15 min | Custom domain |
 | 3 | **Fix 2 failing tests** (Upstash import + force-dynamic) | 5 min | None |
 | 4 | **Wire CRM sync UI** (OAuth connection flow + save credentials) | 2-3h | None |

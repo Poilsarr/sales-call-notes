@@ -11,7 +11,7 @@ import { ArrowRight, Code, AlertCircle } from "lucide-react";
  */
 export const metadata = {
   title: "API Documentation",
-  description: "Public API documentation for CallNote Pro.",
+  description: "Public API documentation for Gauge.",
 };
 
 const AVAILABLE_VERSIONS = [
@@ -53,7 +53,7 @@ export default function ApiDocsIndex() {
             API documentation
           </h1>
           <p className="text-[15px] text-gray-600 max-w-2xl">
-            REST API for CallNote Pro. All requests use a Bearer token
+            REST API for Gauge. All requests use a Bearer token
             (cn_live_… or cn_test_…). Generate a key in{" "}
             <Link
               href="/settings?tab=api-keys"

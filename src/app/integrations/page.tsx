@@ -32,7 +32,7 @@ const integrations = [
   { icon: <Globe size={22} />, name: "Google Meet", desc: "Live transcription and note-taking for Google Meet calls.", status: "Live", href: "/extension" },
   { icon: <Chrome size={22} />, name: "Chrome Extension", desc: "Capture Google Meet captions live and save calls to your dashboard on meeting end.", status: "Live", href: "/extension" },
   { icon: <Layers size={22} />, name: "Slack", desc: "Post call summaries, action items, and weekly digests to Slack.", status: "Live", provider: "slack" as const },
-  { icon: <Share2 size={22} />, name: "Zapier", desc: "Push CallNote Pro events into 5,000+ apps via Zapier workflows.", status: "Live", href: "/integrations/zapier" },
+  { icon: <Share2 size={22} />, name: "Zapier", desc: "Push Gauge events into 5,000+ apps via Zapier workflows.", status: "Live", href: "/integrations/zapier" },
   { icon: <Code size={22} />, name: "REST API", desc: "Build custom integrations with our full-featured REST API.", status: "Business+" },
   { icon: <Download size={22} />, name: "Webhooks", desc: "Receive real-time events when calls are transcribed and analyzed.", status: "Business+" },
   { icon: <Users size={22} />, name: "SSO / SAML 2.0", desc: "Enterprise single sign-on via SAML 2.0, Google, or Microsoft.", status: "Enterprise" },
@@ -266,7 +266,7 @@ function IntegrationsContent() {
             <span className="text-gray-400">you already work</span>
           </h1>
           <p className="text-gray-500 max-w-xl mx-auto text-[14px]">
-            CallNote Pro integrates with your CRM, calendar, and communication tools.
+            Gauge integrates with your CRM, calendar, and communication tools.
           </p>
         </div>
       </section>

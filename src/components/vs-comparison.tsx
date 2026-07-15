@@ -28,7 +28,7 @@ export type ComparisonData = {
 };
 
 export function VsComparisonPage({ data }: { data: ComparisonData }) {
-  const us = "CallNote Pro";
+  const us = "Gauge";
   const them = data.competitorName;
   const lastUpdated = "July 2026";
 
@@ -211,7 +211,7 @@ export function VsComparisonPage({ data }: { data: ComparisonData }) {
               </div>
               <div className="px-4 py-3 text-[11px] text-gray-400 border-t border-gray-100">
                 Competitor pricing from their public pricing pages as of {lastUpdated}. Spotted a mistake?{" "}
-                <a href="mailto:hello@callnotepro.com" className="underline hover:text-gray-600">Tell us</a>.
+                <a href="mailto:hello@usegauge.com" className="underline hover:text-gray-600">Tell us</a>.
               </div>
             </div>
           </div>

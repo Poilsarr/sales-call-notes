@@ -459,7 +459,7 @@ git commit -m "feat(api): quota guard surfaces 429/insufficient_quota to clients
 
 **Step 1: Create Neon account & project**
 - Sign up at https://neon.tech
-- Create project `callnote-prod`
+- Create project `gauge-prod`
 - Copy the connection string (pooled, with `-pooler` in hostname)
 
 **Step 2: Update `.env.local`** (do not commit)

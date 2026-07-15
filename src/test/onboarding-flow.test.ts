@@ -19,7 +19,7 @@ describe("GATE 5.5 — onboarding flow", () => {
     expect(c).toMatch(/type\s+Step\s*=\s*0\s*\|\s*1\s*\|\s*2/);
     expect(c).toMatch(/Welcome/);
     expect(c).toMatch(/Drop a sample/);
-    expect(c).toMatch(/Welcome to CallNote Pro/);
+    expect(c).toMatch(/Welcome to Gauge/);
   });
 
   it("persists step in localStorage", () => {

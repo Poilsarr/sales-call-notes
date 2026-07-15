@@ -38,7 +38,7 @@
 
 ### localStorage
 
-- **Key**: `callnote_history`
+- **Key**: `gauge_history`
 - **Format**: JSON array of call records
 
 ## Development Config

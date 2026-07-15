@@ -14,4 +14,4 @@ Disallow: /sign-up
 Disallow: /onboarding
 
 # Sitemap
-Sitemap: https://callnotepro.com/sitemap.xml
+Sitemap: https://usegauge.com/sitemap.xml

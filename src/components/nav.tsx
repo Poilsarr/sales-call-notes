@@ -29,7 +29,7 @@ export default function Nav() {
           {/* Left */}
           <div className="flex items-center gap-6">
             <Link href="/" className="w-9 h-9 sm:w-10 sm:h-10 bg-gray-900 rounded-full flex items-center justify-center flex-shrink-0">
-              <span className="text-white font-bold tracking-tight" style={{ fontSize: "10px" }}>CP</span>
+              <span className="text-white font-bold tracking-tight" style={{ fontSize: "10px" }}>G</span>
             </Link>
             <div className="hidden md:flex items-center gap-6">
               {links.map((link) => (

@@ -356,7 +356,7 @@ export async function POST(req: Request) {
     void sendTranscriptReadyEmail(user.email, call.id, fileName);
 
     if (competitors.length > 0) {
-      const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://sales-call-notes.vercel.app';
+      const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://usegauge.vercel.app';
       const slack = new SlackService();
       slack.sendCompetitorAlert(
         competitors.map(c => ({ name: c.competitor, context: c.context, sentiment: c.sentiment })),

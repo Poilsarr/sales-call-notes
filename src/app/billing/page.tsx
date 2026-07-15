@@ -361,7 +361,7 @@ export default function BillingPage() {
             </div>
             <p className="text-xs text-white/40">SSO / SAML, HIPAA compliance, dedicated account manager, and custom terms.</p>
           </div>
-          <a href="mailto:sales@callnotepro.com?subject=Enterprise%20Plan%20Inquiry"
+          <a href="mailto:sales@usegauge.com?subject=Enterprise%20Plan%20Inquiry"
             className="px-6 py-2.5 rounded-full text-xs font-semibold bg-white/10 text-white hover:bg-white/20 border border-white/10 transition-all duration-500 shrink-0">
             Contact Sales
           </a>

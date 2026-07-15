@@ -20,7 +20,7 @@ export default function OfflinePage() {
           You&rsquo;re offline
         </h1>
         <p className="text-gray-600 text-[15px] mb-6">
-          CallNote Pro needs an internet connection to transcribe calls and
+          Gauge needs an internet connection to transcribe calls and
           load your dashboard. Once you&rsquo;re back online, the dashboard
           and any in-progress uploads will resume automatically.
         </p>

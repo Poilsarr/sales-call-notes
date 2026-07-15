@@ -1,5 +1,5 @@
-// CallNote Pro - Google Meet Content Script
-// Captures meeting captions and sends to CallNote Pro API
+// Gauge - Google Meet Content Script
+// Captures meeting captions and sends to Gauge API
 
 let captionObserver = null;
 let captions = [];
@@ -38,7 +38,7 @@ function init() {
 }
 
 function startCaptionCapture() {
-  console.warn("[CallNote Pro] Meeting detected, watching captions...");
+  console.warn("[Gauge] Meeting detected, watching captions...");
 
   const captionContainer = document.querySelector('[jsname="mq"]') ||
     document.querySelector('.qwt') ||

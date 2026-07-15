@@ -10,7 +10,7 @@ import { join } from "node:path";
  * asserts the perf gate targets.
  *
  * To refresh:
- *   BASE_URL=https://sales-call-notes.vercel.app k6 run scripts/load-test.js
+ *   BASE_URL=https://usegauge.vercel.app k6 run scripts/load-test.js
  *   npx vitest run src/test/proof-loadtest.test.ts
  */
 const PROOF_PATH = join(process.cwd(), "scripts", ".proof-loadtest.json");
@@ -19,7 +19,7 @@ const FRESHNESS_DAYS = 7;
 // captured on 2026-06-24 against the actual deployed site.
 // Home p95 measured 345ms; demo p95 285ms; both have 50ms buffer.
 // To refresh:
-//   BASE_URL=https://sales-call-notes.vercel.app k6 run \
+//   BASE_URL=https://usegauge.vercel.app k6 run \
 //     --summary-export=scripts/.proof-loadtest.raw.json scripts/load-test.js
 //   python3 scripts/convert-loadtest-proof.py
 //   npx vitest run src/test/proof-loadtest.test.ts

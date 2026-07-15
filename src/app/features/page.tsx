@@ -518,12 +518,12 @@ function ComparisonSection() {
             <BarChart3 size={12} /> How we stack up
           </div>
           <h2 className="text-[clamp(1.5rem,4vw,2.75rem)] font-medium leading-[1.1] tracking-[-0.02em] mb-3">
-            CallNote Pro vs Otter.ai vs Fireflies.ai
+            Gauge vs Otter.ai vs Fireflies.ai
           </h2>
           <p className="text-gray-500 text-[14px] max-w-xl mx-auto">
             Public pricing and feature data, side by side. Updated
             monthly. Spotted something stale?{" "}
-            <a href="mailto:hello@callnotepro.com" className="underline underline-offset-2 hover:text-gray-900">
+            <a href="mailto:hello@usegauge.com" className="underline underline-offset-2 hover:text-gray-900">
               Tell us
             </a>
             .
@@ -539,7 +539,7 @@ function ComparisonSection() {
                     Capability
                   </th>
                   <th className="py-4 px-3 text-[12px] uppercase tracking-[0.12em] text-[#F26522] font-semibold">
-                    CallNote Pro
+                    Gauge
                   </th>
                   <th className="py-4 px-3 text-[11px] uppercase tracking-[0.12em] text-gray-500 font-medium">
                     Otter.ai
@@ -704,7 +704,7 @@ export default function FeaturesPage() {
             </span>
           </h1>
           <p className="hero-subtitle text-[14px] sm:text-[15px] text-gray-500 max-w-2xl mx-auto leading-relaxed mb-8">
-            From transcription to CRM export, CallNote Pro handles the entire sales call workflow.
+            From transcription to CRM export, Gauge handles the entire sales call workflow.
             No bots. No complex setup. Just results.
           </p>
           <div className="hero-badge inline-flex items-center gap-4 px-5 py-2.5 rounded-full bg-white/80 backdrop-blur-sm border border-gray-200 text-[12px] text-gray-500 shadow-sm">

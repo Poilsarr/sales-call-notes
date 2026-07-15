@@ -79,7 +79,7 @@ const PLANS = [
       "Custom AI model training",
     ],
     cta: "Contact sales",
-    ctaHref: "mailto:sales@callnotepro.com?subject=Enterprise%20Plan%20Inquiry",
+    ctaHref: "mailto:sales@usegauge.com?subject=Enterprise%20Plan%20Inquiry",
     popular: false,
   },
 ];
@@ -359,7 +359,7 @@ export default function PricingPage() {
                       <th className="text-left py-3 pr-4 text-gray-500 font-medium">Feature</th>
                       <th className="text-center py-3 px-4 text-white font-semibold bg-[#F26522]/[0.06] rounded-t-lg">
                         <div className="flex items-center justify-center gap-1.5">
-                          <span>CallNote Pro</span>
+                          <span>Gauge</span>
                           <span className="w-1 h-1 rounded-full bg-[#F26522]" />
                         </div>
                       </th>
@@ -393,7 +393,7 @@ export default function PricingPage() {
               <p className="text-[10.5px] text-gray-400 mt-4 text-center max-w-2xl mx-auto">
                 Competitor data from public pricing pages as of 2026-06-22. Spotted a mistake?{" "}
                 <a
-                  href="mailto:hello@callnotepro.com"
+                  href="mailto:hello@usegauge.com"
                   className="underline underline-offset-2 hover:text-gray-600"
                 >
                   Tell us

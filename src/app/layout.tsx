@@ -21,8 +21,8 @@ const geistMono = localFont({
 
 export const metadata: Metadata = {
   title: {
-    default: "CallNote Pro — AI Sales Call Notes for SDRs",
-    template: "%s · CallNote Pro",
+    default: "Gauge — AI Sales Call Notes for SDRs",
+    template: "%s · Gauge",
   },
   description: "Upload your call recording. Get summary, action items, and CRM-ready notes in seconds. Built for the modern SDR.",
   manifest: "/manifest.json",
@@ -45,9 +45,9 @@ export const metadata: Metadata = {
     ],
   },
   openGraph: {
-    title: "CallNote Pro — AI Sales Call Notes for SDRs",
+    title: "Gauge — AI Sales Call Notes for SDRs",
     description: "Upload your call recording. Get summary, action items, and CRM-ready notes in seconds. Built for the modern SDR.",
-    siteName: "CallNote Pro",
+    siteName: "Gauge",
     type: "website",
     locale: "en_US",
     images: [
@@ -55,19 +55,19 @@ export const metadata: Metadata = {
         url: "/og.png",
         width: 1200,
         height: 630,
-        alt: "CallNote Pro — Know the moment a competitor enters the deal.",
+        alt: "Gauge — Know the moment a competitor enters the deal.",
       },
     ],
   },
   twitter: {
     card: "summary_large_image",
-    title: "CallNote Pro — AI Sales Call Notes for SDRs",
+    title: "Gauge — AI Sales Call Notes for SDRs",
     description: "Upload your call recording. Get summary, action items, and CRM-ready notes in seconds. Built for the modern SDR.",
     images: ["/og.png"],
   },
-  appleWebApp: { capable: true, title: "CallNote Pro", statusBarStyle: "default" },
+  appleWebApp: { capable: true, title: "Gauge", statusBarStyle: "default" },
   alternates: {
-    canonical: "https://callnotepro.com",
+    canonical: "https://usegauge.com",
   },
   robots: {
     index: true,

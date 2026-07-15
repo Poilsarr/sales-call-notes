@@ -1,4 +1,4 @@
-# Hermes Agent Handoff — sales-call-notes
+# Hermes Agent Handoff — Gauge
 
 > **For future agent sessions:** read this first. It documents the
 > working rules this project has settled on, plus where the

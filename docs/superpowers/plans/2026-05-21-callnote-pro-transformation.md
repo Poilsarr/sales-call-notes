@@ -1,8 +1,8 @@
-# CallNote Pro — Best-in-Class Transformation Implementation Plan
+# Gauge — Best-in-Class Transformation Implementation Plan
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Goal:** Transform CallNote Pro into a best-in-class sales call analysis product with accurate transcription, rich analysis, and premium UI.
+**Goal:** Transform Gauge into a best-in-class sales call analysis product with accurate transcription, rich analysis, and premium UI.
 
 **Architecture:** Three parallel workstreams — Transcription Pipeline (A), Analysis Engine (B), UI/UX Transformation (C) — integrated in Wave 3.
 
@@ -816,7 +816,7 @@ export function AppSidebar() {
   return (
     <aside className="w-64 bg-zinc-900 border-r border-zinc-800 flex flex-col">
       <div className="p-6">
-        <h1 className="text-xl font-semibold text-white">CallNote Pro</h1>
+        <h1 className="text-xl font-semibold text-white">Gauge</h1>
       </div>
       
       <nav className="flex-1 px-3">

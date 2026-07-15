@@ -32,21 +32,21 @@ export default function ExtensionPage() {
             {/* LEFT */}
             <div>
               <p className="text-[13px] leading-[14px] text-gray-900 tracking-wide mb-5 sm:mb-8">
-                CallNote Pro
+                Gauge
               </p>
               <h1 className="text-[clamp(1.75rem,7vw,4.2rem)] sm:text-[clamp(2.5rem,5vw,4.2rem)] font-medium leading-[1.08] tracking-[-0.03em] text-gray-900">
                 The call&rsquo;s over.<br className="hidden sm:block" />
                 <span className="sm:hidden"> </span>Your notes are already done.
               </h1>
               <p className="text-[15px] text-gray-500 max-w-xl mt-4 mb-8">
-                The CallNote Pro Chrome extension watches the live captions in
+                The Gauge Chrome extension watches the live captions in
                 any Google Meet and ships a fully transcribed call to your
                 dashboard the second you hang up &mdash; no upload, no recorder,
                 no post-call work.
               </p>
               <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 sm:gap-5">
                 <a
-                  href="https://chromewebstore.google.com/search/callnotepro"
+                  href="https://chromewebstore.google.com/search/gauge"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="group inline-flex items-center gap-2 bg-[#F26522] hover:bg-[#e05a1a] text-white text-[13px] sm:text-[14px] rounded-full pl-5 sm:pl-6 pr-2 py-2"
@@ -82,10 +82,10 @@ export default function ExtensionPage() {
                         <span className="w-1.5 h-1.5 bg-white rounded-sm" />
                       </div>
                       <span className="text-[10px] font-mono text-gray-500 truncate">
-                        meet.google.com/abc-defg-hij · Acme × CallNote — Discovery
+                        meet.google.com/abc-defg-hij · Acme × Gauge — Discovery
                       </span>
                     </div>
-                    {/* CallNote extension pill — the thing being demo'd */}
+                    {/* Gauge extension pill — the thing being demo'd */}
                     <div className="flex items-center gap-1.5 bg-[#F26522]/[0.08] border border-[#F26522]/20 rounded-full px-2 py-1 shrink-0">
                       <span className="w-1.5 h-1.5 rounded-full bg-[#F26522] animate-pulse" />
                       <span className="text-[9px] font-mono uppercase tracking-wider text-[#F26522] font-semibold">
@@ -185,7 +185,7 @@ export default function ExtensionPage() {
                   the first time you open a Meet tab.
                 </p>
                 <a
-                  href="https://chromewebstore.google.com/search/callnotepro"
+                  href="https://chromewebstore.google.com/search/gauge"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="group inline-flex items-center justify-between gap-2 bg-[#F26522] hover:bg-[#e05a1a] text-white text-[13px] rounded-full pl-5 pr-2 py-2 w-fit"
@@ -275,7 +275,7 @@ export default function ExtensionPage() {
                       load unpacked
                     </code>
                     from GitHub. No account creation &mdash; it reuses your
-                    CallNote Pro login.
+                    Gauge login.
                   </>
                 ),
                 icon: <Chrome size={18} className="text-[#F26522]" strokeWidth={1.5} />,
@@ -377,7 +377,7 @@ export default function ExtensionPage() {
                   </li>
                   <li className="flex gap-2.5">
                     <span className="w-1 h-1 rounded-full bg-emerald-500 mt-2 shrink-0" />
-                    <span>Your existing CallNote Pro login session.</span>
+                    <span>Your existing Gauge login session.</span>
                   </li>
                 </ul>
               </div>
@@ -437,11 +437,11 @@ export default function ExtensionPage() {
                 The extension is free while we wait for store approval.
               </h2>
               <p className="text-gray-500 mb-8 text-[14px] max-w-xl mx-auto">
-                Same CallNote Pro account. Pro features (competitive intel,
+                Same Gauge account. Pro features (competitive intel,
                 CRM push) work the moment you upgrade.
               </p>
               <a
-                href="https://chromewebstore.google.com/search/callnotepro"
+                href="https://chromewebstore.google.com/search/gauge"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="group inline-flex items-center gap-2 bg-[#F26522] hover:bg-[#e05a1a] text-white text-[13px] rounded-full pl-5 pr-2 py-2"

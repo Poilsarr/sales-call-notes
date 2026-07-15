@@ -2,14 +2,14 @@ import type { Metadata } from "next";
 import { VsComparisonPage, type ComparisonData } from "@/components/vs-comparison";
 
 export const metadata: Metadata = {
-  title: "Fathom Alternative: CallNote Pro — Flat-Rate + Private (2026)",
+  title: "Fathom Alternative: Gauge — Flat-Rate + Private (2026)",
   description:
-    "Fathom's free tier is unlimited but public-link only. Team tier is $15/seat × 5 = $75/mo. CallNote Pro is $9 flat, private by default, sales-trained AI.",
-  alternates: { canonical: "https://callnotepro.com/vs/fathom" },
+    "Fathom's free tier is unlimited but public-link only. Team tier is $15/seat × 5 = $75/mo. Gauge is $9 flat, private by default, sales-trained AI.",
+  alternates: { canonical: "https://usegauge.com/vs/fathom" },
   openGraph: {
-    title: "Fathom Alternative: CallNote Pro — Flat-Rate + Private (2026)",
+    title: "Fathom Alternative: Gauge — Flat-Rate + Private (2026)",
     description: "Fathom Team $15/seat × 5 = $75/mo. Ours = $9 flat. Private links, sales AI, no per-seat.",
-    url: "https://callnotepro.com/vs/fathom",
+    url: "https://usegauge.com/vs/fathom",
   },
 };
 
@@ -20,7 +20,7 @@ const data: ComparisonData = {
   competitorFounded: "2020",
   competitorFunding: "$20M+ raised",
   competitorUsers: "1M+ users",
-  metaTitle: "Fathom Alternative: CallNote Pro — Flat-Rate + Private (2026)",
+  metaTitle: "Fathom Alternative: Gauge — Flat-Rate + Private (2026)",
   metaDescription: "Fathom Team $15/seat × 5 = $75/mo. Ours = $9 flat. Private links, sales AI, no per-seat.",
   heroHeadline: "The Fathom alternative for people who want private links and flat pricing.",
   heroSubhead:
@@ -53,7 +53,7 @@ const data: ComparisonData = {
   ourWins: [
     {
       title: "Flat-rate pricing, not per-seat",
-      detail: "5 reps on Fathom Team = $75/mo ($15/seat). 5 reps on CallNote Pro Business = $29/mo flat. At 10 reps the gap widens to $150/mo vs $29/mo.",
+      detail: "5 reps on Fathom Team = $75/mo ($15/seat). 5 reps on Gauge Business = $29/mo flat. At 10 reps the gap widens to $150/mo vs $29/mo.",
     },
     {
       title: "Private by default, not public-link only",
@@ -100,7 +100,7 @@ const data: ComparisonData = {
       a: "Two reasons. First, Fathom's free is public-link only — your meetings become Google-indexed pages. If privacy matters, that's a no-go. Second, Fathom Team is $15/seat × 5 = $75/mo. Our Pro is $9 flat. If you have a team and want private + flat-rate, we're cheaper than Fathom's paid tier.",
     },
     {
-      q: "Does CallNote Pro have Fathom's UI quality?",
+      q: "Does Gauge have Fathom's UI quality?",
       a: "Fathom's UI is genuinely best-in-class — we won't pretend otherwise. Our UI is clean and fast but not Fathom's polish. If UI is your #1 criterion, Fathom wins. If private + flat-rate + sales AI matter more, we win.",
     },
     {
@@ -113,7 +113,7 @@ const data: ComparisonData = {
     },
     {
       q: "Can I migrate from Fathom?",
-      a: "Yes — export from Fathom, upload to CallNote Pro. We accept MP3, WAV, M4A, WebM. For bulk migration email hello@callnotepro.com.",
+      a: "Yes — export from Fathom, upload to Gauge. We accept MP3, WAV, M4A, WebM. For bulk migration email hello@usegauge.com.",
     },
   ],
 };

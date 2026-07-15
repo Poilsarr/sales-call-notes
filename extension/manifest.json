@@ -1,10 +1,10 @@
 {
   "manifest_version": 3,
-  "name": "CallNote Pro - Meeting Notes",
+  "name": "Gauge - Meeting Notes",
   "version": "1.0.0",
   "description": "Automatically capture Google Meet transcripts and generate AI-powered sales notes.",
   "permissions": ["storage", "identity", "activeTab", "cookies", "alarms"],
-  "host_permissions": ["https://meet.google.com/*", "https://sales-call-notes.vercel.app/*"],
+  "host_permissions": ["https://meet.google.com/*", "https://usegauge.vercel.app/*"],
   "action": {
     "default_popup": "popup.html",
     "default_icon": {

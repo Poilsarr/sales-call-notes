@@ -14,7 +14,7 @@ import { Key, ArrowLeft, Copy } from "lucide-react";
 export const metadata = {
   title: "API Reference v1",
   description:
-    "Public v1 API for CallNote Pro. Generate a scoped API key, then list, create, and revoke keys; list your own calls.",
+    "Public v1 API for Gauge. Generate a scoped API key, then list, create, and revoke keys; list your own calls.",
 };
 
 const ENDPOINTS = [
@@ -135,7 +135,7 @@ export default function ApiDocsV1() {
             Public API · v1
           </p>
           <h1 className="text-[clamp(1.75rem,4vw,2.8rem)] font-medium leading-[1.1] tracking-[-0.02em] mb-4">
-            CallNote Pro REST API
+            Gauge REST API
           </h1>
           <p className="text-[15px] text-gray-600 max-w-2xl">
             Authenticate with a Bearer token (format{" "}
@@ -201,7 +201,7 @@ export default function ApiDocsV1() {
           </p>
           <pre className="bg-[#0a0a0b] text-white rounded-2xl p-5 text-[13px] font-mono overflow-x-auto">
 {`curl -H "Authorization: Bearer cn_live_YOUR_SECRET" \\
-     https://callnotepro.com/api/v1/calls`}
+     https://usegauge.com/api/v1/calls`}
           </pre>
           <p className="text-[12px] text-gray-500 mt-4">
             The middleware automatically excludes{" "}
@@ -220,10 +220,10 @@ export default function ApiDocsV1() {
             Want webhooks, additional scopes, or write endpoints (POST/PUT
             /api/v1/calls)? Open an issue or email{" "}
             <a
-              href="mailto:api@callnotepro.com"
+              href="mailto:api@usegauge.com"
               className="text-[#F26522] underline-offset-4 hover:underline"
             >
-              api@callnotepro.com
+              api@usegauge.com
             </a>
             . Public request log at{" "}
             <a
