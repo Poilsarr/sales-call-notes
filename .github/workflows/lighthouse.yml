@@ -1,134 +1,31 @@
-name: Lighthouse (PageSpeed Insights API)
-
+name: Lighthouse CI
 on:
   pull_request:
     branches: [main]
-
-permissions:
-  contents: read
-  pull-requests: write
+  push:
+    branches: [main]
 
 concurrency:
-  group: ${{ github.workflow }}-${{ github.event.pull_request.number }}
+  group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
-  psi:
-    name: Lighthouse (PSI)
+  lighthouse:
+    name: Lighthouse audit
     runs-on: ubuntu-latest
-    timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
 
-      - name: Run PageSpeed Insights API (mobile + desktop)
-        id: psi
-        # ponytail: continue-on-error so a single curl timeout doesn't fail the
-        # whole job. Downstream classifies the empty/missing report as API error.
-        continue-on-error: true
-        env:
-          # PSI API key raises quota from 1 QPS to ~25 QPS. Optional;
-          # the unkeyed endpoint works but rate-limits at ~1 req/sec.
-          PSI_KEY: ${{ secrets.PSI_API_KEY }}
-        run: |
-          mkdir -p psi-reports
-          # ponytail: removed `set -e` — a single curl timeout (PSI rate-limit)
-          # would kill the script and skip processing the 5 reports that DID
-          # succeed. Let downstream classify empty/missing as API error.
-          BASE="https://usegauge.vercel.app"
-          for strategy in mobile desktop; do
-            for path in "" "pricing" "extension"; do
-              url="${BASE}/${path}"
-              encoded=$(python3 -c "import urllib.parse,sys;print(urllib.parse.quote(sys.argv[1], safe=''))" "$url")
-              out="psi-reports/${strategy}_$(echo ${path:-home} | tr / _).json"
-              echo "Fetching ${url} (${strategy}) -> ${out}"
-              key=""
-              if [ -n "$PSI_KEY" ]; then key="&key=$PSI_KEY"; fi
-              curl -sS --max-time 60 --fail-with-body \
-                "https://www.googleapis.com/pagespeedonline/v5/runPagespeed?url=${encoded}&strategy=${strategy}&category=performance&category=accessibility&category=best-practices&category=seo${key}" \
-                -o "$out" || echo "  curl exited non-zero on ${url} -- downstream will treat as API error"
-              # Avoid PSI rate-limit (sleep 5s between calls; the API
-              # rate-limits at ~1 QPS without a key, ~25 with a key)
-              sleep 5
-            done
-          done
-          echo "All PSI calls complete."
-
-      - name: Post PSI summary
-        id: summary
-        if: always()
-        uses: actions/github-script@v7
+      - uses: actions/setup-node@v4
         with:
-          script: |
-            const fs = require('fs');
-            const path = require('path');
-            const dir = path.join(process.cwd(), 'psi-reports');
-            const thresholds = { performance: 70, accessibility: 90, 'best-practices': 85, seo: 90 };
-            let body = `## :lighthouse: Lighthouse (PageSpeed Insights)\n\nReal Chrome in Google's data center, audited against \`usegauge.vercel.app\` (the actual production URL — \`usegauge.com\` is not yet registered so DNS doesn't resolve).\n\n`;
-            // ponytail: distinguish API errors from real low scores.
-            // PSI rate-limits often return "Unable to process request" — that's
-            // an infra error, not a perf regression. Don't conflate.
-            let anyWarn = false;
-            let anyApiError = false;
-            let anyLowScore = false;
-            const strategyEmoji = { mobile: ':iphone:', desktop: ':desktop_computer:' };
-            const files = fs.existsSync(dir) ? fs.readdirSync(dir).filter(f => f.endsWith('.json')) : [];
-            if (files.length === 0) {
-              body += `\u26a0\ufe0f No PSI reports found. The API may have rate-limited or errored.\n`;
-              anyApiError = true;
-            }
-            for (const file of files.sort()) {
-              const raw = JSON.parse(fs.readFileSync(path.join(dir, file), 'utf8'));
-              if (raw.error) {
-                body += `### ${file}\n\n:warning: PSI error: ${raw.error.message}\n\n`;
-                anyWarn = true;
-                anyApiError = true;
-                continue;
-              }
-              const url = raw.id || raw.url || 'unknown';
-              const strategy = raw.strategy || (file.startsWith('mobile') ? 'mobile' : 'desktop');
-              body += `### ${strategyEmoji[strategy] || ''} \`${url}\`\n\n`;
-              body += '| Category | Score | Threshold | Status |\n|---|---|---|---|\n';
-              const cats = (raw.lighthouseResult && raw.lighthouseResult.categories) || {};
-              for (const k of Object.keys(thresholds)) {
-                const c = cats[k];
-                if (!c) continue;
-                const s = Math.round((c.score || 0) * 100);
-                const ok = s >= thresholds[k];
-                if (!ok) { anyWarn = true; anyLowScore = true; }
-                body += `| ${c.title} | **${s}** | \u2265 ${thresholds[k]} | ${ok ? '\u2705' : '\u26a0\ufe0f'} |\n`;
-              }
-              body += '\n';
-            }
-            // ponytail: classify the outcome. API errors are soft (infra flake).
-            // Low scores are HARD — block merge. (was: conflated, both soft.)
-            let verdict;
-            if (anyLowScore) {
-              verdict = '> :no_entry: Real Lighthouse score regression detected — **merge BLOCKED**. Re-run after fixing the perf/accessibility/best-practices/SEO regression.';
-            } else if (anyApiError) {
-              verdict = '> :warning: PSI API errors only (rate-limit or transient) — **soft warning, merge not blocked**. Real scores not available; re-run later.';
-            } else {
-              verdict = '> :white_check_mark: All scores meet thresholds.';
-            }
-            body += verdict + '\n';
-            await github.rest.issues.createComment({
-              owner: context.repo.owner, repo: context.repo.repo,
-              issue_number: context.issue.number, body,
-            });
-            // ponytail: expose outcome to the next step via outputs
-            core.setOutput('lowScore', anyLowScore ? 'true' : 'false');
-            core.setOutput('apiError', anyApiError ? 'true' : 'false');
+          node-version: 20
+          cache: npm
+
+      - run: npm ci
+
+      - run: npx next build
+
+      - name: Run Lighthouse CI
+        run: npx lhci autorun
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Block on real low score (not API errors)
-        if: always()
-        run: |
-          if [ "${{ steps.summary.outputs.lowScore }}" = "true" ]; then
-            echo "::error::Lighthouse score regression — blocking merge."
-            exit 1
-          elif [ "${{ steps.summary.outputs.apiError }}" = "true" ]; then
-            echo "::warning::PSI API errors only (rate-limit). Not blocking."
-          else
-            echo "PSI OK."
-          fi
-
+          LHCI_GITHUB_APP_TOKEN: ${{ secrets.LHCI_GITHUB_APP_TOKEN }}

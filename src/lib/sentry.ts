@@ -14,6 +14,7 @@ export function captureApiError(
   error: unknown,
   context?: ApiContext,
 ): void {
+  console.error(`[api] ${route}`, error, context ?? "");
   if (!process.env.NEXT_PUBLIC_SENTRY_DSN) return;
   Sentry.withScope((scope) => {
     scope.setTag(ROUTE_TAG, route);

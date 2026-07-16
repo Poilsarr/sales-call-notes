@@ -14,6 +14,7 @@
     "db:deploy": "prisma migrate deploy",
     "vercel-build": "prisma migrate deploy && next build",
     "perf:audit": "bash scripts/bundle-audit.sh",
+    "perf:lighthouse": "lhci autorun",
     "bundle:proof": "./scripts/refresh-bundle-proof.sh",
     "doctor": "npx react-doctor@latest"
   },

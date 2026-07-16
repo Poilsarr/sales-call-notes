@@ -5,6 +5,7 @@ import { Analytics } from "@vercel/analytics/react";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 import SiteFooter from "@/components/site-footer";
 import { productJsonLd } from "@/lib/seo";
+import { CommandMenu } from "@/components/ui/command-menu";
 import "./globals.css";
 
 const geistSans = localFont({
@@ -20,6 +21,7 @@ const geistMono = localFont({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL("https://usegauge.com"),
   title: {
     default: "Gauge — AI Sales Call Notes for SDRs",
     template: "%s · Gauge",
@@ -101,6 +103,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       </head>
       <body className={`${geistSans.variable} ${geistMono.variable} font-sans antialiased bg-white text-gray-900`}>
         <div className="noise-overlay" />
+        <CommandMenu />
         <ClerkProvider signInUrl="/sign-in" signUpUrl="/sign-up" afterSignUpUrl="/app" afterSignInUrl="/app">
           {children}
           <SiteFooter />
