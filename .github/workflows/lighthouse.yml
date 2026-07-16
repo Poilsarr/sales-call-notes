@@ -2,8 +2,6 @@ name: Lighthouse CI
 on:
   pull_request:
     branches: [main]
-  push:
-    branches: [main]
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -24,6 +22,9 @@ jobs:
       - run: npm ci
 
       - run: npx next build
+
+      - name: Install Lighthouse CI
+        run: npm install --save-dev @lhci/cli
 
       - name: Run Lighthouse CI
         run: npx lhci autorun
