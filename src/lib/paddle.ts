@@ -10,7 +10,7 @@ export function getPaddleClient(): PaddleSDK {
       throw new Error("PADDLE_API_KEY is not set");
     }
     paddleClient = new PaddleSDK(apiKey, {
-      environment: process.env.NODE_ENV === "production" ? Environment.production : Environment.sandbox,
+      environment: process.env.PADDLE_ENV === "production" ? Environment.production : Environment.sandbox,
     });
   }
   return paddleClient;

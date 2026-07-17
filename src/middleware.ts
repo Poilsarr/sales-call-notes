@@ -7,6 +7,7 @@ import * as Sentry from "@sentry/nextjs";
 const isPublicApi = createRouteMatcher([
   "/api/webhooks/(.*)",
   "/api/paddle/webhook",
+  "/api/cron/(.*)",
   "/api/health",
   "/api/v1/competitive-intelligence",
   "/api/v1/calls",
