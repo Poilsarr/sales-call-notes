@@ -42,6 +42,7 @@ export interface PlanConfig {
   priceLabel: string;
   period: "month" | "year" | "once";
   paddlePriceId?: string;
+  paddlePriceIdAnnual?: string;
   features: Partial<Record<FeatureId, boolean | number>>;
   uploadLimit: number | "unlimited";
   minuteLimit: number | "unlimited";
@@ -90,7 +91,8 @@ export const PLANS: Record<PlanTier, PlanConfig> = {
     price: 900, // $9 in cents
     priceLabel: "$9",
     period: "month",
-    paddlePriceId: "pri_pro_monthly",
+    paddlePriceId: process.env.PADDLE_PRO_PRICE_ID || "pri_pro_monthly",
+    paddlePriceIdAnnual: process.env.PADDLE_PRO_PRICE_ID_ANNUAL || "pri_pro_annual",
     uploadLimit: "unlimited",
     minuteLimit: 1200,
     callDurationLimit: 90,
@@ -128,7 +130,8 @@ export const PLANS: Record<PlanTier, PlanConfig> = {
     price: 2900,
     priceLabel: "$29",
     period: "month",
-    paddlePriceId: "pri_business_monthly",
+    paddlePriceId: process.env.PADDLE_BUSINESS_PRICE_ID || "pri_business_monthly",
+    paddlePriceIdAnnual: process.env.PADDLE_BUSINESS_PRICE_ID_ANNUAL || "pri_business_annual",
     uploadLimit: "unlimited",
     minuteLimit: 6000,
     callDurationLimit: 240,

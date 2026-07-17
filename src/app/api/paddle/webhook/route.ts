@@ -34,7 +34,7 @@ export async function POST(req: NextRequest) {
         let plan: string = "FREE";
         const { PLANS } = await import("@/lib/plans");
         for (const [tier, config] of Object.entries(PLANS)) {
-          if (config.paddlePriceId === priceId) {
+          if (config.paddlePriceId === priceId || config.paddlePriceIdAnnual === priceId) {
             plan = tier.toUpperCase();
             break;
           }

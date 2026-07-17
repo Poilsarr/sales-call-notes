@@ -11,11 +11,16 @@ export async function POST(req: NextRequest) {
     const { userId: clerkId } = await auth();
     if (!clerkId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-    const { plan } = await req.json();
+    const { plan, cycle } = await req.json();
     const planConfig = PLANS[plan as PlanTier];
     if (!planConfig?.paddlePriceId) {
       return NextResponse.json({ error: "Invalid plan or free tier" }, { status: 400 });
     }
+
+    const priceId =
+      cycle === "annual" && planConfig.paddlePriceIdAnnual
+        ? planConfig.paddlePriceIdAnnual
+        : planConfig.paddlePriceId;
 
     const user = await getUserByClerkId(clerkId);
     const paddle = getPaddleClient();
@@ -25,7 +30,7 @@ export async function POST(req: NextRequest) {
     // ponytail: create draft transaction with hosted checkout.
     // Paddle auto-creates subscription when checkout completes.
     const transaction = await paddle.transactions.create({
-      items: [{ priceId: planConfig.paddlePriceId, quantity: 1 }],
+      items: [{ priceId, quantity: 1 }],
       ...(user.paddleCustomerId ? { customerId: user.paddleCustomerId } : {}),
       checkout: { url: `${appUrl}/billing` },
       customData: { clerkUserId: clerkId, userId: user.id },
@@ -33,7 +38,8 @@ export async function POST(req: NextRequest) {
 
     await logAuditAction(user.id, "CHECKOUT_CREATED", user.id, "User", {
       plan,
-      priceId: planConfig.paddlePriceId,
+      cycle: cycle === "annual" ? "annual" : "monthly",
+      priceId,
       transactionId: transaction.id,
     });
 
