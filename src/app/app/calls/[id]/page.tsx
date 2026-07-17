@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from 'react';
 import { motion } from 'framer-motion';
-import { MessageSquarePlus, Share2, UserRoundCheck } from 'lucide-react';
+import { Download, MessageSquarePlus, Share2, UserRoundCheck } from 'lucide-react';
 
 import { TranscriptViewer } from '@/components/transcript-viewer';
 import { AnalysisPanel } from '@/components/analysis-panel';
@@ -26,6 +26,7 @@ interface CallData {
   sharedWithTeam: boolean;
   assignee: TeamMember | null;
   owner: TeamMember;
+  audioUrl?: string | null;
   comments: CollaborationComment[];
   canManageCollaboration: boolean;
   analytics?: {
@@ -67,6 +68,7 @@ export default function CallDetailPage({ params }: { params: { id: string } }) {
           sharedWithTeam: call.sharedWithTeam || false,
           assignee: call.assignee || null,
           owner: call.user,
+          audioUrl: call.audioUrl || null,
           comments: call.comments || [],
           canManageCollaboration: call.canManageCollaboration || false,
           analytics: call.analytics || null,
@@ -177,7 +179,24 @@ export default function CallDetailPage({ params }: { params: { id: string } }) {
     >
       <div className="doppel-outer-dark">
         <div className="doppel-inner-dark p-6 lg:h-full overflow-hidden flex flex-col">
-          <TranscriptViewer segments={segments} />
+          <div className="flex items-center justify-between gap-3 mb-4">
+            <h2 className="text-lg font-medium text-white">Transcript</h2>
+            {data.audioUrl && (
+              <a
+                href={data.audioUrl}
+                download
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-2 rounded-full bg-zinc-800 px-3 py-1.5 text-sm text-zinc-200 hover:bg-zinc-700 transition-colors"
+              >
+                <Download className="w-4 h-4" />
+                Download audio
+              </a>
+            )}
+          </div>
+          <div className="flex-1 overflow-hidden">
+            <TranscriptViewer segments={segments} />
+          </div>
         </div>
       </div>
 
