@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from 'react';
 import { motion } from 'framer-motion';
-import { Download, MessageSquarePlus, Share2, UserRoundCheck } from 'lucide-react';
+import { Download, MessageSquarePlus, Share2, UserRoundCheck, Link as LinkIcon } from 'lucide-react';
 
 import { TranscriptViewer } from '@/components/transcript-viewer';
 import { AnalysisPanel } from '@/components/analysis-panel';
@@ -24,6 +24,7 @@ interface CallData {
   decisions: any[];
   nextSteps: any[];
   sharedWithTeam: boolean;
+  isPublic: boolean;
   assignee: TeamMember | null;
   owner: TeamMember;
   audioUrl?: string | null;
@@ -66,6 +67,7 @@ export default function CallDetailPage({ params }: { params: { id: string } }) {
           decisions: call.decisions || [],
           nextSteps: call.nextSteps || [],
           sharedWithTeam: call.sharedWithTeam || false,
+          isPublic: call.isPublic || false,
           assignee: call.assignee || null,
           owner: call.user,
           audioUrl: call.audioUrl || null,
@@ -248,6 +250,37 @@ export default function CallDetailPage({ params }: { params: { id: string } }) {
                     className="h-4 w-4 accent-emerald-500"
                   />
                 </label>
+
+                <label className="flex items-center justify-between gap-4 rounded-lg bg-zinc-900/70 px-4 py-3 text-sm">
+                  <span className="flex items-center gap-2 text-zinc-300">
+                    <LinkIcon className="w-3.5 h-3.5" />
+                    Public share link
+                  </span>
+                  <input
+                    type="checkbox"
+                    checked={data.isPublic}
+                    disabled={savingSettings}
+                    onChange={async (e) => {
+                      const res = await fetch(`/api/calls/${params.id}/share`, { method: 'POST' });
+                      const updated = await res.json();
+                      if (res.ok) {
+                        setData((c) => c ? { ...c, isPublic: updated.isPublic } : c);
+                      }
+                    }}
+                    className="h-4 w-4 accent-emerald-500"
+                  />
+                </label>
+
+                {data.isPublic && (
+                  <button
+                    onClick={() => {
+                      navigator.clipboard.writeText(`${window.location.origin}/share/${params.id}`);
+                    }}
+                    className="w-full rounded-lg bg-zinc-800 px-4 py-2 text-sm text-zinc-200 hover:bg-zinc-700 transition-colors"
+                  >
+                    Copy share link
+                  </button>
+                )}
 
                 <div className="space-y-2">
                   <label className="text-sm text-zinc-400 flex items-center gap-2">
