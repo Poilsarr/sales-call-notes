@@ -62,6 +62,46 @@ export class KnowledgeGraphService {
       .slice(0, limit);
   }
 
+  // RAG retrieval: embed the user's natural-language query and return the
+  // top-N most similar calls owned by that user. This replaces sending the
+  // entire call history to the LLM — which breaks past ~50 calls.
+  async searchByQuery(
+    query: string,
+    userId: string,
+    limit = 5
+  ): Promise<{ id: string; filename: string; summary: string | null; transcript: string | null; createdAt: Date; similarity: number }[]> {
+    const queryEmbedding = await this.generateEmbedding(query.slice(0, 16000));
+
+    const candidates = await prisma.call.findMany({
+      where: {
+        userId,
+        NOT: { embedding: { equals: [] } },
+      },
+      select: {
+        id: true,
+        filename: true,
+        summary: true,
+        transcript: true,
+        createdAt: true,
+        embedding: true,
+      },
+    });
+
+    if (candidates.length === 0) return [];
+
+    return candidates
+      .map(call => ({
+        id: call.id,
+        filename: call.filename,
+        summary: call.summary,
+        transcript: call.transcript,
+        createdAt: call.createdAt,
+        similarity: this.cosineSimilarity(queryEmbedding, call.embedding!),
+      }))
+      .sort((a, b) => b.similarity - a.similarity)
+      .slice(0, limit);
+  }
+
   private cosineSimilarity(vecA: number[], vecB: number[]): number {
     if (vecA.length !== vecB.length) return 0;
     let dotProduct = 0;

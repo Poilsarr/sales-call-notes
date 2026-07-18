@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
 import { auth } from "@clerk/nextjs/server";
 import { createOpenAIClient } from "@/lib/openai-client";
+import { KnowledgeGraphService } from "@/services/ai/knowledge-graph";
 
 export async function POST(req: NextRequest) {
   try {
@@ -15,30 +16,35 @@ export async function POST(req: NextRequest) {
     }
 
     const userId = sessionUserId;
+    const kg = new KnowledgeGraphService();
 
-    const calls = await prisma.call.findMany({
-      where: { userId },
-      include: { actionItems: true, decisions: true, nextSteps: true, analytics: true },
-      orderBy: { createdAt: "desc" },
-    });
+    // ponytail: RAG retrieval — embed the query, fetch top-5 similar calls
+    // for THIS user instead of sending the entire history to the LLM.
+    // Falls back to the 5 most recent calls if embeddings aren't indexed
+    // yet (e.g. calls uploaded before indexing existed) or embedding fails.
+    let retrieved: { id: string; filename: string; summary: string | null; transcript: string | null }[] = [];
+    try {
+      retrieved = await kg.searchByQuery(query, userId, 5);
+    } catch (err) {
+      console.error("RAG retrieval failed, falling back to recent calls:", err);
+    }
+
+    if (retrieved.length === 0) {
+      const recent = await prisma.call.findMany({
+        where: { userId },
+        select: { id: true, filename: true, summary: true, transcript: true },
+        orderBy: { createdAt: "desc" },
+        take: 5,
+      });
+      retrieved = recent;
+    }
 
     const openai = createOpenAIClient();
 
-    const callContext = calls.map(c => ({
+    const callContext = retrieved.map(c => ({
       filename: c.filename,
-      date: c.createdAt.toISOString().split("T")[0],
       summary: c.summary,
-      transcript: c.transcript?.slice(0, 2000),
-      healthScore: c.healthScore,
-      sentiment: c.sentiment,
-      actionItems: c.actionItems.map(a => `${a.task} (${a.owner})`),
-      decisions: c.decisions.map(d => d.content),
-      nextSteps: c.nextSteps.map(n => n.step),
-      analytics: c.analytics ? {
-        budgetMentioned: c.analytics.budgetMentioned,
-        timelineMentioned: c.analytics.timelineMentioned,
-        decisionMakerPresent: c.analytics.decisionMakerPresent,
-      } : null,
+      transcript: c.transcript?.slice(0, 3000),
     }));
 
     const prompt = `
@@ -47,7 +53,7 @@ Be specific. Reference exact call names and dates. If the answer isn't in the da
 
 User question: "${query}"
 
-Meeting history (${calls.length} calls):
+Meeting history (${retrieved.length} calls retrieved by relevance):
 ${JSON.stringify(callContext, null, 2)}
 
 Respond concisely in plain text.`;
@@ -63,21 +69,15 @@ Respond concisely in plain text.`;
 
     const answer = completion.choices[0]?.message?.content || "I couldn't find an answer based on the available meeting data.";
 
-    const relevantCalls = calls.filter(c => {
-      const searchText = [c.summary, c.transcript, ...c.actionItems.map(a => a.task), ...c.decisions.map(d => d.content)].join(" ").toLowerCase();
-      const queryTerms = query.toLowerCase().split(" ").filter((t: string) => t.length > 3);
-      return queryTerms.some((t: string) => searchText.includes(t));
-    }).slice(0, 3);
-
     return NextResponse.json({
       answer,
-      relevantCalls: relevantCalls.map(c => ({
+      relevantCalls: retrieved.map(c => ({
         id: c.id,
         filename: c.filename,
-        date: c.createdAt,
+        date: (c as any).createdAt ? new Date((c as any).createdAt).toISOString() : c.id,
         summary: c.summary,
       })),
-      totalCallsSearched: calls.length,
+      totalCallsSearched: retrieved.length,
     });
   } catch (error) {
     return NextResponse.json({ error: "Chat query failed" }, { status: 500 });
