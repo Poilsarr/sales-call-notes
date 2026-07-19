@@ -127,6 +127,7 @@ export default function RecordPage() {
     formData.append('file', blob, 'recording.webm');
     formData.append('removeFillers', String(removeFillers));
     formData.append('language', language);
+    formData.append('template', 'b2b-sales');
     
     toast.promise(
       fetch('/api/analyze', { method: 'POST', body: formData }).then(async res => {

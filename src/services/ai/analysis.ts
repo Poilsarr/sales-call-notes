@@ -27,7 +27,10 @@ export class AnalysisService {
   }
 
   async analyze(transcript: string, segments?: TranscriptionSegment[], templateId?: string): Promise<CallAnalysis> {
-    const prompt = await this.loadPrompt(templateId || 'enrollment-calls');
+    // ponytail: default to b2b-sales — this product is "sales-call-notes",
+    // not enrollment/insurance. enrollment-calls asked for utility/insurance
+    // entities (accountNumber, utilityCompany) that don't fit sales calls.
+    const prompt = await this.loadPrompt(templateId || 'b2b-sales');
 
     try {
       // ponytail: gpt-4o-mini for cost (~$0.001/call vs $0.01 gpt-4o).
@@ -89,7 +92,7 @@ export class AnalysisService {
     if (isValidTemplate(domain)) {
       return loadPromptTemplate(domain);
     }
-    return loadPromptTemplate('enrollment-calls');
+    return loadPromptTemplate('b2b-sales');
   }
 
   private analyzeSentiment(segments: TranscriptionSegment[]): { timestamp: number; sentiment: string }[] {
@@ -132,7 +135,7 @@ export class AnalysisService {
   private normalizeAnalysis(raw: Partial<CallAnalysis>): CallAnalysis {
     return {
       executiveSummary: raw.executiveSummary || 'No summary available',
-      callType: raw.callType || 'enrollment',
+      callType: raw.callType || 'b2b-sales',
       participants: Array.isArray(raw.participants) ? raw.participants : [],
       keyEntities: raw.keyEntities || {},
       competitorsMentioned: Array.isArray(raw.competitorsMentioned) ? raw.competitorsMentioned : [],

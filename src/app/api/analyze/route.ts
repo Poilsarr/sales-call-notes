@@ -48,6 +48,7 @@ export async function POST(req: Request) {
     const file = formData.get('file') as File;
     const requestedLanguage = normalizeLanguage(formData.get('language'));
     const removeFillers = parseRemoveFillers(formData.get('removeFillers'));
+    const requestedTemplate = formData.get('template') as string | null;
 
     if (!file) return NextResponse.json({ error: 'No file provided' }, { status: 400 });
 
@@ -217,7 +218,11 @@ export async function POST(req: Request) {
     let analysisResult: Awaited<ReturnType<AnalysisService['analyze']>>;
     try {
       const analysisService = new AnalysisService();
-      analysisResult = await analysisService.analyze(correctedText);
+      analysisResult = await analysisService.analyze(
+        correctedText,
+        undefined,
+        requestedTemplate || undefined,
+      );
       console.log('Analysis succeeded');
     } catch (e: any) {
       const msg = e?.message || '';
