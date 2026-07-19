@@ -4,7 +4,7 @@ import { useState, useEffect, useRef } from 'react';
 import { useUser } from '@clerk/nextjs';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
-import { Search, Filter, Phone, Download, Upload, Mic, Chrome } from 'lucide-react';
+import { Search, Filter, Phone, Download, Upload, Mic, Chrome, ArchiveRestore } from 'lucide-react';
 import UpgradePrompt from '@/components/upgrade-prompt';
 import { toast } from 'sonner';
 
@@ -21,10 +21,21 @@ interface CallEntry {
   assigneeName?: string | null;
 }
 
+interface ArchivedEntry {
+  id: string;
+  filename: string;
+  createdAt: string;
+}
+
+type Tab = "active" | "archived";
+
 export default function CallsPage() {
   const { user } = useUser();
   const [calls, setCalls] = useState<CallEntry[]>([]);
+  const [archived, setArchived] = useState<ArchivedEntry[]>([]);
+  const [tab, setTab] = useState<Tab>("active");
   const [loading, setLoading] = useState(true);
+  const [restoringId, setRestoringId] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [retention, setRetention] = useState<{ plan: string; callLimit: number | string; visibleCount: number }>({
     plan: "free",
@@ -32,6 +43,48 @@ export default function CallsPage() {
     visibleCount: 0,
   });
   const searchRef = useRef<HTMLInputElement>(null);
+
+  const loadArchived = () => {
+    if (!user?.id) return;
+    fetch(`/api/calls/archived`, { cache: "no-store" })
+      .then(async (r) => (r.ok ? r.json() : { calls: [] }))
+      .then((d) => setArchived(Array.isArray(d.calls) ? d.calls : []))
+      .catch(() => setArchived([]));
+  };
+
+  const restoreCall = async (id: string) => {
+    setRestoringId(id);
+    try {
+      const res = await fetch(`/api/calls/${id}/restore`, { method: "POST" });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        if (res.status === 409) {
+          toast.error(data.error || "You're at your call limit. Upgrade for unlimited.");
+        } else {
+          toast.error(data.error || "Failed to restore call");
+        }
+        return;
+      }
+      toast.success("Call restored");
+      setArchived((prev) => prev.filter((c) => c.id !== id));
+      // refresh active list so the restored call reappears
+      const currentUserId = user?.id;
+      if (!currentUserId) return;
+      const url = `/api/history?userId=${currentUserId}`;
+      fetch(url, { cache: "no-store" })
+        .then(async (r) => (r.ok ? r.json() : null))
+        .then((d) => {
+          if (!d) return;
+          setCalls(Array.isArray(d) ? d : (d.calls ?? []));
+          if (d.plan) setRetention({ plan: d.plan, callLimit: d.callLimit, visibleCount: d.visibleCount ?? 0 });
+        })
+        .catch(() => {});
+    } catch {
+      toast.error("Failed to restore call");
+    } finally {
+      setRestoringId(null);
+    }
+  };
 
   useEffect(() => {
     if (!user?.id) return;
@@ -69,6 +122,10 @@ export default function CallsPage() {
       .finally(() => setLoading(false));
     return () => controller.abort();
   }, [user?.id, searchQuery]);
+
+  useEffect(() => {
+    if (tab === "archived") loadArchived();
+  }, [tab, user?.id]);
 
   const isLimited = retention.callLimit !== "unlimited";
   const atLimit = isLimited && retention.visibleCount >= (retention.callLimit as number);
@@ -134,8 +191,66 @@ export default function CallsPage() {
           <Filter className="w-5 h-5 text-zinc-400" />
         </button>
       </div>
-      
-      <UpgradePrompt feature="crm_sync" featureName="CRM Sync" minimal />
+
+      <div className="flex items-center gap-1 border-b border-zinc-800">
+        <button
+          onClick={() => setTab("active")}
+          className={`px-4 py-2 text-sm font-medium transition-colors ${tab === "active" ? "text-white border-b-2 border-emerald-500" : "text-zinc-500 hover:text-zinc-300"}`}
+        >
+          Active
+        </button>
+        <button
+          onClick={() => setTab("archived")}
+          className={`px-4 py-2 text-sm font-medium transition-colors flex items-center gap-1.5 ${tab === "archived" ? "text-white border-b-2 border-emerald-500" : "text-zinc-500 hover:text-zinc-300"}`}
+        >
+          Archived
+          {archived.length > 0 && (
+            <span className="rounded-full bg-zinc-800 px-1.5 py-0.5 text-[11px] text-zinc-400">{archived.length}</span>
+          )}
+        </button>
+      </div>
+
+      {tab === "archived" ? (
+        <div className="space-y-3">
+          {restoringId === null && archived.length === 0 ? (
+            <div className="rounded-xl border border-dashed border-zinc-800 bg-zinc-900/30 p-8 text-center">
+              <p className="text-zinc-500">No archived calls.</p>
+              <p className="text-[12.5px] text-zinc-600 mt-1">
+                Calls beyond your plan limit are archived here instead of deleted.
+              </p>
+            </div>
+          ) : (
+            archived.map((call) => (
+              <div key={call.id} className="doppel-outer-dark">
+                <div className="doppel-inner-dark p-4 flex items-center justify-between">
+                  <div className="flex items-center gap-4">
+                    <div className="w-10 h-10 rounded-full bg-zinc-800 flex items-center justify-center">
+                      <Phone className="w-5 h-5 text-zinc-400" />
+                    </div>
+                    <div>
+                      <p className="text-white font-medium">{call.filename}</p>
+                      <p className="text-sm text-zinc-500">
+                        {new Date(call.createdAt).toLocaleDateString(undefined, { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}
+                        {" · archived"}
+                      </p>
+                    </div>
+                  </div>
+                  <button
+                    onClick={() => restoreCall(call.id)}
+                    disabled={restoringId === call.id}
+                    className="rounded-full bg-zinc-800 hover:bg-zinc-700 text-zinc-200 hover:text-white px-3 py-1.5 text-sm font-medium transition-colors flex items-center gap-1.5 disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    <ArchiveRestore className="w-4 h-4" />
+                    {restoringId === call.id ? "Restoring…" : "Restore"}
+                  </button>
+                </div>
+              </div>
+            ))
+          )}
+        </div>
+      ) : (
+        <>
+          <UpgradePrompt feature="crm_sync" featureName="CRM Sync" minimal />
 
       {isLimited && (
         <div className="flex items-center justify-between rounded-xl border border-zinc-800 bg-zinc-900/40 px-4 py-3">
@@ -287,7 +402,9 @@ export default function CallsPage() {
             </motion.div>
           ))
         )}
-      </div>
+        </div>
+      </>
+      )}
     </div>
   );
 }

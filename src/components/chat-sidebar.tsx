@@ -47,9 +47,13 @@ export function ChatSidebar() {
         body: JSON.stringify({ query: userMsg, userId: user.id }),
       });
       const data = await res.json();
+      // ponytail: show server error message instead of generic fallback
+      const content = !res.ok && data.error
+        ? `Error: ${data.error}`
+        : data.answer || 'No response available.';
       setMessages(prev => [...prev, {
         role: 'assistant',
-        content: data.answer || 'No response available.',
+        content,
         relevantCalls: data.relevantCalls,
         _key: ++messageKeyRef.current,
       } as any]);

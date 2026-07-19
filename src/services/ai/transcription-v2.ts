@@ -7,17 +7,16 @@ import { getSecret } from '@/lib/secrets';
 export class TranscriptionServiceV2 {
   private openai: OpenAI;
   private groqOpenai: OpenAI;
+  private hasKeys: boolean;
 
   constructor() {
-    if (!getSecret("OPENAI_API_KEY")) {
-      throw new Error('OPENAI_API_KEY is required for transcription');
-    }
-    if (!getSecret("GROQ_API_KEY")) {
-      throw new Error('GROQ_API_KEY is required for transcription fallback');
+    this.hasKeys = Boolean(getSecret("OPENAI_API_KEY") || getSecret("GROQ_API_KEY"));
+    if (!this.hasKeys) {
+      console.warn("TranscriptionServiceV2: no OPENAI_API_KEY or GROQ_API_KEY set. Transcription will be unavailable.");
     }
     this.openai = createOpenAIClient();
     this.groqOpenai = createOpenAIClient({
-      apiKey: getSecret("GROQ_API_KEY"),
+      apiKey: getSecret("GROQ_API_KEY") || getSecret("OPENAI_API_KEY") || "",
       baseURL: 'https://api.groq.com/openai/v1',
     });
   }
@@ -32,6 +31,10 @@ export class TranscriptionServiceV2 {
     options: { removeFillers?: boolean } = {},
     attempted: string[] = [],
   ): Promise<TranscriptionResult> {
+    // ponytail: fail fast with actionable message instead of generic 500
+    if (!this.hasKeys) {
+      throw new Error("Transcription unavailable: set OPENAI_API_KEY or GROQ_API_KEY in Vercel env vars.");
+    }
     const client = model === 'whisper-1' ? this.openai : this.groqOpenai;
 
     try {
