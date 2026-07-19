@@ -9,11 +9,31 @@ interface TranscriptLine {
   isFinal: boolean;
 }
 
+// ponytail: stable color per speaker slot (A=0, B=1, …) for visual separation
+const SPEAKER_COLORS = [
+  "text-sky-400",
+  "text-emerald-400",
+  "text-amber-400",
+  "text-fuchsia-400",
+  "text-rose-400",
+  "text-violet-400",
+];
+
+const speakerColor = (label: string): string => {
+  const m = label.match(/Speaker ([A-Z])/);
+  const idx = m ? m[1].charCodeAt(0) - 65 : 0;
+  return SPEAKER_COLORS[idx % SPEAKER_COLORS.length];
+};
+
 export default function LivePage() {
   const { isLoaded } = useAuth();
   const [listening, setListening] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [lines, setLines] = useState<TranscriptLine[]>([]);
+  // ponytail: per-speaker display name overrides (keyed by "Speaker A" etc.)
+  const [speakerNames, setSpeakerNames] = useState<Record<string, string>>({});
+  const [editingSpeaker, setEditingSpeaker] = useState<string | null>(null);
+  const [editValue, setEditValue] = useState("");
 
   const wsRef = useRef<WebSocket | null>(null);
   const audioCtxRef = useRef<AudioContext | null>(null);
@@ -195,6 +215,23 @@ export default function LivePage() {
     );
   }
 
+  const displayName = (label: string): string =>
+    speakerNames[label] || label;
+
+  // ponytail: distinct speakers seen so far, in first-seen order
+  const speakersSeen = Array.from(
+    new Set(lines.map((l) => l.speaker)),
+  );
+
+  const commitRename = (label: string) => {
+    const trimmed = editValue.trim();
+    if (trimmed) {
+      setSpeakerNames((prev) => ({ ...prev, [label]: trimmed }));
+    }
+    setEditingSpeaker(null);
+    setEditValue("");
+  };
+
   return (
     <main className="min-h-screen bg-zinc-900 text-white p-6 md:p-12 max-w-4xl mx-auto">
       <h1 className="text-2xl font-semibold mb-6">Live Transcription</h1>
@@ -215,6 +252,48 @@ export default function LivePage() {
         <p className="mt-4 text-red-400 text-sm">{error}</p>
       )}
 
+      {speakersSeen.length > 0 && (
+        <div className="mt-6 flex flex-wrap gap-2">
+          {speakersSeen.map((label) => (
+            <div
+              key={label}
+              className="flex items-center gap-1.5 rounded-full border border-zinc-700 bg-zinc-800/60 px-3 py-1"
+            >
+              <span className={`w-2 h-2 rounded-full ${speakerColor(label).replace("text-", "bg-")}`} />
+              {editingSpeaker === label ? (
+                <input
+                  autoFocus
+                  value={editValue}
+                  onChange={(e) => setEditValue(e.target.value)}
+                  onBlur={() => commitRename(label)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") commitRename(label);
+                    if (e.key === "Escape") {
+                      setEditingSpeaker(null);
+                      setEditValue("");
+                    }
+                  }}
+                  className="bg-transparent text-sm text-white outline-none w-28"
+                  placeholder={label}
+                />
+              ) : (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setEditingSpeaker(label);
+                    setEditValue(displayName(label) === label ? "" : displayName(label));
+                  }}
+                  className={`text-sm ${speakerColor(label)} hover:underline`}
+                  title="Click to rename speaker"
+                >
+                  {displayName(label)}
+                </button>
+              )}
+            </div>
+          ))}
+        </div>
+      )}
+
       <div className="mt-8 border border-zinc-700 rounded-md p-4 min-h-[40vh] bg-zinc-800/50 overflow-y-auto">
         {lines.length === 0 ? (
           <p className="text-zinc-500 text-sm">
@@ -228,7 +307,9 @@ export default function LivePage() {
                 line.isFinal ? "text-white" : "text-zinc-400 italic"
               }`}
             >
-              <span className="text-zinc-500 mr-2">{line.speaker}</span>
+              <span className={`mr-2 font-medium ${speakerColor(line.speaker)}`}>
+                {displayName(line.speaker)}:
+              </span>
               {line.text}
             </p>
           ))
