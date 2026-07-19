@@ -95,6 +95,7 @@ export default function LiveTranscriptionPage() {
   const durationTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const scrollRef = useRef<HTMLDivElement | null>(null);
   const recognitionActiveRef = useRef(false);
+  const lastPublishRef = useRef(0);
 
   useEffect(() => {
     isRecordingRef.current = isRecording;
@@ -142,6 +143,13 @@ export default function LiveTranscriptionPage() {
   const publishTranscript = useCallback(async (text: string, isFinal: boolean) => {
     const trimmed = text.trim();
     if (!trimmed) return;
+    // ponytail: throttle interim results to 1/sec so we don't blow past
+    // any rate limits during rapid speech recognition events.
+    if (!isFinal) {
+      const now = Date.now();
+      if (now - lastPublishRef.current < 1000) return;
+      lastPublishRef.current = now;
+    }
     const sessionId = sessionIdRef.current;
     try {
       const response = await fetch('/api/transcribe/live', {

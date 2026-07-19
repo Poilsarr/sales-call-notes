@@ -80,6 +80,7 @@ Respond concisely in plain text.`;
       totalCallsSearched: retrieved.length,
     });
   } catch (error) {
+    console.error("Chat query failed:", error);
     return NextResponse.json({ error: "Chat query failed" }, { status: 500 });
   }
 }

@@ -12,7 +12,7 @@ export async function GET(req: NextRequest) {
     if (!userId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
     const user = await getUserByClerkId(userId);
-    const plan: PlanTier = (user?.plan as PlanTier) || "free";
+    const plan: PlanTier = (user?.plan?.toLowerCase() as PlanTier) || "free";
 
     const startOfMonth = new Date();
     startOfMonth.setDate(1);

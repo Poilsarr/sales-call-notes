@@ -22,6 +22,7 @@ import path from 'path';
 import os from 'os';
 import { detectAudioType } from '@/lib/audio-types';
 import { captureApiError } from '@/lib/sentry';
+import { getSecret } from '@/lib/secrets';
 import { isQuotaError, quotaErrorResponse, captureQuotaEvent } from '@/lib/quota-guard';
 import { HubSpotService } from '@/services/crm/hubspot';
 import { SalesforceService } from '@/services/crm/salesforce';
@@ -82,6 +83,14 @@ export async function POST(req: Request) {
     console.log(`Processing file: ${fileName}, size: ${fileBuffer.length}`);
 
     // --- TRANSCRIPTION PIPELINE ---
+
+    // Guard: transcription requires at least one AI provider key.
+    if (!getSecret("OPENAI_API_KEY") && !getSecret("GROQ_API_KEY")) {
+      return NextResponse.json(
+        { error: "Transcription requires an AI API key. Set OPENAI_API_KEY or GROQ_API_KEY in Vercel env vars." },
+        { status: 500 },
+      );
+    }
 
     // 1. Preprocess audio (optional — skip if ffmpeg unavailable on Vercel)
     let buffer = Buffer.from(fileBuffer);
@@ -212,9 +221,9 @@ export async function POST(req: Request) {
       console.log('Analysis succeeded');
     } catch (e: any) {
       const msg = e?.message || '';
-      console.log('Analysis failed:', msg.slice(0, 150));
+      console.error('Analysis failed:', msg.slice(0, 300));
       analysisResult = {
-        executiveSummary: correctedText.slice(0, 500),
+        executiveSummary: "Analysis unavailable — the AI provider returned an error. Raw transcript is shown below.",
         callType: 'enrollment',
         participants: [],
         keyEntities: {},

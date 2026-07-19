@@ -18,6 +18,15 @@ export async function rateLimitMiddleware(req: NextRequest) {
 
   const ip = req.ip ?? req.headers.get("x-forwarded-for") ?? req.headers.get("x-real-ip") ?? "anonymous";
 
+  // ponytail: /api/transcribe/live is the SSE publish sink for the live
+  // transcription feature. The browser fires a POST on every speech
+  // recognition event (interim + final), which would blow the 100/min
+  // 'api' bucket instantly. It's already Clerk-authenticated, so skip
+  // the generic rate limit here.
+  if (url.startsWith('/api/transcribe/live')) {
+    return null;
+  }
+
   let type = 'default';
   if (url.startsWith('/api/analyze')) {
     type = 'analyze';

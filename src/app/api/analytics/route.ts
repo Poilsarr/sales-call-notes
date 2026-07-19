@@ -178,7 +178,8 @@ export async function GET(req: Request) {
         .slice(0, 5),
       recentCalls,
     });
-  } catch {
+  } catch (error) {
+    console.error("Analytics error:", error);
     // Intentionally avoid leaking internals to client.
     return NextResponse.json({ error: 'Analytics failed' }, { status: 500 });
   }

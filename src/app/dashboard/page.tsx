@@ -163,7 +163,7 @@ export default function DashboardPage() {
         return payload;
       }),
       fetch("/api/billing", { cache: "no-store" })
-        .then((r) => r.json())
+        .then(async (r) => (r.ok ? r.json() : null))
         .catch(() => null),
     ])
       .then(([analyticsPayload, billingPayload]) => {
