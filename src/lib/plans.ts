@@ -1,24 +1,40 @@
 export type PlanTier = "free" | "pro" | "business" | "enterprise";
 
 /**
- * Reads a Paddle price ID from env. In production we MUST have real price IDs —
- * falling back to a placeholder string would send a non-existent price to Paddle
- * and fail the checkout with a cryptic error. In dev we allow a placeholder so
- * the app boots without Paddle configured, but log a warning.
+ * Reads a Paddle price ID from env. We must NOT throw at module load time —
+ * Next.js evaluates route modules during `next build` ("Collecting page data"),
+ * so a throw here would crash the build in environments where Paddle env vars
+ * aren't present (e.g. CI). Instead we return a placeholder and warn. A runtime
+ * check via `assertPriceIdsConfigured()` guards actual checkout/webhook use.
  */
 function requirePriceId(envKey: string, placeholder: string): string {
   const value = process.env[envKey];
   if (value && value.trim().length > 0) return value.trim();
-  if (process.env.NODE_ENV === "production") {
-    throw new Error(
-      `[plans.ts] Missing required env var ${envKey}. Set it in Vercel or Paddle checkout will fail.`
-    );
-  }
   console.warn(
     `[plans.ts] ${envKey} not set — using placeholder "${placeholder}". ` +
-    `Checkout will not work until a real Paddle price ID is configured.`
+    `Checkout/webhooks will not work until a real Paddle price ID is configured.`
   );
   return placeholder;
+}
+
+const PADDLE_PRICE_ENV_KEYS = [
+  "PADDLE_PRO_PRICE_ID",
+  "PADDLE_PRO_PRICE_ID_ANNUAL",
+  "PADDLE_BUSINESS_PRICE_ID",
+  "PADDLE_BUSINESS_PRICE_ID_ANNUAL",
+] as const;
+
+/** Throws a clean error if any Paddle price ID is missing. Call at request time. */
+export function assertPriceIdsConfigured(): void {
+  const missing = PADDLE_PRICE_ENV_KEYS.filter(
+    (k) => !process.env[k] || process.env[k]!.trim().length === 0
+  );
+  if (missing.length > 0) {
+    throw new Error(
+      `[plans.ts] Missing required Paddle env vars: ${missing.join(", ")}. ` +
+      `Configure them in Vercel or Paddle checkout/webhooks will fail.`
+    );
+  }
 }
 
 export type FeatureId =

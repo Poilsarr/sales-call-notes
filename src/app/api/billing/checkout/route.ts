@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@clerk/nextjs/server";
 import { getUserByClerkId } from "@/lib/get-user";
 import { getPaddleClient } from "@/lib/paddle";
-import { PLANS, PlanTier } from "@/lib/plans";
+import { PLANS, PlanTier, assertPriceIdsConfigured } from "@/lib/plans";
 import { logAuditAction } from "@/lib/audit-logger";
 import { captureApiError } from "@/lib/sentry";
 
@@ -15,6 +15,16 @@ export async function POST(req: NextRequest) {
     const planConfig = PLANS[plan as PlanTier];
     if (!planConfig?.paddlePriceId) {
       return NextResponse.json({ error: "Invalid plan or free tier" }, { status: 400 });
+    }
+
+    try {
+      assertPriceIdsConfigured();
+    } catch (e: any) {
+      console.error(e.message);
+      return NextResponse.json(
+        { error: "Billing is not configured. Contact support." },
+        { status: 503 }
+      );
     }
 
     const normalizedCycle = String(cycle || "").toLowerCase();
