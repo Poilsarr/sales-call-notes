@@ -15,6 +15,7 @@ import {
   Settings,
   LogOut,
 } from 'lucide-react';
+import GaugeLogo from '@/components/gauge-logo';
 
 const navItems = [
   { href: '/app', label: 'Dashboard', icon: LayoutDashboard },
@@ -49,19 +50,15 @@ export function AppSidebar() {
     <aside className="w-64 bg-linear-surface border-r border-linear-secondary flex flex-col">
       <div className="p-6">
         <Link href="/" className="flex items-center gap-2.5 min-w-0">
-          <div className="w-8 h-8 bg-linear-indigo rounded-full flex items-center justify-center shrink-0">
-            {user?.imageUrl ? (
-              <img
-                src={user.imageUrl}
-                alt={displayName ?? "Gauge"}
-                className="w-8 h-8 rounded-full object-cover"
-              />
-            ) : (
-              <span className="text-white font-bold text-[9px] tracking-tight">
-                {isLoaded && user ? (user.firstName?.charAt(0)?.toUpperCase() ?? user.emailAddresses?.[0]?.emailAddress?.charAt(0)?.toUpperCase()) : "G"}
-              </span>
-            )}
-          </div>
+          {user?.imageUrl ? (
+            <img
+              src={user.imageUrl}
+              alt={displayName ?? "Gauge"}
+              className="w-8 h-8 rounded-full object-cover shrink-0"
+            />
+          ) : (
+            <GaugeLogo className="text-white w-8 h-8 shrink-0" size={32} />
+          )}
           <span className="text-[15px] font-semibold tracking-tight text-white truncate">
             {displayName ?? "Gauge"}
           </span>

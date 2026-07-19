@@ -6,6 +6,7 @@ import { useUser, UserButton } from "@clerk/nextjs";
 import { Show } from "@/components/show";
 import { useState, useEffect } from "react";
 import { ArrowRight, Menu, X } from "lucide-react";
+import GaugeLogo from "@/components/gauge-logo";
 
 const links = [
   { href: "/features", label: "Features" },
@@ -28,8 +29,8 @@ export default function Nav() {
         <div className="bg-white rounded-full p-[5px] flex items-center justify-between w-full max-w-[1440px] shadow-sm">
           {/* Left */}
           <div className="flex items-center gap-6">
-            <Link href="/" className="w-9 h-9 sm:w-10 sm:h-10 bg-gray-900 rounded-full flex items-center justify-center flex-shrink-0">
-              <span className="text-white font-bold tracking-tight" style={{ fontSize: "10px" }}>G</span>
+            <Link href="/" className="flex-shrink-0">
+              <GaugeLogo className="text-white w-9 h-9 sm:w-10 sm:h-10" size={40} />
             </Link>
             <div className="hidden md:flex items-center gap-6">
               {links.map((link) => (

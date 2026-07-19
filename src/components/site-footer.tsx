@@ -1,4 +1,5 @@
 import Link from "next/link";
+import GaugeLogo from "@/components/gauge-logo";
 
 /**
  * Site footer — 4-column link directory + status badge + legal row.
@@ -55,7 +56,7 @@ export default function SiteFooter() {
           {/* Brand column — spans 1, sits wider */}
           <div className="col-span-2 md:col-span-1">
             <Link href="/" className="flex items-center gap-2 mb-4">
-              <div className="w-6 h-6 rounded-md bg-[#F26522] rotate-45" />
+              <GaugeLogo className="text-white/60 w-6 h-6" size={24} />
               <span className="text-white text-[14px] font-semibold tracking-tight">
                 Gauge
               </span>

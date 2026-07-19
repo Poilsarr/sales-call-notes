@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { Crosshair, ArrowRight } from "lucide-react";
 import DemoCarousel from "@/components/demo-carousel";
+import GaugeLogo from "@/components/gauge-logo";
 
 /**
  * /demo — server component shell.
@@ -16,7 +17,7 @@ export default function DemoPage() {
       <header className="border-b border-white/5 sticky top-0 bg-[#0a0a0b]/90 backdrop-blur z-10">
         <div className="max-w-[1440px] mx-auto px-5 sm:px-8 lg:px-12 h-14 flex items-center justify-between">
           <Link href="/" className="flex items-center gap-2.5">
-            <div className="w-7 h-7 rounded-lg bg-[#F26522] rotate-45" />
+            <GaugeLogo className="text-white w-7 h-7" size={28} />
             <span className="text-[14px] font-semibold tracking-tight">Gauge</span>
           </Link>
           <div className="flex items-center gap-4">

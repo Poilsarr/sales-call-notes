@@ -1,3 +1,5 @@
+import GaugeLogo from "@/components/gauge-logo";
+
 export default function Loading() {
   // Branded loading state — was the default Next.js "Loading..." text
   // with a generic spinner (caught on the 2026-06-30 video walkthrough,
@@ -10,8 +12,8 @@ export default function Loading() {
     <main className="min-h-screen bg-[#EFEFEF] flex items-center justify-center p-6">
       <div className="doppel-outer">
         <div className="doppel-inner px-6 sm:px-8 py-7 sm:py-8 flex items-center gap-4 bg-white">
-          <div className="relative w-10 h-10 rounded-xl bg-[#F26522]/[0.08] flex items-center justify-center shrink-0">
-            <div className="w-2 h-2 rounded-full bg-[#F26522] animate-pulse" />
+          <div className="relative shrink-0">
+            <GaugeLogo className="text-[#F26522] w-10 h-10 animate-pulse" size={40} />
           </div>
           <div>
             <p className="text-[14px] font-medium text-gray-900 leading-tight">
