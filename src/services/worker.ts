@@ -8,6 +8,7 @@ import { buildGraphFromText } from "@/services/ai/knowledge-extract";
 import { HubSpotService } from "@/services/crm/hubspot";
 import { SalesforceService } from "@/services/crm/salesforce";
 import { logAuditAction } from "@/lib/audit-logger";
+import { AnalysisService } from "@/services/ai/analysis";
 
 // ponytail: pass RedisOptions to BullMQ Worker (it owns the connection).
 // Avoids ioredis/bullmq version-skew TS error.
@@ -43,19 +44,20 @@ print(result["text"])
 
 const analysisWorker = new Worker("analysis", async (job) => {
   const { transcript, callId, userId } = job.data;
-  const response = await fetch("http://localhost:11434/api/chat", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      model: "minimax-m2:cloud",
-      messages: [
-        { role: "system", content: "Extract summary, actionItems, keyDecisions, nextSteps from transcript as JSON." },
-        { role: "user", content: transcript },
-      ],
-    }),
-  });
 
-  const data = await response.json();
+  let data: unknown;
+  try {
+    const analysisService = new AnalysisService();
+    data = await analysisService.analyze(transcript, undefined, "b2b-sales");
+  } catch (err) {
+    console.error("Analysis worker failed (non-fatal):", err);
+    data = {
+      executiveSummary: "Analysis unavailable — the AI provider returned an error.",
+      actionItems: [],
+      keyDecisions: [],
+      nextSteps: [],
+    };
+  }
 
   if (userId && transcript && transcript.length > 20) {
     try {
