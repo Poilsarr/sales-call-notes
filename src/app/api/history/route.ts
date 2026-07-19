@@ -3,6 +3,7 @@ import { NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
 import { auth } from '@clerk/nextjs/server';
 import { getUserByClerkId } from '@/lib/get-user';
+import { PLANS, PlanTier } from '@/lib/plans';
 
 export async function GET(req: Request) {
   try {
@@ -24,6 +25,12 @@ export async function GET(req: Request) {
         }
       : { userId: user.id };
 
+    // ponytail: hide soft-archived calls from the owner's own list.
+    // Team-shared calls are never archived (team plan = unlimited).
+    const whereBase = user.teamId
+      ? baseWhere
+      : { ...baseWhere, archived: false };
+
     const textFilter = query
       ? {
           OR: [
@@ -35,8 +42,8 @@ export async function GET(req: Request) {
       : {};
 
     const where = textFilter
-      ? { AND: [baseWhere, textFilter] }
-      : baseWhere;
+      ? { AND: [whereBase, textFilter] }
+      : whereBase;
 
     const calls = await prisma.call.findMany({
       where,
@@ -68,7 +75,20 @@ export async function GET(req: Request) {
       nextSteps: c.nextSteps.map(n => ({ step: n.step, date: n.date })),
     }));
 
-    return NextResponse.json(normalized);
+    // ponytail: include plan retention metadata so the calls list can show
+    // "X of Y kept" and prompt upgrade when at the free-plan cap.
+    const plan = (user.plan?.toLowerCase() as PlanTier) || "free";
+    const limit = PLANS[plan]?.uploadLimit ?? 5;
+    const visibleCount = await prisma.call.count({
+      where: user.teamId ? { userId: user.id } : { userId: user.id, archived: false },
+    });
+
+    return NextResponse.json({
+      calls: normalized,
+      plan,
+      callLimit: limit,
+      visibleCount,
+    });
   } catch (error) {
     return NextResponse.json({ error: "Failed to fetch history" }, { status: 500 });
   }

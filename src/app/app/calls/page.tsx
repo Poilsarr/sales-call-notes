@@ -26,6 +26,11 @@ export default function CallsPage() {
   const [calls, setCalls] = useState<CallEntry[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
+  const [retention, setRetention] = useState<{ plan: string; callLimit: number | string; visibleCount: number }>({
+    plan: "free",
+    callLimit: 5,
+    visibleCount: 0,
+  });
   const searchRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -46,7 +51,16 @@ export default function CallsPage() {
         }
         return data;
       })
-      .then((data) => setCalls(Array.isArray(data) ? data : []))
+      .then((data) => {
+        setCalls(Array.isArray(data) ? data : (data.calls ?? []));
+        if (data.plan) {
+          setRetention({
+            plan: data.plan,
+            callLimit: data.callLimit,
+            visibleCount: data.visibleCount ?? (Array.isArray(data) ? data.length : (data.calls?.length ?? 0)),
+          });
+        }
+      })
       .catch((err) => {
         if (err?.name === "AbortError") return;
         toast.error(err instanceof Error ? err.message : "Failed to load calls");
@@ -55,6 +69,9 @@ export default function CallsPage() {
       .finally(() => setLoading(false));
     return () => controller.abort();
   }, [user?.id, searchQuery]);
+
+  const isLimited = retention.callLimit !== "unlimited";
+  const atLimit = isLimited && retention.visibleCount >= (retention.callLimit as number);
 
   // Server-side search already filtered; the client-side filter below
   // remains as a defensive narrowing on filename/summary (matches what
@@ -119,6 +136,22 @@ export default function CallsPage() {
       </div>
       
       <UpgradePrompt feature="crm_sync" featureName="CRM Sync" minimal />
+
+      {isLimited && (
+        <div className="flex items-center justify-between rounded-xl border border-zinc-800 bg-zinc-900/40 px-4 py-3">
+          <p className="text-sm text-zinc-400">
+            <span className="text-white font-medium">{retention.visibleCount}</span>
+            {retention.callLimit !== "unlimited" && ` / ${retention.callLimit}`} calls kept on your{" "}
+            <span className="capitalize text-white/80">{retention.plan}</span> plan.
+            {atLimit && " You're at your limit — oldest calls are archived as you add new ones."}
+          </p>
+          {atLimit && (
+            <Link href="/pricing" className="shrink-0 rounded-full bg-emerald-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-emerald-500 transition-colors">
+              Upgrade for unlimited
+            </Link>
+          )}
+        </div>
+      )}
 
       <div className="space-y-3">
         {loading ? (

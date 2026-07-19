@@ -16,6 +16,7 @@ import { AnalyticsService } from '@/services/ai/analytics';
 import { PIIRedactorService } from '@/services/ai/pii-redactor';
 import { KnowledgeGraphService } from '@/services/ai/knowledge-graph';
 import { PersonalizationService } from '@/services/ai/personalization';
+import { enforceCallRetention } from '@/services/call-retention';
 import { FileValidationService } from '@/services/validation/file-validation';
 import fs from 'fs/promises';
 import path from 'path';
@@ -447,6 +448,16 @@ export async function POST(req: Request) {
       console.warn("Webhook trigger setup failed (non-fatal):", e);
     }
 
+    // Plan-based retention: archive oldest overflow calls for limited plans
+    // (free users keep uploadLimit most-recent; pro/business = unlimited).
+    let archivedCount = 0;
+    try {
+      const plan = (user.plan?.toLowerCase() as any) || "free";
+      archivedCount = await enforceCallRetention(userId, plan);
+    } catch (e) {
+      console.warn("Call retention enforcement failed (non-fatal):", e);
+    }
+
     return NextResponse.json({
       id: call.id,
       summary: analysisResult.executiveSummary || correctedText.slice(0, 500),
@@ -465,6 +476,7 @@ export async function POST(req: Request) {
       interruptions: callAnalytics.interruptions,
       questionsAsked: callAnalytics.questionsAsked,
       personalizationHooks: personalization.hooks,
+      archivedCount,
     });
   } catch (error: any) {
     if (isQuotaError(error)) {

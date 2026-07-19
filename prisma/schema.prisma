@@ -71,6 +71,7 @@ model Call {
   team               Team?               @relation(fields: [teamId], references: [id])
   sharedWithTeam     Boolean             @default(false)
   isPublic           Boolean             @default(false)
+  archived           Boolean             @default(false)
   assigneeId         String?
   assignee           User?               @relation("callAssignments", fields: [assigneeId], references: [id])
   filename           String
