@@ -28,6 +28,7 @@ import {
   TrendingUp,
   MoreHorizontal,
   ExternalLink,
+  BarChart3,
 } from "lucide-react";
 
 interface Member {
@@ -242,6 +243,12 @@ export default function TeamPage() {
                 Branding <ExternalLink className="w-3 h-3" />
               </Link>
             )}
+            <Link
+              href="/team/performance"
+              className="px-4 py-2 rounded-full bg-white/5 border border-white/10 text-white/70 text-xs font-medium hover:bg-white/10 hover:text-white transition flex items-center gap-2"
+            >
+              Performance <BarChart3 className="w-3 h-3" />
+            </Link>
           </div>
         </div>
 

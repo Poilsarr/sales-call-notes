@@ -216,7 +216,7 @@ export default function TeamPerformancePage() {
                           {call.healthScore !== null ? (
                             <div className="flex items-center gap-2">
                               <TrendingUp className="w-3 h-3 text-emerald-400" />
-                              <span className="text-sm text-emerald-400">{Math.round(call.healthScore)}%</span>
+                               <span className="text-sm text-emerald-400">{Math.round((call.healthScore || 0) * 100)}%</span>
                             </div>
                           ) : (
                             <span className="text-sm text-white/30">—</span>
