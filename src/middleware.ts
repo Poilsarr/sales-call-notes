@@ -13,7 +13,7 @@ const isPublicApi = createRouteMatcher([
   "/api/v1/calls",
   "/api/v1/transcribe",
 ]);
-const isProtectedRoute = createRouteMatcher(["/api/(.*)", "/dashboard(.*)", "/app(.*)", "/team(.*)", "/integrations(.*)", "/settings(.*)", "/billing(.*)"]);
+const isProtectedRoute = createRouteMatcher(["/api/(.*)", "/dashboard(.*)", "/app(.*)", "/team(.*)", "/integrations(.*)", "/settings(.*)", "/billing(.*)", "/live(.*)"]);
 
 // Public marketing routes never see the Redis rate-limit hop. The previous
 // version ran `checkRateLimit` on every HTML request, which (a) added a
@@ -67,7 +67,7 @@ export default clerkMiddleware(async (auth, req: NextRequest) => {
       "style-src 'self' 'unsafe-inline'",
       "img-src 'self' data: *.clerk.com *.clerk.accounts.dev *.paddle.com *.hubspot.com *.salesforce.com",
       "media-src 'self' *.cloudfront.net",
-      "connect-src 'self' *.clerk.com *.clerk.accounts.dev *.openai.com *.groq.com *.paddle.com *.vercel.com vitals.vercel-insights.com *.hubapi.com *.hubspot.com *.salesforce.com *.microsoftonline.com *.microsoft.com",
+      "connect-src 'self' *.clerk.com *.clerk.accounts.dev *.openai.com *.groq.com *.paddle.com *.vercel.com vitals.vercel-insights.com *.hubapi.com *.hubspot.com *.salesforce.com *.microsoftonline.com *.microsoft.com *.deepgram.com wss://*.deepgram.com",
       "frame-ancestors 'none'",
       "frame-src *.clerk.com *.clerk.accounts.dev",
       "object-src 'none'",
@@ -118,6 +118,7 @@ export const config = {
     "/integrations/:path*",
     "/settings/:path*",
     "/billing/:path*",
+    "/live/:path*",
     "/share/:path*",
     "/sign-in",
     "/sign-in/:path*",
