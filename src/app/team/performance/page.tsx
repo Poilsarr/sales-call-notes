@@ -67,7 +67,9 @@ export default function TeamPerformancePage() {
     .filter((call) => !filterOwner || call.ownerName === filterOwner)
     .sort((a, b) => {
       if (sortBy === 'date') return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
-      return (b.healthScore || 0) - (a.healthScore || 0);
+      const scoreA = a.healthScore ?? -1;
+      const scoreB = b.healthScore ?? -1;
+      return scoreB - scoreA;
     });
 
   const exportCSV = () => {
@@ -83,7 +85,13 @@ export default function TeamPerformancePage() {
       call.openActionItems,
     ]);
 
-    const csv = [headers, ...rows].map((row) => row.map((cell) => `"${cell}"`).join(',')).join('\n');
+    const csv = [headers, ...rows]
+      .map((row) =>
+        row
+          .map((cell) => `"${String(cell).replace(/"/g, '""')}"`)
+          .join(',')
+      )
+      .join('\n');
     const blob = new Blob([csv], { type: 'text/csv' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
@@ -229,7 +237,7 @@ export default function TeamPerformancePage() {
                                 call.sentiment === 'positive'
                                   ? 'success'
                                   : call.sentiment === 'negative'
-                                  ? 'default'
+                                  ? 'danger'
                                   : 'default'
                               }
                             >

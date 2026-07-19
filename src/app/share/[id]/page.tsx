@@ -14,7 +14,7 @@ export async function generateMetadata({ params }: SharePageProps): Promise<Meta
     select: { filename: true, summary: true },
   });
 
-  if (!call) return { title: 'Call Not Found' };
+  if (!call) return { title: 'Call Not Found', robots: { index: false, follow: false } };
 
   return {
     title: `${call.filename} | Gauge`,

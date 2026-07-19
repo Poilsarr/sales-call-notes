@@ -61,7 +61,9 @@ export default clerkMiddleware(async (auth, req: NextRequest) => {
     const csp = [
       "default-src 'self'",
       "base-uri 'self'",
-      "script-src 'self' 'unsafe-inline' 'unsafe-eval' *.clerk.com *.clerk.accounts.dev",
+      "script-src 'self' 'unsafe-inline'" +
+        (process.env.NODE_ENV === "development" ? " 'unsafe-eval'" : "") +
+        " *.clerk.com *.clerk.accounts.dev",
       "style-src 'self' 'unsafe-inline'",
       "img-src 'self' data: *.clerk.com *.clerk.accounts.dev *.paddle.com *.hubspot.com *.salesforce.com",
       "media-src 'self' *.cloudfront.net",
@@ -116,6 +118,7 @@ export const config = {
     "/integrations/:path*",
     "/settings/:path*",
     "/billing/:path*",
+    "/share/:path*",
     "/sign-in",
     "/sign-in/:path*",
     "/sign-up",

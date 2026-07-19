@@ -14,7 +14,7 @@ export async function GET() {
     });
 
     if (!user.teamId) {
-      return NextResponse.json({ calls: [], members: [] });
+      return NextResponse.json({ calls: [], members: [], hasTeam: false });
     }
 
     // ponytail: fetch all team calls (not just shared), include owner/assignee/actionItems
@@ -45,7 +45,7 @@ export async function GET() {
       openActionItems: (call as any).actionItems?.filter((i: any) => i.status !== 'COMPLETED').length || 0,
     }));
 
-    return NextResponse.json({ calls: formatted, members });
+    return NextResponse.json({ calls: formatted, members, hasTeam: true });
   } catch (error: any) {
     console.error('Team performance error:', error?.message);
     return NextResponse.json({ error: 'Failed to fetch performance data' }, { status: 500 });

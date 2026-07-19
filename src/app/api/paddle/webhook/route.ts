@@ -29,15 +29,30 @@ export async function POST(req: NextRequest) {
         const customerId: string = data.customerId;
         const subscriptionId: string = data.id;
         const status: string = data.status;
-        const priceId: string = data.items?.[0]?.price?.id || "";
+        const itemPriceIds: string[] = (data.items || [])
+          .map((i: any) => i?.price?.id)
+          .filter(Boolean);
 
         let plan: string = "FREE";
         const { PLANS } = await import("@/lib/plans");
         for (const [tier, config] of Object.entries(PLANS)) {
-          if (config.paddlePriceId === priceId || config.paddlePriceIdAnnual === priceId) {
+          const monthlyId: string | undefined = config.paddlePriceId;
+          const annualId: string | undefined = config.paddlePriceIdAnnual;
+          if (
+            (monthlyId !== undefined && itemPriceIds.includes(monthlyId)) ||
+            (annualId !== undefined && itemPriceIds.includes(annualId))
+          ) {
             plan = tier.toUpperCase();
             break;
           }
+        }
+
+        if (plan === "FREE" && status === "active") {
+          console.error(
+            "[PADDLE_WEBHOOK] Active subscription with unmapped price IDs — defaulting to FREE. " +
+            "This likely means a new Paddle price ID was created but not added to lib/plans.ts. " +
+            `customerId=${customerId} subscriptionId=${subscriptionId} priceIds=${JSON.stringify(itemPriceIds)}`
+          );
         }
 
         const dbStatus = status === "active" || status === "trialing" ? "active" : status;

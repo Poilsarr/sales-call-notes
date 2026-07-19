@@ -187,9 +187,8 @@ export default function CallDetailPage({ params }: { params: { id: string } }) {
               <a
                 href={data.audioUrl}
                 download
-                target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex items-center gap-2 rounded-full bg-zinc-800 px-3 py-1.5 text-sm text-zinc-200 hover:bg-zinc-700 transition-colors"
+                className="inline-flex items-center gap-2 rounded-full bg-zinc-900/70 px-3 py-1.5 text-sm text-zinc-200 hover:bg-zinc-800 transition-colors"
               >
                 <Download className="w-4 h-4" />
                 Download audio

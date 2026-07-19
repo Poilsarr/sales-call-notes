@@ -17,8 +17,17 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Invalid plan or free tier" }, { status: 400 });
     }
 
+    const normalizedCycle = String(cycle || "").toLowerCase();
+    if (normalizedCycle && normalizedCycle !== "monthly" && normalizedCycle !== "annual") {
+      return NextResponse.json(
+        { error: "Invalid billing cycle. Expected 'monthly' or 'annual'." },
+        { status: 400 }
+      );
+    }
+    const isAnnual = normalizedCycle === "annual";
+
     const priceId =
-      cycle === "annual" && planConfig.paddlePriceIdAnnual
+      isAnnual && planConfig.paddlePriceIdAnnual
         ? planConfig.paddlePriceIdAnnual
         : planConfig.paddlePriceId;
 
@@ -38,7 +47,7 @@ export async function POST(req: NextRequest) {
 
     await logAuditAction(user.id, "CHECKOUT_CREATED", user.id, "User", {
       plan,
-      cycle: cycle === "annual" ? "annual" : "monthly",
+      cycle: isAnnual ? "annual" : "monthly",
       priceId,
       transactionId: transaction.id,
     });

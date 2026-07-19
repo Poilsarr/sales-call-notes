@@ -134,9 +134,12 @@ export async function POST(req: Request) {
       });
       // ponytail: backfill calls uploaded before the user joined a team so
       // they aren't orphaned from the scorecard (call.teamId was null).
+      // We associate them with the team but do NOT auto-share them
+      // (sharedWithTeam stays false) to respect prior privacy intent —
+      // explicit sharing is a separate user action.
       await prisma.call.updateMany({
         where: { userId: inviter.id, teamId: null },
-        data: { teamId: team.id, sharedWithTeam: true },
+        data: { teamId: team.id },
       });
     }
 
@@ -145,9 +148,10 @@ export async function POST(req: Request) {
       data: { teamId: team.id, teamRole: 'MEMBER' },
     });
     // ponytail: same backfill for the invited member's pre-team calls.
+    // Associate with team only; do not auto-share (privacy-preserving).
     await prisma.call.updateMany({
       where: { userId: targetUser.id, teamId: null },
-      data: { teamId: team.id, sharedWithTeam: true },
+      data: { teamId: team.id },
     });
 
     await logAuditAction(inviter.id, 'INVITE_MEMBER', targetUser.id, 'User', { teamId: team.id, email: email });

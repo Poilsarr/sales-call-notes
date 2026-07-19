@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@clerk/nextjs/server';
 import { prisma } from '@/lib/prisma';
+import { canManageCall } from '@/lib/call-access';
 
 export async function POST(req: NextRequest, { params }: { params: { id: string } }) {
   try {
@@ -13,7 +14,8 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
     const call = await prisma.call.findUnique({ where: { id: params.id } });
     if (!call) return NextResponse.json({ error: 'Call not found' }, { status: 404 });
 
-    if (call.userId !== user.id) {
+    const viewer = { id: user.id, teamId: user.teamId, teamRole: user.teamRole };
+    if (!canManageCall(viewer, call)) {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
     }
 
