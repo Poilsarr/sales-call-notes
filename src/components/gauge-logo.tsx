@@ -15,8 +15,9 @@ export default function GaugeLogo({
       alt="Gauge"
       width={size}
       height={size}
-      className={`${dark ? "mix-blend-multiply" : ""} ${className}`}
+      className={`object-contain ${dark ? "mix-blend-multiply" : ""} ${className}`}
       draggable={false}
+      style={{ width: size, height: size }}
     />
   );
 }

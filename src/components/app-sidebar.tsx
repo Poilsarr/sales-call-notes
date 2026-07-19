@@ -57,7 +57,9 @@ export function AppSidebar() {
               className="w-8 h-8 rounded-full object-cover shrink-0"
             />
           ) : (
-            <GaugeLogo className="w-8 h-8 shrink-0 mix-blend-screen" size={32} />
+            <div className="w-8 h-8 shrink-0 flex items-center justify-center rounded-full bg-white/10">
+              <GaugeLogo className="mix-blend-screen" size={24} />
+            </div>
           )}
           <span className="text-[15px] font-semibold tracking-tight text-white truncate">
             {displayName ?? "Gauge"}

@@ -56,7 +56,9 @@ export default function SiteFooter() {
           {/* Brand column — spans 1, sits wider */}
           <div className="col-span-2 md:col-span-1">
             <Link href="/" className="flex items-center gap-2 mb-4">
-              <GaugeLogo className="w-6 h-6 mix-blend-screen" size={24} />
+              <div className="w-6 h-6 flex items-center justify-center">
+                <GaugeLogo className="mix-blend-screen" size={20} />
+              </div>
               <span className="text-white text-[14px] font-semibold tracking-tight">
                 Gauge
               </span>
