@@ -132,11 +132,22 @@ export async function POST(req: Request) {
         where: { id: inviter.id },
         data: { teamId: team.id, teamRole: 'ADMIN' },
       });
+      // ponytail: backfill calls uploaded before the user joined a team so
+      // they aren't orphaned from the scorecard (call.teamId was null).
+      await prisma.call.updateMany({
+        where: { userId: inviter.id, teamId: null },
+        data: { teamId: team.id, sharedWithTeam: true },
+      });
     }
 
     await prisma.user.update({
       where: { id: targetUser.id },
       data: { teamId: team.id, teamRole: 'MEMBER' },
+    });
+    // ponytail: same backfill for the invited member's pre-team calls.
+    await prisma.call.updateMany({
+      where: { userId: targetUser.id, teamId: null },
+      data: { teamId: team.id, sharedWithTeam: true },
     });
 
     await logAuditAction(inviter.id, 'INVITE_MEMBER', targetUser.id, 'User', { teamId: team.id, email: email });
