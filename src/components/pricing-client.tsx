@@ -44,7 +44,7 @@ const FAQ = [
   },
   {
     q: "Do you offer a discount for annual billing?",
-    a: "Yes — Pro is $7.50/mo billed annually (vs $9/mo monthly) and Business is $24/mo annually (vs $29/mo monthly). That's a 17% discount on both paid tiers.",
+    a: "Yes — Pro is $7.50/mo equivalent (billed annually as a single charge) and Business is $24/mo equivalent (billed annually). That's a 17% discount on both paid tiers.",
   },
 ];
 
@@ -373,8 +373,13 @@ export default function PricingClient({
             const isPaddle = tier.ctaKind === "checkout";
             const price = prices[tier.name];
             const showPrice = isPaddle && !!price && !pricesLoading && !paddleError;
-            const periodLabel =
-              cycle === "annual" ? "/month, billed annually" : "/month";
+            // Paddle's pricing-preview returns `formatted_totals.total` which is
+            // the total amount the customer is charged at signup: for an annual
+            // sub priced at $7.50/mo that's the full $90.00, not the $7.50
+            // monthly equivalent. Suffixing that number with "/month" reads as
+            // a 12x overcharge illusion. Match Linear / Stripe: annual = the
+            // total, no "/month" suffix.
+            const periodLabel = cycle === "annual" ? "billed annually" : "/month";
             return (
               <div
                 key={tier.name}
@@ -453,6 +458,8 @@ export default function PricingClient({
                     >
                       {!clerkLoaded ? (
                         <Loader2 size={14} className="animate-spin mx-auto" />
+                      ) : paddleError && isPaddle ? (
+                        "Unavailable"
                       ) : isSignedIn ? (
                         paddleReady ? tier.cta : "Loading…"
                       ) : (
@@ -490,7 +497,7 @@ export default function PricingClient({
                   <thead>
                     <tr className="border-b border-gray-200">
                       <th className="text-left py-3 pr-4 text-gray-500 font-medium">Feature</th>
-                      <th className="text-center py-3 px-4 text-white font-semibold bg-[#F26522]/[0.06] rounded-t-lg">
+                      <th className="text-center py-3 px-4 text-white font-semibold bg-[#F26522]/[0.12] border-x-2 border-[#F26522]/30 rounded-t-lg">
                         <div className="flex items-center justify-center gap-1.5">
                           <span>Gauge</span>
                           <span className="w-1 h-1 rounded-full bg-[#F26522]" />
@@ -506,7 +513,7 @@ export default function PricingClient({
                     {COMPARISON.map((row, i) => (
                       <tr key={i} className="border-b border-gray-100 last:border-0">
                         <td className="py-3 pr-4 text-gray-600">{row[0]}</td>
-                        <td className="text-center py-3 px-4 bg-[#F26522]/[0.04] text-gray-900">
+                        <td className="text-center py-3 px-4 bg-[#F26522]/[0.07] border-x-2 border-[#F26522]/20 text-gray-900">
                           <div className="flex items-center justify-center gap-1.5">
                             <span className="w-1 h-1 rounded-full bg-[#F26522] shrink-0" />
                             <span className="font-medium">{row[1]}</span>

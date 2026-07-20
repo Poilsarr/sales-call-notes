@@ -9,6 +9,7 @@ const isPublicApi = createRouteMatcher([
   "/api/paddle/webhook",
   "/api/cron/(.*)",
   "/api/health",
+  "/api/pricing-preview",
   "/api/v1/competitive-intelligence",
   "/api/v1/calls",
   "/api/v1/transcribe",
@@ -111,7 +112,7 @@ export default clerkMiddleware(async (auth, req: NextRequest) => {
 // auth or rate-limit middleware.
 export const config = {
   matcher: [
-    "/api/((?!webhooks|paddle|health|partners).*)",
+    "/api/((?!webhooks|paddle|health|partners|pricing-preview).*)",
     "/dashboard/:path*",
     "/app/:path*",
     "/team/:path*",
