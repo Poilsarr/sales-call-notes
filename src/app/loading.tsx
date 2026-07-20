@@ -1,29 +1,24 @@
-import GaugeLogo from "@/components/gauge-logo";
+import dynamic from "next/dynamic";
+
+const GaugeLogo3D = dynamic(() => import("@/components/gauge-logo-3d"), {
+  ssr: false,
+});
 
 export default function Loading() {
-  // Branded loading state — was the default Next.js "Loading..." text
-  // with a generic spinner (caught on the 2026-06-30 video walkthrough,
-  // frames 26 + 35). Now: a doppel-outer card with the brand mark,
-  // a small brand-tinted pulsing dot, and a single line of monospace
-  // text. Reuses the same visual vocabulary as the rest of the app
-  // (orange #F26522, mono font, doppel depth) so it never feels
-  // like a generic scaffold.
+  // Branded 3D loading state — shown automatically by Next.js during route
+  // transitions (App Router mounts loading.tsx while the destination page's
+  // server components fetch). The hexagonal Gauge logo rotates + floats in
+  // 3D on the app's charcoal surface so the handoff feels seamless.
   return (
-    <main className="min-h-screen bg-[#EFEFEF] flex items-center justify-center p-6">
-      <div className="doppel-outer">
-        <div className="doppel-inner px-6 sm:px-8 py-7 sm:py-8 flex items-center gap-4 bg-white">
-          <div className="relative shrink-0">
-            <GaugeLogo size={40} className="animate-pulse" />
-          </div>
-          <div>
-            <p className="text-[14px] font-medium text-gray-900 leading-tight">
-              Gauge
-            </p>
-            <p className="text-[11px] font-mono text-gray-500 mt-0.5">
-              Loading your workspace...
-            </p>
-          </div>
-        </div>
+    <main className="min-h-screen bg-[#0a0a0b] flex flex-col items-center justify-center gap-6 p-6">
+      <GaugeLogo3D size={180} />
+      <div className="text-center">
+        <p className="text-[15px] font-medium text-white/90 tracking-tight">
+          Gauge
+        </p>
+        <p className="text-[12px] font-mono text-white/40 mt-1">
+          Loading your workspace...
+        </p>
       </div>
     </main>
   );
