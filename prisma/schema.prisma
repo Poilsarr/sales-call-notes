@@ -326,16 +326,18 @@ model Notification {
 }
 
 model PartnerApplication {
-  id        String   @id @default(cuid())
-  name      String
-  email     String
-  audience  String // e.g. "sales-coach", "newsletter", "community", "agency", "other"
-  reach     String // e.g. "1k-10k", "10k-50k", "50k+"
-  message   String?
-  status    String   @default("new") // new | contacted | approved | rejected
-  createdAt DateTime @default(now())
+  id           String   @id @default(cuid())
+  name         String
+  email        String
+  audience     String // e.g. "sales-coach", "newsletter", "community", "agency", "other"
+  reach        String // e.g. "1k-10k", "10k-50k", "50k+"
+  message      String?
+  referralCode String? // assigned Paddle coupon code, e.g. "PARTNER_JANE" (manual workflow)
+  status       String   @default("new") // new | contacted | approved | rejected
+  createdAt    DateTime @default(now())
 
   @@index([createdAt])
   @@index([status])
   @@index([email])
+  @@index([referralCode])
 }
