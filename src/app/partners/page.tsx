@@ -120,8 +120,8 @@ export default function PartnersPage() {
             </p>
             <div className="mt-10 flex flex-wrap items-center gap-4">
               <Link
-                href="/sign-up"
-                className="inline-flex items-center gap-2 bg-[#F26522] hover:bg-[#e05a1a] text-white text-[13px] rounded-full pl-5 pr-2 py-2.5 font-medium"
+                href="/partners/apply"
+                className="inline-flex items-center gap-2 bg-[#F26522] hover:bg-[#e05a1a] text-white text-[13px] rounded-full pl-5 pr-1.5 py-2.5 font-medium"
               >
                 <span>Become a Partner</span>
                 <ArrowRight className="w-3.5 h-3.5" />
@@ -226,13 +226,13 @@ export default function PartnersPage() {
             <p className="text-[14px] leading-[1.6] text-white/55 max-w-lg mx-auto mb-9">
               Apply today. Get approved within 24 hours. Start earning on your first referral this week.
             </p>
-            <Link
-              href="/sign-up"
-              className="inline-flex items-center gap-2 bg-[#F26522] hover:bg-[#e05a1a] text-white text-[14px] rounded-full pl-6 pr-2.5 py-3 font-medium"
-            >
-              <span>Become a Partner</span>
-              <ArrowRight className="w-4 h-4" />
-            </Link>
+              <Link
+                href="/partners/apply"
+                className="inline-flex items-center gap-2 bg-[#F26522] hover:bg-[#e05a1a] text-white text-[14px] rounded-full pl-6 pr-2.5 py-3 font-medium"
+              >
+                <span>Become a Partner</span>
+                <ArrowRight className="w-4 h-4" />
+              </Link>
           </div>
         </div>
       </section>

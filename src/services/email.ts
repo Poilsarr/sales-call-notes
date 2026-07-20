@@ -92,3 +92,23 @@ export async function sendWeeklyDigestEmail(
     </div>`
   );
 }
+
+export async function sendPartnerApplicationEmail(data: {
+  name: string;
+  email: string;
+  audience: string;
+  reach: string;
+  message?: string | null;
+}) {
+  const html = `<div style="font-family:sans-serif;max-width:600px;margin:0 auto">
+    <h2>New partner application</h2>
+    <p><strong>Name:</strong> ${data.name}</p>
+    <p><strong>Email:</strong> ${data.email}</p>
+    <p><strong>Audience:</strong> ${data.audience}</p>
+    <p><strong>Reach:</strong> ${data.reach}</p>
+    ${data.message ? `<p><strong>Message:</strong> ${data.message}</p>` : ""}
+    <p style="color:#666;font-size:12px;margin-top:24px">Submitted via /partners/apply</p>
+  </div>`;
+  // Notify the Gauge team (not the applicant).
+  return send("hello@usegauge.com", `New partner application: ${data.name}`, html);
+}
