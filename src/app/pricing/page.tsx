@@ -1,6 +1,8 @@
 import { headers } from "next/headers";
 import PricingClient from "@/components/pricing-client";
 import { buildTiers } from "@/lib/pricing-tiers";
+import Nav from "@/components/nav";
+import SiteFooter from "@/components/site-footer";
 
 /**
  * Server component: detect the visitor's country from the edge request
@@ -11,6 +13,9 @@ import { buildTiers } from "@/lib/pricing-tiers";
  * Paddle price IDs are server-only env vars, so we read them here (where
  * they exist) and inject them into the client as props — they must never
  * be read from process.env inside a "use client" bundle.
+ *
+ * Nav + SiteFooter wrap the client pricing island so the page shares the
+ * same chrome as /, /features, and /integrations.
  */
 export default async function PricingPage() {
   const hdrs = await headers();
@@ -26,5 +31,11 @@ export default async function PricingPage() {
     businessYear: process.env.PADDLE_BUSINESS_PRICE_ID_ANNUAL || "",
   });
 
-  return <PricingClient initialCountry={initialCountry} tiers={tiers} />;
+  return (
+    <div className="min-h-screen bg-[#EFEFEF] text-gray-900 flex flex-col">
+      <Nav />
+      <PricingClient initialCountry={initialCountry} tiers={tiers} />
+      <SiteFooter />
+    </div>
+  );
 }

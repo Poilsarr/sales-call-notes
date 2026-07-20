@@ -39,7 +39,7 @@ export const TIER_DEFINITIONS: Omit<Tier, "priceId">[] = [
   },
   {
     name: "Pro",
-    description: "For serious SDRs who need CRM integration. One price — bring your whole team.",
+    description: "For serious SDRs who need CRM sync. $9/mo flat for the whole 5-seat workspace.",
     features: [
       "1,200 transcription minutes/mo",
       "Unlimited AI summaries",
