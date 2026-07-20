@@ -260,37 +260,111 @@ export default function PricingClient({
   );
 
   return (
-    <main className="min-h-screen bg-white text-gray-900">
-      {/* Hero */}
-      <section className="pt-36 pb-8 sm:pt-40 sm:pb-12 px-5 sm:px-8 lg:px-12 bg-[#EFEFEF] overflow-hidden">
-        <div className="max-w-[1440px] mx-auto text-center">
-          <div className="eyebrow inline-flex items-center gap-2 mb-6">
-            <CheckCircle size={12} /> Simple, transparent pricing
-          </div>
-          <h1 className="text-[clamp(2rem,5vw,4.5rem)] font-medium leading-[1.08] tracking-[-0.03em] mb-4">
-            Free for SDRs.
-            <br />
-            <span className="text-gray-400">Scale when you need to.</span>
-          </h1>
-          <p className="text-gray-500 max-w-xl mx-auto text-[14px]">
-            No hidden fees. No AI credit traps. Prices shown in your local currency. Start
-            free, upgrade only when your team grows.
-          </p>
+    <main className="flex-1 bg-white text-gray-900">
+      {/* Hero — two-column layout matching the home page. Left: copy + billing
+          toggle. Right: a product preview card showing what Pro actually buys
+          you, so visitors don't have to scroll to picture the value. */}
+      <section className="relative pt-32 pb-12 sm:pt-36 sm:pb-16 lg:pt-44 lg:pb-20 px-5 sm:px-8 lg:px-12 bg-[#EFEFEF] overflow-hidden">
+        <div className="max-w-[1440px] mx-auto">
+          <div className="grid grid-cols-1 lg:grid-cols-[1.1fr_0.9fr] gap-10 lg:gap-16 items-end">
+            {/* LEFT: eyebrow + headline + sub + toggle */}
+            <div className="text-center lg:text-left">
+              <div className="eyebrow inline-flex items-center gap-2 mb-5 sm:mb-6">
+                <CheckCircle size={12} /> Simple, transparent pricing
+              </div>
+              <h1 className="text-[clamp(2rem,5vw,4.5rem)] font-medium leading-[1.08] tracking-[-0.03em] mb-4">
+                Free for SDRs.
+                <br />
+                <span className="text-gray-400">Scale when you need to.</span>
+              </h1>
+              <p className="text-gray-500 max-w-xl lg:mx-0 mx-auto text-[14px] mb-8">
+                No hidden fees. No AI credit traps. Prices shown in your local currency. Start
+                free, upgrade only when your team grows.
+              </p>
 
-          <BillingToggle cycle={cycle} onChange={setCycle} />
+              <div className="flex justify-center lg:justify-start">
+                <BillingToggle cycle={cycle} onChange={setCycle} />
+              </div>
+            </div>
+
+            {/* RIGHT: Pro plan preview card — mirrors the home page's "Live
+                summary" pattern. Visitors land on /pricing wanting to know
+                "is Pro worth it?"; this card answers with a compact snapshot
+                of what Pro actually includes, anchored on the $9 price. */}
+            <div className="relative">
+              <div className="doppel-outer">
+                <div className="doppel-inner p-5 sm:p-6">
+                  <div className="flex items-center gap-2 mb-4">
+                    <div className="w-2 h-2 rounded-full bg-[#F26522] animate-pulse" />
+                    <span className="text-[10px] font-mono tracking-wider text-gray-400 font-medium uppercase">
+                      Pro · $9/mo
+                    </span>
+                    <span className="ml-auto text-[9px] font-mono text-gray-300">
+                      5 seats included
+                    </span>
+                  </div>
+
+                  <div className="space-y-2.5">
+                    <div className="flex items-start gap-2.5">
+                      <CheckCircle size={14} className="text-[#F26522] shrink-0 mt-0.5" />
+                      <p className="text-[12.5px] text-gray-700 leading-snug">
+                        <strong>1,200</strong> transcription minutes / mo — about 20 calls
+                      </p>
+                    </div>
+                    <div className="flex items-start gap-2.5">
+                      <CheckCircle size={14} className="text-[#F26522] shrink-0 mt-0.5" />
+                      <p className="text-[12.5px] text-gray-700 leading-snug">
+                        <strong>HubSpot + Salesforce</strong> sync, one click
+                      </p>
+                    </div>
+                    <div className="flex items-start gap-2.5">
+                      <CheckCircle size={14} className="text-[#F26522] shrink-0 mt-0.5" />
+                      <p className="text-[12.5px] text-gray-700 leading-snug">
+                        <strong>Competitive-intel</strong> alerts when a rival name hits a call
+                      </p>
+                    </div>
+                    <div className="flex items-start gap-2.5">
+                      <CheckCircle size={14} className="text-[#F26522] shrink-0 mt-0.5" />
+                      <p className="text-[12.5px] text-gray-700 leading-snug">
+                        <strong>90-min</strong> call limit · live transcription · priority support
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="mt-4 pt-3 border-t border-gray-100 flex items-center justify-between text-[10px] text-gray-400">
+                    <span className="flex items-center gap-1.5">
+                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+                      Cancel anytime
+                    </span>
+                    <span className="flex items-center gap-1.5">
+                      <span className="w-1.5 h-1.5 rounded-full bg-[#F26522]" />
+                      17% off annual
+                    </span>
+                    <span className="hidden sm:flex items-center gap-1.5">
+                      Local currency
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
       </section>
 
       {/* Plans */}
       <section className="pt-8 pb-16 sm:pt-12 sm:pb-20 lg:pt-16 lg:pb-28 px-5 sm:px-8 lg:px-12">
-        <div className="max-w-[1440px] mx-auto mb-6 flex items-center justify-center gap-2 flex-wrap">
+        <div className="max-w-[1440px] mx-auto mb-8 flex flex-col items-center gap-3 text-center">
           <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#F26522]/10 text-[#F26522] text-[11px] font-semibold">
             <CheckCircle size={11} /> Flat-rate pricing
           </span>
-          <span className="text-[12px] text-gray-500">
-            5 reps on Fireflies = <strong className="text-gray-700">$50/mo</strong>. 5 reps on us =
-            your local price. No per-seat games.
-          </span>
+          <p className="text-[15px] text-gray-700 max-w-2xl">
+            Fireflies is <strong className="text-gray-900">$10/rep/mo</strong> for a 5-rep team — that&apos;s{" "}
+            <strong className="text-gray-900">$50/mo</strong>. Gauge Pro is{" "}
+            <strong className="text-[#F26522]">$9/mo flat for 5 seats</strong>. Same team, ~82% less.
+          </p>
+          <p className="text-[12px] text-gray-500 max-w-xl">
+            No per-seat math at any tier. Pro caps at 5 seats so the price stays a price. Business is flat for unlimited seats.
+          </p>
         </div>
 
         <div className="max-w-[1440px] mx-auto grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -392,9 +466,9 @@ export default function PricingClient({
           })}
         </div>
 
-        <p className="text-center text-[11px] text-gray-400 mt-8">
-          All paid plans are <strong className="text-gray-600">flat-rate</strong> — no per-seat
-          math. Prices shown in your local currency and include applicable tax.
+        <p className="text-center text-[11px] text-gray-400 mt-8 max-w-2xl mx-auto">
+          Pro is flat for up to 5 seats. Business is flat for unlimited seats. Prices shown in your
+          local currency and include applicable tax.
         </p>
         {paddleError && (
           <p className="text-center text-[12px] text-red-500 mt-3">
