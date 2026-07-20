@@ -1,5 +1,5 @@
 -- CreateTable
-CREATE TABLE "PartnerApplication" (
+CREATE TABLE IF NOT EXISTS "PartnerApplication" (
     "id" TEXT NOT NULL,
     "name" TEXT NOT NULL,
     "email" TEXT NOT NULL,
@@ -13,10 +13,10 @@ CREATE TABLE "PartnerApplication" (
 );
 
 -- CreateIndex
-CREATE INDEX "PartnerApplication_createdAt_idx" ON "PartnerApplication"("createdAt");
+CREATE INDEX IF NOT EXISTS "PartnerApplication_createdAt_idx" ON "PartnerApplication"("createdAt");
 
 -- CreateIndex
-CREATE INDEX "PartnerApplication_status_idx" ON "PartnerApplication"("status");
+CREATE INDEX IF NOT EXISTS "PartnerApplication_status_idx" ON "PartnerApplication"("status");
 
 -- CreateIndex
-CREATE INDEX "PartnerApplication_email_idx" ON "PartnerApplication"("email");
+CREATE INDEX IF NOT EXISTS "PartnerApplication_email_idx" ON "PartnerApplication"("email");
