@@ -5,9 +5,9 @@ import { useRef } from "react";
 import * as THREE from "three";
 
 /**
- * Procedural 3D Gauge logo — an extruded hexagon with organic "cell" blobs
- * inside, matte dark material, gently rotating on Y + floating on a sine wave.
- * Built procedurally (no external .glb) to match the 2D brand mark.
+ * Procedural 3D Gauge logo rendered large + centered as a spinning,
+ * weightless object (no text). Extruded hexagon "coin" with organic
+ * interior blobs, matte dark material, slow Y-spin + gentle float.
  */
 function HexagonMesh() {
   const group = useRef<THREE.Group>(null);
@@ -15,10 +15,11 @@ function HexagonMesh() {
   useFrame((state) => {
     const t = state.clock.getElapsedTime();
     if (group.current) {
-      // slow premium spin — ~0.5 rad/s, never frantic
-      group.current.rotation.y = t * 0.5;
+      // slow premium coin-spin — weighty, not frantic
+      group.current.rotation.y = t * 0.4;
+      group.current.rotation.x = 0.25;
       // gentle weightless float
-      group.current.position.y = Math.sin(t * 1.2) * 0.12;
+      group.current.position.y = Math.sin(t * 1.1) * 0.15;
     }
   });
 
@@ -35,14 +36,14 @@ function HexagonMesh() {
   ];
 
   return (
-    <group ref={group} rotation={[0.35, 0, 0]}>
-      {/* Hexagon extruded slab */}
+    <group ref={group} rotation={[0.25, 0, 0]}>
+      {/* Hexagon extruded "coin" — deeper so the spin shows real thickness */}
       <mesh castShadow receiveShadow>
-        <cylinderGeometry args={[1, 1, 0.35, 6]} />
+        <cylinderGeometry args={[1.1, 1.1, 0.6, 6]} />
         <meshStandardMaterial
           color="#1a1a1f"
-          metalness={0.35}
-          roughness={0.55}
+          metalness={0.4}
+          roughness={0.5}
         />
       </mesh>
 
@@ -58,13 +59,13 @@ function HexagonMesh() {
         </mesh>
       ))}
 
-      {/* Subtle brand-tinted edge ring for depth */}
-      <mesh rotation={[Math.PI / 2, 0, 0]} position={[0, 0, 0]}>
-        <torusGeometry args={[1, 0.04, 16, 6]} />
+      {/* Brand-tinted edge ring for depth */}
+      <mesh rotation={[Math.PI / 2, 0, 0]}>
+        <torusGeometry args={[1.1, 0.05, 16, 6]} />
         <meshStandardMaterial
           color="#F26522"
           emissive="#F26522"
-          emissiveIntensity={0.25}
+          emissiveIntensity={0.3}
           metalness={0.2}
           roughness={0.4}
         />
@@ -73,16 +74,16 @@ function HexagonMesh() {
   );
 }
 
-export default function GaugeLogo3D({ size = 160 }: { size?: number }) {
+export default function GaugeLogo3D({ size = 320 }: { size?: number }) {
   return (
     <Canvas
-      camera={{ position: [0, 0, 4], fov: 45 }}
+      camera={{ position: [0, 0, 4.5], fov: 45 }}
       style={{ width: size, height: size }}
       dpr={[1, 2]}
       gl={{ antialias: true, alpha: true }}
     >
-      <ambientLight intensity={0.6} />
-      <directionalLight position={[3, 5, 4]} intensity={1.4} />
+      <ambientLight intensity={0.65} />
+      <directionalLight position={[3, 5, 4]} intensity={1.5} />
       <directionalLight position={[-4, -2, -3]} intensity={0.5} color="#F26522" />
       <HexagonMesh />
     </Canvas>

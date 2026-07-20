@@ -5,21 +5,12 @@ const GaugeLogo3D = dynamic(() => import("@/components/gauge-logo-3d"), {
 });
 
 export default function Loading() {
-  // Branded 3D loading state — shown automatically by Next.js during route
-  // transitions (App Router mounts loading.tsx while the destination page's
-  // server components fetch). The hexagonal Gauge logo rotates + floats in
-  // 3D on the app's charcoal surface so the handoff feels seamless.
+  // Full-screen 3D Gauge logo — enlarged, centered, spinning weightlessly
+  // on the app's charcoal surface. No text; the logo itself is the loader.
+  // Next.js mounts this automatically during route transitions.
   return (
-    <main className="min-h-screen bg-[#0a0a0b] flex flex-col items-center justify-center gap-6 p-6">
-      <GaugeLogo3D size={180} />
-      <div className="text-center">
-        <p className="text-[15px] font-medium text-white/90 tracking-tight">
-          Gauge
-        </p>
-        <p className="text-[12px] font-mono text-white/40 mt-1">
-          Loading your workspace...
-        </p>
-      </div>
+    <main className="min-h-screen bg-[#0a0a0b] flex items-center justify-center">
+      <GaugeLogo3D size={340} />
     </main>
   );
 }
