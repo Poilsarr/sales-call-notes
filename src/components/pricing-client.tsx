@@ -183,44 +183,47 @@ export default function PricingClient({
     };
   }, [environment, clientToken, user?.primaryEmailAddress?.emailAddress]);
 
-  // Fetch localized prices whenever cycle (or country) changes.
+  // Fetch localized prices whenever cycle (or country) changes. We call our
+  // server route (which hits Paddle's REST pricing-preview) because the
+  // @paddle/paddle-js SDK does not ship a working PricePreview() at runtime.
   useEffect(() => {
-    if (!paddleReady || !paddle) return;
     let cancelled = false;
     setPricesLoading(true);
 
-    const items = tiers.map((tier) => ({
-      priceId: priceIdForCycle(tier),
-      quantity: 1,
-    }));
-    // Map each requested priceId back to its tier name (robust against
-    // Paddle returning lineItems in a different order).
-    const priceIdToTier: Record<string, string> = {};
-    tiers.forEach((tier) => {
-      priceIdToTier[priceIdForCycle(tier)] = tier.name;
-    });
+    const items = tiers
+      .filter((t) => t.ctaKind === "checkout")
+      .map((tier) => ({ priceId: priceIdForCycle(tier), quantity: 1 }));
 
-    paddle
-      .PricePreview({
-        items,
-        // Only pass a country if the server actually detected one.
-        ...(initialCountry ? { address: { countryCode: initialCountry } } : {}),
-      })
-      .then((res) => {
+    fetch("/api/pricing-preview", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ items, country: initialCountry }),
+    })
+      .then((res) => res.json())
+      .then((data) => {
         if (cancelled) return;
-        const map: Record<string, string> = {};
-        res.data.details.lineItems.forEach((lineItem) => {
-          const tierName = priceIdToTier[lineItem.price.id];
-          if (tierName) {
-            map[tierName] = lineItem.formattedTotals.total;
+        if (data?.prices) {
+          // Map each priceId -> tier name, then build the display map.
+          const priceToTier: Record<string, string> = {};
+          tiers.forEach((tier) => {
+            if (tier.ctaKind === "checkout") {
+              priceToTier[priceIdForCycle(tier)] = tier.name;
+            }
+          });
+          const map: Record<string, string> = {};
+          for (const [priceId, total] of Object.entries(data.prices)) {
+            const tierName = priceToTier[priceId];
+            if (tierName) map[tierName] = total as string;
           }
-        });
-        setPrices(map);
+          setPrices(map);
+        } else {
+          setPaddleError(true);
+        }
         setPricesLoading(false);
       })
       .catch((err) => {
         if (cancelled) return;
-        console.error("Paddle PricePreview failed:", err);
+        console.error("Price preview fetch failed:", err);
         setPaddleError(true);
         setPricesLoading(false);
       });
@@ -228,7 +231,7 @@ export default function PricingClient({
     return () => {
       cancelled = true;
     };
-  }, [paddle, paddleReady, cycle, initialCountry, priceIdForCycle]);
+  }, [cycle, initialCountry, tiers, priceIdForCycle]);
 
   const openCheckout = useCallback(
     (tier: Tier) => {
