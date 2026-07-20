@@ -29,8 +29,9 @@ export default function Nav() {
         <div className="bg-white rounded-full p-[5px] flex items-center justify-between w-full max-w-[1440px] shadow-sm">
           {/* Left */}
           <div className="flex items-center gap-6">
-            <Link href="/" className="flex-shrink-0 flex items-center justify-center w-9 h-9 sm:w-10 sm:h-10">
-              <GaugeLogo className="mix-blend-multiply" size={36} />
+            <Link href="/" className="flex-shrink-0 flex items-center gap-2.5">
+              <GaugeLogo className="mix-blend-multiply" size={40} />
+              <span className="text-[17px] font-bold tracking-tight text-gray-900 hidden sm:inline">Gauge</span>
             </Link>
             <div className="hidden md:flex items-center gap-6">
               {links.map((link) => (

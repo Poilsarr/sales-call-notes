@@ -49,17 +49,15 @@ export function AppSidebar() {
   return (
     <aside className="w-64 bg-linear-surface border-r border-linear-secondary flex flex-col">
       <div className="p-6">
-        <Link href="/" className="flex items-center gap-2.5 min-w-0">
+        <Link href="/" className="flex items-center gap-3 min-w-0">
           {user?.imageUrl ? (
             <img
               src={user.imageUrl}
               alt={displayName ?? "Gauge"}
-              className="w-8 h-8 rounded-full object-cover shrink-0"
+              className="w-9 h-9 rounded-full object-cover shrink-0"
             />
           ) : (
-            <div className="w-8 h-8 shrink-0 flex items-center justify-center rounded-full bg-white/10">
-              <GaugeLogo className="mix-blend-screen" size={24} />
-            </div>
+            <GaugeLogo className="shrink-0" size={36} />
           )}
           <span className="text-[15px] font-semibold tracking-tight text-white truncate">
             {displayName ?? "Gauge"}

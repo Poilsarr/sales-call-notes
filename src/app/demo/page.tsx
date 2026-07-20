@@ -17,9 +17,7 @@ export default function DemoPage() {
       <header className="border-b border-white/5 sticky top-0 bg-[#0a0a0b]/90 backdrop-blur z-10">
         <div className="max-w-[1440px] mx-auto px-5 sm:px-8 lg:px-12 h-14 flex items-center justify-between">
           <Link href="/" className="flex items-center gap-2.5">
-            <div className="w-7 h-7 flex items-center justify-center">
-              <GaugeLogo className="mix-blend-screen" size={22} />
-            </div>
+            <GaugeLogo size={28} />
             <span className="text-[14px] font-semibold tracking-tight">Gauge</span>
           </Link>
           <div className="flex items-center gap-4">
