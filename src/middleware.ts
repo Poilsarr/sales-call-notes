@@ -111,7 +111,7 @@ export default clerkMiddleware(async (auth, req: NextRequest) => {
 // auth or rate-limit middleware.
 export const config = {
   matcher: [
-    "/api/((?!webhooks|paddle|health).*)",
+    "/api/((?!webhooks|paddle|health|partners).*)",
     "/dashboard/:path*",
     "/app/:path*",
     "/team/:path*",
