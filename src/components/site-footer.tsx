@@ -34,6 +34,7 @@ const COLUMNS = [
       { href: "/api-docs", label: "API documentation" },
       { href: "/api/v1/keys", label: "API keys" },
       { href: "/blog", label: "Blog" },
+      { href: "/partners", label: "Partners" },
       { href: "mailto:hello@usegauge.com", label: "Contact" },
     ],
   },
