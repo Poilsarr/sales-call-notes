@@ -71,19 +71,19 @@ export default function PricingClient({
   const [prices, setPrices] = useState<Record<string, string>>({});
   const [pricesLoading, setPricesLoading] = useState(true);
 
-  const environment = process.env.PADDLE_ENV;
-  if (!environment || (environment !== "sandbox" && environment !== "production")) {
-    throw new Error(
-      `PADDLE_ENV must be "sandbox" or "production" (got "${environment ?? "undefined"}"). ` +
-        `Refusing to start Paddle against an unknown environment.`
-    );
-  }
   const clientToken = process.env.NEXT_PUBLIC_PADDLE_CLIENT_KEY;
   if (!clientToken) {
     throw new Error(
       "NEXT_PUBLIC_PADDLE_CLIENT_KEY is not set. Refusing to start Paddle checkout."
     );
   }
+  // Derive the environment from the public client token prefix — `test_`
+  // means sandbox, `live_` means production. This is client-safe (the token
+  // is already exposed to the browser) and avoids depending on the
+  // server-only PADDLE_ENV var, which is undefined in the browser bundle.
+  const environment: "sandbox" | "production" = clientToken.startsWith("live_")
+    ? "production"
+    : "sandbox";
 
   const priceIdForCycle = useCallback(
     (tier: (typeof TIERS)[number]) =>
