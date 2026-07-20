@@ -1,25 +1,31 @@
 import type { FeatureId } from "@/lib/plans";
 
 export interface Tier {
-  name: "Starter" | "Pro" | "Advanced";
+  name: "Free" | "Pro" | "Business" | "Enterprise";
   description: string;
   features: string[];
-  /** Paddle price IDs — month is the monthly price, year is the annual price. */
+  /**
+   * Paddle price IDs for the monthly/yearly prices. Empty for Free and
+   * Enterprise (not Paddle-powered). Filled by the server from env.
+   */
   priceId: { month: string; year: string };
+  cta: string;
+  /** Where the CTA links / what it does. */
+  ctaKind: "signup" | "checkout" | "contact";
 }
 
 /**
- * Editable pricing tiers. Price IDs are read from env (sandbox IDs by
- * default). The Free tier is handled separately and is not Paddle-powered.
- *
- * To add/edit a tier, change the name/description/features/priceId here.
- * Prices shown to users come from Paddle's PricePreview — never hard-coded
- * or re-formatted on the frontend.
+ * Editable pricing tier definitions. Names/descriptions/features live here.
+ * The actual Paddle price IDs are NOT read from env in this module — env vars
+ * are server-only and would be undefined in the browser bundle. Instead the
+ * server component (pricing/page.tsx) reads the real price IDs and injects
+ * them via props. Prices shown to users come from Paddle's PricePreview —
+ * never hard-coded or re-formatted on the frontend.
  */
-export const TIERS: Tier[] = [
+export const TIER_DEFINITIONS: Omit<Tier, "priceId">[] = [
   {
-    name: "Starter",
-    description: "For solo SDRs getting started. One price — bring your whole team.",
+    name: "Free",
+    description: "Perfect for solo SDRs getting started.",
     features: [
       "300 transcription minutes/mo",
       "AI summaries & action items",
@@ -28,14 +34,12 @@ export const TIERS: Tier[] = [
       "JSON export",
       "Community support",
     ],
-    priceId: {
-      month: process.env.PADDLE_PRO_PRICE_ID || "pri_starter_month",
-      year: process.env.PADDLE_PRO_PRICE_ID_ANNUAL || "pri_starter_year",
-    },
+    cta: "Start free",
+    ctaKind: "signup",
   },
   {
     name: "Pro",
-    description: "For serious SDRs who need CRM integration. Scales with your team.",
+    description: "For serious SDRs who need CRM integration. One price — bring your whole team.",
     features: [
       "1,200 transcription minutes/mo",
       "Unlimited AI summaries",
@@ -45,13 +49,11 @@ export const TIERS: Tier[] = [
       "90-minute call limit",
       "Team workspace (up to 5)",
     ],
-    priceId: {
-      month: process.env.PADDLE_PRO_PRICE_ID || "pri_pro_month",
-      year: process.env.PADDLE_PRO_PRICE_ID_ANNUAL || "pri_pro_year",
-    },
+    cta: "Subscribe",
+    ctaKind: "checkout",
   },
   {
-    name: "Advanced",
+    name: "Business",
     description: "For sales teams scaling up. Flat-rate — no per-seat math.",
     features: [
       "6,000 transcription minutes/mo",
@@ -64,16 +66,45 @@ export const TIERS: Tier[] = [
       "Admin controls & usage logs",
       "API access",
     ],
-    priceId: {
-      month: process.env.PADDLE_BUSINESS_PRICE_ID || "pri_advanced_month",
-      year: process.env.PADDLE_BUSINESS_PRICE_ID_ANNUAL || "pri_advanced_year",
-    },
+    cta: "Subscribe",
+    ctaKind: "checkout",
+  },
+  {
+    name: "Enterprise",
+    description: "For organizations with advanced needs.",
+    features: [
+      "Unlimited transcription",
+      "SSO / SAML 2.0",
+      "HIPAA compliance",
+      "Custom integrations",
+      "Dedicated account manager",
+      "On-premise deployment",
+      "SLA guarantee",
+      "Custom AI model training",
+    ],
+    cta: "Contact sales",
+    ctaKind: "contact",
   },
 ];
 
-/** Feature IDs per tier, for gating checks elsewhere (unused by the loader). */
-export const TIER_FEATURES: Record<Tier["name"], FeatureId[]> = {
-  Starter: ["ai_summary", "action_items", "speaker_diarization", "export_json"],
-  Pro: ["crm_sync", "analytics_dashboard", "team_workspace", "api_access"],
-  Advanced: ["crm_sync_teams", "unlimited_minutes", "unlimited_uploads", "sso_saml"],
-};
+/** Build the full tiers with real Paddle price IDs injected from the server. */
+export function buildTiers(priceIds: {
+  proMonth: string;
+  proYear: string;
+  businessMonth: string;
+  businessYear: string;
+}): Tier[] {
+  return TIER_DEFINITIONS.map((def) => {
+    if (def.name === "Pro") {
+      return { ...def, priceId: { month: priceIds.proMonth, year: priceIds.proYear } };
+    }
+    if (def.name === "Business") {
+      return {
+        ...def,
+        priceId: { month: priceIds.businessMonth, year: priceIds.businessYear },
+      };
+    }
+    // Free + Enterprise are not Paddle-powered.
+    return { ...def, priceId: { month: "", year: "" } };
+  });
+}

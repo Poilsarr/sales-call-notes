@@ -3,11 +3,71 @@
 import { useState, useEffect, useCallback } from "react";
 import { useUser } from "@clerk/nextjs";
 import { initializePaddle, type Paddle } from "@paddle/paddle-js";
-import { CheckCircle, Loader2, ArrowRight } from "lucide-react";
-import { TIERS } from "@/lib/pricing-tiers";
-import SiteFooter from "@/components/site-footer";
+import { CheckCircle, Loader2, ArrowRight, Zap, Plus, Minus } from "lucide-react";
+import type { Tier } from "@/lib/pricing-tiers";
 
 type BillingCycle = "monthly" | "annual";
+
+const COMPARISON = [
+  ["Free tier minutes", "300/mo", "300/mo", "800/mo"],
+  ["Pro price", "$9/mo or $7.50/mo annual", "$8.33/mo annual", "$10/mo annual"],
+  ["Business price", "$29/mo or $24/mo annual", "$19.99/mo", "$19/mo"],
+  ["AI credits system", "No credits", "Limits on free", "Yes (20-50 pool)"],
+  ["Local AI processing", "Yes", "No", "No"],
+  ["Speaker diarization", "Yes", "Yes", "Yes"],
+  ["CRM sync", "HubSpot, Salesforce", "Enterprise only", "HubSpot, Salesforce"],
+  ["Microsoft Teams", "Yes", "Yes", "Yes"],
+  ["SSO / SAML", "Enterprise", "Enterprise", "Enterprise"],
+  ["API access", "Business+", "Enterprise", "Business+"],
+];
+
+const FAQ = [
+  {
+    q: "Do I need a credit card to start?",
+    a: "No. The Free tier is genuinely free forever — 300 transcription minutes per month, no card required. We only ask for payment details when you upgrade to Pro.",
+  },
+  {
+    q: "What counts as a 'transcription minute'?",
+    a: "One minute of uploaded or recorded audio. Re-uploading the same file doesn't double-charge. Speaker labels and action-item extraction are free and don't count against the minute pool.",
+  },
+  {
+    q: "What happens if I exceed my plan's minutes?",
+    a: "We never silently auto-charge you. You'll get a banner at 80% usage and an email at 100%. Uploads pause until you upgrade or your monthly cycle resets. No surprise overage fees.",
+  },
+  {
+    q: "Can I switch plans later?",
+    a: "Yes, in either direction. Upgrade takes effect immediately and we prorate. Downgrade takes effect at the end of your current billing cycle.",
+  },
+  {
+    q: "Is my call audio used to train AI models?",
+    a: "No. Your audio, transcripts, and summaries are never used to train third-party models. We use hosted inference (Groq + OpenAI) with zero-retention data policies. See our security page for the full data-handling doc.",
+  },
+  {
+    q: "Do you offer a discount for annual billing?",
+    a: "Yes — Pro is $7.50/mo billed annually (vs $9/mo monthly) and Business is $24/mo annually (vs $29/mo monthly). That's a 17% discount on both paid tiers.",
+  },
+];
+
+function FaqItem({ q, a }: { q: string; a: string }) {
+  const [open, setOpen] = useState(false);
+  return (
+    <div className="border-b border-gray-200">
+      <button
+        type="button"
+        onClick={() => setOpen((o) => !o)}
+        className="w-full flex items-center justify-between py-5 text-left gap-4"
+      >
+        <span className="text-[14px] font-medium text-gray-900">{q}</span>
+        <span className="shrink-0 w-6 h-6 rounded-full bg-gray-100 flex items-center justify-center text-gray-600">
+          {open ? <Minus size={12} /> : <Plus size={12} />}
+        </span>
+      </button>
+      {open && (
+        <p className="pb-5 text-[13px] text-gray-600 leading-relaxed max-w-3xl">{a}</p>
+      )}
+    </div>
+  );
+}
 
 /**
  * Server-side detected country code (from x-vercel-ip-country), or null.
@@ -58,8 +118,10 @@ function BillingToggle({
 
 export default function PricingClient({
   initialCountry,
+  tiers,
 }: {
   initialCountry: string | null;
+  tiers: Tier[];
 }) {
   const { user, isSignedIn, isLoaded: clerkLoaded } = useUser();
   const [cycle, setCycle] = useState<BillingCycle>("monthly");
@@ -86,7 +148,7 @@ export default function PricingClient({
     : "sandbox";
 
   const priceIdForCycle = useCallback(
-    (tier: (typeof TIERS)[number]) =>
+    (tier: Tier) =>
       cycle === "annual" ? tier.priceId.year : tier.priceId.month,
     [cycle]
   );
@@ -127,10 +189,16 @@ export default function PricingClient({
     let cancelled = false;
     setPricesLoading(true);
 
-    const items = TIERS.map((tier) => ({
+    const items = tiers.map((tier) => ({
       priceId: priceIdForCycle(tier),
       quantity: 1,
     }));
+    // Map each requested priceId back to its tier name (robust against
+    // Paddle returning lineItems in a different order).
+    const priceIdToTier: Record<string, string> = {};
+    tiers.forEach((tier) => {
+      priceIdToTier[priceIdForCycle(tier)] = tier.name;
+    });
 
     paddle
       .PricePreview({
@@ -141,10 +209,10 @@ export default function PricingClient({
       .then((res) => {
         if (cancelled) return;
         const map: Record<string, string> = {};
-        res.data.details.lineItems.forEach((lineItem, i) => {
-          const tier = TIERS[i];
-          if (tier) {
-            map[tier.name] = lineItem.formattedTotals.total;
+        res.data.details.lineItems.forEach((lineItem) => {
+          const tierName = priceIdToTier[lineItem.price.id];
+          if (tierName) {
+            map[tierName] = lineItem.formattedTotals.total;
           }
         });
         setPrices(map);
@@ -153,6 +221,7 @@ export default function PricingClient({
       .catch((err) => {
         if (cancelled) return;
         console.error("Paddle PricePreview failed:", err);
+        setPaddleError(true);
         setPricesLoading(false);
       });
 
@@ -162,7 +231,7 @@ export default function PricingClient({
   }, [paddle, paddleReady, cycle, initialCountry, priceIdForCycle]);
 
   const openCheckout = useCallback(
-    (tier: (typeof TIERS)[number]) => {
+    (tier: Tier) => {
       if (!paddle || !paddleReady) return;
       if (!isSignedIn) {
         window.location.href = `/sign-up?redirect=/pricing`;
@@ -221,12 +290,12 @@ export default function PricingClient({
           </span>
         </div>
 
-        <div className="max-w-[1440px] mx-auto grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          {TIERS.map((tier) => {
+        <div className="max-w-[1440px] mx-auto grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          {tiers.map((tier) => {
             const isPopular = tier.name === "Pro";
+            const isPaddle = tier.ctaKind === "checkout";
             const price = prices[tier.name];
-            const showPrice =
-              !!price && !pricesLoading && !paddleError;
+            const showPrice = isPaddle && !!price && !pricesLoading && !paddleError;
             const periodLabel =
               cycle === "annual" ? "/month, billed annually" : "/month";
             return (
@@ -249,7 +318,7 @@ export default function PricingClient({
                   <div className="mb-6">
                     <h3 className="text-[16px] font-semibold tracking-tight mb-1">{tier.name}</h3>
                     <div className="flex items-baseline gap-2 flex-wrap min-h-[2rem]">
-                      {pricesLoading ? (
+                      {isPaddle && pricesLoading ? (
                         <Loader2 size={18} className="animate-spin text-gray-400" />
                       ) : showPrice ? (
                         <>
@@ -258,12 +327,16 @@ export default function PricingClient({
                           </span>
                           <span className="text-[12px] text-gray-400">{periodLabel}</span>
                         </>
-                      ) : paddleError ? (
+                      ) : paddleError && isPaddle ? (
                         <span className="text-[14px] text-gray-400">
                           Pricing unavailable
                         </span>
-                      ) : (
+                      ) : isPaddle ? (
                         <span className="text-[14px] text-gray-400">—</span>
+                      ) : (
+                        <span className="text-[14px] text-gray-400">
+                          {tier.name === "Free" ? "Free forever" : "Custom"}
+                        </span>
                       )}
                     </div>
                     <p className="text-[12px] text-gray-500 mt-2">{tier.description}</p>
@@ -276,24 +349,40 @@ export default function PricingClient({
                       </div>
                     ))}
                   </div>
-                  <button
-                    type="button"
-                    onClick={() => openCheckout(tier)}
-                    disabled={!paddleReady || !!paddleError || pricesLoading}
-                    className={`block w-full text-center py-3 rounded-full text-[12px] font-semibold transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed ${
-                      isPopular
-                        ? "bg-[#F26522] text-white hover:bg-[#e05a1a] border border-transparent"
-                        : "bg-white text-gray-900 border border-gray-300 hover:border-gray-900 hover:bg-gray-50"
-                    }`}
-                  >
-                    {!clerkLoaded ? (
-                      <Loader2 size={14} className="animate-spin mx-auto" />
-                    ) : isSignedIn ? (
-                      paddleReady ? "Subscribe" : "Loading…"
-                    ) : (
-                      "Start free"
-                    )}
-                  </button>
+                  {tier.ctaKind === "signup" ? (
+                    <a
+                      href={isSignedIn ? "/app" : "/sign-up"}
+                      className="block w-full text-center py-3 rounded-full text-[12px] font-semibold transition-all duration-300 bg-white text-gray-900 border border-gray-300 hover:border-gray-900 hover:bg-gray-50"
+                    >
+                      {tier.cta}
+                    </a>
+                  ) : tier.ctaKind === "contact" ? (
+                    <a
+                      href="mailto:sales@usegauge.com?subject=Enterprise%20Plan%20Inquiry"
+                      className="block w-full text-center py-3 rounded-full text-[12px] font-semibold transition-all duration-300 bg-white text-gray-900 border border-gray-300 hover:border-gray-900 hover:bg-gray-50"
+                    >
+                      {tier.cta}
+                    </a>
+                  ) : (
+                    <button
+                      type="button"
+                      onClick={() => openCheckout(tier)}
+                      disabled={!paddleReady || !!paddleError || pricesLoading}
+                      className={`block w-full text-center py-3 rounded-full text-[12px] font-semibold transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed ${
+                        isPopular
+                          ? "bg-[#F26522] text-white hover:bg-[#e05a1a] border border-transparent"
+                          : "bg-white text-gray-900 border border-gray-300 hover:border-gray-900 hover:bg-gray-50"
+                      }`}
+                    >
+                      {!clerkLoaded ? (
+                        <Loader2 size={14} className="animate-spin mx-auto" />
+                      ) : isSignedIn ? (
+                        paddleReady ? tier.cta : "Loading…"
+                      ) : (
+                        "Start free"
+                      )}
+                    </button>
+                  )}
                 </div>
               </div>
             );
@@ -304,6 +393,87 @@ export default function PricingClient({
           All paid plans are <strong className="text-gray-600">flat-rate</strong> — no per-seat
           math. Prices shown in your local currency and include applicable tax.
         </p>
+        {paddleError && (
+          <p className="text-center text-[12px] text-red-500 mt-3">
+            Live prices are temporarily unavailable. Please refresh or try again shortly.
+          </p>
+        )}
+      </section>
+
+      {/* Comparison Table */}
+      <section className="pb-12 sm:pb-16 px-5 sm:px-8 lg:px-12">
+        <div className="max-w-[1440px] mx-auto">
+          <div className="doppel-outer">
+            <div className="doppel-inner p-6 sm:p-8">
+              <h3 className="text-[15px] font-semibold tracking-tight mb-6 text-center">
+                Compare to competitors
+              </h3>
+              <div className="overflow-x-auto">
+                <table className="w-full text-[12px]">
+                  <thead>
+                    <tr className="border-b border-gray-200">
+                      <th className="text-left py-3 pr-4 text-gray-500 font-medium">Feature</th>
+                      <th className="text-center py-3 px-4 text-white font-semibold bg-[#F26522]/[0.06] rounded-t-lg">
+                        <div className="flex items-center justify-center gap-1.5">
+                          <span>Gauge</span>
+                          <span className="w-1 h-1 rounded-full bg-[#F26522]" />
+                        </div>
+                      </th>
+                      <th className="text-center py-3 px-4 text-gray-500 font-medium">Otter.ai</th>
+                      <th className="text-center py-3 px-4 text-gray-500 font-medium">
+                        Fireflies.ai
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {COMPARISON.map((row, i) => (
+                      <tr key={i} className="border-b border-gray-100 last:border-0">
+                        <td className="py-3 pr-4 text-gray-600">{row[0]}</td>
+                        <td className="text-center py-3 px-4 bg-[#F26522]/[0.04] text-gray-900">
+                          <div className="flex items-center justify-center gap-1.5">
+                            <span className="w-1 h-1 rounded-full bg-[#F26522] shrink-0" />
+                            <span className="font-medium">{row[1]}</span>
+                          </div>
+                        </td>
+                        <td className="text-center py-3 px-4 text-gray-500">{row[2]}</td>
+                        <td className="text-center py-3 px-4 text-gray-500">{row[3]}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+              <p className="text-[10.5px] text-gray-400 mt-4 text-center max-w-2xl mx-auto">
+                Competitor data from public pricing pages as of 2026-06-22. Spotted a mistake?{" "}
+                <a
+                  href="mailto:hello@usegauge.com"
+                  className="underline underline-offset-2 hover:text-gray-600"
+                >
+                  Tell us
+                </a>
+                .
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* FAQ */}
+      <section id="faq" className="pb-16 sm:pb-20 lg:pb-28 px-5 sm:px-8 lg:px-12">
+        <div className="max-w-3xl mx-auto">
+          <div className="text-center mb-10">
+            <div className="eyebrow inline-flex items-center gap-2 mb-4">
+              <Zap size={12} /> Frequently asked
+            </div>
+            <h2 className="text-[clamp(1.5rem,4vw,2.5rem)] font-medium leading-[1.1] tracking-[-0.02em]">
+              Pricing questions, answered
+            </h2>
+          </div>
+          <div>
+            {FAQ.map((item, i) => (
+              <FaqItem key={i} q={item.q} a={item.a} />
+            ))}
+          </div>
+        </div>
       </section>
 
       {/* CTA */}
@@ -340,7 +510,6 @@ export default function PricingClient({
           </div>
         </div>
       </section>
-      <SiteFooter />
     </main>
   );
 }
