@@ -1,5 +1,6 @@
 import Link from "next/link";
 import Nav from "@/components/nav";
+import SiteFooter from "@/components/site-footer";
 import SocialProof from "@/components/social-proof";
 import RoiCalculator from "@/components/roi-calculator";
 import HowItWorks from "@/components/how-it-works";
@@ -362,6 +363,7 @@ export default function Home() {
       <div className="fixed bottom-0 inset-x-0 z-40 lg:hidden border-t border-gray-200 bg-white/95 backdrop-blur px-4 py-3 pb-[max(0.75rem,env(safe-area-inset-bottom))]">
         <HeroCTA />
       </div>
+      <SiteFooter />
     </main>
   );
 }

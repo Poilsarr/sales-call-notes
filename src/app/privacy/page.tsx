@@ -1,6 +1,7 @@
 "use client";
 
 import Nav from "@/components/nav";
+import SiteFooter from "@/components/site-footer";
 
 export default function PrivacyPage() {
   return (
@@ -91,6 +92,7 @@ export default function PrivacyPage() {
           </section>
         </div>
       </div>
+      <SiteFooter />
     </main>
   );
 }

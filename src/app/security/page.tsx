@@ -1,6 +1,7 @@
 "use client";
 
 import Nav from "@/components/nav";
+import SiteFooter from "@/components/site-footer";
 
 export default function SecurityPage() {
   return (
@@ -82,6 +83,7 @@ export default function SecurityPage() {
           </section>
         </div>
       </div>
+      <SiteFooter />
     </main>
   );
 }

@@ -1,6 +1,7 @@
 import Nav from "@/components/nav";
 import { Sparkles } from "lucide-react";
 import fs from "fs";
+import SiteFooter from "@/components/site-footer";
 import path from "path";
 
 export const metadata = {
@@ -127,6 +128,7 @@ export default function ChangelogPage() {
           </p>
         </div>
       </div>
+      <SiteFooter />
     </>
   );
 }

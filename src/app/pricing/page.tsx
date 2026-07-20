@@ -4,6 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { Sparkles, CheckCircle, ArrowRight, Zap, Plus, Minus } from "lucide-react";
 import { useAuth } from "@clerk/nextjs";
+import SiteFooter from "@/components/site-footer";
 
 type BillingCycle = "monthly" | "annual";
 
@@ -458,6 +459,7 @@ export default function PricingPage() {
           </div>
         </div>
       </section>
+      <SiteFooter />
     </main>
   );
 }

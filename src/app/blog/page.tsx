@@ -2,6 +2,7 @@
 
 import Nav from "@/components/nav";
 import Link from "next/link";
+import SiteFooter from "@/components/site-footer";
 
 export default function BlogIndexPage() {
   return (
@@ -45,6 +46,7 @@ export default function BlogIndexPage() {
           </article>
         </div>
       </div>
+      <SiteFooter />
     </main>
   );
 }

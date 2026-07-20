@@ -2,6 +2,7 @@
 
 import Nav from "@/components/nav";
 import Link from "next/link";
+import SiteFooter from "@/components/site-footer";
 
 export default function TermsPage() {
   return (
@@ -54,6 +55,7 @@ export default function TermsPage() {
           </section>
         </div>
       </div>
+      <SiteFooter />
     </main>
   );
 }

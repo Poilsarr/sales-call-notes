@@ -133,6 +133,12 @@ export async function POST(req: Request) {
       if (msg.includes('401') || msg.includes('Unauthorized') || msg.includes('Incorrect API key')) {
         return NextResponse.json({ error: 'AI provider API key is invalid or expired. Check OPENAI_API_KEY and GROQ_API_KEY.' }, { status: 500 });
       }
+      // Normalize generic connection/network errors into actionable messages
+      if (msg.toLowerCase().includes('connection') || msg.toLowerCase().includes('network') || msg.toLowerCase().includes('timeout') || msg.toLowerCase().includes('econnrefused')) {
+        return NextResponse.json({
+          error: 'Transcription failed: could not reach the AI provider. This is usually a temporary network issue — try again in a moment. If it persists, check that OPENAI_API_KEY and GROQ_API_KEY are set in Vercel.'
+        }, { status: 500 });
+      }
       return NextResponse.json({
         error: 'Transcription failed: ' + msg.slice(0, 200)
       }, { status: 500 });
