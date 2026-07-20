@@ -1,9 +1,11 @@
 export default function GaugeLogo({
   className = "",
   size = 40,
+  dark = false,
 }: {
   className?: string;
   size?: number;
+  dark?: boolean;
 }) {
   return (
     <img
@@ -11,7 +13,7 @@ export default function GaugeLogo({
       alt="Gauge"
       width={size}
       height={size}
-      className={`object-contain ${className}`}
+      className={`object-contain ${dark ? "invert" : ""} ${className}`}
       draggable={false}
     />
   );
