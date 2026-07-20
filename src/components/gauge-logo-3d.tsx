@@ -1,91 +1,126 @@
 "use client";
 
-import { Canvas, useFrame } from "@react-three/fiber";
-import { useRef } from "react";
-import * as THREE from "three";
-
 /**
- * Procedural 3D Gauge logo rendered large + centered as a spinning,
- * weightless object (no text). Extruded hexagon "coin" with organic
- * interior blobs, matte dark material, slow Y-spin + gentle float.
+ * Pure-CSS 3D Gauge logo loader — enlarged hexagonal "coin" that spins on its
+ * Y-axis (weightless float) and sits centered on the app's charcoal surface.
+ * No WebGL / Three.js deps — builds instantly anywhere.
  */
-function HexagonMesh() {
-  const group = useRef<THREE.Group>(null);
 
-  useFrame((state) => {
-    const t = state.clock.getElapsedTime();
-    if (group.current) {
-      // slow premium coin-spin — weighty, not frantic
-      group.current.rotation.y = t * 0.4;
-      group.current.rotation.x = 0.25;
-      // gentle weightless float
-      group.current.position.y = Math.sin(t * 1.1) * 0.15;
-    }
-  });
+const BLOBS: [string, string, string][] = [
+  ["-32%", "28%", "34px"],
+  ["26%", "40%", "26px"],
+  ["38%", "-6%", "24px"],
+  ["0%", "-4%", "38px"],
+  ["-36%", "-22%", "28px"],
+  ["8%", "-40%", "32px"],
+  ["36%", "-36%", "24px"],
+  ["0%", "32%", "20px"],
+];
 
-  // Cell blobs positioned to echo the 2D logo's interior
-  const blobs: [number, number, number, number][] = [
-    [-0.35, 0.3, 0.06, 0.32],
-    [0.3, 0.45, 0.06, 0.24],
-    [0.45, -0.05, 0.06, 0.22],
-    [0.0, -0.05, 0.06, 0.34],
-    [-0.4, -0.25, 0.06, 0.26],
-    [0.1, -0.45, 0.06, 0.3],
-    [0.4, -0.4, 0.06, 0.22],
-    [0.0, 0.35, 0.06, 0.18],
-  ];
-
+function Face({
+  rotateY,
+  translateZ,
+}: {
+  rotateY: string;
+  translateZ: string;
+}) {
   return (
-    <group ref={group} rotation={[0.25, 0, 0]}>
-      {/* Hexagon extruded "coin" — deeper so the spin shows real thickness */}
-      <mesh castShadow receiveShadow>
-        <cylinderGeometry args={[1.1, 1.1, 0.6, 6]} />
-        <meshStandardMaterial
-          color="#1a1a1f"
-          metalness={0.4}
-          roughness={0.5}
-        />
-      </mesh>
-
-      {/* Organic interior blobs */}
-      {blobs.map(([x, y, z, r], i) => (
-        <mesh key={i} position={[x, y, z]}>
-          <sphereGeometry args={[r, 32, 32]} />
-          <meshStandardMaterial
-            color="#0d0d12"
-            metalness={0.3}
-            roughness={0.6}
-          />
-        </mesh>
-      ))}
-
-      {/* Brand-tinted edge ring for depth */}
-      <mesh rotation={[Math.PI / 2, 0, 0]}>
-        <torusGeometry args={[1.1, 0.05, 16, 6]} />
-        <meshStandardMaterial
-          color="#F26522"
-          emissive="#F26522"
-          emissiveIntensity={0.3}
-          metalness={0.2}
-          roughness={0.4}
-        />
-      </mesh>
-    </group>
+    <div
+      className="absolute inset-0 rounded-[14px] bg-[#16161b] border border-white/5"
+      style={{
+        transform: `rotateY(${rotateY}) translateZ(${translateZ})`,
+        backfaceVisibility: "hidden",
+      }}
+    />
   );
 }
 
-export default function GaugeLogo3D({ size = 320 }: { size?: number }) {
+export default function GaugeLogo3D({ size = 300 }: { size?: number }) {
+  // 6 prism side faces
+  const sides = Array.from({ length: 6 }, (_, i) => i * 60);
+
   return (
-    <Canvas
-      camera={{ position: [0, 0, 4.5], fov: 45 }}
-      style={{ width: size, height: size }}
-      dpr={[1, 2]}
-      gl={{ antialias: true, alpha: true }}
+    <div
+      className="relative"
+      style={{
+        width: size,
+        height: size,
+        perspective: "1000px",
+      }}
     >
-      <ambientLight intensity={0.65} />
-      <directionalLight position={[3, 5, 4]} intensity={1.5} />
-      <directionalLight position={[-4, -2, -3]} intensity={0.5} color="#F26522" />
-      <HexagonMesh />
-    </Canvas>
+      <div className="gauge-spin w-full h-full relative" style={{ transformStyle: "preserve-3d" }}>
+        {/* Front + back faces */}
+        <Face rotateY="0deg" translateZ="26px" />
+        <Face rotateY="180deg" translateZ="26px" />
+
+        {/* 6 side faces forming the hexagonal prism edge */}
+        {sides.map((deg) => (
+          <div
+            key={deg}
+            className="absolute left-1/2 top-1/2 bg-[#1c1c22] border-x border-white/5"
+            style={{
+              width: `${size / 3}px`,
+              height: `${size - 52}px`,
+              transform: `translate(-50%, -50%) rotateY(${deg}deg) translateZ(${size / 2 - 8}px)`,
+              backfaceVisibility: "hidden",
+            }}
+          />
+        ))}
+
+        {/* Interior brand blobs on the front face */}
+        <div
+          className="absolute left-1/2 top-1/2"
+          style={{ transform: "translate(-50%, -50%) translateZ(27px)" }}
+        >
+          {BLOBS.map(([x, y, d], i) => (
+            <span
+              key={i}
+              className="absolute rounded-full bg-[#0c0c10]"
+              style={{
+                width: d,
+                height: d,
+                left: x,
+                top: y,
+                transform: "translate(-50%, -50%)",
+              }}
+            />
+          ))}
+          {/* brand-tinted ring */}
+          <span
+            className="absolute rounded-full border-2 border-[#F26522]/40"
+            style={{
+              width: size * 0.9,
+              height: size * 0.9,
+              left: "50%",
+              top: "50%",
+              transform: "translate(-50%, -50%)",
+            }}
+          />
+        </div>
+      </div>
+
+      <style jsx>{`
+        .gauge-spin {
+          animation: gauge-rotate 6s linear infinite, gauge-float 3s ease-in-out infinite;
+        }
+        @keyframes gauge-rotate {
+          from {
+            transform: rotateX(12deg) rotateY(0deg);
+          }
+          to {
+            transform: rotateX(12deg) rotateY(360deg);
+          }
+        }
+        @keyframes gauge-float {
+          0%,
+          100% {
+            margin-top: -10px;
+          }
+          50% {
+            margin-top: 10px;
+          }
+        }
+      `}</style>
+    </div>
   );
 }
