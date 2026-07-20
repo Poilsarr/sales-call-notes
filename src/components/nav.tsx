@@ -30,7 +30,7 @@ export default function Nav() {
           {/* Left */}
           <div className="flex items-center gap-6">
             <Link href="/" className="flex-shrink-0 flex items-center gap-2.5">
-              <GaugeLogo className="mix-blend-multiply" size={40} />
+              <GaugeLogo size={42} />
               <span className="text-[17px] font-bold tracking-tight text-gray-900 hidden sm:inline">Gauge</span>
             </Link>
             <div className="hidden md:flex items-center gap-6">

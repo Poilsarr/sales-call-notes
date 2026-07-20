@@ -13,7 +13,7 @@ export default function Loading() {
       <div className="doppel-outer">
         <div className="doppel-inner px-6 sm:px-8 py-7 sm:py-8 flex items-center gap-4 bg-white">
           <div className="relative shrink-0">
-            <GaugeLogo className="animate-pulse" size={40} />
+            <GaugeLogo size={40} className="animate-pulse" />
           </div>
           <div>
             <p className="text-[14px] font-medium text-gray-900 leading-tight">
