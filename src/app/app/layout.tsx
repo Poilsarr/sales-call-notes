@@ -5,6 +5,7 @@ import { AppSidebar } from '@/components/app-sidebar';
 import TrialBanner from '@/components/trial-banner';
 import FreePlanBanner from '@/components/free-plan-banner';
 import UsageLimitBanner from '@/components/usage-limit-banner';
+import OnboardingChecklist from '@/components/onboarding-checklist';
 import { Toaster } from 'sonner';
 import { motion } from 'framer-motion';
 import { useAuth } from '@clerk/nextjs';
@@ -80,6 +81,7 @@ export default function AppLayout({
           transition={{ duration: 0.5, ease: [0.32, 0.72, 0, 1] }}
           className="p-8"
         >
+          <OnboardingChecklist />
           {children}
         </motion.div>
       </main>
