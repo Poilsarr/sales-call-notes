@@ -50,6 +50,7 @@ export async function GET(req: NextRequest) {
       subscriptionStatus: user?.subscriptionStatus || null,
       subscriptionPlan: user?.subscriptionPlan || null,
       paddleSubscriptionId: user?.paddleSubscriptionId || null,
+      paddleCustomerId: user?.paddleCustomerId || null,
       trialEndsAt: user?.trialEndsAt?.toISOString() || null,
       cancellationEffectiveDate: user?.cancellationEffectiveDate?.toISOString() || null,
     });

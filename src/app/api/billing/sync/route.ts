@@ -10,6 +10,12 @@ function getPaddleEnvironment(): "production" | "sandbox" {
   return process.env.PADDLE_ENV === "production" ? "production" : "sandbox";
 }
 
+function getPaddleBaseUrl(): string {
+  return getPaddleEnvironment() === "production"
+    ? "https://api.paddle.com"
+    : "https://sandbox-api.paddle.com";
+}
+
 function mapPriceIdsToPlan(priceIds: string[]): string | null {
   for (const [tier, config] of Object.entries(PLANS)) {
     const ids = [config.paddlePriceId, config.paddlePriceIdAnnual].filter(Boolean) as string[];
@@ -18,6 +24,18 @@ function mapPriceIdsToPlan(priceIds: string[]): string | null {
     }
   }
   return null;
+}
+
+async function paddleFetch(path: string, apiKey: string, init?: RequestInit) {
+  const res = await fetch(`${getPaddleBaseUrl()}${path}`, {
+    ...init,
+    headers: {
+      Authorization: `Bearer ${apiKey}`,
+      "Content-Type": "application/json",
+      ...init?.headers,
+    },
+  });
+  return res;
 }
 
 export async function POST(req: NextRequest) {
@@ -32,32 +50,59 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "User not found" }, { status: 404 });
     }
 
-    // If we don't know the Paddle customer ID yet, we can't sync.
-    if (!user.paddleCustomerId) {
-      return NextResponse.json(
-        { error: "No Paddle customer linked yet. Complete a checkout first." },
-        { status: 400 }
-      );
-    }
-
     const apiKey = getSecret("PADDLE_API_KEY");
     if (!apiKey) {
       return NextResponse.json({ error: "Paddle API key not configured" }, { status: 503 });
     }
 
-    const baseUrl =
-      getPaddleEnvironment() === "production"
-        ? "https://api.paddle.com"
-        : "https://sandbox-api.paddle.com";
+    let paddleCustomerId = user.paddleCustomerId;
 
-    const listRes = await fetch(
-      `${baseUrl}/subscriptions?customer_id=${encodeURIComponent(user.paddleCustomerId)}&per_page=10`,
-      {
-        headers: {
-          Authorization: `Bearer ${apiKey}`,
-          "Content-Type": "application/json",
-        },
+    // If we don't know the Paddle customer ID yet, try to find the customer by email.
+    // This handles cases where the webhook didn't run or didn't persist the customer ID.
+    if (!paddleCustomerId) {
+      const customersRes = await paddleFetch(
+        `/customers?email=${encodeURIComponent(user.email)}&per_page=5`,
+        apiKey
+      );
+      if (!customersRes.ok) {
+        const body = await customersRes.json().catch(() => ({}));
+        console.error("[BILLING_SYNC] Paddle customer lookup failed:", body);
+        return NextResponse.json(
+          { error: "Failed to look up Paddle customer by email" },
+          { status: 502 }
+        );
       }
+
+      const customersData = (await customersRes.json()) as {
+        data?: Array<{ id: string; email: string }>;
+      };
+      const matchedCustomer = customersData.data?.find(
+        (c) => c.email.toLowerCase() === user.email.toLowerCase()
+      );
+
+      if (!matchedCustomer) {
+        return NextResponse.json(
+          {
+            error: "No Paddle customer found for this email.",
+            email: user.email,
+            hint: "Complete a checkout first, then retry.",
+          },
+          { status: 404 }
+        );
+      }
+
+      paddleCustomerId = matchedCustomer.id;
+
+      // Persist the customer ID so future syncs/webhooks don't need this fallback.
+      await prisma.user.update({
+        where: { id: user.id },
+        data: { paddleCustomerId },
+      });
+    }
+
+    const listRes = await paddleFetch(
+      `/subscriptions?customer_id=${encodeURIComponent(paddleCustomerId)}&per_page=10`,
+      apiKey
     );
 
     if (!listRes.ok) {
@@ -73,7 +118,7 @@ export async function POST(req: NextRequest) {
       data?: Array<{
         id: string;
         status: string;
-        items: Array<{ price?: { id?: string } }>;
+        items: Array<{ price?: { id?: string; name?: string } }>;
       }>;
     };
 
@@ -96,13 +141,15 @@ export async function POST(req: NextRequest) {
           },
         });
         await logAuditAction(user.id, "BILLING_SYNC_NO_ACTIVE", user.id, "User", {
-          paddleCustomerId: user.paddleCustomerId,
+          paddleCustomerId,
         });
       }
       return NextResponse.json({
         success: true,
         synced: false,
         message: "No active Paddle subscription found. Plan set to Free.",
+        paddleCustomerId,
+        subscriptionCount: subscriptions.length,
       });
     }
 
@@ -116,6 +163,9 @@ export async function POST(req: NextRequest) {
         {
           error: "Active subscription uses an unmapped price ID",
           priceIds,
+          paddleCustomerId,
+          subscriptionId: activeSub.id,
+          hint: "Add the Paddle price ID to lib/plans.ts or Vercel env vars.",
         },
         { status: 400 }
       );
@@ -126,6 +176,7 @@ export async function POST(req: NextRequest) {
     await prisma.user.update({
       where: { id: user.id },
       data: {
+        paddleCustomerId,
         paddleSubscriptionId: activeSub.id,
         subscriptionStatus: dbStatus,
         subscriptionPlan: plan,
@@ -139,6 +190,7 @@ export async function POST(req: NextRequest) {
       plan,
       status: dbStatus,
       priceIds,
+      paddleCustomerId,
     });
 
     return NextResponse.json({
@@ -146,6 +198,7 @@ export async function POST(req: NextRequest) {
       synced: true,
       plan: plan.toLowerCase(),
       subscriptionId: activeSub.id,
+      paddleCustomerId,
     });
   } catch (error) {
     console.error("[BILLING_SYNC] Error:", error);

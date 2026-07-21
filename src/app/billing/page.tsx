@@ -86,9 +86,11 @@ export default function BillingPage() {
       } else if (res.ok) {
         toast.info(data.message || "No active subscription found.");
       } else {
+        console.error("[BILLING_SYNC_UI] Sync failed:", data);
         toast.error(data.error || "Sync failed");
       }
-    } catch {
+    } catch (err) {
+      console.error("[BILLING_SYNC_UI] Network error:", err);
       toast.error("Sync failed");
     } finally {
       setSyncing(false);
