@@ -24,15 +24,6 @@ export function StatCard({ title, value, subtitle, trend, delay = 0 }: StatCardP
         {subtitle && (
           <p className="text-sm text-zinc-500 mt-1">{subtitle}</p>
         )}
-        {trend && (
-          <span className={`inline-block mt-2 text-xs px-2 py-1 rounded-full ${
-            trend === 'up' ? 'bg-emerald-500/10 text-emerald-400' :
-            trend === 'down' ? 'bg-red-500/10 text-red-400' :
-            'bg-zinc-800 text-zinc-400'
-          }`}>
-            {trend === 'up' ? '↑' : trend === 'down' ? '↓' : '→'} Trend
-          </span>
-        )}
       </div>
     </motion.div>
   );

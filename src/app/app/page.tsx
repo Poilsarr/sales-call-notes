@@ -63,9 +63,15 @@ export default function DashboardPage() {
   // showed "..." while loading AND when data was null, which made
   // signed-in users see an empty dashboard that looked broken
   // (the second bug from the 2026-06-30 video walkthrough).
-  const num = (getter: () => number, format: (n: number) => string = String): string => {
+  const num = (
+    getter: () => number,
+    format: (n: number) => string = String,
+    opts?: { emptyWhen?: (n: number, d: AnalyticsData | null) => boolean }
+  ): string => {
     if (loading) return '…';
-    return format(getter());
+    const val = getter();
+    if (opts?.emptyWhen?.(val, data)) return '—';
+    return format(val);
   };
 
   return (
@@ -80,42 +86,40 @@ export default function DashboardPage() {
           title="Total Calls"
           value={num(() => data?.totalCalls ?? 0)}
           subtitle="Last 30 days"
-          trend={data && data.totalCalls > 0 ? 'up' : 'neutral'}
           delay={0}
         />
         <StatCard
           title="Avg Health Score"
-          value={num(() => data?.avgHealthScore ?? 0, n => `${n}%`)}
+          value={num(() => data?.avgHealthScore ?? 0, n => `${n}%`, {
+            emptyWhen: (n, d) => n === 0 && (d?.totalCalls ?? 0) > 0,
+          })}
           subtitle="Across all calls"
-          trend={data && (data.avgHealthScore ?? 0) >= 50 ? 'up' : 'neutral'}
           delay={0.1}
         />
         <StatCard
           title="Pending Actions"
           value={pendingActions}
           subtitle="Require attention"
-          trend={pendingActions > 0 ? 'neutral' : 'up'}
           delay={0.2}
         />
         <StatCard
           title="Avg Close Rate"
-          value={num(() => data?.avgCloseProbability ?? 0, n => `${n}%`)}
+          value={num(() => data?.avgCloseProbability ?? 0, n => `${n}%`, {
+            emptyWhen: (n, d) => n === 0 && (d?.totalCalls ?? 0) > 0,
+          })}
           subtitle="Enrollment calls"
-          trend={data && (data.avgCloseProbability ?? 0) >= 30 ? 'up' : 'neutral'}
           delay={0.3}
         />
         <StatCard
           title="Completion Rate"
           value={num(() => data?.completionRate ?? 0, n => `${Math.round(n * 100)}%`)}
           subtitle="Action items completed"
-          trend={data && (data.completionRate ?? 0) >= 0.5 ? 'up' : 'neutral'}
           delay={0.4}
         />
         <StatCard
           title="Recent Calls"
           value={num(() => data?.recentCalls.length ?? 0)}
           subtitle="In last 30 days"
-          trend="neutral"
           delay={0.5}
         />
       </BentoGrid>
