@@ -2,7 +2,6 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { useUser } from "@clerk/nextjs";
-import { initializePaddle } from "@paddle/paddle-js";
 import { toast } from "sonner";
 import Link from "next/link";
 import Nav from "@/components/nav";
@@ -24,48 +23,30 @@ export default function BillingPage() {
   const [subscriptionStatus, setSubscriptionStatus] = useState<string | null>(null);
   const [paddleSubscriptionId, setPaddleSubscriptionId] = useState<string | null>(null);
   const [cancellationEffectiveDate, setCancellationEffectiveDate] = useState<string | null>(null);
-  const [paddle, setPaddle] = useState<any>(null);
-  const [paddleError, setPaddleError] = useState(false);
   const [loading, setLoading] = useState(true);
-  const [upgradeSuccess, setUpgradeSuccess] = useState(false);
   const [showCancelConfirm, setShowCancelConfirm] = useState(false);
   const [cancelling, setCancelling] = useState(false);
 
   useEffect(() => {
-    initializePaddle({
-      environment: process.env.NODE_ENV === "production" ? "production" : "sandbox",
-      token: process.env.NEXT_PUBLIC_PADDLE_CLIENT_KEY || "",
-    }).then(paddleInstance => {
-      if (paddleInstance) {
-        setPaddle(paddleInstance);
-      } else {
-        setPaddleError(true);
-      }
-      setLoading(false);
-    }).catch(err => {
-      console.error("Paddle initialization failed:", err);
-      setPaddleError(true);
-      setLoading(false);
-    });
-
-    if (user?.id) {
-      fetch(`/api/billing?userId=${user.id}`)
-        .then(r => r.json())
-        .then(d => {
-          const plan: PlanTier = d.plan || "free";
-          setCurrentPlan(plan);
-          setUsage(d.usage || 0);
-          setLimit(d.limit || 5);
-          setMinuteUsage(d.minuteUsage || 0);
-          setMinuteLimit(d.minuteLimit || 300);
-          setTeamMemberCount(d.teamMemberCount || 1);
-          setTeamMemberLimit(d.teamMemberLimit || 1);
-          setSubscriptionStatus(d.subscriptionStatus || null);
-          setPaddleSubscriptionId(d.paddleSubscriptionId || null);
-          setCancellationEffectiveDate(d.cancellationEffectiveDate || null);
-        })
-        .catch((err) => console.error("Failed to fetch billing data:", err));
-    }
+    if (!user?.id) return;
+    setLoading(true);
+    fetch(`/api/billing?userId=${user.id}`)
+      .then(r => r.json())
+      .then(d => {
+        const plan: PlanTier = d.plan || "free";
+        setCurrentPlan(plan);
+        setUsage(d.usage || 0);
+        setLimit(d.limit || 5);
+        setMinuteUsage(d.minuteUsage || 0);
+        setMinuteLimit(d.minuteLimit || 300);
+        setTeamMemberCount(d.teamMemberCount || 1);
+        setTeamMemberLimit(d.teamMemberLimit || 1);
+        setSubscriptionStatus(d.subscriptionStatus || null);
+        setPaddleSubscriptionId(d.paddleSubscriptionId || null);
+        setCancellationEffectiveDate(d.cancellationEffectiveDate || null);
+      })
+      .catch((err) => console.error("Failed to fetch billing data:", err))
+      .finally(() => setLoading(false));
   }, [user?.id]);
 
   const handleCancel = useCallback(async () => {
@@ -91,48 +72,6 @@ export default function BillingPage() {
       setCancelling(false);
     }
   }, [user?.id, cancelling]);
-
-  const openCheckout = useCallback((plan: PlanTier) => {
-    if (!paddle || !user?.id || upgradeSuccess) return;
-    const priceId = PLANS[plan].paddlePriceId;
-    if (!priceId) return;
-
-    paddle.Checkout.open({
-      items: [{ priceId, quantity: 1 }],
-      customData: { userId: user.id },
-      settings: {
-        displayMode: "overlay",
-        theme: "dark",
-        showAddDiscounts: true,
-      },
-      onSuccess: () => {
-        setUpgradeSuccess(true);
-        setTimeout(() => window.location.reload(), 1500);
-      },
-      onClose: () => {
-        fetch(`/api/billing?userId=${user.id}`)
-          .then(r => r.json())
-          .then(d => {
-            if (d.plan !== "free") {
-              setCurrentPlan(d.plan);
-              setLimit(d.limit || 5);
-            }
-          })
-          .catch((err) => console.error("Failed to refresh billing data:", err));
-      },
-    });
-  }, [paddle, user?.id, upgradeSuccess]);
-
-  if (upgradeSuccess) {
-    return (
-      <main className="min-h-screen bg-linear-black text-white flex items-center justify-center">
-        <div className="text-center">
-          <CheckCircle className="w-12 h-12 text-green-400 mx-auto mb-4" />
-          <p className="text-lg font-medium">Upgrade successful! Refreshing...</p>
-        </div>
-      </main>
-    );
-  }
 
   const availablePlans: PlanTier[] = ["free", "pro", "business"];
 
@@ -235,33 +174,18 @@ export default function BillingPage() {
                     className="w-full text-center py-3 rounded-full text-xs font-semibold bg-white/10 text-white hover:bg-white/20 border border-white/10 transition disabled:opacity-50">
                     Downgrade
                   </button>
-                ) : paddleError ? (
+                ) : (
                   <Link
                     href="/pricing"
                     className="block w-full text-center py-3 rounded-full text-xs font-semibold bg-linear-indigo text-white hover:bg-linear-indigo/80 transition"
                   >
-                    See pricing
-                  </Link>
-                ) : (
-                  <button onClick={() => openCheckout(tier)}
-                    disabled={loading || !paddle}
-                    className="w-full text-center py-3 rounded-full text-xs font-semibold bg-linear-indigo text-white hover:bg-linear-indigo/80 transition disabled:opacity-50">
                     {loading ? <Loader2 className="w-3 h-3 animate-spin mx-auto" /> : `Upgrade - ${plan.priceLabel}/mo`}
-                  </button>
+                  </Link>
                 )}
               </div>
             );
           })}
         </div>
-
-        {paddleError && (
-          <div className="mt-6 p-4 rounded-xl bg-red-500/10 border border-red-500/20 text-center">
-            <p className="text-xs text-red-400/80 mb-1">Payment system unavailable right now.</p>
-            <Link href="/pricing" className="text-xs text-linear-indigo hover:text-white transition">
-              View pricing plans →
-            </Link>
-          </div>
-        )}
 
         {subscriptionStatus === "cancelled" && (
           <div className="mt-6 p-6 rounded-2xl bg-linear-surface border border-amber-500/20">

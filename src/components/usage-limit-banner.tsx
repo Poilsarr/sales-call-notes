@@ -61,7 +61,7 @@ export default function UsageLimitBanner({
         <span>
           You&apos;ve used <strong>{pctDisplay}%</strong> of your free monthly limit.
           <a
-            href="/billing"
+            href="/pricing"
             className="ml-2 underline font-semibold hover:opacity-80"
           >
             Upgrade for unlimited

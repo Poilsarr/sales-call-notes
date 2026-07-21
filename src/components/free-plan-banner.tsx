@@ -33,7 +33,7 @@ export default function FreePlanBanner({ plan }: FreePlanBannerProps) {
           You&apos;re on the <strong>Free</strong> plan. Upgrade to Pro for unlimited calls, CRM sync, and team features.
         </span>
         <a
-          href="/billing"
+          href="/pricing"
           className="ml-2 underline font-semibold hover:opacity-80 shrink-0"
         >
           Upgrade now
