@@ -18,6 +18,7 @@ import {
 import { BSummarization, BGlobe, BRocket } from "@/components/feature-3d-b";
 import { CAct, CHud, CSpeaker, CJson, CTeam } from "@/components/feature-3d-c";
 import { featureContent } from "@/lib/feature-content";
+import StickyMarketingCta from "@/components/sticky-marketing-cta";
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -839,6 +840,8 @@ export default function FeaturesPageClient() {
           </div>
         </div>
       </section>
+
+      <StickyMarketingCta label="Start with 300 free minutes/mo" href="/sign-up" cta="Start free" />
     </main>
   );
 }

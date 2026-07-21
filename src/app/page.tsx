@@ -5,6 +5,7 @@ import RoiCalculator from "@/components/roi-calculator";
 import HowItWorks from "@/components/how-it-works";
 import FinalCta from "@/components/final-cta";
 import { HeroCTA } from "@/components/hero-cta";
+import StickyMarketingCta from "@/components/sticky-marketing-cta";
 import { Crosshair, Upload, BarChart3, Shield, Check, ArrowRight } from "lucide-react";
 
 export const metadata = {
@@ -366,6 +367,10 @@ export default function Home() {
           already handles signed-in vs signed-out state). */}
       <div className="fixed bottom-0 inset-x-0 z-40 lg:hidden border-t border-gray-200 bg-white/95 backdrop-blur px-4 py-3 pb-[max(0.75rem,env(safe-area-inset-bottom))]">
         <HeroCTA />
+      </div>
+
+      <div className="hidden lg:block">
+        <StickyMarketingCta label="Start with 300 free minutes/mo" href="/sign-up" cta="Start free" />
       </div>
     </main>
   );
