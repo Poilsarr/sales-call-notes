@@ -2,7 +2,6 @@ import { headers } from "next/headers";
 import PricingClient from "@/components/pricing-client";
 import { buildTiers } from "@/lib/pricing-tiers";
 import Nav from "@/components/nav";
-import SiteFooter from "@/components/site-footer";
 
 /**
  * Server component: detect the visitor's country from the edge request
@@ -14,8 +13,9 @@ import SiteFooter from "@/components/site-footer";
  * they exist) and inject them into the client as props — they must never
  * be read from process.env inside a "use client" bundle.
  *
- * Nav + SiteFooter wrap the client pricing island so the page shares the
- * same chrome as /, /features, and /integrations.
+ * Nav is rendered here because the root layout doesn't include it; the
+ * global SiteFooter is already rendered by src/app/layout.tsx, so this
+ * page must not render a second one.
  */
 export default async function PricingPage() {
   const hdrs = await headers();
@@ -35,7 +35,6 @@ export default async function PricingPage() {
     <div className="min-h-screen bg-[#EFEFEF] text-gray-900 flex flex-col">
       <Nav />
       <PricingClient initialCountry={initialCountry} tiers={tiers} />
-      <SiteFooter />
     </div>
   );
 }

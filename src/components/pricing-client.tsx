@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { useUser } from "@clerk/nextjs";
-import { CheckCircle, Loader2, ArrowRight, Zap, Plus, Minus } from "lucide-react";
+import { CheckCircle, Loader2, ArrowRight, Zap, Plus, Minus, ShieldCheck, RotateCcw, CreditCard, Clock, TrendingUp } from "lucide-react";
 import type { Tier } from "@/lib/pricing-tiers";
 // NOTE: @paddle/paddle-js is imported dynamically inside openCheckout() so the
 // heavy SDK is NOT in the initial /pricing bundle (Lighthouse byte-weight budget).
@@ -474,6 +474,46 @@ export default function PricingClient({
         )}
       </section>
 
+      {/* Trust badges — reduce friction at the point of purchase decision */}
+      <section className="pb-12 sm:pb-16 px-5 sm:px-8 lg:px-12">
+        <div className="max-w-[1440px] mx-auto">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            {[
+              {
+                icon: CreditCard,
+                title: "No credit card for Free",
+                body: "Start with 300 minutes/mo instantly. Pay only when you upgrade.",
+              },
+              {
+                icon: RotateCcw,
+                title: "Cancel anytime",
+                body: "No annual lock-ins. Downgrade or cancel from your billing page.",
+              },
+              {
+                icon: ShieldCheck,
+                title: "14-day money-back guarantee",
+                body: "Not happy with Pro or Business? Full refund, no questions asked.",
+              },
+            ].map((badge) => (
+              <div
+                key={badge.title}
+                className="doppel-outer flex flex-col items-center text-center"
+              >
+                <div className="doppel-inner p-6 w-full h-full">
+                  <div className="w-10 h-10 rounded-full bg-[#F26522]/10 flex items-center justify-center mx-auto mb-3">
+                    <badge.icon size={20} className="text-[#F26522]" />
+                  </div>
+                  <h4 className="text-[13px] font-semibold text-gray-900 mb-1">
+                    {badge.title}
+                  </h4>
+                  <p className="text-[12px] text-gray-500 leading-relaxed">{badge.body}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
       {/* Comparison Table */}
       <section className="pb-12 sm:pb-16 px-5 sm:px-8 lg:px-12">
         <div className="max-w-[1440px] mx-auto">
@@ -555,6 +595,42 @@ export default function PricingClient({
         <div className="max-w-[1440px] mx-auto">
           <div className="doppel-outer group">
             <div className="doppel-inner p-10 sm:p-14 lg:p-20 text-center relative overflow-hidden">
+              <div className="relative z-10">
+                <div className="eyebrow inline-flex items-center gap-2 mb-5">
+                  <TrendingUp size={12} /> Why teams upgrade
+                </div>
+                <h2 className="text-[clamp(1.5rem,4vw,2.5rem)] font-medium leading-[1.12] tracking-[-0.02em] mb-10">
+                  One tool that pays for itself
+                </h2>
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 text-left max-w-4xl mx-auto mb-12">
+                  {[
+                    {
+                      icon: Clock,
+                      title: "Reclaim 5+ hours/week",
+                      body: "Stop re-listening to calls and writing notes. Get instant transcripts, summaries, and action items.",
+                    },
+                    {
+                      icon: TrendingUp,
+                      title: "Close more deals",
+                      body: "CRM sync pushes follow-ups straight to HubSpot or Salesforce so nothing falls through the cracks.",
+                    },
+                    {
+                      icon: ShieldCheck,
+                      title: "Predictable pricing",
+                      body: "Flat-rate plans. Add your whole team without multiplying the cost like per-seat tools do.",
+                    },
+                  ].map((v) => (
+                    <div key={v.title} className="flex flex-col items-start">
+                      <div className="w-9 h-9 rounded-full bg-[#F26522]/10 flex items-center justify-center mb-3">
+                        <v.icon size={18} className="text-[#F26522]" />
+                      </div>
+                      <h3 className="text-[14px] font-semibold text-gray-900 mb-1">{v.title}</h3>
+                      <p className="text-[12px] text-gray-500 leading-relaxed">{v.body}</p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
               <div className="relative z-10">
                 <div className="eyebrow inline-flex items-center gap-2 mb-5">
                   <ArrowRight size={12} /> Start today
