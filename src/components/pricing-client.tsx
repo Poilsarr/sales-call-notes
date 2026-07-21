@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { useUser } from "@clerk/nextjs";
-import { initializePaddle, type Paddle } from "@paddle/paddle-js";
+import type { Paddle } from "@paddle/paddle-js";
 import { CheckCircle, Loader2, ArrowRight, Zap, Plus, Minus } from "lucide-react";
 import type { Tier } from "@/lib/pricing-tiers";
 
@@ -125,8 +125,7 @@ export default function PricingClient({
 }) {
   const { user, isSignedIn, isLoaded: clerkLoaded } = useUser();
   const [cycle, setCycle] = useState<BillingCycle>("monthly");
-  const [paddle, setPaddle] = useState<Paddle | null>(null);
-  const [paddleReady, setPaddleReady] = useState(false);
+  const [checkingOut, setCheckingOut] = useState(false);
   const [paddleError, setPaddleError] = useState(false);
 
   // Map tier name -> formatted total string from Paddle PricePreview.
@@ -152,36 +151,6 @@ export default function PricingClient({
       cycle === "annual" ? tier.priceId.year : tier.priceId.month,
     [cycle]
   );
-
-  // Initialize Paddle once.
-  useEffect(() => {
-    let cancelled = false;
-    initializePaddle({
-      environment: environment as "sandbox" | "production",
-      token: clientToken,
-      // Prefill the customer's email if they're signed in.
-      ...(user?.primaryEmailAddress?.emailAddress
-        ? { pwCustomer: { email: user.primaryEmailAddress.emailAddress } }
-        : {}),
-    })
-      .then((instance) => {
-        if (cancelled) return;
-        if (instance) {
-          setPaddle(instance);
-          setPaddleReady(true);
-        } else {
-          setPaddleError(true);
-        }
-      })
-      .catch((err) => {
-        if (cancelled) return;
-        console.error("Paddle initialization failed:", err);
-        setPaddleError(true);
-      });
-    return () => {
-      cancelled = true;
-    };
-  }, [environment, clientToken, user?.primaryEmailAddress?.emailAddress]);
 
   // Fetch localized prices whenever cycle (or country) changes. We call our
   // server route (which hits Paddle's REST pricing-preview) because the
@@ -234,29 +203,49 @@ export default function PricingClient({
   }, [cycle, initialCountry, tiers, priceIdForCycle]);
 
   const openCheckout = useCallback(
-    (tier: Tier) => {
-      if (!paddle || !paddleReady) return;
+    async (tier: Tier) => {
+      if (checkingOut) return;
       if (!isSignedIn) {
         window.location.href = `/sign-up?redirect=/pricing`;
         return;
       }
-      paddle.Checkout.open({
-        items: [{ priceId: priceIdForCycle(tier), quantity: 1 }],
-        ...(user?.primaryEmailAddress?.emailAddress
-          ? { customer: { email: user.primaryEmailAddress.emailAddress } }
-          : {}),
-        customData: {
-          clerkUserId: user?.id,
-        },
-        settings: {
-          displayMode: "overlay",
-          variant: "one-page",
-          theme: "light",
-          successUrl: `${process.env.NEXT_PUBLIC_APP_URL || window.location.origin}/welcome`,
-        },
-      });
+      setCheckingOut(true);
+      try {
+        // Lazy-load the Paddle SDK only when the user starts checkout. This
+        // keeps the heavy SDK out of the initial /pricing bundle (Lighthouse
+        // byte-weight budget) — prices come from our own server route.
+        const { initializePaddle } = await import("@paddle/paddle-js");
+        const paddle = await initializePaddle({
+          environment,
+          token: clientToken,
+          ...(user?.primaryEmailAddress?.emailAddress
+            ? { pwCustomer: { email: user.primaryEmailAddress.emailAddress } }
+            : {}),
+        });
+        if (!paddle) throw new Error("Paddle failed to initialize");
+        paddle.Checkout.open({
+          items: [{ priceId: priceIdForCycle(tier), quantity: 1 }],
+          ...(user?.primaryEmailAddress?.emailAddress
+            ? { customer: { email: user.primaryEmailAddress.emailAddress } }
+            : {}),
+          customData: {
+            clerkUserId: user?.id,
+          },
+          settings: {
+            displayMode: "overlay",
+            variant: "one-page",
+            theme: "light",
+            successUrl: `${process.env.NEXT_PUBLIC_APP_URL || window.location.origin}/welcome`,
+          },
+        });
+      } catch (err) {
+        console.error("Paddle checkout failed:", err);
+        setPaddleError(true);
+      } finally {
+        setCheckingOut(false);
+      }
     },
-    [paddle, paddleReady, isSignedIn, user, priceIdForCycle]
+    [checkingOut, isSignedIn, user, environment, clientToken, priceIdForCycle]
   );
 
   return (
@@ -449,7 +438,7 @@ export default function PricingClient({
                     <button
                       type="button"
                       onClick={() => openCheckout(tier)}
-                      disabled={!paddleReady || !!paddleError || pricesLoading}
+                      disabled={checkingOut || !!paddleError || pricesLoading}
                       className={`block w-full text-center py-3 rounded-full text-[12px] font-semibold transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed ${
                         isPopular
                           ? "bg-[#F26522] text-white hover:bg-[#e05a1a] border border-transparent"
@@ -461,7 +450,7 @@ export default function PricingClient({
                       ) : paddleError && isPaddle ? (
                         "Unavailable"
                       ) : isSignedIn ? (
-                        paddleReady ? tier.cta : "Loading…"
+                        checkingOut ? "Loading…" : tier.cta
                       ) : (
                         "Start free"
                       )}
