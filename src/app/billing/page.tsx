@@ -7,7 +7,7 @@ import Link from "next/link";
 import Nav from "@/components/nav";
 import UsageDisplay from "@/components/usage-display";
 import {
-  Crown, CheckCircle, Sparkles, Loader2, AlertTriangle, Ban, Info,
+  Crown, CheckCircle, Sparkles, Loader2, AlertTriangle, Ban, Info, RefreshCw,
 } from "lucide-react";
 import { PLANS, PlanTier } from "@/lib/plans";
 
@@ -26,6 +26,7 @@ export default function BillingPage() {
   const [loading, setLoading] = useState(true);
   const [showCancelConfirm, setShowCancelConfirm] = useState(false);
   const [cancelling, setCancelling] = useState(false);
+  const [syncing, setSyncing] = useState(false);
 
   useEffect(() => {
     if (!user?.id) return;
@@ -73,6 +74,27 @@ export default function BillingPage() {
     }
   }, [user?.id, cancelling]);
 
+  const handleSync = useCallback(async () => {
+    if (syncing) return;
+    setSyncing(true);
+    try {
+      const res = await fetch("/api/billing/sync", { method: "POST" });
+      const data = await res.json();
+      if (res.ok && data.synced) {
+        toast.success(`Subscription synced: ${data.plan} plan active.`);
+        window.location.reload();
+      } else if (res.ok) {
+        toast.info(data.message || "No active subscription found.");
+      } else {
+        toast.error(data.error || "Sync failed");
+      }
+    } catch {
+      toast.error("Sync failed");
+    } finally {
+      setSyncing(false);
+    }
+  }, [syncing]);
+
   const availablePlans: PlanTier[] = ["free", "pro", "business"];
 
   return (
@@ -89,6 +111,18 @@ export default function BillingPage() {
               )}
             </p>
           </div>
+          <button
+            onClick={handleSync}
+            disabled={syncing}
+            className="flex items-center gap-2 px-4 py-2 rounded-full text-xs font-medium bg-white/10 text-white hover:bg-white/20 border border-white/10 transition disabled:opacity-50"
+          >
+            {syncing ? (
+              <Loader2 className="w-3.5 h-3.5 animate-spin" />
+            ) : (
+              <RefreshCw className="w-3.5 h-3.5" />
+            )}
+            Refresh subscription
+          </button>
         </div>
 
         {limit !== "unlimited" && (
