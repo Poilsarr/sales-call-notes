@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { AppSidebar } from '@/components/app-sidebar';
 import TrialBanner from '@/components/trial-banner';
+import FreePlanBanner from '@/components/free-plan-banner';
 import { Toaster } from 'sonner';
 import { motion } from 'framer-motion';
 import { useAuth } from '@clerk/nextjs';
@@ -16,6 +17,7 @@ export default function AppLayout({
   const { isLoaded, isSignedIn, userId } = useAuth();
   const router = useRouter();
   const [trialEndsAt, setTrialEndsAt] = useState<string | null>(null);
+  const [plan, setPlan] = useState<string | null>(null);
   const [onboardChecked, setOnboardChecked] = useState(false);
 
   useEffect(() => {
@@ -43,6 +45,7 @@ export default function AppLayout({
       .then(r => r.json())
       .then(d => {
         if (d.trialEndsAt) setTrialEndsAt(d.trialEndsAt);
+        if (d.plan) setPlan(d.plan);
       })
       .catch(() => {});
   }, [userId]);
@@ -54,6 +57,7 @@ export default function AppLayout({
       <AppSidebar />
       <main className="flex-1 overflow-y-auto">
         <TrialBanner trialEndsAt={trialEndsAt} />
+        <FreePlanBanner plan={plan} />
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
