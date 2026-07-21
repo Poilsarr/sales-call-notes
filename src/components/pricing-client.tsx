@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { useUser } from "@clerk/nextjs";
-import { CheckCircle, Loader2, ArrowRight, Zap, Plus, Minus, ShieldCheck, RotateCcw, CreditCard, Clock, TrendingUp } from "lucide-react";
+import { CheckCircle, Loader2, ArrowRight, Zap, Plus, Minus, ShieldCheck, RotateCcw, CreditCard, Clock, TrendingUp, ArrowUpRight, Download } from "lucide-react";
 import type { Tier } from "@/lib/pricing-tiers";
 import PricingCalculator from "@/components/pricing-calculator";
 import ExitIntentModal from "@/components/exit-intent-modal";
@@ -590,6 +590,56 @@ export default function PricingClient({
             {FAQ.map((item, i) => (
               <FaqItem key={i} q={item.q} a={item.a} />
             ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Switching from a competitor */}
+      <section className="pb-12 sm:pb-16 px-5 sm:px-8 lg:px-12">
+        <div className="max-w-[1440px] mx-auto">
+          <div className="doppel-outer">
+            <div className="doppel-inner p-6 sm:p-8 lg:p-10">
+              <div className="grid grid-cols-1 lg:grid-cols-[1fr_1.2fr] gap-8 items-center">
+                <div>
+                  <div className="eyebrow inline-flex items-center gap-2 mb-3">
+                    <ArrowUpRight size={12} /> Switching?
+                  </div>
+                  <h3 className="text-[clamp(1.25rem,3vw,1.75rem)] font-medium leading-[1.1] tracking-[-0.02em] mb-3">
+                    Moving from Fireflies, Otter, or Fathom?
+                  </h3>
+                  <p className="text-[13px] text-gray-500">
+                    You don&apos;t need to change your workflow. Upload your calls, keep your CRM, and get better notes at a flat price.
+                  </p>
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                  {[
+                    {
+                      icon: Download,
+                      title: "Bring your history",
+                      body: "Export MP3s from your old tool and upload them in bulk.",
+                    },
+                    {
+                      icon: ShieldCheck,
+                      title: "No bot joins calls",
+                      body: "We never auto-join your meetings. Consent-first, always.",
+                    },
+                    {
+                      icon: CreditCard,
+                      title: "Flat-rate pricing",
+                      body: "Stop multiplying per-seat costs. One price, whole team.",
+                    },
+                  ].map((item) => (
+                    <div key={item.title} className="flex flex-col items-start">
+                      <div className="w-9 h-9 rounded-full bg-[#F26522]/10 flex items-center justify-center mb-3">
+                        <item.icon size={18} className="text-[#F26522]" />
+                      </div>
+                      <h4 className="text-[13px] font-semibold text-gray-900 mb-1">{item.title}</h4>
+                      <p className="text-[12px] text-gray-500 leading-relaxed">{item.body}</p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </section>
