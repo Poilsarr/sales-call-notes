@@ -3,6 +3,11 @@ import PricingClient from "@/components/pricing-client";
 import { buildTiers } from "@/lib/pricing-tiers";
 import Nav from "@/components/nav";
 
+export const metadata = {
+  title: "Pricing — Gauge",
+  description: "Simple flat-rate pricing for Gauge. Free tier forever, affordable Pro and Business plans with no AI credit traps.",
+};
+
 /**
  * Server component: detect the visitor's country from the edge request
  * headers (Vercel sets `x-vercel-ip-country`) and pass it to the client

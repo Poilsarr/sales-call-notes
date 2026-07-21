@@ -1,7 +1,6 @@
 import Link from "next/link";
 import Nav from "@/components/nav";
 import StatusClient from "@/components/status-client";
-import SiteFooter from "@/components/site-footer";
 
 export const metadata = {
   title: "System Status",
@@ -46,7 +45,6 @@ export default function StatusPage() {
           </div>
         </div>
       </section>
-      <SiteFooter />
     </main>
   );
 }

@@ -1,7 +1,11 @@
 import Link from "next/link";
 import { Download, Chrome, CheckCircle2, ExternalLink, ArrowRight, Mic, Captions, FileText, ListChecks, X } from "lucide-react";
 import Nav from "@/components/nav";
-import SiteFooter from "@/components/site-footer";
+
+export const metadata = {
+  title: "Chrome Extension — Gauge",
+  description: "Capture Google Meet captions automatically and save calls to your Gauge dashboard with the Chrome extension.",
+};
 
 /**
  * Chrome extension landing page.
@@ -457,7 +461,6 @@ export default function ExtensionPage() {
         </div>
       </section>
 
-      <SiteFooter />
     </main>
   );
 }

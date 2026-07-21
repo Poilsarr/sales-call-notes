@@ -1,6 +1,5 @@
 import Link from "next/link";
 import { CheckCircle, ArrowRight } from "lucide-react";
-import SiteFooter from "@/components/site-footer";
 
 export const metadata = {
   title: "Welcome to Gauge",
@@ -46,7 +45,6 @@ export default function WelcomePage() {
           </div>
         </div>
       </div>
-      <SiteFooter />
     </main>
   );
 }

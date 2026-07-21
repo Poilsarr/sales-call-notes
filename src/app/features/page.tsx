@@ -7,7 +7,6 @@ import { useGSAP } from "@gsap/react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { useUser, SignInButton } from "@clerk/nextjs";
-import SiteFooter from "@/components/site-footer";
 import {
   Mic, Brain, Target, Share2, BarChart3,
   Upload, Layers, Shield, Globe, Download, Search,
@@ -840,7 +839,6 @@ export default function FeaturesPage() {
           </div>
         </div>
       </section>
-      <SiteFooter />
     </main>
   );
 }

@@ -1,12 +1,16 @@
 import Link from "next/link";
 import Nav from "@/components/nav";
-import SiteFooter from "@/components/site-footer";
 import SocialProof from "@/components/social-proof";
 import RoiCalculator from "@/components/roi-calculator";
 import HowItWorks from "@/components/how-it-works";
 import FinalCta from "@/components/final-cta";
 import { HeroCTA } from "@/components/hero-cta";
 import { Crosshair, Upload, BarChart3, Shield, Check, ArrowRight } from "lucide-react";
+
+export const metadata = {
+  title: "Gauge — AI Sales Call Notes & Competitive Intelligence",
+  description: "Gauge turns sales calls into structured notes, action items, and real-time competitive alerts. Upload, record, or capture from Google Meet.",
+};
 
 // Server component — zero JS shipped for the static landing content.
 // Only the CTA island runs client-side.
@@ -363,7 +367,6 @@ export default function Home() {
       <div className="fixed bottom-0 inset-x-0 z-40 lg:hidden border-t border-gray-200 bg-white/95 backdrop-blur px-4 py-3 pb-[max(0.75rem,env(safe-area-inset-bottom))]">
         <HeroCTA />
       </div>
-      <SiteFooter />
     </main>
   );
 }

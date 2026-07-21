@@ -1,6 +1,5 @@
 import Link from "next/link";
 import { ArrowRight, Code, AlertCircle } from "lucide-react";
-import SiteFooter from "@/components/site-footer";
 
 /**
  * /api-docs — index page listing available API documentation.
@@ -144,7 +143,6 @@ export default function ApiDocsIndex() {
           </div>
         </section>
       </article>
-      <SiteFooter />
     </main>
   );
 }

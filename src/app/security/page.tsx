@@ -1,7 +1,10 @@
-"use client";
 
 import Nav from "@/components/nav";
-import SiteFooter from "@/components/site-footer";
+
+export const metadata = {
+  title: "Security — Gauge",
+  description: "Gauge is privacy-first with local processing, SOC2 readiness, GDPR compliance, TLS encryption, and strict data handling.",
+};
 
 export default function SecurityPage() {
   return (
@@ -83,7 +86,6 @@ export default function SecurityPage() {
           </section>
         </div>
       </div>
-      <SiteFooter />
     </main>
   );
 }

@@ -1,8 +1,11 @@
-"use client";
 
 import Nav from "@/components/nav";
 import Link from "next/link";
-import SiteFooter from "@/components/site-footer";
+
+export const metadata = {
+  title: "Terms of Service — Gauge",
+  description: "Terms of Service for using Gauge.",
+};
 
 export default function TermsPage() {
   return (
@@ -55,7 +58,6 @@ export default function TermsPage() {
           </section>
         </div>
       </div>
-      <SiteFooter />
     </main>
   );
 }
