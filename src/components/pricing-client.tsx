@@ -6,6 +6,7 @@ import { CheckCircle, Loader2, ArrowRight, Zap, Plus, Minus, ShieldCheck, Rotate
 import type { Tier } from "@/lib/pricing-tiers";
 import PricingCalculator from "@/components/pricing-calculator";
 import ExitIntentModal from "@/components/exit-intent-modal";
+import StickyPricingCta from "@/components/sticky-pricing-cta";
 // NOTE: @paddle/paddle-js is imported dynamically inside openCheckout() so the
 // heavy SDK is NOT in the initial /pricing bundle (Lighthouse byte-weight budget).
 
@@ -716,6 +717,7 @@ export default function PricingClient({
       </section>
 
       <ExitIntentModal />
+      <StickyPricingCta />
     </main>
   );
 }
