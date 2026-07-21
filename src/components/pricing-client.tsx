@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback } from "react";
 import { useUser } from "@clerk/nextjs";
 import { CheckCircle, Loader2, ArrowRight, Zap, Plus, Minus, ShieldCheck, RotateCcw, CreditCard, Clock, TrendingUp } from "lucide-react";
 import type { Tier } from "@/lib/pricing-tiers";
+import PricingCalculator from "@/components/pricing-calculator";
 // NOTE: @paddle/paddle-js is imported dynamically inside openCheckout() so the
 // heavy SDK is NOT in the initial /pricing bundle (Lighthouse byte-weight budget).
 
@@ -513,6 +514,8 @@ export default function PricingClient({
           </div>
         </div>
       </section>
+
+      <PricingCalculator />
 
       {/* Comparison Table */}
       <section className="pb-12 sm:pb-16 px-5 sm:px-8 lg:px-12">
