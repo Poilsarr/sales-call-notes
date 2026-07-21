@@ -7,6 +7,7 @@ import type { Tier } from "@/lib/pricing-tiers";
 import PricingCalculator from "@/components/pricing-calculator";
 import ExitIntentModal from "@/components/exit-intent-modal";
 import StickyPricingCta from "@/components/sticky-pricing-cta";
+import PricingSocialProof from "@/components/pricing-social-proof";
 // NOTE: @paddle/paddle-js is imported dynamically inside openCheckout() so the
 // heavy SDK is NOT in the initial /pricing bundle (Lighthouse byte-weight budget).
 
@@ -644,6 +645,8 @@ export default function PricingClient({
           </div>
         </div>
       </section>
+
+      <PricingSocialProof />
 
       {/* CTA */}
       <section className="pb-16 sm:pb-20 lg:pb-28 px-5 sm:px-8 lg:px-12">
