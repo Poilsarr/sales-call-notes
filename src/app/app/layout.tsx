@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { AppSidebar } from '@/components/app-sidebar';
 import TrialBanner from '@/components/trial-banner';
 import FreePlanBanner from '@/components/free-plan-banner';
+import UsageLimitBanner from '@/components/usage-limit-banner';
 import { Toaster } from 'sonner';
 import { motion } from 'framer-motion';
 import { useAuth } from '@clerk/nextjs';
@@ -18,6 +19,10 @@ export default function AppLayout({
   const router = useRouter();
   const [trialEndsAt, setTrialEndsAt] = useState<string | null>(null);
   const [plan, setPlan] = useState<string | null>(null);
+  const [usage, setUsage] = useState(0);
+  const [limit, setLimit] = useState<number | "unlimited">(5);
+  const [minuteUsage, setMinuteUsage] = useState(0);
+  const [minuteLimit, setMinuteLimit] = useState<number | "unlimited">(300);
   const [onboardChecked, setOnboardChecked] = useState(false);
 
   useEffect(() => {
@@ -46,6 +51,10 @@ export default function AppLayout({
       .then(d => {
         if (d.trialEndsAt) setTrialEndsAt(d.trialEndsAt);
         if (d.plan) setPlan(d.plan);
+        if (typeof d.usage === "number") setUsage(d.usage);
+        if (d.limit !== undefined) setLimit(d.limit);
+        if (typeof d.minuteUsage === "number") setMinuteUsage(d.minuteUsage);
+        if (d.minuteLimit !== undefined) setMinuteLimit(d.minuteLimit);
       })
       .catch(() => {});
   }, [userId]);
@@ -58,6 +67,13 @@ export default function AppLayout({
       <main className="flex-1 overflow-y-auto">
         <TrialBanner trialEndsAt={trialEndsAt} />
         <FreePlanBanner plan={plan} />
+        <UsageLimitBanner
+          plan={plan}
+          usage={usage}
+          limit={limit}
+          minuteUsage={minuteUsage}
+          minuteLimit={minuteLimit}
+        />
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
