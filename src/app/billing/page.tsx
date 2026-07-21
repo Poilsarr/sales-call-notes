@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback } from "react";
 import { useUser } from "@clerk/nextjs";
 import { initializePaddle } from "@paddle/paddle-js";
 import { toast } from "sonner";
+import Link from "next/link";
 import Nav from "@/components/nav";
 import UsageDisplay from "@/components/usage-display";
 import {
@@ -24,6 +25,7 @@ export default function BillingPage() {
   const [paddleSubscriptionId, setPaddleSubscriptionId] = useState<string | null>(null);
   const [cancellationEffectiveDate, setCancellationEffectiveDate] = useState<string | null>(null);
   const [paddle, setPaddle] = useState<any>(null);
+  const [paddleError, setPaddleError] = useState(false);
   const [loading, setLoading] = useState(true);
   const [upgradeSuccess, setUpgradeSuccess] = useState(false);
   const [showCancelConfirm, setShowCancelConfirm] = useState(false);
@@ -36,7 +38,13 @@ export default function BillingPage() {
     }).then(paddleInstance => {
       if (paddleInstance) {
         setPaddle(paddleInstance);
+      } else {
+        setPaddleError(true);
       }
+      setLoading(false);
+    }).catch(err => {
+      console.error("Paddle initialization failed:", err);
+      setPaddleError(true);
       setLoading(false);
     });
 
@@ -227,6 +235,13 @@ export default function BillingPage() {
                     className="w-full text-center py-3 rounded-full text-xs font-semibold bg-white/10 text-white hover:bg-white/20 border border-white/10 transition disabled:opacity-50">
                     Downgrade
                   </button>
+                ) : paddleError ? (
+                  <Link
+                    href="/pricing"
+                    className="block w-full text-center py-3 rounded-full text-xs font-semibold bg-linear-indigo text-white hover:bg-linear-indigo/80 transition"
+                  >
+                    See pricing
+                  </Link>
                 ) : (
                   <button onClick={() => openCheckout(tier)}
                     disabled={loading || !paddle}
@@ -238,6 +253,15 @@ export default function BillingPage() {
             );
           })}
         </div>
+
+        {paddleError && (
+          <div className="mt-6 p-4 rounded-xl bg-red-500/10 border border-red-500/20 text-center">
+            <p className="text-xs text-red-400/80 mb-1">Payment system unavailable right now.</p>
+            <Link href="/pricing" className="text-xs text-linear-indigo hover:text-white transition">
+              View pricing plans →
+            </Link>
+          </div>
+        )}
 
         {subscriptionStatus === "cancelled" && (
           <div className="mt-6 p-6 rounded-2xl bg-linear-surface border border-amber-500/20">

@@ -166,24 +166,43 @@ export default function UpgradePrompt({ feature, featureName, onClose, minimal }
                   <span>{plan.features[feature] ? `Includes ${featureName}` : "Not included"}</span>
                 </div>
                 {plan.features[feature] && (
-                  <button
-                    onClick={(e) => { e.stopPropagation(); openCheckout(tier); }}
-                    disabled={upgrading === tier}
-                    className="mt-3 w-full py-2 rounded-full bg-linear-indigo text-white text-xs font-semibold hover:bg-linear-indigo/80 transition disabled:opacity-50">
-                    {upgrading === tier ? <Loader2 className="w-3 h-3 animate-spin mx-auto" /> : `Choose ${plan.name}`}
-                  </button>
+                  paddleError ? (
+                    <Link
+                      href="/pricing"
+                      onClick={(e) => e.stopPropagation()}
+                      className="mt-3 block w-full text-center py-2 rounded-full bg-linear-indigo text-white text-xs font-semibold hover:bg-linear-indigo/80 transition"
+                    >
+                      See pricing
+                    </Link>
+                  ) : (
+                    <button
+                      onClick={(e) => { e.stopPropagation(); openCheckout(tier); }}
+                      disabled={upgrading === tier}
+                      className="mt-3 w-full py-2 rounded-full bg-linear-indigo text-white text-xs font-semibold hover:bg-linear-indigo/80 transition disabled:opacity-50">
+                      {upgrading === tier ? <Loader2 className="w-3 h-3 animate-spin mx-auto" /> : `Choose ${plan.name}`}
+                    </button>
+                  )
                 )}
               </div>
             );
           })}
         </div>
 
-        {paddleError && (
-          <p className="text-xs text-red-400/70 text-center mb-4">Payment system unavailable. Please try again later.</p>
+        {paddleError ? (
+          <div className="text-center mb-4">
+            <p className="text-xs text-red-400/70 mb-2">Payment system unavailable right now.</p>
+            <Link
+              href="/pricing"
+              className="inline-flex items-center gap-1 text-xs text-linear-indigo hover:text-white transition"
+            >
+              View pricing plans →
+            </Link>
+          </div>
+        ) : (
+          <p className="text-[11px] text-white/30 text-center">
+            Powered by Paddle. Secure payment processing.
+          </p>
         )}
-        <p className="text-[11px] text-white/30 text-center">
-          Powered by Paddle. Secure payment processing.
-        </p>
       </div>
     </div>
   );
