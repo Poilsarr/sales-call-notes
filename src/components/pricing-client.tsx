@@ -5,6 +5,7 @@ import { useUser } from "@clerk/nextjs";
 import { CheckCircle, Loader2, ArrowRight, Zap, Plus, Minus, ShieldCheck, RotateCcw, CreditCard, Clock, TrendingUp } from "lucide-react";
 import type { Tier } from "@/lib/pricing-tiers";
 import PricingCalculator from "@/components/pricing-calculator";
+import ExitIntentModal from "@/components/exit-intent-modal";
 // NOTE: @paddle/paddle-js is imported dynamically inside openCheckout() so the
 // heavy SDK is NOT in the initial /pricing bundle (Lighthouse byte-weight budget).
 
@@ -663,6 +664,8 @@ export default function PricingClient({
           </div>
         </div>
       </section>
+
+      <ExitIntentModal />
     </main>
   );
 }
