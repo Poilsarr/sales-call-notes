@@ -2,6 +2,7 @@
 
 import { useState, useMemo } from "react";
 import { Calculator, Users, ArrowRight, CheckCircle } from "lucide-react";
+import { trackEvent } from "@/lib/analytics";
 
 const GAUGE_PRO_MONTHLY = 9;
 const FIREFLIES_PER_SEAT = 10;
@@ -114,6 +115,7 @@ export default function PricingCalculator() {
 
                 <a
                   href="/sign-up"
+                  onClick={() => trackEvent("pricing_cta_click", { section: "calculator", teamSize })}
                   className="mt-4 group inline-flex items-center gap-2 bg-[#F26522] hover:bg-[#e05a1a] text-white text-[13px] rounded-full pl-5 pr-2 py-2 transition-colors"
                 >
                   <span>Start free</span>

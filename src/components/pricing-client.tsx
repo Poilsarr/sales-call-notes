@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { useUser } from "@clerk/nextjs";
 import { CheckCircle, Loader2, ArrowRight, Zap, Plus, Minus, ShieldCheck, RotateCcw, CreditCard, Clock, TrendingUp, ArrowUpRight, Download } from "lucide-react";
+import { trackEvent } from "@/lib/analytics";
 import type { Tier } from "@/lib/pricing-tiers";
 import PricingCalculator from "@/components/pricing-calculator";
 import ExitIntentModal from "@/components/exit-intent-modal";
@@ -428,6 +429,7 @@ export default function PricingClient({
                   {tier.ctaKind === "signup" ? (
                     <a
                       href={isSignedIn ? "/app" : "/sign-up"}
+                      onClick={() => trackEvent("pricing_cta_click", { section: "plans", tier: tier.name })}
                       className="block w-full text-center py-3 rounded-full text-[12px] font-semibold transition-all duration-300 bg-white text-gray-900 border border-gray-300 hover:border-gray-900 hover:bg-gray-50"
                     >
                       {tier.cta}
@@ -435,6 +437,7 @@ export default function PricingClient({
                   ) : tier.ctaKind === "contact" ? (
                     <a
                       href="mailto:sales@usegauge.com?subject=Enterprise%20Plan%20Inquiry"
+                      onClick={() => trackEvent("pricing_cta_click", { section: "plans", tier: tier.name })}
                       className="block w-full text-center py-3 rounded-full text-[12px] font-semibold transition-all duration-300 bg-white text-gray-900 border border-gray-300 hover:border-gray-900 hover:bg-gray-50"
                     >
                       {tier.cta}
@@ -442,7 +445,10 @@ export default function PricingClient({
                   ) : (
                     <button
                       type="button"
-                      onClick={() => openCheckout(tier)}
+                      onClick={() => {
+                        trackEvent("pricing_plan_selected", { tier: tier.name, cycle });
+                        void openCheckout(tier);
+                      }}
                       disabled={checkingOut || !!paddleError || pricesLoading}
                       className={`block w-full text-center py-3 rounded-full text-[12px] font-semibold transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed ${
                         isPopular
@@ -701,6 +707,7 @@ export default function PricingClient({
                 </p>
                 <a
                   href="/sign-up"
+                  onClick={() => trackEvent("pricing_cta_click", { section: "bottom" })}
                   className="group inline-flex items-center gap-2 bg-[#F26522] hover:bg-[#e05a1a] text-white text-[13px] rounded-full pl-5 pr-2 py-2 transition-colors duration-300"
                 >
                   <span className="flex flex-col overflow-hidden h-[20px]">

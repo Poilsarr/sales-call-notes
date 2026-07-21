@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { X, Gift } from "lucide-react";
 import Link from "next/link";
+import { trackEvent } from "@/lib/analytics";
 
 const SHOWN_KEY = "pricing-exit-intent-shown";
 
@@ -26,6 +27,7 @@ export default function ExitIntentModal() {
         triggered = true;
         setShow(true);
         sessionStorage.setItem(SHOWN_KEY, "true");
+        trackEvent("pricing_exit_intent_shown");
       }
     };
 
@@ -67,6 +69,7 @@ export default function ExitIntentModal() {
         <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
           <Link
             href="/sign-up"
+            onClick={() => trackEvent("pricing_exit_intent_click")}
             className="inline-flex items-center justify-center gap-2 bg-[#F26522] hover:bg-[#e05a1a] text-white text-[13px] font-medium rounded-full px-6 py-2.5 transition-colors"
           >
             Start free

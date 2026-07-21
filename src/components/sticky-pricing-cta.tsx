@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { X, ArrowRight } from "lucide-react";
+import { trackEvent } from "@/lib/analytics";
 
 export default function StickyPricingCta() {
   const [visible, setVisible] = useState(false);
@@ -39,6 +40,7 @@ export default function StickyPricingCta() {
         <div className="flex items-center gap-2 shrink-0">
           <Link
             href="/sign-up"
+            onClick={() => trackEvent("pricing_cta_click", { section: "sticky" })}
             className="group inline-flex items-center gap-2 bg-[#F26522] hover:bg-[#e05a1a] text-white text-[12px] font-medium rounded-full pl-4 pr-1.5 py-1.5 transition-colors"
           >
             <span>Start free</span>
