@@ -217,9 +217,6 @@ export default function PricingClient({
       }
       setCheckingOut(true);
       try {
-        // Lazy-load the Paddle SDK only when the user starts checkout. This
-        // keeps the heavy SDK out of the initial /pricing bundle (Lighthouse
-        // byte-weight budget) — prices come from our own server route.
         const { initializePaddle } = await import("@paddle/paddle-js");
         const paddle = await initializePaddle({
           environment,
@@ -229,6 +226,11 @@ export default function PricingClient({
             : {}),
         });
         if (!paddle) throw new Error("Paddle failed to initialize");
+        
+        const redirectToWelcome = () => {
+          window.location.href = "/welcome";
+        };
+        
         paddle.Checkout.open({
           items: [{ priceId: priceIdForCycle(tier), quantity: 1 }],
           ...(user?.primaryEmailAddress?.emailAddress
@@ -241,9 +243,12 @@ export default function PricingClient({
             displayMode: "overlay",
             variant: "one-page",
             theme: "light",
+            successUrl: `${window.location.origin}/welcome`,
           },
-          onSuccess: () => {
-            window.location.href = "/welcome";
+          onSuccess: redirectToWelcome,
+          onCheckoutCompleted: redirectToWelcome,
+          onClose: () => {
+            setCheckingOut(false);
           },
         } as any);
       } catch (err) {

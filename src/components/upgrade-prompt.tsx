@@ -50,17 +50,22 @@ export default function UpgradePrompt({ feature, featureName, onClose, minimal }
 
     isProcessing.current = true;
     setUpgrading(targetPlan);
+    
+    const redirectToWelcome = () => {
+      isProcessing.current = false;
+      window.location.href = "/welcome";
+    };
+    
     paddle.Checkout.open({
       items: [{ priceId, quantity: 1 }],
       customData: { userId: user.id, feature },
       settings: {
         displayMode: "overlay",
         theme: "dark",
+        successUrl: `${window.location.origin}/welcome`,
       },
-      onSuccess: () => {
-        isProcessing.current = false;
-        window.location.href = "/welcome";
-      },
+      onSuccess: redirectToWelcome,
+      onCheckoutCompleted: redirectToWelcome,
       onClose: () => {
         isProcessing.current = false;
         setUpgrading(null);
