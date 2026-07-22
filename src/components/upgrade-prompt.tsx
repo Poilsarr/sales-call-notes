@@ -24,9 +24,10 @@ export default function UpgradePrompt({ feature, featureName, onClose, minimal }
   const isProcessing = useRef(false);
 
   useEffect(() => {
+    const clientToken = process.env.NEXT_PUBLIC_PADDLE_CLIENT_KEY || "";
     initializePaddle({
-      environment: process.env.NODE_ENV === "production" ? "production" : "sandbox",
-      token: process.env.NEXT_PUBLIC_PADDLE_CLIENT_KEY || "",
+      environment: clientToken.startsWith("live_") ? "production" : "sandbox",
+      token: clientToken,
     }).then(paddleInstance => {
       if (paddleInstance) setPaddle(paddleInstance);
     }).catch(err => {

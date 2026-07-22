@@ -1,34 +1,85 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
-import { CheckCircle, ArrowRight, Loader2, AlertTriangle } from "lucide-react";
+import { CheckCircle, ArrowRight, Loader2, AlertTriangle, RefreshCw } from "lucide-react";
+
+const MAX_RETRIES = 5;
+const BASE_DELAY_MS = 1000;
+
+async function syncSubscription(): Promise<{ synced: boolean; plan?: string; message?: string; error?: string }> {
+  const r = await fetch("/api/billing/sync", { method: "POST" });
+  const data = await r.json();
+  return data;
+}
 
 export default function WelcomePage() {
   const [status, setStatus] = useState<"syncing" | "success" | "error">("syncing");
   const [plan, setPlan] = useState<string | null>(null);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
+  const [retryCount, setRetryCount] = useState(0);
+  const [manualSyncing, setManualSyncing] = useState(false);
+  const cancelled = useRef(false);
 
   useEffect(() => {
-    fetch("/api/billing/sync", { method: "POST" })
-      .then((r) => r.json())
-      .then((data) => {
-        if (data.synced) {
-          setPlan(data.plan);
-          setStatus("success");
-        } else if (data.success === true && data.synced === false) {
-          setStatus("error");
-          setErrorMsg(data.message || "No active subscription found.");
-        } else {
-          setStatus("error");
-          setErrorMsg(data.error || "Could not verify subscription.");
+    let attempt = 0;
+
+    const trySync = async (): Promise<void> => {
+      while (attempt < MAX_RETRIES && !cancelled.current) {
+        attempt++;
+        setRetryCount(attempt);
+
+        try {
+          const data = await syncSubscription();
+          if (cancelled.current) return;
+
+          if (data.synced) {
+            setPlan(data.plan!);
+            setStatus("success");
+            return;
+          }
+
+          if (attempt < MAX_RETRIES) {
+            await new Promise((r) => setTimeout(r, BASE_DELAY_MS * Math.pow(2, attempt - 1)));
+          }
+        } catch {
+          if (attempt < MAX_RETRIES && !cancelled.current) {
+            await new Promise((r) => setTimeout(r, BASE_DELAY_MS * Math.pow(2, attempt - 1)));
+          }
         }
-      })
-      .catch(() => {
+      }
+
+      if (!cancelled.current) {
         setStatus("error");
-        setErrorMsg("Network error. Your payment went through — refresh this page in a moment.");
-      });
+        setErrorMsg(
+          "Your subscription is still being created. Click the button below to retry."
+        );
+      }
+    };
+
+    trySync();
+
+    return () => {
+      cancelled.current = true;
+    };
   }, []);
+
+  const handleManualSync = async () => {
+    setManualSyncing(true);
+    try {
+      const data = await syncSubscription();
+      if (data.synced) {
+        setPlan(data.plan!);
+        setStatus("success");
+      } else {
+        setErrorMsg(data.message || "No active subscription found yet.");
+      }
+    } catch {
+      setErrorMsg("Network error. Try again in a moment.");
+    } finally {
+      setManualSyncing(false);
+    }
+  };
 
   return (
     <main className="min-h-screen bg-white text-gray-900 flex flex-col">
@@ -103,15 +154,21 @@ export default function WelcomePage() {
                 {errorMsg}
               </p>
               <p className="text-gray-400 text-[13px] mb-8">
-                Go to billing and click <strong>Refresh subscription</strong> to apply it.
+                Click <strong>Retry sync</strong> to check again, or go to billing to manually refresh.
               </p>
               <div className="flex items-center justify-center gap-3 flex-wrap">
-                <Link
-                  href="/billing"
-                  className="inline-flex items-center gap-2 bg-[#F26522] hover:bg-[#e05a1a] text-white text-[13px] rounded-full px-6 py-2.5 transition-colors duration-300"
+                <button
+                  onClick={handleManualSync}
+                  disabled={manualSyncing}
+                  className="inline-flex items-center gap-2 bg-[#F26522] hover:bg-[#e05a1a] text-white text-[13px] rounded-full px-6 py-2.5 transition-colors duration-300 disabled:opacity-50"
                 >
-                  Refresh subscription
-                </Link>
+                  {manualSyncing ? (
+                    <Loader2 size={14} className="animate-spin" />
+                  ) : (
+                    <RefreshCw size={14} />
+                  )}
+                  {manualSyncing ? "Checking..." : "Retry sync"}
+                </button>
                 <Link
                   href="/app"
                   className="px-5 py-2.5 rounded-full text-[13px] font-medium border border-gray-300 hover:border-gray-900 hover:bg-gray-50 transition"
