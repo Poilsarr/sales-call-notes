@@ -78,7 +78,12 @@ export default function BillingPage() {
     if (syncing) return;
     setSyncing(true);
     try {
-      const res = await fetch("/api/billing/sync", { method: "POST" });
+      const email = user?.primaryEmailAddress?.emailAddress;
+      const res = await fetch("/api/billing/sync", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email }),
+      });
       const data = await res.json();
       if (res.ok && data.synced) {
         toast.success(`Subscription synced: ${data.plan} plan active.`);
@@ -95,7 +100,7 @@ export default function BillingPage() {
     } finally {
       setSyncing(false);
     }
-  }, [syncing]);
+  }, [syncing, user]);
 
   const availablePlans: PlanTier[] = ["free", "pro", "business"];
 

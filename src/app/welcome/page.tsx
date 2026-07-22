@@ -5,8 +5,8 @@ import { useUser } from "@clerk/nextjs";
 import Link from "next/link";
 import { CheckCircle, ArrowRight, Loader2, AlertTriangle, RefreshCw } from "lucide-react";
 
-const MAX_RETRIES = 5;
-const BASE_DELAY_MS = 1000;
+const MAX_RETRIES = 8;
+const BASE_DELAY_MS = 1500;
 
 async function syncSubscription(email?: string): Promise<{ synced: boolean; plan?: string; message?: string; error?: string }> {
   const r = await fetch("/api/billing/sync", {
@@ -19,7 +19,7 @@ async function syncSubscription(email?: string): Promise<{ synced: boolean; plan
 }
 
 export default function WelcomePage() {
-  const { user } = useUser();
+  const { user, isLoaded } = useUser();
   const [status, setStatus] = useState<"syncing" | "success" | "error">("syncing");
   const [plan, setPlan] = useState<string | null>(null);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
@@ -27,8 +27,10 @@ export default function WelcomePage() {
   const cancelled = useRef(false);
 
   useEffect(() => {
+    if (!isLoaded || !user) return;
+
     let attempt = 0;
-    const email = user?.primaryEmailAddress?.emailAddress;
+    const email = user.primaryEmailAddress?.emailAddress;
 
     const trySync = async (): Promise<void> => {
       while (attempt < MAX_RETRIES && !cancelled.current) {
@@ -41,15 +43,20 @@ export default function WelcomePage() {
           if (data.synced) {
             setPlan(data.plan!);
             setStatus("success");
+            setTimeout(() => {
+              if (!cancelled.current) {
+                window.location.href = "/app/intelligence";
+              }
+            }, 3000);
             return;
           }
 
           if (attempt < MAX_RETRIES) {
-            await new Promise((r) => setTimeout(r, BASE_DELAY_MS * Math.pow(2, attempt - 1)));
+            await new Promise((r) => setTimeout(r, BASE_DELAY_MS * Math.pow(1.5, attempt - 1)));
           }
         } catch {
           if (attempt < MAX_RETRIES && !cancelled.current) {
-            await new Promise((r) => setTimeout(r, BASE_DELAY_MS * Math.pow(2, attempt - 1)));
+            await new Promise((r) => setTimeout(r, BASE_DELAY_MS * Math.pow(1.5, attempt - 1)));
           }
         }
       }
@@ -62,12 +69,12 @@ export default function WelcomePage() {
       }
     };
 
-    if (user) trySync();
+    trySync();
 
     return () => {
       cancelled.current = true;
     };
-  }, [user]);
+  }, [user, isLoaded]);
 
   const handleManualSync = async () => {
     setManualSyncing(true);
@@ -76,6 +83,9 @@ export default function WelcomePage() {
       if (data.synced) {
         setPlan(data.plan!);
         setStatus("success");
+        setTimeout(() => {
+          window.location.href = "/app/intelligence";
+        }, 3000);
       } else {
         setErrorMsg(data.message || "No active subscription found yet.");
       }
@@ -110,24 +120,24 @@ export default function WelcomePage() {
                 <CheckCircle size={32} className="text-green-500" />
               </div>
               <h1 className="text-[clamp(1.75rem,4vw,2.5rem)] font-medium leading-[1.1] tracking-[-0.02em] mb-3">
-                You&apos;re all set!
+                Payment successful!
               </h1>
               <p className="text-gray-500 text-[14px] mb-2">
-                Your <strong className="text-gray-900">{plan === "pro" ? "Pro" : "Business"}</strong> plan is now active.
+                Thank you for subscribing to <strong className="text-gray-900">{plan === "pro" ? "Pro" : "Business"}</strong>!
               </p>
               <p className="text-gray-400 text-[13px] mb-8">
-                Unlimited uploads, no limits. We&apos;ve emailed your receipt.
+                Redirecting you to Competitive Intelligence in 3 seconds...
               </p>
               <div className="flex items-center justify-center gap-3 flex-wrap">
                 <Link
-                  href="/app"
+                  href="/app/intelligence"
                   className="group inline-flex items-center gap-2 bg-[#F26522] hover:bg-[#e05a1a] text-white text-[13px] rounded-full pl-5 pr-2 py-2 transition-colors duration-300"
                 >
                   <span className="flex flex-col overflow-hidden h-[20px]">
                     <span className="transition-transform duration-500 ease-[cubic-bezier(0.25,0.1,0.25,1)] group-hover:-translate-y-1/2 leading-[20px]">
-                      Go to dashboard
+                      Go to Intelligence
                     </span>
-                    <span className="leading-[20px]">Go to dashboard</span>
+                    <span className="leading-[20px]">Go to Intelligence</span>
                   </span>
                   <span className="w-7 h-7 bg-white rounded-full flex items-center justify-center transition-transform duration-500 ease-[cubic-bezier(0.25,0.1,0.25,1)] group-hover:-rotate-45">
                     <ArrowRight size={14} className="text-[#F26522]" />
