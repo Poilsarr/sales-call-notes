@@ -245,7 +245,7 @@ export default function PricingClient({
           onSuccess: () => {
             window.location.href = "/welcome";
           },
-        });
+        } as any);
       } catch (err) {
         console.error("Paddle checkout failed:", err);
         setPaddleError(true);
