@@ -51,8 +51,9 @@ export class TranscriptionServiceV2 {
 
       return this.parseVerboseJson(response);
     } catch (error) {
-      if (model === 'whisper-1' && !attempted.includes('whisper-large-v3')) {
-        return this.transcribe(audioBuffer, 'whisper-large-v3', language, options, [...attempted, model]);
+      const other = model === 'whisper-1' ? 'whisper-large-v3' : 'whisper-1';
+      if (!attempted.includes(other)) {
+        return this.transcribe(audioBuffer, other, language, options, [...attempted, model]);
       }
       throw error;
     }
