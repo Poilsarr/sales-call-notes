@@ -129,8 +129,21 @@ export default function RecordPage() {
     formData.append('language', language);
     formData.append('template', 'b2b-sales');
     
+    // Check file size before uploading (Vercel limit is 4.5MB)
+    const fileSizeMB = blob.size / (1024 * 1024);
+    if (fileSizeMB > 4) {
+      toast.error(`File too large (${fileSizeMB.toFixed(1)}MB). Vercel limit is 4MB. Try a shorter recording.`);
+      return;
+    }
+    
     toast.promise(
       fetch('/api/analyze', { method: 'POST', body: formData }).then(async res => {
+        // Check if response is JSON before parsing
+        const contentType = res.headers.get('content-type');
+        if (!contentType || !contentType.includes('application/json')) {
+          const text = await res.text();
+          throw new Error(`Server error: ${res.status} ${res.statusText}`);
+        }
         const data = await res.json();
         if (!res.ok) throw new Error(data.error || 'Failed to process recording');
         return data;
@@ -153,8 +166,11 @@ export default function RecordPage() {
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
-    if (file.size > 50 * 1024 * 1024) {
-      toast.error('File size exceeds 50MB limit');
+    
+    // Vercel serverless function limit is 4.5MB
+    const fileSizeMB = file.size / (1024 * 1024);
+    if (fileSizeMB > 4) {
+      toast.error(`File too large (${fileSizeMB.toFixed(1)}MB). Maximum is 4MB. Try a shorter recording or compress the file.`);
       return;
     }
     uploadRecording(file);
