@@ -241,7 +241,9 @@ export default function PricingClient({
             displayMode: "overlay",
             variant: "one-page",
             theme: "light",
-            successUrl: `${process.env.NEXT_PUBLIC_APP_URL || window.location.origin}/welcome`,
+          },
+          onSuccess: () => {
+            window.location.href = "/welcome";
           },
         });
       } catch (err) {

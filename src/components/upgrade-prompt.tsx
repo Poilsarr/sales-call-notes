@@ -58,13 +58,7 @@ export default function UpgradePrompt({ feature, featureName, onClose, minimal }
       },
       onSuccess: () => {
         isProcessing.current = false;
-        setSuccess(true);
-        setTimeout(() => {
-          setSuccess(false);
-          setUpgrading(null);
-          onClose?.();
-          window.location.reload();
-        }, 1500);
+        window.location.href = "/welcome";
       },
       onClose: () => {
         isProcessing.current = false;
