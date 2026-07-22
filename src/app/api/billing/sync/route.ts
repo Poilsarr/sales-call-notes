@@ -55,13 +55,27 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Paddle API key not configured" }, { status: 503 });
     }
 
+    // The DB email may be a placeholder (getUserByClerkId falls back to
+    // clerkId@placeholder.dev when the Clerk Backend API is unreachable).
+    // The caller can pass the real email from the Clerk client session.
+    const body = await req.json().catch(() => ({}));
+    const realEmail: string | undefined = body.email;
+    const lookupEmail = (realEmail || user.email).toLowerCase();
+
+    // If we got a real email from the client, persist it so subsequent lookups
+    // (debug endpoint, retries) also work.
+    if (realEmail && realEmail.toLowerCase() !== user.email.toLowerCase()) {
+      await prisma.user.update({
+        where: { id: user.id },
+        data: { email: realEmail.toLowerCase() },
+      });
+    }
+
     let paddleCustomerId = user.paddleCustomerId;
 
-    // If we don't know the Paddle customer ID yet, try to find the customer by email.
-    // This handles cases where the webhook didn't run or didn't persist the customer ID.
     if (!paddleCustomerId) {
       const customersRes = await paddleFetch(
-        `/customers?email=${encodeURIComponent(user.email)}&per_page=5`,
+        `/customers?email=${encodeURIComponent(lookupEmail)}&per_page=5`,
         apiKey
       );
       if (!customersRes.ok) {
@@ -77,14 +91,14 @@ export async function POST(req: NextRequest) {
         data?: Array<{ id: string; email: string }>;
       };
       const matchedCustomer = customersData.data?.find(
-        (c) => c.email.toLowerCase() === user.email.toLowerCase()
+        (c) => c.email.toLowerCase() === lookupEmail
       );
 
       if (!matchedCustomer) {
         return NextResponse.json(
           {
             error: "No Paddle customer found for this email.",
-            email: user.email,
+            email: lookupEmail,
             hint: "Complete a checkout first, then retry.",
           },
           { status: 404 }
@@ -93,7 +107,6 @@ export async function POST(req: NextRequest) {
 
       paddleCustomerId = matchedCustomer.id;
 
-      // Persist the customer ID so future syncs/webhooks don't need this fallback.
       await prisma.user.update({
         where: { id: user.id },
         data: { paddleCustomerId },

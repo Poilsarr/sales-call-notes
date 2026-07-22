@@ -15,7 +15,7 @@ export async function checkFeatureAccess(
   metadata?: { currentUsage?: number }
 ): Promise<EntitlementResult> {
   const user = await getUserByClerkId(userId);
-  const planTier: PlanTier = (user?.plan as PlanTier) || "free";
+  const planTier: PlanTier = ((user?.plan?.toLowerCase() as PlanTier) || "free") as PlanTier;
   const plan = getPlan(planTier);
 
   const allowed = hasFeature(plan, feature);
@@ -67,7 +67,7 @@ export async function getUsageCount(userId: string): Promise<number> {
 
 export async function getUserPlan(userId: string): Promise<{ tier: PlanTier; usage: number; limit: number | "unlimited" }> {
   const user = await getUserByClerkId(userId);
-  const tier: PlanTier = (user?.plan as PlanTier) || "free";
+  const tier: PlanTier = ((user?.plan?.toLowerCase() as PlanTier) || "free") as PlanTier;
   const plan = getPlan(tier);
   const usage = await getUsageCount(user.id);
   return { tier, usage, limit: plan.uploadLimit === "unlimited" ? "unlimited" : plan.uploadLimit as number };

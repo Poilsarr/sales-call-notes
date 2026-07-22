@@ -1,36 +1,41 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { useUser } from "@clerk/nextjs";
 import Link from "next/link";
 import { CheckCircle, ArrowRight, Loader2, AlertTriangle, RefreshCw } from "lucide-react";
 
 const MAX_RETRIES = 5;
 const BASE_DELAY_MS = 1000;
 
-async function syncSubscription(): Promise<{ synced: boolean; plan?: string; message?: string; error?: string }> {
-  const r = await fetch("/api/billing/sync", { method: "POST" });
+async function syncSubscription(email?: string): Promise<{ synced: boolean; plan?: string; message?: string; error?: string }> {
+  const r = await fetch("/api/billing/sync", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ email }),
+  });
   const data = await r.json();
   return data;
 }
 
 export default function WelcomePage() {
+  const { user } = useUser();
   const [status, setStatus] = useState<"syncing" | "success" | "error">("syncing");
   const [plan, setPlan] = useState<string | null>(null);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
-  const [retryCount, setRetryCount] = useState(0);
   const [manualSyncing, setManualSyncing] = useState(false);
   const cancelled = useRef(false);
 
   useEffect(() => {
     let attempt = 0;
+    const email = user?.primaryEmailAddress?.emailAddress;
 
     const trySync = async (): Promise<void> => {
       while (attempt < MAX_RETRIES && !cancelled.current) {
         attempt++;
-        setRetryCount(attempt);
 
         try {
-          const data = await syncSubscription();
+          const data = await syncSubscription(email);
           if (cancelled.current) return;
 
           if (data.synced) {
@@ -57,17 +62,17 @@ export default function WelcomePage() {
       }
     };
 
-    trySync();
+    if (user) trySync();
 
     return () => {
       cancelled.current = true;
     };
-  }, []);
+  }, [user]);
 
   const handleManualSync = async () => {
     setManualSyncing(true);
     try {
-      const data = await syncSubscription();
+      const data = await syncSubscription(user?.primaryEmailAddress?.emailAddress);
       if (data.synced) {
         setPlan(data.plan!);
         setStatus("success");

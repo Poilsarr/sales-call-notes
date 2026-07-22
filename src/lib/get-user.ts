@@ -4,7 +4,7 @@ import prisma from './prisma';
 const clerk = createClerkClient({ secretKey: process.env.CLERK_SECRET_KEY || '' });
 
 export async function getUserByClerkId(clerkId: string) {
-  let email = `${clerkId}@placeholder.dev`;
+  let email: string | undefined;
   try {
     const clerkUser = await clerk.users.getUser(clerkId);
     const primaryEmail = clerkUser.emailAddresses?.find(
@@ -14,7 +14,7 @@ export async function getUserByClerkId(clerkId: string) {
       email = primaryEmail.emailAddress;
     }
   } catch {
-    // Clerk API unavailable — fall back to placeholder
+    console.warn(`[getUserByClerkId] Clerk API unavailable for ${clerkId}`);
   }
 
   return prisma.user.upsert({
@@ -22,7 +22,7 @@ export async function getUserByClerkId(clerkId: string) {
     update: {},
     create: {
       clerkId,
-      email,
+      email: email || `${clerkId}@placeholder.dev`,
       name: `User ${clerkId.slice(0, 8)}`,
     },
   });

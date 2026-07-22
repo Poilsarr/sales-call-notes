@@ -27,6 +27,12 @@ export async function GET(req: NextRequest) {
     }
 
     const apiKey = getSecret("PADDLE_API_KEY");
+    const url = new URL(req.url);
+    const queryEmail = url.searchParams.get("email");
+
+    // Accept real email from query param (the DB email may be a placeholder)
+    const lookupEmail = (queryEmail || user.email).toLowerCase();
+
     const debug: any = {
       db: {
         id: user.id,
@@ -46,6 +52,10 @@ export async function GET(req: NextRequest) {
       },
       paddle: null as any,
     };
+
+    if (queryEmail) {
+      debug.query = { email: queryEmail, lookupEmail };
+    }
 
     if (!apiKey) {
       return NextResponse.json(debug);
@@ -71,7 +81,7 @@ export async function GET(req: NextRequest) {
       };
     } else {
       const custRes = await fetch(
-        `${getPaddleBaseUrl()}/customers?email=${encodeURIComponent(user.email)}&per_page=5`,
+        `${getPaddleBaseUrl()}/customers?email=${encodeURIComponent(lookupEmail)}&per_page=5`,
         {
           headers: {
             Authorization: `Bearer ${apiKey}`,
@@ -84,7 +94,7 @@ export async function GET(req: NextRequest) {
       };
       debug.paddle = {
         lookupMethod: "email",
-        lookupValue: user.email,
+        lookupValue: lookupEmail,
         status: custRes.status,
         customers: custBody.data || [],
       };
