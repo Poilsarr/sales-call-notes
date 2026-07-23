@@ -122,7 +122,11 @@ export async function POST(req: Request) {
       });
     } catch (error: any) {
       console.error('Transcription failed:', error?.message || error);
+      console.error('Transcription error cause:', error?.cause);
+      console.error('Transcription error stack:', error?.stack);
       const msg = error?.message || '';
+      const causeMsg = error?.cause?.message || '';
+      const fullError = causeMsg ? `${msg} | Cause: ${causeMsg}` : msg;
       if (msg.includes('OPENAI_API_KEY') || msg.includes('GROQ_API_KEY')) {
         return NextResponse.json({ error: msg }, { status: 500 });
       }
@@ -130,18 +134,18 @@ export async function POST(req: Request) {
         captureQuotaEvent(error, "analyze/transcribe");
         return quotaErrorResponse();
       }
-      if (msg.includes('401') || msg.includes('Unauthorized') || msg.includes('Incorrect API key')) {
+      if (msg.includes('401') || msg.includes('Unauthorized') || msg.includes('Incorrect API key') || causeMsg.includes('401')) {
         return NextResponse.json({ error: 'AI provider API key is invalid or expired. Check OPENAI_API_KEY and GROQ_API_KEY.' }, { status: 500 });
       }
       // Normalize generic connection/network errors into actionable messages
-      if (msg.toLowerCase().includes('connection') || msg.toLowerCase().includes('network') || msg.toLowerCase().includes('timeout') || msg.toLowerCase().includes('econnrefused')) {
-        console.error('Transcription network error details:', error?.message, error?.stack);
+      if (msg.toLowerCase().includes('connection') || msg.toLowerCase().includes('network') || msg.toLowerCase().includes('timeout') || msg.toLowerCase().includes('econnrefused') || causeMsg.toLowerCase().includes('fetch failed')) {
+        console.error('Transcription network error details:', error?.message, error?.cause, error?.stack);
         return NextResponse.json({
-          error: `Transcription failed: could not reach the AI provider (${error?.message?.slice(0, 200)}). Try again in a moment. If it persists, check that OPENAI_API_KEY and GROQ_API_KEY are set in Vercel.`
+          error: `Transcription failed: could not reach the AI provider (${fullError.slice(0, 300)}). Try again in a moment. If it persists, check that OPENAI_API_KEY and GROQ_API_KEY are set in Vercel.`
         }, { status: 500 });
       }
       return NextResponse.json({
-        error: 'Transcription failed: ' + msg.slice(0, 200)
+        error: 'Transcription failed: ' + fullError.slice(0, 300)
       }, { status: 500 });
     }
     console.log(`Transcription succeeded, length: ${transcription.text.length}, confidence: ${transcription.confidence}`);
