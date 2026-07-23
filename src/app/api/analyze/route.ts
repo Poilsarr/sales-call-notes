@@ -135,8 +135,9 @@ export async function POST(req: Request) {
       }
       // Normalize generic connection/network errors into actionable messages
       if (msg.toLowerCase().includes('connection') || msg.toLowerCase().includes('network') || msg.toLowerCase().includes('timeout') || msg.toLowerCase().includes('econnrefused')) {
+        console.error('Transcription network error details:', error?.message, error?.stack);
         return NextResponse.json({
-          error: 'Transcription failed: could not reach the AI provider. This is usually a temporary network issue — try again in a moment. If it persists, check that OPENAI_API_KEY and GROQ_API_KEY are set in Vercel.'
+          error: `Transcription failed: could not reach the AI provider (${error?.message?.slice(0, 200)}). Try again in a moment. If it persists, check that OPENAI_API_KEY and GROQ_API_KEY are set in Vercel.`
         }, { status: 500 });
       }
       return NextResponse.json({
