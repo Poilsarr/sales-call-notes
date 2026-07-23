@@ -1,7 +1,7 @@
 {
   "ok": true,
   "provider": "groq",
-  "latencyMs": 783,
+  "latencyMs": 917,
   "status": 200,
   "reply": "pong",
   "results": [
@@ -9,7 +9,7 @@
       "provider": "openai",
       "ok": false,
       "status": 429,
-      "latencyMs": 1963,
+      "latencyMs": 1831,
       "model": "gpt-4o-mini",
       "usage": null,
       "reply": null,
@@ -19,20 +19,20 @@
       "provider": "groq",
       "ok": true,
       "status": 200,
-      "latencyMs": 783,
+      "latencyMs": 917,
       "model": "llama-3.1-8b-instant",
       "usage": {
-        "queue_time": 0.050074708,
+        "queue_time": 0.160033619,
         "prompt_tokens": 43,
-        "prompt_time": 0.003170421,
+        "prompt_time": 0.004035769,
         "completion_tokens": 2,
-        "completion_time": 0.008152863,
+        "completion_time": 0.009526318,
         "total_tokens": 45,
-        "total_time": 0.011323284
+        "total_time": 0.013562087
       },
       "reply": "pong",
       "error": null
     }
   ],
-  "timestamp": "2026-07-16T11:20:00.000Z"
+  "timestamp": "2026-07-23T16:51:00.629Z"
 }
