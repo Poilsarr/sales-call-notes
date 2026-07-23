@@ -8,9 +8,10 @@ interface StatCardProps {
   subtitle?: string;
   trend?: 'up' | 'down' | 'neutral';
   delay?: number;
+  loading?: boolean;
 }
 
-export function StatCard({ title, value, subtitle, trend, delay = 0 }: StatCardProps) {
+export function StatCard({ title, value, subtitle, trend, delay = 0, loading }: StatCardProps) {
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
@@ -20,7 +21,11 @@ export function StatCard({ title, value, subtitle, trend, delay = 0 }: StatCardP
     >
       <div className="doppel-inner-dark p-6">
         <p className="text-sm text-zinc-400 mb-1">{title}</p>
-        <p className="text-3xl font-semibold text-white">{value}</p>
+        {loading ? (
+          <div className="h-9 w-20 rounded bg-zinc-800 animate-pulse mt-1" />
+        ) : (
+          <p className="text-3xl font-semibold text-white">{value}</p>
+        )}
         {subtitle && (
           <p className="text-sm text-zinc-500 mt-1">{subtitle}</p>
         )}

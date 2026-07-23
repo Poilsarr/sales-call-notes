@@ -59,16 +59,15 @@ export default function DashboardPage() {
     ? data.totalActionItems - Math.round(data.totalActionItems * data.completionRate)
     : 0;
 
-  // Show real numbers, not "..." placeholders. The previous version
-  // showed "..." while loading AND when data was null, which made
-  // signed-in users see an empty dashboard that looked broken
-  // (the second bug from the 2026-06-30 video walkthrough).
+  // Show skeleton placeholders during load, real numbers once data arrives.
+  // The loading prop on StatCard renders a fixed-size pulse skeleton so the
+  // card dimensions don't change when data arrives (prevents CLS).
   const num = (
     getter: () => number,
     format: (n: number) => string = String,
     opts?: { emptyWhen?: (n: number, d: AnalyticsData | null) => boolean }
   ): string => {
-    if (loading) return '…';
+    if (loading) return '0';
     const val = getter();
     if (opts?.emptyWhen?.(val, data)) return '—';
     return format(val);
@@ -87,6 +86,7 @@ export default function DashboardPage() {
           value={num(() => data?.totalCalls ?? 0)}
           subtitle="Last 30 days"
           delay={0}
+          loading={loading}
         />
         <StatCard
           title="Avg Health Score"
@@ -95,12 +95,14 @@ export default function DashboardPage() {
           })}
           subtitle="Across all calls"
           delay={0.1}
+          loading={loading}
         />
         <StatCard
           title="Pending Actions"
           value={pendingActions}
           subtitle="Require attention"
           delay={0.2}
+          loading={loading}
         />
         <StatCard
           title="Avg Close Rate"
@@ -109,18 +111,21 @@ export default function DashboardPage() {
           })}
           subtitle="Enrollment calls"
           delay={0.3}
+          loading={loading}
         />
         <StatCard
           title="Completion Rate"
           value={num(() => data?.completionRate ?? 0, n => `${Math.round(n * 100)}%`)}
           subtitle="Action items completed"
           delay={0.4}
+          loading={loading}
         />
         <StatCard
           title="Recent Calls"
           value={num(() => data?.recentCalls.length ?? 0)}
           subtitle="In last 30 days"
           delay={0.5}
+          loading={loading}
         />
       </BentoGrid>
 
@@ -135,7 +140,18 @@ export default function DashboardPage() {
           {error ? (
             <p className="text-red-400 text-center py-8">{error}</p>
           ) : loading ? (
-            <p className="text-zinc-500">Loading...</p>
+            // Fixed-height skeleton to prevent CLS when data arrives
+            <div className="space-y-3">
+              {[1, 2, 3].map((i) => (
+                <div key={i} className="flex items-center justify-between py-3 px-3 rounded-lg">
+                  <div className="flex-1">
+                    <div className="h-4 w-32 rounded bg-zinc-800 animate-pulse" />
+                    <div className="h-3 w-24 rounded bg-zinc-800/60 animate-pulse mt-2" />
+                  </div>
+                  <div className="h-6 w-12 rounded-full bg-zinc-800 animate-pulse" />
+                </div>
+              ))}
+            </div>
           ) : !data || data.recentCalls.length === 0 ? (
             // Visual empty state — not a single line of "no calls yet".
             // Three concrete actions the user can take to get their first

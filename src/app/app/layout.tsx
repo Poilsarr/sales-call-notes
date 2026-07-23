@@ -66,15 +66,22 @@ export default function AppLayout({
     <div className="flex h-screen bg-linear-black">
       <AppSidebar />
       <main className="flex-1 overflow-y-auto">
-        <TrialBanner trialEndsAt={trialEndsAt} />
-        <FreePlanBanner plan={plan} />
-        <UsageLimitBanner
-          plan={plan}
-          usage={usage}
-          limit={limit}
-          minuteUsage={minuteUsage}
-          minuteLimit={minuteLimit}
-        />
+        {/* Reserve space for banners to prevent CLS */}
+        <div className="min-h-[40px]">
+          <TrialBanner trialEndsAt={trialEndsAt} />
+        </div>
+        <div className="min-h-[40px]">
+          <FreePlanBanner plan={plan} />
+        </div>
+        <div className="min-h-[40px]">
+          <UsageLimitBanner
+            plan={plan}
+            usage={usage}
+            limit={limit}
+            minuteUsage={minuteUsage}
+            minuteLimit={minuteLimit}
+          />
+        </div>
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}

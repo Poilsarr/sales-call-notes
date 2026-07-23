@@ -401,9 +401,9 @@ export default function PricingClient({
                   )}
                   <div className="mb-6">
                     <h3 className="text-[16px] font-semibold tracking-tight mb-1">{tier.name}</h3>
-                    <div className="flex items-baseline gap-2 flex-wrap min-h-[2rem]">
+                    <div className="flex items-baseline gap-2 flex-wrap min-h-[2.5rem]">
                       {isPaddle && pricesLoading ? (
-                        <Loader2 size={18} className="animate-spin text-gray-400" />
+                        <div className="h-8 w-20 rounded bg-gray-200 animate-pulse" />
                       ) : showPrice ? (
                         <>
                           <span className="text-[clamp(1.5rem,3vw,2.5rem)] font-semibold tracking-tight">
