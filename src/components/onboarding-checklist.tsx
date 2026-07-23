@@ -146,7 +146,40 @@ export default function OnboardingChecklist() {
   }, [allDone, dismissed]);
 
   if (dismissed) return null;
-  if (loading) return null;
+  if (loading) {
+    // Skeleton placeholder with the same approximate dimensions as the
+    // rendered checklist so the layout doesn't shift when data arrives.
+    return (
+      <div className="mb-8" aria-hidden="true">
+        <div className="doppel-outer-dark overflow-hidden">
+          <div className="doppel-inner-dark p-5 sm:p-6">
+            <div className="flex items-start justify-between gap-4 mb-4">
+              <div className="w-full">
+                <div className="h-3 w-24 rounded bg-zinc-800 animate-pulse mb-2" />
+                <div className="h-5 w-40 rounded bg-zinc-800 animate-pulse mb-1.5" />
+                <div className="h-3 w-32 rounded bg-zinc-800/60 animate-pulse" />
+              </div>
+              <div className="h-6 w-6 rounded bg-zinc-800 animate-pulse" />
+            </div>
+            <div className="h-1.5 bg-zinc-800 rounded-full overflow-hidden mb-5">
+              <div className="h-full w-1/4 bg-zinc-800 animate-pulse rounded-full" />
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              {[1, 2, 3, 4].map((i) => (
+                <div key={i} className="flex items-start gap-3 p-3 rounded-xl border border-zinc-800/60">
+                  <div className="shrink-0 w-5 h-5 rounded-md border border-zinc-800 bg-zinc-800 animate-pulse" />
+                  <div className="flex-1 min-w-0">
+                    <div className="h-3.5 w-3/4 rounded bg-zinc-800 animate-pulse mb-2" />
+                    <div className="h-2.5 w-full rounded bg-zinc-800/60 animate-pulse" />
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="mb-8 animate-in slide-in-from-top-4 fade-in duration-300">
