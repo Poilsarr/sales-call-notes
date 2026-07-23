@@ -46,7 +46,6 @@ function createResilientFetch(): typeof fetch {
       try {
         const response = await fetch(input, {
           ...init,
-          keepalive: true,
         });
         return response;
       } catch (err) {
