@@ -202,12 +202,31 @@ export default function DashboardPage() {
 
   if (loading || !onboardChecked) {
     return (
-      <div className="min-h-screen bg-linear-black text-white flex flex-col">
+      <div className="min-h-screen bg-linear-black text-white">
         <Nav />
-        <div className="flex-1 flex items-center justify-center">
-          <div className="relative w-16 h-16">
-            <div className="absolute inset-0 rounded-full border-t-2 border-linear-indigo animate-spin" />
-            <Brain className="absolute inset-0 m-auto w-6 h-6 text-linear-indigo animate-pulse" />
+        <div className="max-w-7xl mx-auto px-6 py-12">
+          {/* Header skeleton */}
+          <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 mb-10">
+            <div>
+              <div className="h-8 w-40 rounded bg-white/10 animate-pulse mb-2" />
+              <div className="h-4 w-64 rounded bg-white/10 animate-pulse" />
+            </div>
+            <div className="h-10 w-64 rounded-xl bg-white/10 animate-pulse" />
+          </div>
+          {/* KPI grid skeleton */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-10">
+            {[1, 2, 3, 4].map((i) => (
+              <div key={i} className="rounded-2xl border border-white/10 bg-white/[0.02] p-6">
+                <div className="h-3 w-24 rounded bg-white/10 animate-pulse mb-3" />
+                <div className="h-7 w-16 rounded bg-white/10 animate-pulse" />
+              </div>
+            ))}
+          </div>
+          {/* Charts skeleton */}
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-10">
+            <div className="rounded-2xl border border-white/10 bg-white/[0.02] p-6 lg:row-span-2 h-[400px]" />
+            <div className="rounded-2xl border border-white/10 bg-white/[0.02] p-6 lg:col-span-2 h-[200px]" />
+            <div className="rounded-2xl border border-white/10 bg-white/[0.02] p-6 lg:col-span-2 h-[180px]" />
           </div>
         </div>
       </div>
