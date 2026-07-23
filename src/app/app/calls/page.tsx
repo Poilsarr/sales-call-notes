@@ -270,7 +270,23 @@ export default function CallsPage() {
 
       <div className="space-y-3">
         {loading ? (
-          <p className="text-zinc-500 text-center py-12">Loading calls...</p>
+          // Skeleton loader to prevent CLS when calls appear
+          <div className="space-y-3">
+            {[1, 2, 3].map((i) => (
+              <div key={i} className="doppel-outer-dark">
+                <div className="doppel-inner-dark p-4 flex items-center justify-between">
+                  <div className="flex items-center gap-4">
+                    <div className="w-10 h-10 rounded-full bg-zinc-800 animate-pulse" />
+                    <div>
+                      <div className="h-4 w-32 rounded bg-zinc-800 animate-pulse" />
+                      <div className="h-3 w-24 rounded bg-zinc-800/60 animate-pulse mt-2" />
+                    </div>
+                  </div>
+                  <div className="h-6 w-20 rounded-full bg-zinc-800 animate-pulse" />
+                </div>
+              </div>
+            ))}
+          </div>
         ) : filteredCalls.length === 0 ? (
           // Visual empty state — same pattern as the /app dashboard
           // recent-calls empty state. Was a one-liner that made the
