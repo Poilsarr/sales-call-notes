@@ -1030,6 +1030,23 @@
   color: #F26522;
 }
 
+@keyframes pulse-recording {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.08); }
+}
+
+.animate-pulse-recording {
+  animation: pulse-recording 1.5s ease-in-out infinite;
+}
+
+@keyframes fade-in {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.animate-fade-in {
+  animation: fade-in 0.35s ease-out both;
+}
 
 /* ponytail: a11y — respect prefers-reduced-motion (WCAG 2.3.3) */
 @media (prefers-reduced-motion: reduce) {

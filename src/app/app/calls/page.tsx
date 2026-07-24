@@ -3,7 +3,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { useUser } from '@clerk/nextjs';
 import Link from 'next/link';
-import { motion } from 'framer-motion';
 import { Search, Filter, Phone, Download, Upload, Mic, Chrome, ArchiveRestore } from 'lucide-react';
 import UpgradePrompt from '@/components/upgrade-prompt';
 import { toast } from 'sonner';
@@ -369,11 +368,10 @@ export default function CallsPage() {
           </div>
         ) : (
           filteredCalls.map((call, index) => (
-            <motion.div
+            <div
               key={call.id}
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: index * 0.05 }}
+              className="animate-fade-in"
+              style={{ animationDelay: `${index * 50}ms`, animationFillMode: 'backwards' }}
             >
               <Link href={`/app/calls/${call.id}`}>
                 <div className="doppel-outer-dark hover:ring-emerald-500/30 transition-all cursor-pointer">
@@ -415,7 +413,7 @@ export default function CallsPage() {
                   </div>
                 </div>
               </Link>
-            </motion.div>
+            </div>
           ))
         )}
         </div>

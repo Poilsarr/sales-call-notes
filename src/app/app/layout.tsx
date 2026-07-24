@@ -60,7 +60,21 @@ export default function AppLayout({
       .catch(() => {});
   }, [userId]);
 
-  if (!isLoaded || !isSignedIn || !onboardChecked) return null;
+  if (!isLoaded || !isSignedIn || !onboardChecked) {
+    // Render a layout skeleton matching the final structure so the page
+    // never flashes blank. Prevents CLS when auth resolves.
+    return (
+      <div className="flex h-screen bg-linear-black">
+        <AppSidebar />
+        <main className="flex-1 overflow-y-auto">
+          <div className="p-8">
+            <OnboardingChecklist />
+            {children}
+          </div>
+        </main>
+      </div>
+    );
+  }
 
   return (
     <div className="flex h-screen bg-linear-black">
@@ -82,15 +96,10 @@ export default function AppLayout({
             minuteLimit={minuteLimit}
           />
         </div>
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, ease: [0.32, 0.72, 0, 1] }}
-          className="p-8"
-        >
+        <div className="p-8">
           <OnboardingChecklist />
           {children}
-        </motion.div>
+        </div>
       </main>
       <Toaster
         position="top-right"

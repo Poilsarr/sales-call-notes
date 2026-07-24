@@ -2,7 +2,6 @@
 
 import { useState, useRef, useEffect } from 'react';
 import { useSearchParams } from 'next/navigation';
-import { motion } from 'framer-motion';
 import { Mic, Square, Upload, ExternalLink } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -268,11 +267,7 @@ export default function RecordPage() {
         <div className="space-y-6">
           <div className="doppel-outer-dark">
             <div className="doppel-inner-dark p-12 flex flex-col items-center justify-center">
-              <motion.div
-                animate={isRecording ? { scale: [1, 1.1, 1] } : { scale: 1 }}
-                transition={{ repeat: isRecording ? Infinity : 0, duration: 1.5 }}
-                className="mb-6"
-              >
+              <div className={`mb-6 ${isRecording ? 'animate-pulse-recording' : ''}`}>
                 <div className={`w-24 h-24 rounded-full flex items-center justify-center ${
                   isRecording ? 'bg-red-500/20' : 'bg-emerald-500/20'
                 }`}>
@@ -282,7 +277,7 @@ export default function RecordPage() {
                     <Mic className="w-10 h-10 text-emerald-400" />
                   )}
                 </div>
-              </motion.div>
+              </div>
               
               <p className="text-2xl font-mono text-white mb-6">{formatDuration(duration)}</p>
               
