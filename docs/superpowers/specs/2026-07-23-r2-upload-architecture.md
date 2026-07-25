@@ -1,4 +1,4 @@
-# R2 Direct Upload — Bypass Vercel 4.5MB Body Limit
+# Direct Upload — Bypass Vercel 4.5MB Body Limit
 
 ## Problem
 
@@ -13,9 +13,11 @@ not competitive even for the Free plan.
 
 ## Solution
 
-Use **Cloudflare R2** with presigned URLs. The client uploads directly
-to R2, bypassing Vercel's serverless function entirely. Our API only
-ever receives small JSON payloads (a few hundred bytes).
+Use **Vercel Blob** (already installed, no extra account needed) with
+presigned URLs via the server SDK (`issueSignedToken` + `presignUrl`).
+The client uploads directly to Blob, bypassing Vercel's serverless
+function entirely. Our API only ever receives small JSON payloads
+(a few hundred bytes).
 
 ## Flow
 
@@ -23,22 +25,22 @@ ever receives small JSON payloads (a few hundred bytes).
 User selects/records file
        │
        ▼
-Client → POST /api/upload-url { filename, contentType, fileSize }
+Client → POST /api/upload-url { filename, fileSize }
        │
        ▼
-Server generates presigned PUT URL (valid 15 min, scoped to userId)
+Server generates presigned PUT URL via @vercel/blob (issueSignedToken + presignUrl)
        │
        ▼
-Client uploads file directly to R2 via presigned URL
+Client uploads file directly to Vercel Blob via presigned URL (raw fetch, no SDK)
        │
        ▼
-Client → POST /api/analyze { r2Key, removeFillers, language, template }
+Client → POST /api/analyze { blobUrl, removeFillers, language, template }
        │
        ▼
-Server fetches file from R2 by key
+Server fetches file from Vercel Blob by URL (with BLOB_READ_WRITE_TOKEN auth header)
 Server runs transcription, analysis, etc.
-For free users: DELETE from R2 immediately after processing
-For paid users: keep in R2 for playback/download
+For free users: DELETE from Blob immediately after processing
+For paid users: keep in Blob for playback/download
        │
        ▼
 Response sent to client (same shape as today)
@@ -136,12 +138,12 @@ acquisition channel.
 
 ### 1. Recording Retention
 
-- **Free users:** recording deleted from R2 immediately after
+- **Free users:** recording deleted from Vercel Blob immediately after
   transcription completes (inline in the API handler). Only transcript
   stored in Postgres.
-- **Paid users (Pro/Business/Enterprise):** recording kept in R2 for
+- **Paid users (Pro/Business/Enterprise):** recording kept in Blob for
   replay and download. Users can mark a call as "not useful" and
-  confirm deletion to remove it from R2.
+  confirm deletion to remove it from Blob.
 - **Safety net:** R2 lifecycle policy deletes any object older than 90
   days, preventing storage leaks from failed cleanup logic.
 
@@ -161,54 +163,59 @@ Hard limit of 500MB per file, validated at three layers:
 |-------|-------|
 | `POST /api/upload-url` | Rejects `fileSize > 500MB` before generating URL |
 | Client (record page) | Blocks selection of files >500MB with toast error |
-| R2 bucket lifecycle | 90-day auto-delete as safety net |
 
 ### 4. Security
 
-- Presigned URLs expire after 15 minutes (can't be reused later).
+- Presigned URLs expire after 60 minutes.
 - Key path includes userId: `uploads/{userId}/{uuid}.{ext}` — users
-  can only upload to their own prefix (enforced server-side).
-- CORS on R2 bucket restricts to our origin.
+  can only upload to their own prefix.
+- Maximum file size is enforced at the presigned URL level
+  (`maximumSizeInBytes: 500MB`).
 - File type validation: only audio/* MIME types accepted.
 
 ---
 
-## R2 Cost and Scaling
+## Vercel Blob Cost and Scaling
 
-### Cost Model
+Vercel Blob pricing (Hobby plan):
 
-R2 has no egress fees. Billing is:
+| Metric | Hobby | Pro |
+|--------|-------|-----|
+| Storage | **256 MB** | 10 GB |
+| Transfer | 1 GB/month | 100 GB/month |
+| Max file size | 500 MB | 500 MB |
 
-| Metric | Free Tier | Over Free Tier |
-|--------|-----------|----------------|
-| Storage | 10 GB | $0.015/GB/month |
-| Class A (writes) | 1M/month | $4.50/1M |
-| Class B (reads) | 10M/month | $0.36/1M |
+### The "256 MB" Problem
 
-### Projected Scale
+Hobby's 256 MB storage cap is designed for small assets, not audio
+files. **Free users' files are deleted immediately after processing,
+so they consume near-zero storage in steady state.** Paid users'
+files accumulate, but at Hobby's scale this is manageable:
 
-| Metric | Per User/Month | 500 Paid Users | 2,000 Paid Users |
-|--------|---------------|----------------|------------------|
-| Calls/user | 15 | 7,500 | 30,000 |
-| Avg file size | 30 MB | 225 GB storage | 900 GB storage |
-| Storage cost | — | **$3.38/month** | **$13.50/month** |
-| Writes (upload) | 15 | 7,500 (free) | 30,000 (free) |
-| Reads (analyze) | 15 | 7,500 (free) | 30,000 (free) |
-| Deletes (cleanup) | 15 | 7,500 (free) | 30,000 (free) |
+- 10 Pro users × 15 calls/month × 30 MB = 4.5 GB → would exceed
+  Hobby cap.
 
-Writes and reads remain within R2 free tier up to ~66,000 users.
+**Realistically, this means after ~10-20 paid users you'll need to
+upgrade to Vercel Pro ($20/month).** Pro includes 10 GB storage,
+100 GB transfer, and higher serverless limits.
 
-Free users' files are deleted immediately, so they consume near-zero
-storage in steady state. Only paid users' retained files count.
+### Pricing Comparison
 
-### Scaling Limits
+| Provider | 100 GB Storage | No CC Required |
+|----------|---------------|----------------|
+| Vercel Blob | Already set up, $20/mo (Pro) | ✅ No card for Hobby |
+| Cloudflare R2 | $1.35/mo + no egress | ❌ Requires card |
+| AWS S3 | $2.30/mo | ❌ Requires card |
 
-- **Free tier writes (1M):** hit at ~66,000 users uploading 15
-  files/month.
-- **Free tier reads (10M):** hit at ~222,000 users reading 15
-  files/month (analyze + playback).
-- **Storage:** scales linearly at $0.015/GB/month — negligible cost
-  in the foreseeable future.
+Vercel Blob is the zero-config choice right now. If storage costs
+become a concern at scale (~50+ paid users), we can migrate to
+R2 without changing the client-facing API.
+
+### Cleanup Mitigation
+
+To stay within Hobby's 256 MB longer, add a cron that deletes paid
+users' files older than 30 days. After the user's retention period
+expires, only the transcript stays in Postgres.
 
 ---
 
@@ -218,19 +225,16 @@ storage in steady state. Only paid users' retained files count.
 
 | File | Purpose |
 |------|---------|
-| `src/lib/r2.ts` | S3-compatible client, upload/download helpers |
-| `src/app/api/upload-url/route.ts` | Presigned URL generation endpoint |
-| `src/types/r2.ts` | Types for r2Key references |
+| `src/app/api/upload-url/route.ts` | Presigned URL generation endpoint (uses `issueSignedToken` + `presignUrl`) |
+| `src/lib/blob.ts` | Helpers for server-side blob fetch/delete |
 
 ### Modify
 
 | File | Change |
 |------|--------|
-| `src/app/app/record/page.tsx` | Upload flow: get presigned URL → upload to R2 → analyze with r2Key |
-| `src/app/api/analyze/route.ts` | Accept `r2Key` as alternative to `file` in FormData; fetch & cleanup |
-| `src/lib/audio-compress.ts` | Change threshold from 4MB to 50MB |
-| `src/app/app/record/page.tsx` | Remove 4MB blocks, add 500MB validation |
-| `src/app/calls/[id]/page.tsx` | Add R2 audio player for paid users |
+| `src/app/app/record/page.tsx` | Upload flow: get presigned URL → PUT to blob → analyze with blobUrl |
+| `src/app/api/analyze/route.ts` | Accept `blobUrl` in JSON body; fetch from blob; add cleanup for free users |
+| `src/lib/audio-compress.ts` | Change compression threshold from 4MB to 50MB |
 | Plan/config | Add feature flag `audio_retention` for paid-only playback |
 
 ---
