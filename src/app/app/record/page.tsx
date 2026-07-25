@@ -408,7 +408,7 @@ export default function RecordPage() {
               <label className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed border-zinc-700 rounded-xl cursor-pointer hover:border-emerald-500/50 transition-colors">
                 <Upload className="w-8 h-8 text-zinc-500 mb-2" />
                 <span className="text-sm text-zinc-400">Click to upload or drag and drop</span>
-                <span className="text-xs text-zinc-600 mt-1">MP3, WAV, M4A up to 50MB</span>
+                <span className="text-xs text-zinc-600 mt-1">MP3, WAV, M4A up to 500MB</span>
                 <input type="file" className="hidden" accept="audio/*" onChange={handleFileUpload} />
               </label>
               <label className="mt-4 flex items-center gap-3 text-sm text-zinc-300">
