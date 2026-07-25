@@ -1,5 +1,5 @@
 export async function compressAudio(file: File): Promise<File> {
-  if (file.size <= 4 * 1024 * 1024) return file;
+  if (file.size <= 50 * 1024 * 1024) return file;
 
   const audioContext = new AudioContext();
   const arrayBuffer = await file.arrayBuffer();

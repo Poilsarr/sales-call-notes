@@ -6,6 +6,7 @@ import { Mic, Square, Upload, ExternalLink } from 'lucide-react';
 import { toast } from 'sonner';
 
 import { LiveTranscriptionPanel } from '@/components/live-transcription-panel';
+import { compressAudio } from '@/lib/audio-compress';
 
 type BrowserSpeechRecognition = {
   continuous: boolean;
@@ -122,22 +123,53 @@ export default function RecordPage() {
   };
 
   const uploadRecording = async (blob: Blob) => {
-    const formData = new FormData();
-    formData.append('file', blob, 'recording.webm');
-    formData.append('removeFillers', String(removeFillers));
-    formData.append('language', language);
-    formData.append('template', 'b2b-sales');
-    
-    // Check file size before uploading (Vercel limit is 4.5MB)
     const fileSizeMB = blob.size / (1024 * 1024);
-    if (fileSizeMB > 4) {
-      toast.error(`File too large (${fileSizeMB.toFixed(1)}MB). Vercel limit is 4MB. Try a shorter recording.`);
+    if (fileSizeMB > 500) {
+      toast.error(`File too large (${fileSizeMB.toFixed(1)}MB). Maximum is 500MB.`);
       return;
     }
-    
+
+    let uploadFile = blob;
+    let uploadName = `recording-${Date.now()}.webm`;
+    if (fileSizeMB > 50) {
+      const compressed = await compressAudio(new File([blob], uploadName, { type: 'audio/webm' }));
+      uploadFile = compressed;
+      uploadName = compressed.name;
+    }
+
+    // Get a presigned upload URL from our server
+    const { presignedUrl, blobUrl } = await fetch('/api/upload-url', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        filename: uploadName,
+        contentType: uploadFile.type || 'audio/webm',
+        fileSize: uploadFile.size,
+      }),
+    }).then(async r => {
+      const d = await r.json();
+      if (!r.ok) throw new Error(d.error || 'Failed to get upload URL');
+      return d;
+    });
+
+    // Upload directly to Vercel Blob (bypasses serverless body limit)
+    await fetch(presignedUrl, {
+      method: 'PUT',
+      body: uploadFile,
+      headers: { 'Content-Type': uploadFile.type || 'audio/webm' },
+    });
+
     toast.promise(
-      fetch('/api/analyze', { method: 'POST', body: formData }).then(async res => {
-        // Check if response is JSON before parsing
+      fetch('/api/analyze', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          blobUrl,
+          removeFillers,
+          language,
+          template: 'b2b-sales',
+        }),
+      }).then(async res => {
         const contentType = res.headers.get('content-type');
         if (!contentType || !contentType.includes('application/json')) {
           const text = await res.text();
@@ -162,17 +194,77 @@ export default function RecordPage() {
     );
   };
 
-  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
-    
-    // Vercel serverless function limit is 4.5MB
+
     const fileSizeMB = file.size / (1024 * 1024);
-    if (fileSizeMB > 4) {
-      toast.error(`File too large (${fileSizeMB.toFixed(1)}MB). Maximum is 4MB. Try a shorter recording or compress the file.`);
+    if (fileSizeMB > 500) {
+      toast.error(`File too large (${fileSizeMB.toFixed(1)}MB). Maximum is 500MB.`);
       return;
     }
-    uploadRecording(file);
+
+    let uploadFile: Blob | File = file;
+    let uploadName = file.name;
+    if (fileSizeMB > 50) {
+      const compressed = await compressAudio(file);
+      uploadFile = compressed;
+      uploadName = compressed.name;
+    }
+
+    const { presignedUrl, blobUrl } = await fetch('/api/upload-url', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        filename: uploadName,
+        contentType: uploadFile.type || file.type || 'audio/mpeg',
+        fileSize: uploadFile.size,
+      }),
+    }).then(async r => {
+      const d = await r.json();
+      if (!r.ok) throw new Error(d.error || 'Failed to get upload URL');
+      return d;
+    });
+
+    await fetch(presignedUrl, {
+      method: 'PUT',
+      body: uploadFile,
+      headers: { 'Content-Type': uploadFile.type || file.type || 'audio/mpeg' },
+    });
+
+    toast.promise(
+      fetch('/api/analyze', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          blobUrl,
+          removeFillers,
+          language,
+          template: 'b2b-sales',
+        }),
+      }).then(async res => {
+        const contentType = res.headers.get('content-type');
+        if (!contentType || !contentType.includes('application/json')) {
+          const text = await res.text();
+          throw new Error(`Server error: ${res.status} ${res.statusText}`);
+        }
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || 'Failed to process recording');
+        return data;
+      }),
+      {
+        loading: 'Processing recording...',
+        success: (data) => {
+          const callId = data?.call?.id || data?.id;
+          if (callId) {
+            setUploadedCallId(callId);
+            return 'Call analyzed successfully';
+          }
+          return 'Call analyzed successfully';
+        },
+        error: (err) => err.message || 'Failed to process recording',
+      }
+    );
   };
 
   const startSpeechRecognition = (sessionId: string) => {

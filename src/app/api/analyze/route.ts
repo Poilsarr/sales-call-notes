@@ -45,41 +45,77 @@ export async function POST(req: Request) {
     if (!clerkUserId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
     console.log('Analyze route called');
-    const formData = await req.formData();
-    const file = formData.get('file') as File;
-    const requestedLanguage = normalizeLanguage(formData.get('language'));
-    const removeFillers = parseRemoveFillers(formData.get('removeFillers'));
-    const requestedTemplate = formData.get('template') as string | null;
 
-    if (!file) return NextResponse.json({ error: 'No file provided' }, { status: 400 });
+    // Determine whether this is a blob upload (JSON) or legacy upload (FormData).
+    const contentType = req.headers.get('content-type') || '';
+    const isJson = contentType.includes('application/json');
+
+    let fileBuffer: Buffer;
+    let fileName: string;
+    let requestedLanguage: string | undefined;
+    let removeFillers: boolean;
+    let requestedTemplate: string | null;
+    let audioUrl: string | null = null;
+    let isBlobUpload = false;
+
+    if (isJson) {
+      const body = await req.json();
+      const blobUrl: string | undefined = body.blobUrl;
+      if (!blobUrl) {
+        return NextResponse.json({ error: 'No blobUrl provided' }, { status: 400 });
+      }
+
+      const token = process.env.BLOB_READ_WRITE_TOKEN;
+      if (!token) {
+        return NextResponse.json({ error: 'BLOB_READ_WRITE_TOKEN not set' }, { status: 500 });
+      }
+
+      const response = await fetch(blobUrl, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (!response.ok) {
+        return NextResponse.json({ error: `Failed to fetch blob: ${response.status}` }, { status: 502 });
+      }
+
+      fileBuffer = Buffer.from(await response.arrayBuffer());
+      fileName = body.filename || blobUrl.split('/').pop() || 'recording.webm';
+      requestedLanguage = normalizeLanguage(body.language ?? null);
+      removeFillers = typeof body.removeFillers === 'boolean' ? body.removeFillers : parseRemoveFillers(body.removeFillers ?? null);
+      requestedTemplate = (body.template as string) || null;
+      audioUrl = blobUrl;
+      isBlobUpload = true;
+    } else {
+      const formData = await req.formData();
+      const file = formData.get('file') as File;
+      if (!file) return NextResponse.json({ error: 'No file provided' }, { status: 400 });
+
+      fileBuffer = Buffer.from(await file.arrayBuffer());
+      fileName = file.name || 'call_recording.mp3';
+      requestedLanguage = normalizeLanguage(formData.get('language'));
+      removeFillers = parseRemoveFillers(formData.get('removeFillers'));
+      requestedTemplate = formData.get('template') as string | null;
+
+      // Legacy upload to Vercel Blob (non-fatal if it fails)
+      try {
+        const { put: blobPut } = eval("require('@vercel/blob')") as { put: (path: string, body: Buffer, opts: { access: string; addRandomSuffix: boolean }) => Promise<{ url: string }> };
+        const blobResult = await blobPut(fileName, fileBuffer, {
+          access: 'public',
+          addRandomSuffix: true,
+        });
+        audioUrl = blobResult.url;
+        console.log(`Audio uploaded to Blob: ${audioUrl}`);
+      } catch (e: any) {
+        console.error(`Audio upload failed (non-fatal): ${e?.message}`);
+      }
+    }
 
     const user = await getUserByClerkId(clerkUserId);
     const userId = user.id;
-
-    const fileBuffer = Buffer.from(await file.arrayBuffer());
-    const fileName = file.name || 'call_recording.mp3';
 
     const validator = new FileValidationService();
     const validation = await validator.validate(fileBuffer, fileName);
     if (!validation.isValid) {
       return NextResponse.json({ error: validation.error }, { status: 400 });
-    }
-
-    // Upload original audio to Vercel Blob before any preprocessing.
-    // This preserves the unmodified file for re-processing with different templates.
-    // ponytail: eval-require defeats webpack static analysis of undici@6 #private fields.
-    let audioUrl: string | null = null;
-    try {
-      const { put: blobPut } = eval("require('@vercel/blob')") as { put: (path: string, body: Buffer, opts: { access: string; addRandomSuffix: boolean }) => Promise<{ url: string }> };
-      const blobResult = await blobPut(fileName, fileBuffer, {
-        access: 'public',
-        addRandomSuffix: true,
-      });
-      audioUrl = blobResult.url;
-      console.log(`Audio uploaded to Blob: ${audioUrl}`);
-    } catch (e: any) {
-      console.error(`Audio upload failed (non-fatal): ${e?.message}`);
-      // Continue without audio persistence rather than blocking the entire pipeline.
     }
 
     console.log(`Processing file: ${fileName}, size: ${fileBuffer.length}`);
@@ -465,6 +501,17 @@ export async function POST(req: Request) {
     try {
       const plan = (user.plan?.toLowerCase() as any) || "free";
       archivedCount = await enforceCallRetention(userId, plan);
+
+      // Free users: delete the original audio from blob storage after processing.
+      if (isBlobUpload && plan === "free" && audioUrl) {
+        try {
+          const { del: blobDel } = eval("require('@vercel/blob')") as { del: (url: string) => Promise<void> };
+          await blobDel(audioUrl);
+          console.log(`Blob deleted for free user: ${audioUrl}`);
+        } catch (e: any) {
+          console.warn(`Blob cleanup failed (non-fatal): ${e?.message}`);
+        }
+      }
     } catch (e) {
       console.warn("Call retention enforcement failed (non-fatal):", e);
     }
