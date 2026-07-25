@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from 'react';
 import { motion } from 'framer-motion';
-import { Download, MessageSquarePlus, Share2, UserRoundCheck, Link as LinkIcon, AlertCircle, FileQuestion } from 'lucide-react';
+import { Download, MessageSquarePlus, Share2, UserRoundCheck, Link as LinkIcon, AlertCircle, FileQuestion, Play, Pause } from 'lucide-react';
 
 import { TranscriptViewer } from '@/components/transcript-viewer';
 import { AnalysisPanel } from '@/components/analysis-panel';
@@ -46,6 +46,7 @@ export default function CallDetailPage({ params }: { params: { id: string } }) {
   const [commentBody, setCommentBody] = useState('');
   const [savingComment, setSavingComment] = useState(false);
   const [savingSettings, setSavingSettings] = useState(false);
+  const [playing, setPlaying] = useState(false);
 
   useEffect(() => {
     async function fetchCall() {
@@ -227,17 +228,35 @@ export default function CallDetailPage({ params }: { params: { id: string } }) {
           <div className="flex items-center justify-between gap-3 mb-4">
             <h2 className="text-lg font-medium text-white">Transcript</h2>
             {data.audioUrl && (
-              <a
-                href={data.audioUrl}
-                download
-                rel="noopener noreferrer"
-                className="inline-flex items-center gap-2 rounded-full bg-zinc-900/70 px-3 py-1.5 text-sm text-zinc-200 hover:bg-zinc-800 transition-colors"
-              >
-                <Download className="w-4 h-4" />
-                Download audio
-              </a>
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => setPlaying(!playing)}
+                  className="inline-flex items-center gap-2 rounded-full bg-zinc-900/70 px-3 py-1.5 text-sm text-zinc-200 hover:bg-zinc-800 transition-colors"
+                >
+                  {playing ? <Pause className="w-4 h-4" /> : <Play className="w-4 h-4" />}
+                  {playing ? 'Pause' : 'Play audio'}
+                </button>
+                <a
+                  href={data.audioUrl}
+                  download
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-2 rounded-full bg-zinc-900/70 px-3 py-1.5 text-sm text-zinc-200 hover:bg-zinc-800 transition-colors"
+                >
+                  <Download className="w-4 h-4" />
+                  Download
+                </a>
+              </div>
             )}
           </div>
+          {data.audioUrl && playing && (
+            <audio
+              src={data.audioUrl}
+              controls
+              autoPlay
+              className="w-full mb-4 rounded-lg"
+              onEnded={() => setPlaying(false)}
+            />
+          )}
           <div className="flex-1 overflow-hidden">
             <TranscriptViewer segments={segments} />
           </div>
