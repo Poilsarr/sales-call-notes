@@ -33,7 +33,7 @@ export default function Home() {
         <Nav />
         <div className="hidden lg:block flex-1" />
         <div className="relative z-20 w-full max-w-[1440px] mx-auto px-5 sm:px-8 lg:px-12 pt-10 pb-14 sm:pb-16 lg:pb-20">
-          <div className="grid grid-cols-1 lg:grid-cols-[1.1fr_0.9fr] gap-10 lg:gap-16 items-end">
+          <div className="grid grid-cols-1 lg:grid-cols-[1.1fr_0.9fr] gap-10 lg:gap-16 items-center">
             {/* LEFT: headline + sub + CTAs */}
             <div>
               <p className="text-[13px] leading-[14px] text-gray-900 tracking-wide mb-5 sm:mb-8">Gauge</p>
@@ -41,15 +41,15 @@ export default function Home() {
                 Know the moment a<br className="hidden sm:block" />
                 <span className="sm:hidden"> </span>competitor enters the deal.
               </h1>
-              <p className="text-[15px] text-gray-500 max-w-xl mt-4 mb-4">
+              <p className="text-[15px] text-gray-500 max-w-xl mt-4 mb-3">
                 Gauge turns every sales call into structured notes, action items, and a real-time
                 competitive signal. Upload, record, or capture from Google Meet. $9/mo after a free forever tier.
               </p>
-              <div className="inline-flex items-center gap-2 text-[11px] font-medium text-[#F26522] bg-[#F26522]/[0.06] border border-[#F26522]/15 rounded-full px-3 py-1 mb-6">
+              <div className="inline-flex items-center gap-2 text-[11px] font-medium text-[#F26522] bg-[#F26522]/[0.06] border border-[#F26522]/15 rounded-full px-3 py-1 mb-5">
                 <span className="w-1.5 h-1.5 rounded-full bg-[#F26522] animate-pulse" />
                 Currently in private beta
               </div>
-              <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 sm:gap-5">
+              <div className="flex flex-row items-center gap-5 flex-wrap">
                 <HeroCTA />
                 <Link href="/pricing" className="text-[13px] text-gray-600 hover:text-gray-900 font-medium underline-offset-4 hover:underline">
                   See pricing →
@@ -58,13 +58,9 @@ export default function Home() {
                   See it live →
                 </Link>
               </div>
-              <HeroVideoPlayer />
             </div>
 
-            {/* RIGHT: product preview card — what a real call summary looks like.
-                Shown on mobile too (capped to a sensible height) so visitors get
-                visual product proof above the fold instead of an empty right
-                column. */}
+            {/* RIGHT: product preview card */}
             <div className="relative lg:block">
               <div className="doppel-outer">
                 <div className="doppel-inner p-5 sm:p-6">
@@ -124,6 +120,11 @@ export default function Home() {
                 </div>
               </div>
             </div>
+          </div>
+
+          {/* VIDEO PLAYER — full width below the hero grid */}
+          <div className="mt-10 max-w-3xl">
+            <HeroVideoPlayer />
           </div>
         </div>
       </section>

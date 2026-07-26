@@ -32,15 +32,15 @@ export function HeroVideoPlayer() {
   };
 
   return (
-    <div className="mt-6">
+    <div>
       {!playing ? (
         <button
           onClick={handlePlay}
           className="group relative w-full rounded-2xl overflow-hidden border border-gray-200 bg-gradient-to-br from-gray-50 to-gray-100 hover:border-[#F26522]/40 transition-all duration-300"
           aria-label="Play product demo video"
         >
-          {/* Thumbnail / placeholder */}
-          <div className="relative aspect-video flex items-center justify-center">
+          {/* Thumbnail / placeholder — uses a compact 2.35:1 cinematic ratio */}
+          <div className="relative flex items-center justify-center" style={{ aspectRatio: "2.35 / 1" }}>
             {/* Gradient overlay */}
             <div className="absolute inset-0 bg-gradient-to-t from-black/30 via-transparent to-transparent" />
 
