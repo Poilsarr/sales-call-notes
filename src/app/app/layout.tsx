@@ -3,6 +3,9 @@
 import { useState, useEffect } from 'react';
 import { AppSidebar } from '@/components/app-sidebar';
 import TrialBanner from '@/components/trial-banner';
+import FreePlanBanner from '@/components/free-plan-banner';
+import UsageLimitBanner from '@/components/usage-limit-banner';
+import OnboardingChecklist from '@/components/onboarding-checklist';
 import { Toaster } from 'sonner';
 import { motion } from 'framer-motion';
 import { useAuth } from '@clerk/nextjs';
@@ -16,6 +19,11 @@ export default function AppLayout({
   const { isLoaded, isSignedIn, userId } = useAuth();
   const router = useRouter();
   const [trialEndsAt, setTrialEndsAt] = useState<string | null>(null);
+  const [plan, setPlan] = useState<string | null>(null);
+  const [usage, setUsage] = useState(0);
+  const [limit, setLimit] = useState<number | "unlimited">(5);
+  const [minuteUsage, setMinuteUsage] = useState(0);
+  const [minuteLimit, setMinuteLimit] = useState<number | "unlimited">(300);
   const [onboardChecked, setOnboardChecked] = useState(false);
 
   useEffect(() => {
@@ -43,25 +51,55 @@ export default function AppLayout({
       .then(r => r.json())
       .then(d => {
         if (d.trialEndsAt) setTrialEndsAt(d.trialEndsAt);
+        if (d.plan) setPlan(d.plan);
+        if (typeof d.usage === "number") setUsage(d.usage);
+        if (d.limit !== undefined) setLimit(d.limit);
+        if (typeof d.minuteUsage === "number") setMinuteUsage(d.minuteUsage);
+        if (d.minuteLimit !== undefined) setMinuteLimit(d.minuteLimit);
       })
       .catch(() => {});
   }, [userId]);
 
-  if (!isLoaded || !isSignedIn || !onboardChecked) return null;
+  if (!isLoaded || !isSignedIn || !onboardChecked) {
+    // Render a layout skeleton matching the final structure so the page
+    // never flashes blank. Prevents CLS when auth resolves.
+    return (
+      <div className="flex h-screen bg-linear-black">
+        <AppSidebar />
+        <main className="flex-1 overflow-y-auto">
+          <div className="p-8">
+            <OnboardingChecklist />
+            {children}
+          </div>
+        </main>
+      </div>
+    );
+  }
 
   return (
     <div className="flex h-screen bg-linear-black">
       <AppSidebar />
       <main className="flex-1 overflow-y-auto">
-        <TrialBanner trialEndsAt={trialEndsAt} />
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, ease: [0.32, 0.72, 0, 1] }}
-          className="p-8"
-        >
+        {/* Reserve space for banners to prevent CLS */}
+        <div className="min-h-[40px]">
+          <TrialBanner trialEndsAt={trialEndsAt} />
+        </div>
+        <div className="min-h-[40px]">
+          <FreePlanBanner plan={plan} />
+        </div>
+        <div className="min-h-[40px]">
+          <UsageLimitBanner
+            plan={plan}
+            usage={usage}
+            limit={limit}
+            minuteUsage={minuteUsage}
+            minuteLimit={minuteLimit}
+          />
+        </div>
+        <div className="p-8">
+          <OnboardingChecklist />
           {children}
-        </motion.div>
+        </div>
       </main>
       <Toaster
         position="top-right"

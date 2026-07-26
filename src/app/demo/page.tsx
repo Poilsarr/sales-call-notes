@@ -3,6 +3,11 @@ import { Crosshair, ArrowRight } from "lucide-react";
 import DemoCarousel from "@/components/demo-carousel";
 import GaugeLogo from "@/components/gauge-logo";
 
+export const metadata = {
+  title: "Live Demo — Gauge",
+  description: "Try the interactive Gauge demo. See competitor alerts, call summaries, and real-time competitive intelligence in action.",
+};
+
 /**
  * /demo — server component shell.
  *

@@ -24,9 +24,10 @@ export default function UpgradePrompt({ feature, featureName, onClose, minimal }
   const isProcessing = useRef(false);
 
   useEffect(() => {
+    const clientToken = process.env.NEXT_PUBLIC_PADDLE_CLIENT_KEY || "";
     initializePaddle({
-      environment: process.env.NODE_ENV === "production" ? "production" : "sandbox",
-      token: process.env.NEXT_PUBLIC_PADDLE_CLIENT_KEY || "",
+      environment: clientToken.startsWith("live_") ? "production" : "sandbox",
+      token: clientToken,
     }).then(paddleInstance => {
       if (paddleInstance) setPaddle(paddleInstance);
     }).catch(err => {
@@ -49,23 +50,22 @@ export default function UpgradePrompt({ feature, featureName, onClose, minimal }
 
     isProcessing.current = true;
     setUpgrading(targetPlan);
+    
+    const redirectToWelcome = () => {
+      isProcessing.current = false;
+      window.location.href = "/welcome";
+    };
+    
     paddle.Checkout.open({
       items: [{ priceId, quantity: 1 }],
       customData: { userId: user.id, feature },
       settings: {
         displayMode: "overlay",
         theme: "dark",
+        successUrl: `${window.location.origin}/welcome`,
       },
-      onSuccess: () => {
-        isProcessing.current = false;
-        setSuccess(true);
-        setTimeout(() => {
-          setSuccess(false);
-          setUpgrading(null);
-          onClose?.();
-          window.location.reload();
-        }, 1500);
-      },
+      onSuccess: redirectToWelcome,
+      onCheckoutCompleted: redirectToWelcome,
       onClose: () => {
         isProcessing.current = false;
         setUpgrading(null);
@@ -166,24 +166,43 @@ export default function UpgradePrompt({ feature, featureName, onClose, minimal }
                   <span>{plan.features[feature] ? `Includes ${featureName}` : "Not included"}</span>
                 </div>
                 {plan.features[feature] && (
-                  <button
-                    onClick={(e) => { e.stopPropagation(); openCheckout(tier); }}
-                    disabled={upgrading === tier}
-                    className="mt-3 w-full py-2 rounded-full bg-linear-indigo text-white text-xs font-semibold hover:bg-linear-indigo/80 transition disabled:opacity-50">
-                    {upgrading === tier ? <Loader2 className="w-3 h-3 animate-spin mx-auto" /> : `Choose ${plan.name}`}
-                  </button>
+                  paddleError ? (
+                    <Link
+                      href="/pricing"
+                      onClick={(e) => e.stopPropagation()}
+                      className="mt-3 block w-full text-center py-2 rounded-full bg-linear-indigo text-white text-xs font-semibold hover:bg-linear-indigo/80 transition"
+                    >
+                      See pricing
+                    </Link>
+                  ) : (
+                    <button
+                      onClick={(e) => { e.stopPropagation(); openCheckout(tier); }}
+                      disabled={upgrading === tier}
+                      className="mt-3 w-full py-2 rounded-full bg-linear-indigo text-white text-xs font-semibold hover:bg-linear-indigo/80 transition disabled:opacity-50">
+                      {upgrading === tier ? <Loader2 className="w-3 h-3 animate-spin mx-auto" /> : `Choose ${plan.name}`}
+                    </button>
+                  )
                 )}
               </div>
             );
           })}
         </div>
 
-        {paddleError && (
-          <p className="text-xs text-red-400/70 text-center mb-4">Payment system unavailable. Please try again later.</p>
+        {paddleError ? (
+          <div className="text-center mb-4">
+            <p className="text-xs text-red-400/70 mb-2">Payment system unavailable right now.</p>
+            <Link
+              href="/pricing"
+              className="inline-flex items-center gap-1 text-xs text-linear-indigo hover:text-white transition"
+            >
+              View pricing plans →
+            </Link>
+          </div>
+        ) : (
+          <p className="text-[11px] text-white/30 text-center">
+            Powered by Paddle. Secure payment processing.
+          </p>
         )}
-        <p className="text-[11px] text-white/30 text-center">
-          Powered by Paddle. Secure payment processing.
-        </p>
       </div>
     </div>
   );

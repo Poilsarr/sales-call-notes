@@ -202,12 +202,31 @@ export default function DashboardPage() {
 
   if (loading || !onboardChecked) {
     return (
-      <div className="min-h-screen bg-linear-black text-white flex flex-col">
+      <div className="min-h-screen bg-linear-black text-white">
         <Nav />
-        <div className="flex-1 flex items-center justify-center">
-          <div className="relative w-16 h-16">
-            <div className="absolute inset-0 rounded-full border-t-2 border-linear-indigo animate-spin" />
-            <Brain className="absolute inset-0 m-auto w-6 h-6 text-linear-indigo animate-pulse" />
+        <div className="max-w-7xl mx-auto px-6 py-12">
+          {/* Header skeleton */}
+          <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 mb-10">
+            <div>
+              <div className="h-8 w-40 rounded bg-white/10 animate-pulse mb-2" />
+              <div className="h-4 w-64 rounded bg-white/10 animate-pulse" />
+            </div>
+            <div className="h-10 w-64 rounded-xl bg-white/10 animate-pulse" />
+          </div>
+          {/* KPI grid skeleton */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-10">
+            {[1, 2, 3, 4].map((i) => (
+              <div key={i} className="rounded-2xl border border-white/10 bg-white/[0.02] p-6">
+                <div className="h-3 w-24 rounded bg-white/10 animate-pulse mb-3" />
+                <div className="h-7 w-16 rounded bg-white/10 animate-pulse" />
+              </div>
+            ))}
+          </div>
+          {/* Charts skeleton */}
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-10">
+            <div className="rounded-2xl border border-white/10 bg-white/[0.02] p-6 lg:row-span-2 h-[400px]" />
+            <div className="rounded-2xl border border-white/10 bg-white/[0.02] p-6 lg:col-span-2 h-[200px]" />
+            <div className="rounded-2xl border border-white/10 bg-white/[0.02] p-6 lg:col-span-2 h-[180px]" />
           </div>
         </div>
       </div>
@@ -277,7 +296,10 @@ export default function DashboardPage() {
         </div>
 
         {data.totalCalls === 0 && (
-          <div className="mb-8 p-5 rounded-2xl border border-dashed border-white/15 bg-white/[0.02] flex flex-col sm:flex-row items-start sm:items-center gap-4">
+          <div className="mb-8 p-5 rounded-2xl border border-dashed border-[#F26522]/20 bg-[#F26522]/[0.02] flex flex-col sm:flex-row items-start sm:items-center gap-4">
+            <div className="w-10 h-10 rounded-xl bg-[#F26522]/10 flex items-center justify-center shrink-0 animate-pulse">
+              <BarChart3 className="w-5 h-5 text-[#F26522]" />
+            </div>
             <div className="flex-1">
               <h3 className="text-sm font-semibold text-white mb-1">No calls yet</h3>
               <p className="text-xs text-white/50">
@@ -286,7 +308,7 @@ export default function DashboardPage() {
             </div>
             <a
               href="/app/record"
-              className="px-4 py-2 rounded-full bg-linear-indigo text-white text-xs font-semibold hover:bg-linear-indigo/80 transition shrink-0"
+              className="px-5 py-2.5 rounded-full bg-[#F26522] hover:bg-[#e05a1a] text-white text-xs font-semibold transition-colors shrink-0"
             >
               Upload your first call
             </a>

@@ -16,6 +16,13 @@ const sizeClasses = {
   xl: "w-16 h-16 text-base",
 };
 
+const sizePixels = {
+  sm: 28,
+  md: 36,
+  lg: 48,
+  xl: 64,
+};
+
 export function Avatar({ src, name, size = "md", className }: AvatarProps) {
   const initials = name
     ? name
@@ -31,6 +38,8 @@ export function Avatar({ src, name, size = "md", className }: AvatarProps) {
       <img
         src={src}
         alt={name || "Avatar"}
+        width={sizePixels[size]}
+        height={sizePixels[size]}
         className={cn("rounded-full object-cover ring-1 ring-white/10", sizeClasses[size], className)}
       />
     );

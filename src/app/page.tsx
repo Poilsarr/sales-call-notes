@@ -1,12 +1,18 @@
 import Link from "next/link";
 import Nav from "@/components/nav";
-import SiteFooter from "@/components/site-footer";
 import SocialProof from "@/components/social-proof";
 import RoiCalculator from "@/components/roi-calculator";
 import HowItWorks from "@/components/how-it-works";
 import FinalCta from "@/components/final-cta";
 import { HeroCTA } from "@/components/hero-cta";
+import { HeroVideoPlayer } from "@/components/hero-video-player";
+import StickyMarketingCta from "@/components/sticky-marketing-cta";
 import { Crosshair, Upload, BarChart3, Shield, Check, ArrowRight } from "lucide-react";
+
+export const metadata = {
+  title: "Gauge — AI Sales Call Notes & Competitive Intelligence",
+  description: "Gauge turns sales calls into structured notes, action items, and real-time competitive alerts. Upload, record, or capture from Google Meet.",
+};
 
 // Server component — zero JS shipped for the static landing content.
 // Only the CTA island runs client-side.
@@ -35,10 +41,14 @@ export default function Home() {
                 Know the moment a<br className="hidden sm:block" />
                 <span className="sm:hidden"> </span>competitor enters the deal.
               </h1>
-              <p className="text-[15px] text-gray-500 max-w-xl mt-4 mb-8">
+              <p className="text-[15px] text-gray-500 max-w-xl mt-4 mb-4">
                 Gauge turns every sales call into structured notes, action items, and a real-time
                 competitive signal. Upload, record, or capture from Google Meet. $9/mo after a free forever tier.
               </p>
+              <div className="inline-flex items-center gap-2 text-[11px] font-medium text-[#F26522] bg-[#F26522]/[0.06] border border-[#F26522]/15 rounded-full px-3 py-1 mb-6">
+                <span className="w-1.5 h-1.5 rounded-full bg-[#F26522] animate-pulse" />
+                Currently in private beta
+              </div>
               <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 sm:gap-5">
                 <HeroCTA />
                 <Link href="/pricing" className="text-[13px] text-gray-600 hover:text-gray-900 font-medium underline-offset-4 hover:underline">
@@ -48,6 +58,7 @@ export default function Home() {
                   See it live →
                 </Link>
               </div>
+              <HeroVideoPlayer />
             </div>
 
             {/* RIGHT: product preview card — what a real call summary looks like.
@@ -363,7 +374,10 @@ export default function Home() {
       <div className="fixed bottom-0 inset-x-0 z-40 lg:hidden border-t border-gray-200 bg-white/95 backdrop-blur px-4 py-3 pb-[max(0.75rem,env(safe-area-inset-bottom))]">
         <HeroCTA />
       </div>
-      <SiteFooter />
+
+      <div className="hidden lg:block">
+        <StickyMarketingCta label="Start with 300 free minutes/mo" href="/sign-up" cta="Start free" />
+      </div>
     </main>
   );
 }

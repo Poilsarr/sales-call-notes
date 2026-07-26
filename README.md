@@ -31,7 +31,7 @@ Pro: $9/mo. Business: $29/mo. Enterprise: custom.
 - **Backend:** Next.js API routes, Node.js, BullMQ + Redis
 - **DB:** Postgres (Neon) + Prisma
 - **Auth:** Clerk (sessions + magic links + SSO)
-- **Storage:** (planned Vercel Blob — audio currently deleted post-analysis)
+- **Storage:** Vercel Blob (audio kept for 90 days on paid plans)
 - **AI:** OpenAI Whisper + GPT-4o (Groq fallback when quota exhausted)
 - **Payments:** Paddle (subscription billing)
 - **Realtime:** Server-Sent Events (live transcription)
@@ -149,5 +149,5 @@ External blockers (require user's keys / accounts):
 
 ## License
 
-Proprietary. All rights reserved.
+MIT. See [LICENSE](./LICENSE).
 © 2026 Gauge.

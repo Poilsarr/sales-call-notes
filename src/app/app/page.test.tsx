@@ -62,21 +62,21 @@ describe('AppDashboardPage (/app)', () => {
     render(<DashboardPage />);
 
     // While Clerk is hydrating, the stat cards that depend on the
-    // analytics fetch should show the ellipsis placeholder. The
-    // previous version of the dashboard bailed out of useEffect
-    // on `!user?.id` and never set `loading=false`, so the cards
-    // stayed on "..." AND the bottom "Loading..." never resolved.
+    // analytics fetch should show zero placeholders while Clerk is hydrating.
+    // The previous version showed "…" (ellipsis) which caused CLS when
+    // replaced with real numbers. Now shows "0" with a skeleton overlay
+    // to keep card dimensions stable.
     // "Pending Actions" is computed locally (no fetch), so it
     // legitimately shows 0 — we don't assert on it.
     const stats = screen.getAllByTestId('stat');
     expect(stats.length).toBe(6);
     const titles = stats.map(s => s.querySelector('[data-testid="stat-title"]')?.textContent);
     const values = stats.map(s => s.querySelector('[data-testid="stat-value"]')?.textContent);
-    const expectedEllipsis = ['Total Calls', 'Avg Health Score', 'Avg Close Rate', 'Completion Rate', 'Recent Calls'];
-    for (const title of expectedEllipsis) {
+    const expectedZeros = ['Total Calls', 'Avg Health Score', 'Avg Close Rate', 'Completion Rate', 'Recent Calls'];
+    for (const title of expectedZeros) {
       const idx = titles.indexOf(title);
       expect(idx).toBeGreaterThanOrEqual(0);
-      expect(values[idx]).toBe('…');
+      expect(values[idx]).toBe('0');
     }
   });
 

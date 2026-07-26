@@ -1,7 +1,6 @@
 import Link from "next/link";
 import { ArrowRight, DollarSign, Users, TrendingUp, Gift, Rocket, HelpCircle } from "lucide-react";
 import GaugeLogo from "@/components/gauge-logo";
-import SiteFooter from "@/components/site-footer";
 
 import type { Metadata } from "next";
 
@@ -237,8 +236,6 @@ export default function PartnersPage() {
         </div>
       </section>
 
-      {/* FOOTER */}
-      <SiteFooter />
     </main>
   );
 }

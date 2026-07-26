@@ -3,7 +3,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { useUser } from '@clerk/nextjs';
 import Link from 'next/link';
-import { motion } from 'framer-motion';
 import { Search, Filter, Phone, Download, Upload, Mic, Chrome, ArchiveRestore } from 'lucide-react';
 import UpgradePrompt from '@/components/upgrade-prompt';
 import { toast } from 'sonner';
@@ -270,7 +269,23 @@ export default function CallsPage() {
 
       <div className="space-y-3">
         {loading ? (
-          <p className="text-zinc-500 text-center py-12">Loading calls...</p>
+          // Skeleton loader to prevent CLS when calls appear
+          <div className="space-y-3">
+            {[1, 2, 3].map((i) => (
+              <div key={i} className="doppel-outer-dark">
+                <div className="doppel-inner-dark p-4 flex items-center justify-between">
+                  <div className="flex items-center gap-4">
+                    <div className="w-10 h-10 rounded-full bg-zinc-800 animate-pulse" />
+                    <div>
+                      <div className="h-4 w-32 rounded bg-zinc-800 animate-pulse" />
+                      <div className="h-3 w-24 rounded bg-zinc-800/60 animate-pulse mt-2" />
+                    </div>
+                  </div>
+                  <div className="h-6 w-20 rounded-full bg-zinc-800 animate-pulse" />
+                </div>
+              </div>
+            ))}
+          </div>
         ) : filteredCalls.length === 0 ? (
           // Visual empty state — same pattern as the /app dashboard
           // recent-calls empty state. Was a one-liner that made the
@@ -353,11 +368,10 @@ export default function CallsPage() {
           </div>
         ) : (
           filteredCalls.map((call, index) => (
-            <motion.div
+            <div
               key={call.id}
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: index * 0.05 }}
+              className="animate-fade-in"
+              style={{ animationDelay: `${index * 50}ms`, animationFillMode: 'backwards' }}
             >
               <Link href={`/app/calls/${call.id}`}>
                 <div className="doppel-outer-dark hover:ring-emerald-500/30 transition-all cursor-pointer">
@@ -399,7 +413,7 @@ export default function CallsPage() {
                   </div>
                 </div>
               </Link>
-            </motion.div>
+            </div>
           ))
         )}
         </div>

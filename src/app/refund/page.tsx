@@ -1,7 +1,10 @@
-"use client";
 
 import Nav from "@/components/nav";
-import SiteFooter from "@/components/site-footer";
+
+export const metadata = {
+  title: "Refund Policy — Gauge",
+  description: "Gauge refund policy and money-back guarantee.",
+};
 
 export default function RefundPage() {
   return (
@@ -38,7 +41,6 @@ export default function RefundPage() {
           </section>
         </div>
       </div>
-      <SiteFooter />
     </main>
   );
 }

@@ -3,8 +3,15 @@
 import { useState, useEffect, useCallback } from "react";
 import { useUser } from "@clerk/nextjs";
 import type { Paddle } from "@paddle/paddle-js";
-import { CheckCircle, Loader2, ArrowRight, Zap, Plus, Minus } from "lucide-react";
+import { CheckCircle, Loader2, ArrowRight, Zap, Plus, Minus, ShieldCheck, RotateCcw, CreditCard, Clock, TrendingUp, ArrowUpRight, Download } from "lucide-react";
+import { trackEvent } from "@/lib/analytics";
 import type { Tier } from "@/lib/pricing-tiers";
+import PricingCalculator from "@/components/pricing-calculator";
+import ExitIntentModal from "@/components/exit-intent-modal";
+import StickyPricingCta from "@/components/sticky-pricing-cta";
+import PricingSocialProof from "@/components/pricing-social-proof";
+// NOTE: @paddle/paddle-js is imported dynamically inside openCheckout() so the
+// heavy SDK is NOT in the initial /pricing bundle (Lighthouse byte-weight budget).
 
 type BillingCycle = "monthly" | "annual";
 
@@ -223,6 +230,11 @@ export default function PricingClient({
             : {}),
         });
         if (!paddle) throw new Error("Paddle failed to initialize");
+        
+        const redirectToWelcome = () => {
+          window.location.href = "/welcome";
+        };
+        
         paddle.Checkout.open({
           items: [{ priceId: priceIdForCycle(tier), quantity: 1 }],
           ...(user?.primaryEmailAddress?.emailAddress
@@ -235,9 +247,14 @@ export default function PricingClient({
             displayMode: "overlay",
             variant: "one-page",
             theme: "light",
-            successUrl: `${process.env.NEXT_PUBLIC_APP_URL || window.location.origin}/welcome`,
+            successUrl: `${window.location.origin}/welcome`,
           },
-        });
+          onSuccess: redirectToWelcome,
+          onCheckoutCompleted: redirectToWelcome,
+          onClose: () => {
+            setCheckingOut(false);
+          },
+        } as any);
       } catch (err) {
         console.error("Paddle checkout failed:", err);
         setPaddleError(true);
@@ -388,9 +405,9 @@ export default function PricingClient({
                   )}
                   <div className="mb-6">
                     <h3 className="text-[16px] font-semibold tracking-tight mb-1">{tier.name}</h3>
-                    <div className="flex items-baseline gap-2 flex-wrap min-h-[2rem]">
+                    <div className="flex items-baseline gap-2 flex-wrap min-h-[2.5rem]">
                       {isPaddle && pricesLoading ? (
-                        <Loader2 size={18} className="animate-spin text-gray-400" />
+                        <div className="h-8 w-20 rounded bg-gray-200 animate-pulse" />
                       ) : showPrice ? (
                         <>
                           <span className="text-[clamp(1.5rem,3vw,2.5rem)] font-semibold tracking-tight">
@@ -423,6 +440,7 @@ export default function PricingClient({
                   {tier.ctaKind === "signup" ? (
                     <a
                       href={isSignedIn ? "/app" : "/sign-up"}
+                      onClick={() => trackEvent("pricing_cta_click", { section: "plans", tier: tier.name })}
                       className="block w-full text-center py-3 rounded-full text-[12px] font-semibold transition-all duration-300 bg-white text-gray-900 border border-gray-300 hover:border-gray-900 hover:bg-gray-50"
                     >
                       {tier.cta}
@@ -430,6 +448,7 @@ export default function PricingClient({
                   ) : tier.ctaKind === "contact" ? (
                     <a
                       href="mailto:sales@usegauge.com?subject=Enterprise%20Plan%20Inquiry"
+                      onClick={() => trackEvent("pricing_cta_click", { section: "plans", tier: tier.name })}
                       className="block w-full text-center py-3 rounded-full text-[12px] font-semibold transition-all duration-300 bg-white text-gray-900 border border-gray-300 hover:border-gray-900 hover:bg-gray-50"
                     >
                       {tier.cta}
@@ -437,7 +456,10 @@ export default function PricingClient({
                   ) : (
                     <button
                       type="button"
-                      onClick={() => openCheckout(tier)}
+                      onClick={() => {
+                        trackEvent("pricing_plan_selected", { tier: tier.name, cycle });
+                        void openCheckout(tier);
+                      }}
                       disabled={checkingOut || !!paddleError || pricesLoading}
                       className={`block w-full text-center py-3 rounded-full text-[12px] font-semibold transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed ${
                         isPopular
@@ -472,6 +494,48 @@ export default function PricingClient({
           </p>
         )}
       </section>
+
+      {/* Trust badges — reduce friction at the point of purchase decision */}
+      <section className="pb-12 sm:pb-16 px-5 sm:px-8 lg:px-12">
+        <div className="max-w-[1440px] mx-auto">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            {[
+              {
+                icon: CreditCard,
+                title: "No credit card for Free",
+                body: "Start with 300 minutes/mo instantly. Pay only when you upgrade.",
+              },
+              {
+                icon: RotateCcw,
+                title: "Cancel anytime",
+                body: "No annual lock-ins. Downgrade or cancel from your billing page.",
+              },
+              {
+                icon: ShieldCheck,
+                title: "14-day money-back guarantee",
+                body: "Not happy with Pro or Business? Full refund, no questions asked.",
+              },
+            ].map((badge) => (
+              <div
+                key={badge.title}
+                className="doppel-outer flex flex-col items-center text-center"
+              >
+                <div className="doppel-inner p-6 w-full h-full">
+                  <div className="w-10 h-10 rounded-full bg-[#F26522]/10 flex items-center justify-center mx-auto mb-3">
+                    <badge.icon size={20} className="text-[#F26522]" />
+                  </div>
+                  <h4 className="text-[13px] font-semibold text-gray-900 mb-1">
+                    {badge.title}
+                  </h4>
+                  <p className="text-[12px] text-gray-500 leading-relaxed">{badge.body}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      <PricingCalculator />
 
       {/* Comparison Table */}
       <section className="pb-12 sm:pb-16 px-5 sm:px-8 lg:px-12">
@@ -549,11 +613,99 @@ export default function PricingClient({
         </div>
       </section>
 
+      {/* Switching from a competitor */}
+      <section className="pb-12 sm:pb-16 px-5 sm:px-8 lg:px-12">
+        <div className="max-w-[1440px] mx-auto">
+          <div className="doppel-outer">
+            <div className="doppel-inner p-6 sm:p-8 lg:p-10">
+              <div className="grid grid-cols-1 lg:grid-cols-[1fr_1.2fr] gap-8 items-center">
+                <div>
+                  <div className="eyebrow inline-flex items-center gap-2 mb-3">
+                    <ArrowUpRight size={12} /> Switching?
+                  </div>
+                  <h3 className="text-[clamp(1.25rem,3vw,1.75rem)] font-medium leading-[1.1] tracking-[-0.02em] mb-3">
+                    Moving from Fireflies, Otter, or Fathom?
+                  </h3>
+                  <p className="text-[13px] text-gray-500">
+                    You don&apos;t need to change your workflow. Upload your calls, keep your CRM, and get better notes at a flat price.
+                  </p>
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                  {[
+                    {
+                      icon: Download,
+                      title: "Bring your history",
+                      body: "Export MP3s from your old tool and upload them in bulk.",
+                    },
+                    {
+                      icon: ShieldCheck,
+                      title: "No bot joins calls",
+                      body: "We never auto-join your meetings. Consent-first, always.",
+                    },
+                    {
+                      icon: CreditCard,
+                      title: "Flat-rate pricing",
+                      body: "Stop multiplying per-seat costs. One price, whole team.",
+                    },
+                  ].map((item) => (
+                    <div key={item.title} className="flex flex-col items-start">
+                      <div className="w-9 h-9 rounded-full bg-[#F26522]/10 flex items-center justify-center mb-3">
+                        <item.icon size={18} className="text-[#F26522]" />
+                      </div>
+                      <h4 className="text-[13px] font-semibold text-gray-900 mb-1">{item.title}</h4>
+                      <p className="text-[12px] text-gray-500 leading-relaxed">{item.body}</p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <PricingSocialProof />
+
       {/* CTA */}
       <section className="pb-16 sm:pb-20 lg:pb-28 px-5 sm:px-8 lg:px-12">
         <div className="max-w-[1440px] mx-auto">
           <div className="doppel-outer group">
             <div className="doppel-inner p-10 sm:p-14 lg:p-20 text-center relative overflow-hidden">
+              <div className="relative z-10">
+                <div className="eyebrow inline-flex items-center gap-2 mb-5">
+                  <TrendingUp size={12} /> Why teams upgrade
+                </div>
+                <h2 className="text-[clamp(1.5rem,4vw,2.5rem)] font-medium leading-[1.12] tracking-[-0.02em] mb-10">
+                  One tool that pays for itself
+                </h2>
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 text-left max-w-4xl mx-auto mb-12">
+                  {[
+                    {
+                      icon: Clock,
+                      title: "Reclaim 5+ hours/week",
+                      body: "Stop re-listening to calls and writing notes. Get instant transcripts, summaries, and action items.",
+                    },
+                    {
+                      icon: TrendingUp,
+                      title: "Close more deals",
+                      body: "CRM sync pushes follow-ups straight to HubSpot or Salesforce so nothing falls through the cracks.",
+                    },
+                    {
+                      icon: ShieldCheck,
+                      title: "Predictable pricing",
+                      body: "Flat-rate plans. Add your whole team without multiplying the cost like per-seat tools do.",
+                    },
+                  ].map((v) => (
+                    <div key={v.title} className="flex flex-col items-start">
+                      <div className="w-9 h-9 rounded-full bg-[#F26522]/10 flex items-center justify-center mb-3">
+                        <v.icon size={18} className="text-[#F26522]" />
+                      </div>
+                      <h3 className="text-[14px] font-semibold text-gray-900 mb-1">{v.title}</h3>
+                      <p className="text-[12px] text-gray-500 leading-relaxed">{v.body}</p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
               <div className="relative z-10">
                 <div className="eyebrow inline-flex items-center gap-2 mb-5">
                   <ArrowRight size={12} /> Start today
@@ -566,6 +718,7 @@ export default function PricingClient({
                 </p>
                 <a
                   href="/sign-up"
+                  onClick={() => trackEvent("pricing_cta_click", { section: "bottom" })}
                   className="group inline-flex items-center gap-2 bg-[#F26522] hover:bg-[#e05a1a] text-white text-[13px] rounded-full pl-5 pr-2 py-2 transition-colors duration-300"
                 >
                   <span className="flex flex-col overflow-hidden h-[20px]">
@@ -583,6 +736,9 @@ export default function PricingClient({
           </div>
         </div>
       </section>
+
+      <ExitIntentModal />
+      <StickyPricingCta />
     </main>
   );
 }

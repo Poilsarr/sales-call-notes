@@ -47,6 +47,7 @@ export const TIER_DEFINITIONS: Omit<Tier, "priceId">[] = [
       "Advanced analytics dashboard",
       "Priority support",
       "90-minute call limit",
+      "90-day audio storage & replay",
       "Team workspace (up to 5)",
     ],
     cta: "Subscribe",

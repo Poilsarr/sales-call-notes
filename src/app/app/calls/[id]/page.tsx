@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from 'react';
 import { motion } from 'framer-motion';
-import { Download, MessageSquarePlus, Share2, UserRoundCheck, Link as LinkIcon } from 'lucide-react';
+import { Download, MessageSquarePlus, Share2, UserRoundCheck, Link as LinkIcon, AlertCircle, FileQuestion, Play, Pause } from 'lucide-react';
 
 import { TranscriptViewer } from '@/components/transcript-viewer';
 import { AnalysisPanel } from '@/components/analysis-panel';
@@ -46,6 +46,7 @@ export default function CallDetailPage({ params }: { params: { id: string } }) {
   const [commentBody, setCommentBody] = useState('');
   const [savingComment, setSavingComment] = useState(false);
   const [savingSettings, setSavingSettings] = useState(false);
+  const [playing, setPlaying] = useState(false);
 
   useEffect(() => {
     async function fetchCall() {
@@ -169,8 +170,51 @@ export default function CallDetailPage({ params }: { params: { id: string } }) {
     );
   }
 
-  if (error) return <div className="h-screen flex items-center justify-center text-white">{error}</div>;
-  if (!data) return <div className="h-screen flex items-center justify-center text-white">Call not found</div>;
+  if (error) {
+    return (
+      <div className="min-h-[calc(100vh-4rem)] flex items-center justify-center p-6">
+        <div className="doppel-outer-dark max-w-md w-full">
+          <div className="doppel-inner-dark p-8 text-center">
+            <div className="w-12 h-12 rounded-full bg-red-500/10 flex items-center justify-center mx-auto mb-4">
+              <AlertCircle className="w-6 h-6 text-red-400" />
+            </div>
+            <h2 className="text-lg font-medium text-white mb-2">Couldn&apos;t load this call</h2>
+            <p className="text-sm text-zinc-400 mb-6">{error}</p>
+            <a
+              href="/app/calls"
+              className="inline-flex items-center justify-center gap-2 rounded-full bg-zinc-800 hover:bg-zinc-700 text-white text-sm font-medium px-5 py-2.5 transition-colors"
+            >
+              Back to calls
+            </a>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (!data) {
+    return (
+      <div className="min-h-[calc(100vh-4rem)] flex items-center justify-center p-6">
+        <div className="doppel-outer-dark max-w-md w-full">
+          <div className="doppel-inner-dark p-8 text-center">
+            <div className="w-12 h-12 rounded-full bg-zinc-800 flex items-center justify-center mx-auto mb-4">
+              <FileQuestion className="w-6 h-6 text-zinc-400" />
+            </div>
+            <h2 className="text-lg font-medium text-white mb-2">Call not found</h2>
+            <p className="text-sm text-zinc-400 mb-6">
+              This call may have been deleted, archived, or you don&apos;t have permission to view it.
+            </p>
+            <a
+              href="/app/calls"
+              className="inline-flex items-center justify-center gap-2 rounded-full bg-zinc-800 hover:bg-zinc-700 text-white text-sm font-medium px-5 py-2.5 transition-colors"
+            >
+              Back to calls
+            </a>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <motion.div
@@ -184,17 +228,35 @@ export default function CallDetailPage({ params }: { params: { id: string } }) {
           <div className="flex items-center justify-between gap-3 mb-4">
             <h2 className="text-lg font-medium text-white">Transcript</h2>
             {data.audioUrl && (
-              <a
-                href={data.audioUrl}
-                download
-                rel="noopener noreferrer"
-                className="inline-flex items-center gap-2 rounded-full bg-zinc-900/70 px-3 py-1.5 text-sm text-zinc-200 hover:bg-zinc-800 transition-colors"
-              >
-                <Download className="w-4 h-4" />
-                Download audio
-              </a>
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => setPlaying(!playing)}
+                  className="inline-flex items-center gap-2 rounded-full bg-zinc-900/70 px-3 py-1.5 text-sm text-zinc-200 hover:bg-zinc-800 transition-colors"
+                >
+                  {playing ? <Pause className="w-4 h-4" /> : <Play className="w-4 h-4" />}
+                  {playing ? 'Pause' : 'Play audio'}
+                </button>
+                <a
+                  href={data.audioUrl}
+                  download
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-2 rounded-full bg-zinc-900/70 px-3 py-1.5 text-sm text-zinc-200 hover:bg-zinc-800 transition-colors"
+                >
+                  <Download className="w-4 h-4" />
+                  Download
+                </a>
+              </div>
             )}
           </div>
+          {data.audioUrl && playing && (
+            <audio
+              src={data.audioUrl}
+              controls
+              autoPlay
+              className="w-full mb-4 rounded-lg"
+              onEnded={() => setPlaying(false)}
+            />
+          )}
           <div className="flex-1 overflow-hidden">
             <TranscriptViewer segments={segments} />
           </div>

@@ -51,3 +51,27 @@ export function trackCrmSyncFailure(
 ): void {
   trackSLO("crm_sync_failure", 1, { provider, errorCode });
 }
+
+export type MarketingEvent =
+  | "pricing_cta_click"
+  | "pricing_plan_selected"
+  | "pricing_calculator_used"
+  | "pricing_exit_intent_shown"
+  | "pricing_exit_intent_click";
+
+export function trackEvent(
+  event: MarketingEvent,
+  properties?: Record<string, string | number | boolean>,
+): void {
+  if (typeof window === "undefined") return;
+
+  try {
+    import("@vercel/analytics")
+      .then(({ track }) => {
+        track(event, { ...properties, timestamp: Date.now() });
+      })
+      .catch(() => {});
+  } catch {
+    // Fail silently - analytics should never break the app
+  }
+}

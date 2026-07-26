@@ -49,7 +49,7 @@ export default function TrialBanner({ trialEndsAt }: TrialBannerProps) {
     <div className={`${bg} ${text} px-4 py-2.5 flex items-center justify-between text-sm`}>
       <span>
         Your trial ends in <strong>{daysRemaining} day{daysRemaining === 1 ? "" : "s"}</strong>.
-        <a href="/billing" className="ml-2 underline font-semibold hover:opacity-80">
+        <a href="/pricing" className="ml-2 underline font-semibold hover:opacity-80">
           Upgrade now
         </a>{" "}
         to keep full access.

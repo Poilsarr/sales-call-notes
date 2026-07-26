@@ -1,7 +1,10 @@
-"use client";
 
 import Nav from "@/components/nav";
-import SiteFooter from "@/components/site-footer";
+
+export const metadata = {
+  title: "Privacy Notice — Gauge",
+  description: "How Gauge collects, uses, and protects your data.",
+};
 
 export default function PrivacyPage() {
   return (
@@ -92,7 +95,6 @@ export default function PrivacyPage() {
           </section>
         </div>
       </div>
-      <SiteFooter />
     </main>
   );
 }

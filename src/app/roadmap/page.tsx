@@ -1,7 +1,6 @@
 import Nav from "@/components/nav";
 import { Compass, CheckCircle, Clock, ArrowRight } from "lucide-react";
 import Link from "next/link";
-import SiteFooter from "@/components/site-footer";
 
 export const metadata = {
   title: "Roadmap — Gauge",
@@ -146,7 +145,6 @@ export default function RoadmapPage() {
           </div>
         </div>
       </div>
-      <SiteFooter />
     </>
   );
 }

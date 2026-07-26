@@ -45,7 +45,27 @@ export default function OnboardingPage() {
   };
 
   if (!hydrated) {
-    return <div className="min-h-screen bg-white" />;
+    // Skeleton layout matching the final page to prevent CLS during hydration.
+    return (
+      <main className="min-h-screen bg-white text-gray-900">
+        <header className="border-b border-gray-100 px-6 py-4 flex items-center justify-between">
+          <span className="text-[13px] font-semibold tracking-tight">Gauge</span>
+          <span className="text-[12px] text-gray-200">Skip onboarding</span>
+        </header>
+        <div className="max-w-xl mx-auto px-6 py-12" aria-hidden="true">
+          <div className="flex items-center gap-2 mb-10">
+            <div className="h-1 flex-1 rounded-full bg-gray-200" />
+            <div className="h-1 flex-1 rounded-full bg-gray-200" />
+            <div className="h-1 flex-1 rounded-full bg-gray-200" />
+          </div>
+          <div className="h-5 w-24 rounded bg-gray-200 animate-pulse mb-4" />
+          <div className="h-10 w-3/4 rounded bg-gray-200 animate-pulse mb-3" />
+          <div className="h-4 w-full rounded bg-gray-100 animate-pulse mb-2" />
+          <div className="h-4 w-2/3 rounded bg-gray-100 animate-pulse mb-8" />
+          <div className="h-12 w-40 rounded-full bg-gray-200 animate-pulse" />
+        </div>
+      </main>
+    );
   }
 
   return (

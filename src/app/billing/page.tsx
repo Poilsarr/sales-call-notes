@@ -2,12 +2,12 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { useUser } from "@clerk/nextjs";
-import { initializePaddle } from "@paddle/paddle-js";
 import { toast } from "sonner";
+import Link from "next/link";
 import Nav from "@/components/nav";
 import UsageDisplay from "@/components/usage-display";
 import {
-  Crown, CheckCircle, Sparkles, Loader2, AlertTriangle, Ban, Info,
+  Crown, CheckCircle, Sparkles, Loader2, AlertTriangle, Ban, Info, RefreshCw,
 } from "lucide-react";
 import { PLANS, PlanTier } from "@/lib/plans";
 
@@ -23,41 +23,31 @@ export default function BillingPage() {
   const [subscriptionStatus, setSubscriptionStatus] = useState<string | null>(null);
   const [paddleSubscriptionId, setPaddleSubscriptionId] = useState<string | null>(null);
   const [cancellationEffectiveDate, setCancellationEffectiveDate] = useState<string | null>(null);
-  const [paddle, setPaddle] = useState<any>(null);
   const [loading, setLoading] = useState(true);
-  const [upgradeSuccess, setUpgradeSuccess] = useState(false);
   const [showCancelConfirm, setShowCancelConfirm] = useState(false);
   const [cancelling, setCancelling] = useState(false);
+  const [syncing, setSyncing] = useState(false);
 
   useEffect(() => {
-    initializePaddle({
-      environment: process.env.NODE_ENV === "production" ? "production" : "sandbox",
-      token: process.env.NEXT_PUBLIC_PADDLE_CLIENT_KEY || "",
-    }).then(paddleInstance => {
-      if (paddleInstance) {
-        setPaddle(paddleInstance);
-      }
-      setLoading(false);
-    });
-
-    if (user?.id) {
-      fetch(`/api/billing?userId=${user.id}`)
-        .then(r => r.json())
-        .then(d => {
-          const plan: PlanTier = d.plan || "free";
-          setCurrentPlan(plan);
-          setUsage(d.usage || 0);
-          setLimit(d.limit || 5);
-          setMinuteUsage(d.minuteUsage || 0);
-          setMinuteLimit(d.minuteLimit || 300);
-          setTeamMemberCount(d.teamMemberCount || 1);
-          setTeamMemberLimit(d.teamMemberLimit || 1);
-          setSubscriptionStatus(d.subscriptionStatus || null);
-          setPaddleSubscriptionId(d.paddleSubscriptionId || null);
-          setCancellationEffectiveDate(d.cancellationEffectiveDate || null);
-        })
-        .catch((err) => console.error("Failed to fetch billing data:", err));
-    }
+    if (!user?.id) return;
+    setLoading(true);
+    fetch(`/api/billing?userId=${user.id}`)
+      .then(r => r.json())
+      .then(d => {
+        const plan: PlanTier = d.plan || "free";
+        setCurrentPlan(plan);
+        setUsage(d.usage || 0);
+        setLimit(d.limit || 5);
+        setMinuteUsage(d.minuteUsage || 0);
+        setMinuteLimit(d.minuteLimit || 300);
+        setTeamMemberCount(d.teamMemberCount || 1);
+        setTeamMemberLimit(d.teamMemberLimit || 1);
+        setSubscriptionStatus(d.subscriptionStatus || null);
+        setPaddleSubscriptionId(d.paddleSubscriptionId || null);
+        setCancellationEffectiveDate(d.cancellationEffectiveDate || null);
+      })
+      .catch((err) => console.error("Failed to fetch billing data:", err))
+      .finally(() => setLoading(false));
   }, [user?.id]);
 
   const handleCancel = useCallback(async () => {
@@ -84,47 +74,33 @@ export default function BillingPage() {
     }
   }, [user?.id, cancelling]);
 
-  const openCheckout = useCallback((plan: PlanTier) => {
-    if (!paddle || !user?.id || upgradeSuccess) return;
-    const priceId = PLANS[plan].paddlePriceId;
-    if (!priceId) return;
-
-    paddle.Checkout.open({
-      items: [{ priceId, quantity: 1 }],
-      customData: { userId: user.id },
-      settings: {
-        displayMode: "overlay",
-        theme: "dark",
-        showAddDiscounts: true,
-      },
-      onSuccess: () => {
-        setUpgradeSuccess(true);
-        setTimeout(() => window.location.reload(), 1500);
-      },
-      onClose: () => {
-        fetch(`/api/billing?userId=${user.id}`)
-          .then(r => r.json())
-          .then(d => {
-            if (d.plan !== "free") {
-              setCurrentPlan(d.plan);
-              setLimit(d.limit || 5);
-            }
-          })
-          .catch((err) => console.error("Failed to refresh billing data:", err));
-      },
-    });
-  }, [paddle, user?.id, upgradeSuccess]);
-
-  if (upgradeSuccess) {
-    return (
-      <main className="min-h-screen bg-linear-black text-white flex items-center justify-center">
-        <div className="text-center">
-          <CheckCircle className="w-12 h-12 text-green-400 mx-auto mb-4" />
-          <p className="text-lg font-medium">Upgrade successful! Refreshing...</p>
-        </div>
-      </main>
-    );
-  }
+  const handleSync = useCallback(async () => {
+    if (syncing) return;
+    setSyncing(true);
+    try {
+      const email = user?.primaryEmailAddress?.emailAddress;
+      const res = await fetch("/api/billing/sync", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email }),
+      });
+      const data = await res.json();
+      if (res.ok && data.synced) {
+        toast.success(`Subscription synced: ${data.plan} plan active.`);
+        window.location.reload();
+      } else if (res.ok) {
+        toast.info(data.message || "No active subscription found.");
+      } else {
+        console.error("[BILLING_SYNC_UI] Sync failed:", data);
+        toast.error(data.error || "Sync failed");
+      }
+    } catch (err) {
+      console.error("[BILLING_SYNC_UI] Network error:", err);
+      toast.error("Sync failed");
+    } finally {
+      setSyncing(false);
+    }
+  }, [syncing, user]);
 
   const availablePlans: PlanTier[] = ["free", "pro", "business"];
 
@@ -142,6 +118,18 @@ export default function BillingPage() {
               )}
             </p>
           </div>
+          <button
+            onClick={handleSync}
+            disabled={syncing}
+            className="flex items-center gap-2 px-4 py-2 rounded-full text-xs font-medium bg-white/10 text-white hover:bg-white/20 border border-white/10 transition disabled:opacity-50"
+          >
+            {syncing ? (
+              <Loader2 className="w-3.5 h-3.5 animate-spin" />
+            ) : (
+              <RefreshCw className="w-3.5 h-3.5" />
+            )}
+            Refresh subscription
+          </button>
         </div>
 
         {limit !== "unlimited" && (
@@ -228,11 +216,12 @@ export default function BillingPage() {
                     Downgrade
                   </button>
                 ) : (
-                  <button onClick={() => openCheckout(tier)}
-                    disabled={loading || !paddle}
-                    className="w-full text-center py-3 rounded-full text-xs font-semibold bg-linear-indigo text-white hover:bg-linear-indigo/80 transition disabled:opacity-50">
+                  <Link
+                    href="/pricing"
+                    className="block w-full text-center py-3 rounded-full text-xs font-semibold bg-linear-indigo text-white hover:bg-linear-indigo/80 transition"
+                  >
                     {loading ? <Loader2 className="w-3 h-3 animate-spin mx-auto" /> : `Upgrade - ${plan.priceLabel}/mo`}
-                  </button>
+                  </Link>
                 )}
               </div>
             );

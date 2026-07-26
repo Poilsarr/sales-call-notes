@@ -1,8 +1,23 @@
-"use client";
-
+import type { Metadata } from "next";
 import Nav from "@/components/nav";
 import Link from "next/link";
-import SiteFooter from "@/components/site-footer";
+
+export const metadata: Metadata = {
+  title: "Blog — Gauge",
+  description:
+    "Practical guides for SDRs, RevOps, and sales engineers: transcribing sales calls, extracting competitive intelligence, and writing CRM-ready notes in seconds.",
+  openGraph: {
+    title: "Blog — Gauge",
+    description:
+      "Practical guides for SDRs, RevOps, and sales engineers: transcribing sales calls, extracting competitive intelligence, and writing CRM-ready notes.",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Blog — Gauge",
+    description:
+      "Practical guides for SDRs, RevOps, and sales engineers: transcribing sales calls, extracting competitive intelligence, and writing CRM-ready notes.",
+  },
+};
 
 export default function BlogIndexPage() {
   return (
@@ -46,7 +61,6 @@ export default function BlogIndexPage() {
           </article>
         </div>
       </div>
-      <SiteFooter />
     </main>
   );
 }

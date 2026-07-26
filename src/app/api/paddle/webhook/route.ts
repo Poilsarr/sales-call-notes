@@ -32,6 +32,7 @@ export async function POST(req: NextRequest) {
         const itemPriceIds: string[] = (data.items || [])
           .map((i: any) => i?.price?.id)
           .filter(Boolean);
+        const customData: { clerkUserId?: string; userId?: string } = data.customData || {};
 
         let plan: string = "FREE";
         const { PLANS } = await import("@/lib/plans");
@@ -65,9 +66,36 @@ export async function POST(req: NextRequest) {
           return NextResponse.json({ received: true, deduped: true });
         }
 
-        await prisma.user.updateMany({
-          where: { paddleCustomerId: customerId },
+        // ponytail: first checkout creates a new Paddle customer, so the user
+        // row doesn't have paddleCustomerId yet. Fall back to customData
+        // (clerkUserId / userId) sent from checkout, and persist the Paddle
+        // customer ID for future webhooks.
+        const whereClause: any[] = [{ paddleCustomerId: customerId }];
+        if (customData.clerkUserId) {
+          whereClause.push({ clerkId: customData.clerkUserId });
+        }
+        if (customData.userId) {
+          whereClause.push({ id: customData.userId });
+        }
+
+        const targetUser = await prisma.user.findFirst({
+          where: { OR: whereClause },
+          select: { id: true, clerkId: true },
+        });
+
+        if (!targetUser) {
+          console.error(
+            "[PADDLE_WEBHOOK] Could not find user for subscription. " +
+            `customerId=${customerId} subscriptionId=${subscriptionId} ` +
+            `customData=${JSON.stringify(customData)}`
+          );
+          return NextResponse.json({ error: "User not found" }, { status: 404 });
+        }
+
+        await prisma.user.update({
+          where: { id: targetUser.id },
           data: {
+            paddleCustomerId: customerId,
             paddleSubscriptionId: subscriptionId,
             subscriptionStatus: dbStatus,
             subscriptionPlan: plan,
@@ -76,11 +104,12 @@ export async function POST(req: NextRequest) {
           },
         });
 
-        await logAuditAction("SYSTEM", "PADDLE_WEBHOOK_SYNC", customerId, "User", {
+        await logAuditAction("SYSTEM", "PADDLE_WEBHOOK_SYNC", targetUser.id, "User", {
           eventType,
           subscriptionId,
           plan,
-          status: dbStatus
+          status: dbStatus,
+          customerId,
         });
 
         break;

@@ -107,7 +107,7 @@ export const PLANS: Record<PlanTier, PlanConfig> = {
       speaker_diarization: true,
       export_json: true,
       analytics_dashboard: true,
-      competitive_intelligence: true,
+      competitive_intelligence: false,
       competitive_alerts: false,
       browser_recording: false,
       live_transcription: false,

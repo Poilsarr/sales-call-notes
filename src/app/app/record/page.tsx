@@ -1,12 +1,13 @@
 'use client';
 
 import { useState, useRef, useEffect } from 'react';
-import { useSearchParams } from 'next/navigation';
-import { motion } from 'framer-motion';
+import { useSearchParams, useRouter } from 'next/navigation';
 import { Mic, Square, Upload, ExternalLink } from 'lucide-react';
 import { toast } from 'sonner';
 
 import { LiveTranscriptionPanel } from '@/components/live-transcription-panel';
+import { TranscriptionProgress, type ProcessingStage } from '@/components/transcription-progress';
+import { compressAudio } from '@/lib/audio-compress';
 
 type BrowserSpeechRecognition = {
   continuous: boolean;
@@ -30,6 +31,7 @@ type SpeechRecognitionEventLike = {
 
 export default function RecordPage() {
   const searchParams = useSearchParams();
+  const router = useRouter();
   const [isRecording, setIsRecording] = useState(false);
   const [duration, setDuration] = useState(0);
   const [uploadedCallId, setUploadedCallId] = useState<string | null>(null);
@@ -37,6 +39,10 @@ export default function RecordPage() {
   const [speechSupported, setSpeechSupported] = useState(false);
   const [removeFillers, setRemoveFillers] = useState(true);
   const [language, setLanguage] = useState(''); // '' = auto-detect (Whisper default)
+  // Transcription progress state (replaces silent toast.promise)
+  const [processingStage, setProcessingStage] = useState<ProcessingStage>('idle');
+  const [processingFileSizeMB, setProcessingFileSizeMB] = useState(5);
+  const [processingError, setProcessingError] = useState<string | null>(null);
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const recognitionRef = useRef<BrowserSpeechRecognition | null>(null);
   const isRecordingRef = useRef(false);
@@ -123,41 +129,156 @@ export default function RecordPage() {
   };
 
   const uploadRecording = async (blob: Blob) => {
-    const formData = new FormData();
-    formData.append('file', blob, 'recording.webm');
-    formData.append('removeFillers', String(removeFillers));
-    formData.append('language', language);
-    formData.append('template', 'b2b-sales');
-    
-    toast.promise(
-      fetch('/api/analyze', { method: 'POST', body: formData }).then(async res => {
-        const data = await res.json();
-        if (!res.ok) throw new Error(data.error || 'Failed to process recording');
-        return data;
-      }),
-      {
-        loading: 'Processing recording...',
-        success: (data) => {
-          const callId = data?.call?.id || data?.id;
-          if (callId) {
-            setUploadedCallId(callId);
-            return 'Call analyzed successfully';
-          }
-          return 'Call analyzed successfully';
-        },
-        error: (err) => err.message || 'Failed to process recording',
-      }
-    );
-  };
-
-  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    if (file.size > 50 * 1024 * 1024) {
-      toast.error('File size exceeds 50MB limit');
+    const fileSizeMB = blob.size / (1024 * 1024);
+    if (fileSizeMB > 500) {
+      toast.error(`File too large (${fileSizeMB.toFixed(1)}MB). Maximum is 500MB.`);
       return;
     }
-    uploadRecording(file);
+
+    setProcessingFileSizeMB(fileSizeMB);
+    setProcessingStage('uploading');
+    setProcessingError(null);
+
+    try {
+      let uploadFile = blob;
+      let uploadName = `recording-${Date.now()}.webm`;
+      if (fileSizeMB > 50) {
+        const compressed = await compressAudio(new File([blob], uploadName, { type: 'audio/webm' }));
+        uploadFile = compressed;
+        uploadName = compressed.name;
+      }
+
+      // Get a presigned upload URL from our server
+      const { presignedUrl, blobUrl } = await fetch('/api/upload-url', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          filename: uploadName,
+          contentType: uploadFile.type || 'audio/webm',
+          fileSize: uploadFile.size,
+        }),
+      }).then(async r => {
+        const d = await r.json();
+        if (!r.ok) throw new Error(d.error || 'Failed to get upload URL');
+        return d;
+      });
+
+      // Upload directly to Vercel Blob (bypasses serverless body limit)
+      await fetch(presignedUrl, {
+        method: 'PUT',
+        body: uploadFile,
+        headers: { 'Content-Type': uploadFile.type || 'audio/webm' },
+      });
+
+      setProcessingStage('transcribing');
+
+      const res = await fetch('/api/analyze', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          blobUrl,
+          removeFillers,
+          language,
+          template: 'b2b-sales',
+        }),
+      });
+
+      setProcessingStage('analyzing');
+
+      const contentType = res.headers.get('content-type');
+      if (!contentType || !contentType.includes('application/json')) {
+        throw new Error(`Server error: ${res.status} ${res.statusText}`);
+      }
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Failed to process recording');
+
+      const callId = data?.call?.id || data?.id;
+      if (callId) setUploadedCallId(callId);
+      setProcessingStage('done');
+      toast.success('Call analyzed successfully');
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : 'Failed to process recording';
+      setProcessingError(message);
+      setProcessingStage('error');
+      toast.error(message);
+    }
+  };
+
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const fileSizeMB = file.size / (1024 * 1024);
+    if (fileSizeMB > 500) {
+      toast.error(`File too large (${fileSizeMB.toFixed(1)}MB). Maximum is 500MB.`);
+      return;
+    }
+
+    setProcessingFileSizeMB(fileSizeMB);
+    setProcessingStage('uploading');
+    setProcessingError(null);
+
+    try {
+      let uploadFile: Blob | File = file;
+      let uploadName = file.name;
+      if (fileSizeMB > 50) {
+        const compressed = await compressAudio(file);
+        uploadFile = compressed;
+        uploadName = compressed.name;
+      }
+
+      const { presignedUrl, blobUrl } = await fetch('/api/upload-url', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          filename: uploadName,
+          contentType: uploadFile.type || file.type || 'audio/mpeg',
+          fileSize: uploadFile.size,
+        }),
+      }).then(async r => {
+        const d = await r.json();
+        if (!r.ok) throw new Error(d.error || 'Failed to get upload URL');
+        return d;
+      });
+
+      await fetch(presignedUrl, {
+        method: 'PUT',
+        body: uploadFile,
+        headers: { 'Content-Type': uploadFile.type || file.type || 'audio/mpeg' },
+      });
+
+      setProcessingStage('transcribing');
+
+      const res = await fetch('/api/analyze', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          blobUrl,
+          removeFillers,
+          language,
+          template: 'b2b-sales',
+        }),
+      });
+
+      setProcessingStage('analyzing');
+
+      const contentType = res.headers.get('content-type');
+      if (!contentType || !contentType.includes('application/json')) {
+        throw new Error(`Server error: ${res.status} ${res.statusText}`);
+      }
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Failed to process recording');
+
+      const callId = data?.call?.id || data?.id;
+      if (callId) setUploadedCallId(callId);
+      setProcessingStage('done');
+      toast.success('Call analyzed successfully');
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : 'Failed to process recording';
+      setProcessingError(message);
+      setProcessingStage('error');
+      toast.error(message);
+    }
   };
 
   const startSpeechRecognition = (sessionId: string) => {
@@ -250,13 +371,25 @@ export default function RecordPage() {
 
       <div className="grid grid-cols-1 xl:grid-cols-[1.2fr_0.8fr] gap-6 items-start">
         <div className="space-y-6">
+          {/* Transcription progress panel — replaces the silent toast */}
+          <TranscriptionProgress
+            stage={processingStage}
+            fileSizeMB={processingFileSizeMB}
+            errorMessage={processingError || undefined}
+            onDismiss={() => {
+              setProcessingStage('idle');
+              setProcessingError(null);
+            }}
+            onViewCall={
+              uploadedCallId
+                ? () => router.push(`/app/calls/${uploadedCallId}`)
+                : undefined
+            }
+          />
+
           <div className="doppel-outer-dark">
             <div className="doppel-inner-dark p-12 flex flex-col items-center justify-center">
-              <motion.div
-                animate={isRecording ? { scale: [1, 1.1, 1] } : { scale: 1 }}
-                transition={{ repeat: isRecording ? Infinity : 0, duration: 1.5 }}
-                className="mb-6"
-              >
+              <div className={`mb-6 ${isRecording ? 'animate-pulse-recording' : ''}`}>
                 <div className={`w-24 h-24 rounded-full flex items-center justify-center ${
                   isRecording ? 'bg-red-500/20' : 'bg-emerald-500/20'
                 }`}>
@@ -266,7 +399,7 @@ export default function RecordPage() {
                     <Mic className="w-10 h-10 text-emerald-400" />
                   )}
                 </div>
-              </motion.div>
+              </div>
               
               <p className="text-2xl font-mono text-white mb-6">{formatDuration(duration)}</p>
               
@@ -305,7 +438,7 @@ export default function RecordPage() {
               <label className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed border-zinc-700 rounded-xl cursor-pointer hover:border-emerald-500/50 transition-colors">
                 <Upload className="w-8 h-8 text-zinc-500 mb-2" />
                 <span className="text-sm text-zinc-400">Click to upload or drag and drop</span>
-                <span className="text-xs text-zinc-600 mt-1">MP3, WAV, M4A up to 50MB</span>
+                <span className="text-xs text-zinc-600 mt-1">MP3, WAV, M4A up to 500MB</span>
                 <input type="file" className="hidden" accept="audio/*" onChange={handleFileUpload} />
               </label>
               <label className="mt-4 flex items-center gap-3 text-sm text-zinc-300">
