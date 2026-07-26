@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { useUser } from "@clerk/nextjs";
+import type { Paddle } from "@paddle/paddle-js";
 import { CheckCircle, Loader2, ArrowRight, Zap, Plus, Minus, ShieldCheck, RotateCcw, CreditCard, Clock, TrendingUp, ArrowUpRight, Download } from "lucide-react";
 import { trackEvent } from "@/lib/analytics";
 import type { Tier } from "@/lib/pricing-tiers";
@@ -217,6 +218,9 @@ export default function PricingClient({
       }
       setCheckingOut(true);
       try {
+        // Lazy-load the Paddle SDK only when the user starts checkout. This
+        // keeps the heavy SDK out of the initial /pricing bundle (Lighthouse
+        // byte-weight budget) — prices come from our own server route.
         const { initializePaddle } = await import("@paddle/paddle-js");
         const paddle = await initializePaddle({
           environment,
