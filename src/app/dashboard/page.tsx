@@ -296,7 +296,10 @@ export default function DashboardPage() {
         </div>
 
         {data.totalCalls === 0 && (
-          <div className="mb-8 p-5 rounded-2xl border border-dashed border-white/15 bg-white/[0.02] flex flex-col sm:flex-row items-start sm:items-center gap-4">
+          <div className="mb-8 p-5 rounded-2xl border border-dashed border-[#F26522]/20 bg-[#F26522]/[0.02] flex flex-col sm:flex-row items-start sm:items-center gap-4">
+            <div className="w-10 h-10 rounded-xl bg-[#F26522]/10 flex items-center justify-center shrink-0 animate-pulse">
+              <BarChart3 className="w-5 h-5 text-[#F26522]" />
+            </div>
             <div className="flex-1">
               <h3 className="text-sm font-semibold text-white mb-1">No calls yet</h3>
               <p className="text-xs text-white/50">
@@ -305,7 +308,7 @@ export default function DashboardPage() {
             </div>
             <a
               href="/app/record"
-              className="px-4 py-2 rounded-full bg-linear-indigo text-white text-xs font-semibold hover:bg-linear-indigo/80 transition shrink-0"
+              className="px-5 py-2.5 rounded-full bg-[#F26522] hover:bg-[#e05a1a] text-white text-xs font-semibold transition-colors shrink-0"
             >
               Upload your first call
             </a>
