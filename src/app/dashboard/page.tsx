@@ -669,14 +669,13 @@ function MiniStat({ label, value, icon }: { label: string; value: number; icon: 
 
 function formatHealth(score: number | null): string {
   if (score === null || score === undefined) return "N/A";
-  return `${Math.round(score * 100)}%`;
+  return `${Math.round(score)}%`;
 }
 
 function getHealthVariant(score: number | null): "success" | "warning" | "danger" | "default" {
   if (score === null || score === undefined) return "default";
-  const s = score * 100;
-  if (s >= 70) return "success";
-  if (s >= 45) return "warning";
+  if (score >= 70) return "success";
+  if (score >= 45) return "warning";
   return "danger";
 }
 

@@ -165,10 +165,10 @@ export class SlackService {
     }
 
     if (message.healthScore !== null && message.healthScore !== undefined) {
-      const scoreEmoji = message.healthScore >= 0.7 ? "🟢" : message.healthScore >= 0.4 ? "🟡" : "🔴";
+      const scoreEmoji = message.healthScore >= 70 ? "🟢" : message.healthScore >= 40 ? "🟡" : "🔴";
       blocks.push({
         type: "context",
-        elements: [{ type: "mrkdwn", text: `${scoreEmoji} Health score: ${Math.round(message.healthScore * 100)}%` }],
+        elements: [{ type: "mrkdwn", text: `${scoreEmoji} Health score: ${Math.round(message.healthScore)}%` }],
       });
     }
 

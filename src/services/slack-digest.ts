@@ -90,7 +90,7 @@ export async function generateWeeklyDigest(): Promise<number> {
 
   for (const team of digestTeams) {
     const healthLine = team.avgHealthScore !== null
-      ? `*Average Health Score:* ${Math.round(team.avgHealthScore * 100)}%\n`
+      ? `*Average Health Score:* ${Math.round(team.avgHealthScore)}%\n`
       : "";
 
     const objectionsLine = team.topObjections.length > 0

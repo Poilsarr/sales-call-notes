@@ -61,7 +61,7 @@ export default async function SharePage({ params }: SharePageProps) {
           {call.healthScore !== null && (
             <div className="mt-4 inline-flex items-center gap-2 rounded-full bg-emerald-500/10 px-4 py-2">
               <span className="text-sm text-emerald-400">Health Score</span>
-              <span className="text-lg font-bold text-emerald-400">{Math.round((call.healthScore || 0) * 100)}</span>
+              <span className="text-lg font-bold text-emerald-400">{Math.round((call.healthScore || 0))}</span>
             </div>
           )}
         </header>

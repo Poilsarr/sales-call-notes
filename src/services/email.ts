@@ -77,7 +77,7 @@ export async function sendWeeklyDigestEmail(
 ) {
   const greeting = name ? `Hey ${name}` : "Hey";
   const healthLine = stats.avgHealth !== null
-    ? `<p><strong>Average Health Score:</strong> ${Math.round(stats.avgHealth * 100)}%</p>`
+    ? `<p><strong>Average Health Score:</strong> ${Math.round(stats.avgHealth)}%</p>`
     : "";
   return send(
     email,

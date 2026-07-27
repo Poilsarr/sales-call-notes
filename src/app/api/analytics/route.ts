@@ -163,7 +163,7 @@ export async function GET(req: Request) {
       totalCalls,
       totalActionItems,
       completionRate: totalActionItems > 0 ? completedItems / totalActionItems : 0,
-      avgHealthScore: Math.round(avgHealthScore * 100),
+      avgHealthScore: Math.round(avgHealthScore),
       avgCloseProbability: Math.round(avgCloseProbability),
       callsByDay,
       scoresByDay,

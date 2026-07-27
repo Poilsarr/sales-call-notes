@@ -67,10 +67,10 @@ function formatCallResponse(call: {
   }
 
   if (call.healthScore !== null && call.healthScore !== undefined) {
-    const scoreEmoji = call.healthScore >= 0.7 ? "🟢" : call.healthScore >= 0.4 ? "🟡" : "🔴";
+    const scoreEmoji = call.healthScore >= 70 ? "🟢" : call.healthScore >= 40 ? "🟡" : "🔴";
     blocks.push({
       type: "context",
-      elements: [{ type: "mrkdwn", text: `${scoreEmoji} Health score: ${Math.round(call.healthScore * 100)}%` }],
+      elements: [{ type: "mrkdwn", text: `${scoreEmoji} Health score: ${Math.round(call.healthScore)}%` }],
     });
   }
 
