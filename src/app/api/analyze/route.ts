@@ -330,13 +330,24 @@ export async function POST(req: Request) {
       step: s.step || '', date: s.date || null,
     }));
 
-    const competitors = (analysisResult.competitorsMentioned ?? []).map((c: any) => ({
-      competitor: c.name || 'Unknown competitor',
-      context: c.context || null,
-      sentiment: c.sentiment || null,
-      mentionedBy: null,
-      timestamp: null,
-    }));
+    const seen = new Set<string>();
+    const competitors: Array<{ competitor: string; context: string | null; sentiment: string | null; mentionedBy: null; timestamp: null }> = [];
+    const addComp = (name: string, context: string | null, sentiment: string | null) => {
+      const key = name.toLowerCase().trim();
+      if (!key || seen.has(key)) return;
+      seen.add(key);
+      competitors.push({ competitor: name, context, sentiment, mentionedBy: null, timestamp: null });
+    };
+    (analysisResult.competitorsMentioned ?? []).forEach((c: any) => {
+      const cname = typeof c === 'string' ? c : c.name;
+      if (cname) addComp(cname, c.context || null, c.sentiment || null);
+    });
+    const keyEntities = (analysisResult as any).keyEntities;
+    if (keyEntities?.competitors) {
+      (keyEntities.competitors as string[]).forEach((name: string) => {
+        if (name) addComp(name, null, null);
+      });
+    }
 
     const call = await prisma.call.create({
       data: {
