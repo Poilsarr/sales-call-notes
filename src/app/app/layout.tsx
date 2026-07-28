@@ -7,7 +7,6 @@ import FreePlanBanner from '@/components/free-plan-banner';
 import UsageLimitBanner from '@/components/usage-limit-banner';
 import OnboardingChecklist from '@/components/onboarding-checklist';
 import { Toaster } from 'sonner';
-import { motion } from 'framer-motion';
 import { useAuth } from '@clerk/nextjs';
 import { useRouter } from 'next/navigation';
 
