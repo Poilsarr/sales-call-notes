@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { useUser, useClerk } from '@clerk/nextjs';
+import { useClerk } from '@clerk/nextjs';
 import {
   LayoutDashboard,
   Phone,
@@ -17,6 +17,16 @@ import {
 } from 'lucide-react';
 import GaugeLogo from '@/components/gauge-logo';
 
+interface AppSidebarProps {
+  user: {
+    firstName: string | null;
+    lastName: string | null;
+    imageUrl: string;
+    email: string;
+    id: string;
+  } | null;
+}
+
 const navItems = [
   { href: '/app', label: 'Dashboard', icon: LayoutDashboard },
   { href: '/app/calls', label: 'Calls', icon: Phone },
@@ -29,18 +39,16 @@ const navItems = [
   { href: '/settings', label: 'Settings', icon: Settings },
 ];
 
-export function AppSidebar() {
+export function AppSidebar({ user }: AppSidebarProps) {
   const pathname = usePathname();
-  const { user, isLoaded } = useUser();
   const { signOut } = useClerk();
 
   function getDisplayName() {
-    if (!isLoaded || !user) return null;
+    if (!user) return null;
     if (user.firstName) {
       return user.lastName ? `${user.firstName} ${user.lastName}` : user.firstName;
     }
-    const email = user.emailAddresses?.[0]?.emailAddress;
-    if (email) return email.split("@")[0];
+    if (user.email) return user.email.split("@")[0];
     return null;
   }
 
@@ -69,13 +77,6 @@ export function AppSidebar() {
       
       <nav className="flex-1 px-3">
         {navItems.map((item) => {
-          // Active-state logic was buggy: `pathname === item.href ||
-          // pathname.startsWith(item.href + '/')` meant `/app/calls`
-          // matched BOTH the Calls link (exact) AND the Dashboard
-          // link (because /app/calls starts with /app/). Fix: only
-          // allow the prefix match for non-root items. Dashboard is
-          // highlighted only on the exact /app route; every other
-          // sidebar item is highlighted on exact OR any subroute.
           const isRoot = item.href === '/app';
           const isActive = isRoot
             ? pathname === '/app'

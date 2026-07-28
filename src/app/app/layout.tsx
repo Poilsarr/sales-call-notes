@@ -1,100 +1,34 @@
-'use client';
-
-import { useState, useEffect } from 'react';
+import { auth, currentUser } from '@clerk/nextjs/server';
+import { redirect } from 'next/navigation';
+import prisma from '@/lib/prisma';
 import { AppSidebar } from '@/components/app-sidebar';
-import TrialBanner from '@/components/trial-banner';
-import FreePlanBanner from '@/components/free-plan-banner';
-import UsageLimitBanner from '@/components/usage-limit-banner';
+import { AppBanners } from '@/components/app-banners';
 import OnboardingChecklist from '@/components/onboarding-checklist';
 import { Toaster } from 'sonner';
-import { useAuth } from '@clerk/nextjs';
-import { useRouter } from 'next/navigation';
 
-export default function AppLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
-  const { isLoaded, isSignedIn, userId } = useAuth();
-  const router = useRouter();
-  const [trialEndsAt, setTrialEndsAt] = useState<string | null>(null);
-  const [plan, setPlan] = useState<string | null>(null);
-  const [usage, setUsage] = useState(0);
-  const [limit, setLimit] = useState<number | "unlimited">(5);
-  const [minuteUsage, setMinuteUsage] = useState(0);
-  const [minuteLimit, setMinuteLimit] = useState<number | "unlimited">(300);
-  const [onboardChecked, setOnboardChecked] = useState(false);
+export default async function AppLayout({ children }: { children: React.ReactNode }) {
+  const { userId } = await auth();
+  if (!userId) redirect('/sign-in');
 
-  useEffect(() => {
-    if (isLoaded && !isSignedIn) router.replace("/sign-in");
-  }, [isLoaded, isSignedIn, router]);
+  const clerkUser = await currentUser();
+  const dbUser = await prisma.user.findUnique({ where: { id: userId }, select: { hasOnboarded: true } });
+  if (dbUser?.hasOnboarded === false) redirect('/onboarding');
 
-  // ponytail: onboarding gate — redirect to /onboarding if user hasn't completed it
-  useEffect(() => {
-    if (!userId) return;
-    fetch("/api/user")
-      .then(r => r.json())
-      .then(d => {
-        if (d.hasOnboarded === false) {
-          router.replace("/onboarding");
-        } else {
-          setOnboardChecked(true);
-        }
-      })
-      .catch(() => setOnboardChecked(true)); // fail open
-  }, [userId, router]);
-
-  useEffect(() => {
-    if (!userId) return;
-    fetch(`/api/billing?userId=${userId}`)
-      .then(r => r.json())
-      .then(d => {
-        if (d.trialEndsAt) setTrialEndsAt(d.trialEndsAt);
-        if (d.plan) setPlan(d.plan);
-        if (typeof d.usage === "number") setUsage(d.usage);
-        if (d.limit !== undefined) setLimit(d.limit);
-        if (typeof d.minuteUsage === "number") setMinuteUsage(d.minuteUsage);
-        if (d.minuteLimit !== undefined) setMinuteLimit(d.minuteLimit);
-      })
-      .catch(() => {});
-  }, [userId]);
-
-  if (!isLoaded || !isSignedIn || !onboardChecked) {
-    // Render a layout skeleton matching the final structure so the page
-    // never flashes blank. Prevents CLS when auth resolves.
-    return (
-      <div className="flex h-screen bg-linear-black">
-        <AppSidebar />
-        <main className="flex-1 overflow-y-auto">
-          <div className="p-8">
-            <OnboardingChecklist />
-            {children}
-          </div>
-        </main>
-      </div>
-    );
-  }
+  const userData = clerkUser
+    ? {
+        firstName: clerkUser.firstName,
+        lastName: clerkUser.lastName,
+        imageUrl: clerkUser.imageUrl,
+        email: clerkUser.emailAddresses?.[0]?.emailAddress ?? '',
+        id: clerkUser.id,
+      }
+    : null;
 
   return (
     <div className="flex h-screen bg-linear-black">
-      <AppSidebar />
+      <AppSidebar user={userData} />
       <main className="flex-1 overflow-y-auto">
-        {/* Reserve space for banners to prevent CLS */}
-        <div className="min-h-[40px]">
-          <TrialBanner trialEndsAt={trialEndsAt} />
-        </div>
-        <div className="min-h-[40px]">
-          <FreePlanBanner plan={plan} />
-        </div>
-        <div className="min-h-[40px]">
-          <UsageLimitBanner
-            plan={plan}
-            usage={usage}
-            limit={limit}
-            minuteUsage={minuteUsage}
-            minuteLimit={minuteLimit}
-          />
-        </div>
+        <AppBanners />
         <div className="p-8">
           <OnboardingChecklist />
           {children}
