@@ -30,11 +30,21 @@ export async function POST(req: NextRequest) {
   const plan = getPlan(user.plan || 'free');
   const maxFileSizeMB = MAX_FILE_SIZE_MB[plan.tier] || 500;
 
-  const { filename, fileSize } = await req.json();
+  const { filename, fileSize, contentType: requestedContentType } = await req.json();
 
   if (typeof fileSize === 'number' && fileSize > maxFileSizeMB * 1024 * 1024) {
     return NextResponse.json({ error: `File too large. ${plan.name} plan limit is ${maxFileSizeMB}MB.` }, { status: 400 });
   }
+
+  // Vercel Blob rejects glob patterns like 'audio/*' in allowedContentTypes —
+  // each entry must be an exact MIME type (the control API pattern-checks the
+  // string, and '*' fails it with "The string did not match the expected
+  // pattern"). Use the exact type the browser reported, fall back to webm.
+  const mimePattern = /^[a-z0-9!#$&^_.+-]+\/[a-z0-9!#$&^_.+-]+$/i;
+  const contentType =
+    typeof requestedContentType === 'string' && mimePattern.test(requestedContentType)
+      ? requestedContentType
+      : 'audio/webm';
 
   const ext = (filename || 'recording.webm').split('.').pop() || 'webm';
   const pathname = `uploads/${clerkUserId}/${crypto.randomUUID()}.${ext}`;
@@ -49,7 +59,7 @@ export async function POST(req: NextRequest) {
     pathname,
     operations: ['put'],
     validUntil: Date.now() + 60 * 60 * 1000,
-    allowedContentTypes: ['audio/*', 'video/*'],
+    allowedContentTypes: [contentType],
     maximumSizeInBytes: maxFileSizeMB * 1024 * 1024,
   });
 
