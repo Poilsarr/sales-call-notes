@@ -70,7 +70,7 @@ export async function POST(req: NextRequest) {
 
     const blobUrl = `https://${storeId}.blob.vercel-storage.com/${pathname}`;
 
-    return NextResponse.json({ presignedUrl, blobUrl, pathname });
+    return NextResponse.json({ presignedUrl, blobUrl, pathname, contentType });
   } catch (err: any) {
     console.error('Blob signing error:', err?.message, err);
     return NextResponse.json(

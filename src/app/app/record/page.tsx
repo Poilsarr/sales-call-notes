@@ -149,7 +149,7 @@ export default function RecordPage() {
       }
 
       // Get a presigned upload URL from our server
-      const { presignedUrl, blobUrl } = await fetch('/api/upload-url', {
+      const { presignedUrl, blobUrl, contentType: uploadContentType } = await fetch('/api/upload-url', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -163,11 +163,14 @@ export default function RecordPage() {
         return d;
       });
 
-      // Upload directly to Vercel Blob (bypasses serverless body limit)
+      // Upload directly to Vercel Blob (bypasses serverless body limit).
+      // Use the server-validated canonical MIME so the PUT Content-Type
+      // header exactly matches the token's allowedContentTypes — Vercel
+      // rejects uploads whose content-type isn't an exact match.
       await fetch(presignedUrl, {
         method: 'PUT',
         body: uploadFile,
-        headers: { 'Content-Type': uploadFile.type || 'audio/webm' },
+        headers: { 'Content-Type': uploadContentType },
       });
 
       setProcessingStage('transcribing');
@@ -185,8 +188,8 @@ export default function RecordPage() {
 
       setProcessingStage('analyzing');
 
-      const contentType = res.headers.get('content-type');
-      if (!contentType || !contentType.includes('application/json')) {
+      const respContentType = res.headers.get('content-type');
+      if (!respContentType || !respContentType.includes('application/json')) {
         throw new Error(`Server error: ${res.status} ${res.statusText}`);
       }
       const data = await res.json();
@@ -227,7 +230,7 @@ export default function RecordPage() {
         uploadName = compressed.name;
       }
 
-      const { presignedUrl, blobUrl } = await fetch('/api/upload-url', {
+      const { presignedUrl, blobUrl, contentType: uploadContentType } = await fetch('/api/upload-url', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -244,7 +247,7 @@ export default function RecordPage() {
       await fetch(presignedUrl, {
         method: 'PUT',
         body: uploadFile,
-        headers: { 'Content-Type': uploadFile.type || file.type || 'audio/mpeg' },
+        headers: { 'Content-Type': uploadContentType },
       });
 
       setProcessingStage('transcribing');
@@ -262,8 +265,8 @@ export default function RecordPage() {
 
       setProcessingStage('analyzing');
 
-      const contentType = res.headers.get('content-type');
-      if (!contentType || !contentType.includes('application/json')) {
+      const respContentType = res.headers.get('content-type');
+      if (!respContentType || !respContentType.includes('application/json')) {
         throw new Error(`Server error: ${res.status} ${res.statusText}`);
       }
       const data = await res.json();
