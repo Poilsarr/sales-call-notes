@@ -1,7 +1,7 @@
 {
   "ok": true,
   "provider": "groq",
-  "latencyMs": 917,
+  "latencyMs": 354,
   "status": 200,
   "reply": "pong",
   "results": [
@@ -9,30 +9,30 @@
       "provider": "openai",
       "ok": false,
       "status": 429,
-      "latencyMs": 1831,
+      "latencyMs": 2308,
       "model": "gpt-4o-mini",
       "usage": null,
       "reply": null,
-      "error": "You exceeded your current quota, please check your plan and billing details. For more information on this error, read the docs: https://platform.openai.com/docs/guides/error-codes/api-errors."
+      "error": "You have no credits remaining. Add credits to continue using the API at https://platform.openai.com/settings/organization/billing/."
     },
     {
       "provider": "groq",
       "ok": true,
       "status": 200,
-      "latencyMs": 917,
+      "latencyMs": 354,
       "model": "llama-3.1-8b-instant",
       "usage": {
-        "queue_time": 0.160033619,
+        "queue_time": 0.059236181,
         "prompt_tokens": 43,
-        "prompt_time": 0.004035769,
+        "prompt_time": 0.003905028,
         "completion_tokens": 2,
-        "completion_time": 0.009526318,
+        "completion_time": 0.008741643,
         "total_tokens": 45,
-        "total_time": 0.013562087
+        "total_time": 0.012646671
       },
       "reply": "pong",
       "error": null
     }
   ],
-  "timestamp": "2026-07-23T16:51:00.629Z"
+  "timestamp": "2026-08-01T16:49:41.226Z"
 }
