@@ -55,21 +55,27 @@ export async function POST(req: NextRequest) {
   }
 
   const blob = getBlob();
-  const signedToken = await blob.issueSignedToken({
-    pathname,
-    operations: ['put'],
-    validUntil: Date.now() + 60 * 60 * 1000,
-    allowedContentTypes: [contentType],
-    maximumSizeInBytes: maxFileSizeMB * 1024 * 1024,
-  });
+  try {
+    const signedToken = await blob.issueSignedToken({
+      pathname,
+      operations: ['put'],
+      validUntil: Date.now() + 60 * 60 * 1000,
+      allowedContentTypes: [contentType],
+    });
 
-  const { presignedUrl } = await blob.presignUrl(signedToken, {
-    operation: 'put',
-    pathname,
-    access: 'private',
-  });
+    const { presignedUrl } = await blob.presignUrl(signedToken, {
+      operation: 'put',
+      pathname,
+    });
 
-  const blobUrl = `https://${storeId}.blob.vercel-storage.com/${pathname}`;
+    const blobUrl = `https://${storeId}.blob.vercel-storage.com/${pathname}`;
 
-  return NextResponse.json({ presignedUrl, blobUrl, pathname });
+    return NextResponse.json({ presignedUrl, blobUrl, pathname });
+  } catch (err: any) {
+    console.error('Blob signing error:', err?.message, err);
+    return NextResponse.json(
+      { error: `Upload initialization failed: ${err?.message || 'Unknown error'}` },
+      { status: 500 },
+    );
+  }
 }
