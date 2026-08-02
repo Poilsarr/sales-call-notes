@@ -78,9 +78,37 @@ export async function POST(req: NextRequest) {
 
     return NextResponse.json({ presignedUrl, blobUrl, pathname, contentType });
   } catch (err: any) {
-    // ponytail: surface Vercel's full error shape (zod path + raw message) so we can see WHICH field the pattern rejects. Stdlib JSON.stringify with getOwnPropertyNames reaches the SDK's hidden fields (path, issues, etc.) that err.message strips away.
-    const errDump = JSON.stringify(err, Object.getOwnPropertyNames(err), 2);
-    console.error('Blob signing error:', err?.message, '\nFULL ERR:', errDump);
+    // ponytail: the @vercel/blob SDK strips Vercel's zod `issues` array before throwing — BlobError only carries `message`. To see WHICH field the pattern rejects, re-issue the exact same control-API request directly and log the raw response body. The deployment has the real token at runtime, so this reproduces the server-side error faithfully. Never log the token itself.
+    console.error('Blob signing error:', err?.message);
+    try {
+      const token = process.env.BLOB_READ_WRITE_TOKEN;
+      if (token && storeId) {
+        const apiVersion =
+          process.env.VERCEL_BLOB_API_VERSION_OVERRIDE || process.env.NEXT_PUBLIC_VERCEL_BLOB_API_VERSION_OVERRIDE || '12';
+        const diagRes = await fetch(`https://vercel.com/api/blob/signed-token`, {
+          method: 'POST',
+          headers: {
+            'content-type': 'application/json',
+            authorization: `Bearer ${token}`,
+            'x-vercel-blob-store-id': storeId,
+            'x-api-blob-request-id': `${storeId}:${Date.now()}:${Math.random().toString(16).slice(2)}`,
+            'x-api-blob-request-attempt': '0',
+            'x-api-version': apiVersion,
+          },
+          body: JSON.stringify({
+            pathname,
+            operations: ['put'],
+            validUntil: Date.now() + 60 * 60 * 1000,
+          }),
+        });
+        const rawBody = await diagRes.text();
+        console.error(`Blob /signed-token raw response (${diagRes.status}):`, rawBody);
+      } else {
+        console.error('Blob diagnostic skipped: no BLOB_READ_WRITE_TOKEN or storeId');
+      }
+    } catch (diagErr: any) {
+      console.error('Blob diagnostic fetch failed:', diagErr?.message);
+    }
     return NextResponse.json(
       { error: `Upload initialization failed: ${err?.message || 'Unknown error'}` },
       { status: 500 },
