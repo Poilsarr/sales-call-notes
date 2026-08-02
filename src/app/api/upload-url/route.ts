@@ -37,22 +37,21 @@ export async function POST(req: NextRequest) {
   }
 
   // Vercel Blob's delegation token has its own per-token allowedContentTypes
-  // allow-list set in the Vercel Blob dashboard. We don't know exactly which
-  // entries that allow-list contains — empirically each MIMEs-only attempt and
-  // the earlier `audio/*` attempt both fail with "The string did not match the
-  // expected pattern" (the error text comes from Vercel's control API
-  // pattern-matcher, not the @vercel/blob SDK). The robust fix: pin to the
-  // exact two MIME strings the project historically ships (webm + mpeg), keep
-  // the broader wildcard as a fallback, and let the route hand the client
-  // back the SAME contentType it used (server is source of truth, no surprise
-  // mismatch on PUT). One route, one fix.
+  // allow-list set in the Vercel Blob dashboard. Empirically every combination
+  // we tried (single exact MIME, multiple exact MIMEs, wildcards "audio/*"
+  // "video/*") gets rejected by Vercel's control API with "The string did not
+  // match the expected pattern." This is the canonical Vercel zod regex-
+  // pattern-mismatch error — its exact shape on the delegation token's
+  // allow-list is opaque from inside the project. The robust move: stop
+  // passing allowedContentTypes entirely. If the token's allow-list is empty
+  // or unset, omitted-vs-present is the difference that breaks the validator.
+  // The token + dashboard config is the source of truth; route-side
+  // restrictions were the entire source of regression history.
   const mimePattern = /^[a-z0-9!#$&^_.+-]+\/[a-z0-9!#$&^_.+-]+$/i;
   const requested =
     typeof requestedContentType === 'string' ? requestedContentType.toLowerCase().trim() : '';
   const contentType = mimePattern.test(requested) ? requested : 'audio/webm';
-  // Allow both the exact MIME and the wildcard. Vercel permits either — when
-  // one is rejected, the other typically passes. The SDK accepts both.
-  const allowedContentTypes = [contentType, 'audio/*', 'video/*'];
+  // ponytail: omission is intentional — see commit message.
 
   const ext = (filename || 'recording.webm').split('.').pop() || 'webm';
   const pathname = `uploads/${clerkUserId}/${crypto.randomUUID()}.${ext}`;
@@ -68,7 +67,6 @@ export async function POST(req: NextRequest) {
       pathname,
       operations: ['put'],
       validUntil: Date.now() + 60 * 60 * 1000,
-      allowedContentTypes,
     });
 
     const { presignedUrl } = await blob.presignUrl(signedToken, {
