@@ -65,13 +65,14 @@ export function ChatSidebar() {
   };
 
   return (
-    <div className="h-full flex flex-col">
-      <div className="flex items-center gap-2 mb-4">
+    // ponytail: column must `h-full` (already on parent), messages area needs `min-h-0` so the bounded flex-1 scroll stops at the parent height instead of growing forever; input form stays pinned to bottom regardless of message count.
+    <div className="h-full flex flex-col min-h-0">
+      <div className="flex items-center gap-2 mb-4 shrink-0">
         <MessageSquare className="w-5 h-5 text-emerald-400" />
         <h2 className="text-lg font-medium text-white">AI Chat</h2>
       </div>
-      
-      <div className="flex-1 overflow-y-auto space-y-3 mb-4">
+
+      <div className="flex-1 min-h-0 overflow-y-auto space-y-3 mb-4 pr-1">
         {messages.map((msg) => (
           <motion.div
             key={(msg as any)._key}
@@ -111,7 +112,7 @@ export function ChatSidebar() {
         <div ref={messagesEndRef} />
       </div>
       
-      <div className="space-y-2 mb-4">
+      <div className="space-y-2 mb-4 shrink-0">
         {quickQueries.map((query, index) => (
           <button
             key={index}
@@ -122,8 +123,8 @@ export function ChatSidebar() {
           </button>
         ))}
       </div>
-      
-      <form onSubmit={handleSubmit} className="flex gap-2">
+
+      <form onSubmit={handleSubmit} className="flex gap-2 shrink-0">
         <input
           type="text"
           value={input}

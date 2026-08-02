@@ -32,22 +32,17 @@ export function AppBanners() {
   }, []);
 
   return (
+    // ponytail: each banner returns null when there's nothing to show (no trial, paid plan, under limits). The previous `min-h-[40px]` wrappers preserved space for absent banners and added ~120px of dead vertical space above every page header on every app page.
     <>
-      <div className="min-h-[40px]">
-        <TrialBanner trialEndsAt={billing.trialEndsAt} />
-      </div>
-      <div className="min-h-[40px]">
-        <FreePlanBanner plan={billing.plan} />
-      </div>
-      <div className="min-h-[40px]">
-        <UsageLimitBanner
-          plan={billing.plan}
-          usage={billing.usage}
-          limit={billing.limit}
-          minuteUsage={billing.minuteUsage}
-          minuteLimit={billing.minuteLimit}
-        />
-      </div>
+      <TrialBanner trialEndsAt={billing.trialEndsAt} />
+      <FreePlanBanner plan={billing.plan} />
+      <UsageLimitBanner
+        plan={billing.plan}
+        usage={billing.usage}
+        limit={billing.limit}
+        minuteUsage={billing.minuteUsage}
+        minuteLimit={billing.minuteLimit}
+      />
     </>
   );
 }
