@@ -80,6 +80,7 @@ export async function POST(req: NextRequest) {
   } catch (err: any) {
     // ponytail: the @vercel/blob SDK strips Vercel's zod `issues` array before throwing — BlobError only carries `message`. To see WHICH field the pattern rejects, re-issue the exact same control-API request directly and log the raw response body. The deployment has the real token at runtime, so this reproduces the server-side error faithfully. Never log the token itself.
     console.error('Blob signing error:', err?.message);
+    let zodPath = '';
     try {
       const token = process.env.BLOB_READ_WRITE_TOKEN;
       if (token && storeId) {
@@ -103,14 +104,27 @@ export async function POST(req: NextRequest) {
         });
         const rawBody = await diagRes.text();
         console.error(`Blob /signed-token raw response (${diagRes.status}):`, rawBody);
+        try {
+          const parsed = JSON.parse(rawBody);
+          const issues = parsed?.error?.issues;
+          if (Array.isArray(issues) && issues.length > 0) {
+            zodPath = issues
+              .map((i: any) => (Array.isArray(i?.path) ? i.path.join('.') : String(i?.path ?? '')))
+              .filter(Boolean)
+              .join('; ');
+          }
+        } catch {
+          // rawBody wasn't JSON — leave zodPath empty
+        }
       } else {
         console.error('Blob diagnostic skipped: no BLOB_READ_WRITE_TOKEN or storeId');
       }
     } catch (diagErr: any) {
       console.error('Blob diagnostic fetch failed:', diagErr?.message);
     }
+    const detail = zodPath ? ` [failing field: ${zodPath}]` : '';
     return NextResponse.json(
-      { error: `Upload initialization failed: ${err?.message || 'Unknown error'}` },
+      { error: `Upload initialization failed: ${err?.message || 'Unknown error'}${detail}` },
       { status: 500 },
     );
   }
