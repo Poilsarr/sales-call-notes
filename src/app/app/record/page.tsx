@@ -179,8 +179,8 @@ export default function RecordPage() {
           fileSize: uploadFile.size,
         }),
       }).then(async r => {
-        const d = await r.json();
-        if (!r.ok) throw new Error(d.error || 'Failed to get upload URL');
+        const d = await r.json().catch(() => null);
+        if (!r.ok) throw new Error(d?.error || `Server error: ${r.status}`);
         return d;
       });
 
@@ -188,11 +188,16 @@ export default function RecordPage() {
       // Use the server-validated canonical MIME so the PUT Content-Type
       // header exactly matches the token's allowedContentTypes — Vercel
       // rejects uploads whose content-type isn't an exact match.
-      await fetch(presignedUrl, {
+      const putRes = await fetch(presignedUrl, {
         method: 'PUT',
         body: uploadFile,
         headers: { 'Content-Type': uploadContentType },
       });
+      let finalBlobUrl = blobUrl;
+      if (putRes.ok) {
+        const putBody = await putRes.json().catch(() => null);
+        if (putBody?.url) finalBlobUrl = putBody.url;
+      }
 
       setProcessingStage('transcribing');
 
@@ -200,7 +205,7 @@ export default function RecordPage() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          blobUrl,
+          blobUrl: finalBlobUrl,
           removeFillers,
           language,
           template: 'b2b-sales',
@@ -278,16 +283,21 @@ export default function RecordPage() {
           fileSize: uploadFile.size,
         }),
       }).then(async r => {
-        const d = await r.json();
-        if (!r.ok) throw new Error(d.error || 'Failed to get upload URL');
+        const d = await r.json().catch(() => null);
+        if (!r.ok) throw new Error(d?.error || `Server error: ${r.status}`);
         return d;
       });
 
-      await fetch(presignedUrl, {
+      const putRes = await fetch(presignedUrl, {
         method: 'PUT',
         body: uploadFile,
         headers: { 'Content-Type': uploadContentType },
       });
+      let finalBlobUrl = blobUrl;
+      if (putRes.ok) {
+        const putBody = await putRes.json().catch(() => null);
+        if (putBody?.url) finalBlobUrl = putBody.url;
+      }
 
       setProcessingStage('transcribing');
 
@@ -295,7 +305,7 @@ export default function RecordPage() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          blobUrl,
+          blobUrl: finalBlobUrl,
           removeFillers,
           language,
           template: 'b2b-sales',

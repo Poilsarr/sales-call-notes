@@ -29,6 +29,7 @@ import { HubSpotService } from '@/services/crm/hubspot';
 import { SalesforceService } from '@/services/crm/salesforce';
 import { logAuditAction } from '@/lib/audit-logger';
 import { refreshIntegrationToken } from '@/lib/integrations/token-refresh';
+import { put as blobPut, del as blobDel } from '@vercel/blob';
 
 export const maxDuration = 300;
 
@@ -97,7 +98,6 @@ export async function POST(req: Request) {
 
       // Legacy upload to Vercel Blob (non-fatal if it fails)
       try {
-        const { put: blobPut } = eval("require('@vercel/blob')") as { put: (path: string, body: Buffer, opts: { access: string; addRandomSuffix: boolean }) => Promise<{ url: string }> };
         const blobResult = await blobPut(fileName, fileBuffer, {
           access: 'public',
           addRandomSuffix: true,
@@ -516,7 +516,6 @@ export async function POST(req: Request) {
       // Free users: delete the original audio from blob storage after processing.
       if (isBlobUpload && plan === "free" && audioUrl) {
         try {
-          const { del: blobDel } = eval("require('@vercel/blob')") as { del: (url: string) => Promise<void> };
           await blobDel(audioUrl);
           console.log(`Blob deleted for free user: ${audioUrl}`);
         } catch (e: any) {

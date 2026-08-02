@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@clerk/nextjs/server';
 import crypto from 'crypto';
+import { issueSignedToken, presignUrl } from '@vercel/blob';
 import { getUserByClerkId } from '@/lib/get-user';
 import { getPlan } from '@/lib/plans';
 
@@ -12,66 +13,77 @@ const MAX_FILE_SIZE_MB: Record<string, number> = {
   enterprise: 500,
 };
 
-// ponytail: eval-require defeats webpack static analysis of undici@6 #private fields.
-function getBlob() {
-  return eval("require('@vercel/blob')") as {
-    issueSignedToken: Function;
-    presignUrl: Function;
-  };
-}
-
+// ponytail: @vercel/blob is imported normally (not via eval-require). The old
+// eval("require('@vercel/blob')") hack kept the module OUT of the route's
+// serverless file trace (.nft.json), so on Vercel the runtime require threw
+// "Cannot find module '@vercel/blob'" OUTSIDE this handler's try/catch — an
+// empty-body 500 that surfaced to the client as
+// "Failed to execute 'json' on 'Response': Unexpected end of JSON input".
 export async function POST(req: NextRequest) {
-  const { userId: clerkUserId } = await auth();
-  if (!clerkUserId) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-  }
-
-  const user = await getUserByClerkId(clerkUserId);
-  const plan = getPlan(user.plan || 'free');
-  const maxFileSizeMB = MAX_FILE_SIZE_MB[plan.tier] || 500;
-
-  const { filename, fileSize, contentType: requestedContentType } = await req.json();
-
-  if (typeof fileSize === 'number' && fileSize > maxFileSizeMB * 1024 * 1024) {
-    return NextResponse.json({ error: `File too large. ${plan.name} plan limit is ${maxFileSizeMB}MB.` }, { status: 400 });
-  }
-
-  // Vercel Blob's delegation token has its own per-token allowedContentTypes
-  // allow-list set in the Vercel Blob dashboard. Empirically every combination
-  // we tried (single exact MIME, multiple exact MIMEs, wildcards "audio/*"
-  // "video/*") gets rejected by Vercel's control API with "The string did not
-  // match the expected pattern." This is the canonical Vercel zod regex-
-  // pattern-mismatch error — its exact shape on the delegation token's
-  // allow-list is opaque from inside the project. The robust move: stop
-  // passing allowedContentTypes entirely. If the token's allow-list is empty
-  // or unset, omitted-vs-present is the difference that breaks the validator.
-  // The token + dashboard config is the source of truth; route-side
-  // restrictions were the entire source of regression history.
-  const mimePattern = /^[a-z0-9!#$&^_.+-]+\/[a-z0-9!#$&^_.+-]+$/i;
-  const requested =
-    typeof requestedContentType === 'string' ? requestedContentType.toLowerCase().trim() : '';
-  const contentType = mimePattern.test(requested) ? requested : 'audio/webm';
-  // ponytail: omission is intentional — see commit message.
-
-  const ext = (filename || 'recording.webm').split('.').pop() || 'webm';
-  const pathname = `uploads/${clerkUserId}/${crypto.randomUUID()}.${ext}`;
-
+  let pathname = '';
   const storeId = process.env.BLOB_STORE_ID;
-  if (!storeId) {
-    return NextResponse.json({ error: 'BLOB_STORE_ID not set' }, { status: 500 });
-  }
 
-  const blob = getBlob();
   try {
-    const signedToken = await blob.issueSignedToken({
+    const { userId: clerkUserId } = await auth();
+    if (!clerkUserId) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    const user = await getUserByClerkId(clerkUserId);
+    const plan = getPlan(user.plan || 'free');
+    const maxFileSizeMB = MAX_FILE_SIZE_MB[plan.tier] || 500;
+
+    let filename: string | undefined;
+    let fileSize: unknown;
+    let requestedContentType = '';
+    try {
+      const body = await req.json();
+      filename = body?.filename;
+      fileSize = body?.fileSize;
+      requestedContentType = body?.contentType;
+    } catch {
+      // Malformed/empty JSON body — fall through so the caller gets a readable
+      // error instead of an unhandled crash (empty 500).
+    }
+
+    if (typeof fileSize === 'number' && fileSize > maxFileSizeMB * 1024 * 1024) {
+      return NextResponse.json({ error: `File too large. ${plan.name} plan limit is ${maxFileSizeMB}MB.` }, { status: 400 });
+    }
+
+    // Vercel Blob's delegation token has its own per-token allowedContentTypes
+    // allow-list set in the Vercel Blob dashboard. Empirically every combination
+    // we tried (single exact MIME, multiple exact MIMEs, wildcards "audio/*"
+    // "video/*") gets rejected by Vercel's control API with "The string did not
+    // match the expected pattern." This is the canonical Vercel zod regex-
+    // pattern-mismatch error — its exact shape on the delegation token's
+    // allow-list is opaque from inside the project. The robust move: stop
+    // passing allowedContentTypes entirely. If the token's allow-list is empty
+    // or unset, omitted-vs-present is the difference that breaks the validator.
+    // The token + dashboard config is the source of truth; route-side
+    // restrictions were the entire source of regression history.
+    const mimePattern = /^[a-z0-9!#$&^_.+-]+\/[a-z0-9!#$&^_.+-]+$/i;
+    const requested =
+      typeof requestedContentType === 'string' ? requestedContentType.toLowerCase().trim() : '';
+    const contentType = mimePattern.test(requested) ? requested : 'audio/webm';
+    // ponytail: omission is intentional — see commit message.
+
+    const ext = (filename || 'recording.webm').split('.').pop() || 'webm';
+    pathname = `uploads/${clerkUserId}/${crypto.randomUUID()}.${ext}`;
+
+    if (!storeId) {
+      return NextResponse.json({ error: 'BLOB_STORE_ID not set' }, { status: 500 });
+    }
+
+    const signedToken = await issueSignedToken({
       pathname,
       operations: ['put'],
       validUntil: Date.now() + 60 * 60 * 1000,
     });
 
-    const { presignedUrl } = await blob.presignUrl(signedToken, {
+    const { presignedUrl } = await presignUrl(signedToken, {
       operation: 'put',
       pathname,
+      access: 'private',
     });
 
     const blobUrl = `https://${storeId}.blob.vercel-storage.com/${pathname}`;

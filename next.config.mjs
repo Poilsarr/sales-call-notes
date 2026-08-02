@@ -3,8 +3,10 @@ import { withSentryConfig } from "@sentry/nextjs";
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   // @vercel/blob uses undici@6 which has #private fields — webpack in Next 14 can't parse it.
-  // Keep it as a native Node require on the server side.
-  serverComponentsExternalPackages: ['@vercel/blob'],
+  // Keep it externalized so it's required at runtime on the server side.
+  experimental: {
+    serverComponentsExternalPackages: ['@vercel/blob'],
+  },
   compiler: {
     removeConsole: process.env.NODE_ENV === 'production' ? { exclude: ['error', 'warn'] } : false,
   },
