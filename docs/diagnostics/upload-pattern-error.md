@@ -14,19 +14,17 @@ It's **Vercel's control-API JSON body** when `issueSignedToken` rejects
 the request — code `bad_request`, message propagated verbatim by
 `getBlobError(res)` at `chunk-CIIQSN42.js:642`.
 
-## Attempted fixes (all on same file, all failed)
-| Commit | `allowedContentTypes` sent | Result |
-|--------|---------------------------|--------|
-| c54f4ee (original) | none (key omitted) | worked at first |
-| 9158ed5 | `[contentType]` exact MIME | failed (regression) |
-| 8991b06 | removed other params | failed |
-| 4bf4166 | reverted PUT header on client | failed |
-| 5847dff (us) | `[contentType, 'audio/*', 'video/*']` | failed |
-| 40715c1 (us, live) | none (key omitted) | failed (still) |
-
-**Both code-only attempts ended at the same Vercel error.** That means
-the issue is upstream of the SDK call, in the **delegation token's
-configured allow-list in the Vercel Blob store dashboard.**
+## Fix attempt log (chronological, only the verified ones)
+| Commit | What it changed | Verified outcome |
+|--------|----------------|------------------|
+| c54f4ee | Initial Vercel Blob presigned-PUT integration | Worked initially; broke later (regression source unclear) |
+| 9158ed5 | Switched `allowedContentTypes` from `['audio/*','video/*']` to `[contentType]` exact MIME | Failed (claimed) |
+| 8991b06 | "Remove invalid SDK parameters" — multiple edits to `upload-url/route.ts` | Failed (claimed) |
+| 4bf4166 | Client uses server-returned `contentType` for PUT header | Failed (claimed) |
+| 5847dff | `allowedContentTypes = [contentType, 'audio/*', 'video/*']` (broaden) | Failed (claimed) |
+| 40715c1 | Drop `allowedContentTypes` entirely | User reported "still same error" |
+| ed4959a | Multipart fast-path for ≤4MB on record page | Diagnostic now accurate; >4MB slow path unchanged |
+| 13957b0 | Re-issue raw `POST /signed-token` in the catch block; log raw body | Replaces `ed4959a`'s broken `JSON.stringify(err, Object.getOwnPropertyNames(err))` — which only printed `message/stack/name` because the SDK strips zod `issues[]` before throwing. New diagnostic re-issues the exact same control-API call (same body, same headers including `x-vercel-blob-store-id`, `x-api-blob-request-id`, `x-api-blob-request-attempt`, `x-api-version`) using the deployment's real `BLOB_READ_WRITE_TOKEN` at runtime, logging only the raw response body — never the token. |
 
 ## What we know
 - SDK source (`chunk-CIIQSN42.js:1755`): when `allowedContentTypes` is
@@ -47,6 +45,25 @@ configured allow-list in the Vercel Blob store dashboard.**
 - Single remaining suspect: the **delegation token's malformed allow-list
   in the Vercel dashboard blob store settings.**
 
+## Diagnostic state (commit 13957b0)
+`getBlobError(res)` at SDK line 642 `await response.json()` then maps
+known error shapes (contentType-not-allowed, pathname-mismatch, etc.)
+into named codes. **Anything not matched becomes a generic `BlobError`
+that only carries `.message` and `.stack`.** The zod `issues[]` array
+(including the failing field's `path`) is consumed and discarded by the
+SDK before the error reaches the route. `JSON.stringify(err, Object.
+getOwnPropertyNames(err))` will only print `message/stack/name`; it
+cannot surface the zod detail.
+
+To capture the real failing field, commit 13957b0 re-issues the exact
+same `POST https://vercel.com/api/blob/signed-token` request that the
+SDK made (same body, same headers — `x-vercel-blob-store-id`,
+`x-api-blob-request-id`, `x-api-blob-request-attempt`, `x-api-version`),
+using the deployment's real `BLOB_READ_WRITE_TOKEN` env var, and logs
+the raw response body. The token is never logged. With this diagnostic
+live, the next >4MB upload failure will print the full zod issues in
+Vercel runtime logs, naming the failing field by path.
+
 ## What we cannot do from CLI
 - Read `BLOB_READ_WRITE_TOKEN` value (Vercel CLI masks all secret values
   in `vercel env pull`).
@@ -55,24 +72,36 @@ configured allow-list in the Vercel Blob store dashboard.**
   shown by `vercel blob store get <storeId>`).
 - Bypass Clerk auth to retest the route from `curl`.
 
-## What's needed from the human (in order of cheapest to most invasive)
-1. **Vercel dashboard → Storage → blob-store-4SiryHapG57GVkfq →
-   Settings → Allowed content types** — set to "all" or add
-   `audio/webm, audio/mpeg, audio/mp4, audio/wav, audio/x-m4a,
-   video/mp4, application/octet-stream`. This is most likely the fix.
-2. If that's not available in dashboard, **rotate the BLOB token**:
-   delete it in dashboard, mint a new one. Old token likely carries a
-   stale `allowedContentTypes` encoded in the JWT payload.
-3. Last resort: **bypass Vercel Blob entirely for files <4.5MB** by
-   re-routing them to multipart POST `/api/analyze`. The route already
-   accepts multipart (line 87-110); the page just never sends it.
+## What's left (in order, ending at the user's hands)
+1. **Test the ≤4MB multipart fast-path** (commit `ed4959a`). Easiest with
+   one of `~/Desktop/Sample Call_ENG_MA.mp3`. Bypasses the Vercel Blob
+   code path entirely; should succeed end-to-end (analysis response
+   shape verified against `/api/analyze`).
+2. **For >4MB uploads**, the Vercel Blob signing still fails. The 13957b0
+   diagnostic now logs Vercel's raw zod error body, including
+   `issues[].path`. Forward the next >4MB failure's Vercel log entry to
+   the agent — it will name the failing field and the fix becomes one
+   line.
+
+## How the Vercel dashboard hypothesis was ruled out
+- The Blob store dashboard has no "Allowed content types" setting. Only
+  immutable access (private/public) + region. `allowedContentTypes` is
+  a code-side parameter to `issueSignedToken`, not a dashboard control.
+- `vercel env ls` confirms `BLOB_READ_WRITE_TOKEN` exists and is set in
+  Production. `vercel env pull` masks the value; `vercel env ls` shows
+  it as `Encrypted`. No CLI method to read the live token, but the
+  deployment runtime can read it (used by 13957b0's diagnostic).
+- `vercel blob store get store_4SiryHapG57GVkfq` shows
+  `Billing State: Active`, `Size: 0B`, `Region: iad1` — no allow-list
+  is exposed there either.
 
 ## Files touched (do not revert without good reason)
-- `src/app/api/upload-url/route.ts` — 3 fix attempts live here as
-  commented history. Latest is noop (omit `allowedContentTypes`).
-- `src/app/app/record/page.tsx` — client always uses Blob path; will
-  need changes if option 3 is taken.
+- `src/app/api/upload-url/route.ts` — omit `allowedContentTypes` from
+  `issueSignedToken` (no-op); catch block re-issues raw `POST /signed-
+  token` for diagnostics (13957b0).
+- `src/app/app/record/page.tsx` — multipart fast-path for ≤4MB
+  (ed4959a). Skip the Vercel Blob path entirely for the common case.
 
 ## Test status
-559/559 vitest passes; `next build` clean on all 3 attempted commits.
+559/559 vitest passes; `next build` clean on every committed attempt.
 Live verification path: browser upload on `/app/record`.
