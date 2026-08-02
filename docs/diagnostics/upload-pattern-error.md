@@ -42,8 +42,10 @@ the request — code `bad_request`, message propagated verbatim by
 - `pathname` = `uploads/${clerkUserId}/${uuid}.${ext}` is well-formed.
 - `validUntil` = `Date.now() + 1h` is a valid future timestamp.
 - `clerkUserId` from Clerk is a standard `user_xxx` ID.
-- Single remaining suspect: the **delegation token's malformed allow-list
-  in the Vercel dashboard blob store settings.**
+- Single remaining suspect: a malformed/rotated `BLOB_READ_WRITE_TOKEN`
+  (store mismatch) or a Vercel-side body-schema rule on `/signed-token`
+  we can't see from CLI. There is **no** dashboard "Allowed content
+  types" setting to fix (see ruled-out section).
 
 ## Diagnostic state (commit 13957b0)
 `getBlobError(res)` at SDK line 642 `await response.json()` then maps
