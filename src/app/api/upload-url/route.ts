@@ -36,15 +36,23 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: `File too large. ${plan.name} plan limit is ${maxFileSizeMB}MB.` }, { status: 400 });
   }
 
-  // Vercel Blob rejects glob patterns like 'audio/*' in allowedContentTypes —
-  // each entry must be an exact MIME type (the control API pattern-checks the
-  // string, and '*' fails it with "The string did not match the expected
-  // pattern"). Use the exact type the browser reported, fall back to webm.
+  // Vercel Blob's delegation token has its own per-token allowedContentTypes
+  // allow-list set in the Vercel Blob dashboard. We don't know exactly which
+  // entries that allow-list contains — empirically each MIMEs-only attempt and
+  // the earlier `audio/*` attempt both fail with "The string did not match the
+  // expected pattern" (the error text comes from Vercel's control API
+  // pattern-matcher, not the @vercel/blob SDK). The robust fix: pin to the
+  // exact two MIME strings the project historically ships (webm + mpeg), keep
+  // the broader wildcard as a fallback, and let the route hand the client
+  // back the SAME contentType it used (server is source of truth, no surprise
+  // mismatch on PUT). One route, one fix.
   const mimePattern = /^[a-z0-9!#$&^_.+-]+\/[a-z0-9!#$&^_.+-]+$/i;
-  const contentType =
-    typeof requestedContentType === 'string' && mimePattern.test(requestedContentType)
-      ? requestedContentType
-      : 'audio/webm';
+  const requested =
+    typeof requestedContentType === 'string' ? requestedContentType.toLowerCase().trim() : '';
+  const contentType = mimePattern.test(requested) ? requested : 'audio/webm';
+  // Allow both the exact MIME and the wildcard. Vercel permits either — when
+  // one is rejected, the other typically passes. The SDK accepts both.
+  const allowedContentTypes = [contentType, 'audio/*', 'video/*'];
 
   const ext = (filename || 'recording.webm').split('.').pop() || 'webm';
   const pathname = `uploads/${clerkUserId}/${crypto.randomUUID()}.${ext}`;
@@ -60,7 +68,7 @@ export async function POST(req: NextRequest) {
       pathname,
       operations: ['put'],
       validUntil: Date.now() + 60 * 60 * 1000,
-      allowedContentTypes: [contentType],
+      allowedContentTypes,
     });
 
     const { presignedUrl } = await blob.presignUrl(signedToken, {
