@@ -78,7 +78,9 @@ export async function POST(req: NextRequest) {
 
     return NextResponse.json({ presignedUrl, blobUrl, pathname, contentType });
   } catch (err: any) {
-    console.error('Blob signing error:', err?.message, err);
+    // ponytail: surface Vercel's full error shape (zod path + raw message) so we can see WHICH field the pattern rejects. Stdlib JSON.stringify with getOwnPropertyNames reaches the SDK's hidden fields (path, issues, etc.) that err.message strips away.
+    const errDump = JSON.stringify(err, Object.getOwnPropertyNames(err), 2);
+    console.error('Blob signing error:', err?.message, '\nFULL ERR:', errDump);
     return NextResponse.json(
       { error: `Upload initialization failed: ${err?.message || 'Unknown error'}` },
       { status: 500 },

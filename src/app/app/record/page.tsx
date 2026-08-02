@@ -140,13 +140,34 @@ export default function RecordPage() {
     setProcessingError(null);
 
     try {
-      let uploadFile = blob;
-      let uploadName = `recording-${Date.now()}.webm`;
-      if (fileSizeMB > 50) {
-        const compressed = await compressAudio(new File([blob], uploadName, { type: 'audio/webm' }));
-        uploadFile = compressed;
-        uploadName = compressed.name;
+      // ponytail: under Vercel's 4.5 MB serverless body limit, multipart POST straight to /api/analyze avoids the Vercel Blob presigned-PUT path entirely. The /api/analyze route's multipart branch already writes to a temp file and transcribes from disk. Above the limit we fall back to the Blob path (currently broken — see docs/diagnostics/upload-pattern-error.md).
+      const BLOB_LIMIT_MB = 4;
+      const initialUploadName = `recording-${Date.now()}.webm`;
+      const initialUploadFile: Blob | File = fileSizeMB > 50
+        ? await compressAudio(new File([blob], initialUploadName, { type: 'audio/webm' }))
+        : blob;
+      const multipartName = fileSizeMB > 50 ? (initialUploadFile as File).name : initialUploadName;
+      if (fileSizeMB <= BLOB_LIMIT_MB) {
+        const fd = new FormData();
+        fd.append('file', initialUploadFile, multipartName);
+        fd.append('removeFillers', String(removeFillers));
+        if (language) fd.append('language', language);
+        fd.append('template', 'b2b-sales');
+
+        const res = await fetch('/api/analyze', { method: 'POST', body: fd });
+        const data = await res.json().catch(() => ({}));
+        if (!res.ok) throw new Error(data.error || `Server error: ${res.status}`);
+
+        const callId = data?.call?.id || data?.id;
+        if (callId) setUploadedCallId(callId);
+        setProcessingStage('done');
+        toast.success('Call analyzed successfully');
+        return;
       }
+
+      // Slow path: Vercel Blob presigned PUT (broken upstream — see comment).
+      let uploadFile = initialUploadFile;
+      let uploadName = multipartName;
 
       // Get a presigned upload URL from our server
       const { presignedUrl, blobUrl, contentType: uploadContentType } = await fetch('/api/upload-url', {
@@ -222,13 +243,31 @@ export default function RecordPage() {
     setProcessingError(null);
 
     try {
-      let uploadFile: Blob | File = file;
-      let uploadName = file.name;
-      if (fileSizeMB > 50) {
-        const compressed = await compressAudio(file);
-        uploadFile = compressed;
-        uploadName = compressed.name;
+      // ponytail: under Vercel's 4.5 MB serverless body limit, multipart POST straight to /api/analyze avoids the Vercel Blob presigned-PUT path entirely. The /api/analyze route's multipart branch already writes to a temp file and transcribes from disk. Above the limit we fall back to the Blob path (currently broken — see docs/diagnostics/upload-pattern-error.md).
+      const BLOB_LIMIT_MB = 4;
+      const initialUploadFile: Blob | File = fileSizeMB > 50 ? await compressAudio(file) : file;
+      const multipartName = fileSizeMB > 50 ? (initialUploadFile as File).name : file.name;
+      if (fileSizeMB <= BLOB_LIMIT_MB) {
+        const fd = new FormData();
+        fd.append('file', initialUploadFile, multipartName);
+        fd.append('removeFillers', String(removeFillers));
+        if (language) fd.append('language', language);
+        fd.append('template', 'b2b-sales');
+
+        const res = await fetch('/api/analyze', { method: 'POST', body: fd });
+        const data = await res.json().catch(() => ({}));
+        if (!res.ok) throw new Error(data.error || `Server error: ${res.status}`);
+
+        const callId = data?.call?.id || data?.id;
+        if (callId) setUploadedCallId(callId);
+        setProcessingStage('done');
+        toast.success('Call analyzed successfully');
+        return;
       }
+
+      // Slow path: Vercel Blob presigned PUT (broken upstream — see comment).
+      let uploadFile: Blob | File = initialUploadFile;
+      let uploadName = multipartName;
 
       const { presignedUrl, blobUrl, contentType: uploadContentType } = await fetch('/api/upload-url', {
         method: 'POST',
