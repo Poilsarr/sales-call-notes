@@ -8,6 +8,7 @@ import { toast } from 'sonner';
 import { TranscriptViewer } from '@/components/transcript-viewer';
 import { AnalysisPanel } from '@/components/analysis-panel';
 import { ChatSidebar } from '@/components/chat-sidebar';
+import { normalizeScorecard } from '@/lib/scorecard';
 import type { CollaborationComment, SpeakerMetric } from '@/types';
 
 interface TeamMember {
@@ -76,7 +77,7 @@ export default function CallDetailPage({ params }: { params: { id: string } }) {
           comments: call.comments || [],
           canManageCollaboration: call.canManageCollaboration || false,
           analytics: call.analytics || null,
-          salesScorecard: call.insight?.salesScorecard,
+          salesScorecard: normalizeScorecard(call.insight?.salesScorecard),
         });
         setTeamMembers(team.members || []);
       } catch (e) {

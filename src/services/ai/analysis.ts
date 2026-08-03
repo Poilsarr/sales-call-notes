@@ -3,6 +3,7 @@ import { CallAnalysis, TranscriptionSegment } from '@/types';
 import { createOpenAIClient } from '@/lib/openai-client';
 import { getSecret } from '@/lib/secrets';
 import { loadPromptTemplate, isValidTemplate, PromptTemplateId } from '@/lib/prompts-registry';
+import { normalizeScorecard } from '@/lib/scorecard';
 
 // ponytail: char-cap on transcript sent to the LLM. ~4 chars/token →
 // 16000 chars ≈ 4k tokens, enough headroom for 60-min calls.
@@ -139,29 +140,7 @@ export class AnalysisService {
       participants: Array.isArray(raw.participants) ? raw.participants : [],
       keyEntities: raw.keyEntities || {},
       competitorsMentioned: Array.isArray(raw.competitorsMentioned) ? raw.competitorsMentioned : [],
-      salesScorecard: raw.salesScorecard || {
-        meddic: {
-          metrics: { score: 0, evidence: '' },
-          economicBuyer: { score: 0, evidence: '' },
-          decisionCriteria: { score: 0, evidence: '' },
-          decisionProcess: { score: 0, evidence: '' },
-          identifyPain: { score: 0, evidence: '' },
-          champion: { score: 0, evidence: '' }
-        },
-        bant: {
-          budget: { score: 0, evidence: '' },
-          authority: { score: 0, evidence: '' },
-          need: { score: 0, evidence: '' },
-          timeline: { score: 0, evidence: '' }
-        },
-        spin: {
-          situation: { score: 0, evidence: '' },
-          problem: { score: 0, evidence: '' },
-          implication: { score: 0, evidence: '' },
-          needPayoff: { score: 0, evidence: '' }
-        },
-        overallScore: 0
-      },
+      salesScorecard: normalizeScorecard(raw.salesScorecard),
       stakeholderMap: raw.stakeholderMap || [],
       painPoints: raw.painPoints || [],
       goals: raw.goals || [],

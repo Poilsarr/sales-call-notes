@@ -18,13 +18,15 @@ Return ONLY valid JSON with this exact structure (no markdown, no code fences):
     "dealSize": "string",
     "decisionTimeline": "string"
   },
-  "bant": {
-    "budget": {"score": 0-10, "evidence": "string (exact quote or paraphrase)", "summary": "string"},
-    "authority": {"score": 0-10, "evidence": "string", "summary": "string"},
-    "need": {"score": 0-10, "evidence": "string", "summary": "string"},
-    "timeline": {"score": 0-10, "evidence": "string", "summary": "string"}
+  "salesScorecard": {
+    "bant": {
+      "budget": {"score": 0-10, "evidence": "string (exact quote or paraphrase)", "summary": "string"},
+      "authority": {"score": 0-10, "evidence": "string", "summary": "string"},
+      "need": {"score": 0-10, "evidence": "string", "summary": "string"},
+      "timeline": {"score": 0-10, "evidence": "string", "summary": "string"}
+    },
+    "overallScore": 0-100
   },
-  "overallScore": 0-100,
   "actionItems": [{"task": "string", "owner": "string", "due": "string"}],
   "nextSteps": [{"step": "string", "date": "string"}],
   "objections": [{"type": "price|timing|features|competition|trust", "quote": "string", "handled": boolean, "resolution": "string"}],

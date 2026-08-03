@@ -21,15 +21,17 @@ Return ONLY valid JSON with this exact structure (no markdown, no code fences):
     "techStack": ["string"],
     "decisionTimeline": "string"
   },
-  "meddic": {
-    "metrics": {"score": 0-10, "evidence": "string", "summary": "quantified business outcome discussed"},
-    "economicBuyer": {"score": 0-10, "evidence": "string", "summary": "is the budget owner engaged?"},
-    "decisionCriteria": {"score": 0-10, "evidence": "string", "summary": "how will they decide?"},
-    "decisionProcess": {"score": 0-10, "evidence": "string", "summary": "steps to close"},
-    "identifyPain": {"score": 0-10, "evidence": "string", "summary": "what problem are they solving?"},
-    "champion": {"score": 0-10, "evidence": "string", "summary": "who is selling internally?"}
+  "salesScorecard": {
+    "meddic": {
+      "metrics": {"score": 0-10, "evidence": "string", "summary": "quantified business outcome discussed"},
+      "economicBuyer": {"score": 0-10, "evidence": "string", "summary": "is the budget owner engaged?"},
+      "decisionCriteria": {"score": 0-10, "evidence": "string", "summary": "how will they decide?"},
+      "decisionProcess": {"score": 0-10, "evidence": "string", "summary": "steps to close"},
+      "identifyPain": {"score": 0-10, "evidence": "string", "summary": "what problem are they solving?"},
+      "champion": {"score": 0-10, "evidence": "string", "summary": "who is selling internally?"}
+    },
+    "overallScore": 0-100
   },
-  "overallScore": 0-100,
   "closeProbability": 0-100,
   "stakeholderMap": [{"name": "string", "role": "string", "influence": "high|medium|low", "sentiment": "positive|neutral|negative", "concerns": ["string"]}],
   "actionItems": [{"task": "string", "owner": "string", "due": "string"}],

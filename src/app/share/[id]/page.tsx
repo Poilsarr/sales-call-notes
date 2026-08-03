@@ -2,6 +2,7 @@ import { notFound } from 'next/navigation';
 import { prisma } from '@/lib/prisma';
 import { TranscriptViewer } from '@/components/transcript-viewer';
 import { AnalysisPanel } from '@/components/analysis-panel';
+import { normalizeScorecard } from '@/lib/scorecard';
 import type { Metadata } from 'next';
 
 interface SharePageProps {
@@ -90,7 +91,7 @@ export default async function SharePage({ params }: SharePageProps) {
                   step: s.step,
                   date: s.date || 'TBD',
                 })),
-                salesScorecard: call.insight?.salesScorecard,
+                salesScorecard: normalizeScorecard(call.insight?.salesScorecard),
                 interruptions: call.analytics?.interruptions || 0,
                 questionsAsked: call.analytics?.questionsAsked || 0,
                 speakerMetrics: call.analytics?.speakerMetrics as any[] || [],
