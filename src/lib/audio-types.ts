@@ -16,12 +16,13 @@ const MAGIC: Record<string, MagicSig[]> = {
     { offset: 0, bytes: [0x4f, 0x67, 0x67, 0x53], mime: 'audio/ogg', ext: 'ogg' },
     { offset: 0, bytes: [0x66, 0x4c, 0x61, 0x43], mime: 'audio/flac', ext: 'flac' },
     { offset: 4, bytes: [0x66, 0x74, 0x79, 0x70], mime: 'audio/mp4', ext: 'm4a' },
+    { offset: 0, bytes: [0x1a, 0x45, 0xdf, 0xa3], mime: 'audio/webm', ext: 'webm' },
   ],
 };
 
 const ALLOWED_MIME_TYPES = [
   'audio/mpeg', 'audio/wav', 'audio/x-wav', 'audio/ogg',
-  'audio/flac', 'audio/mp4', 'audio/aac',
+  'audio/flac', 'audio/mp4', 'audio/aac', 'audio/webm',
 ];
 
 export function detectAudioType(buffer: Buffer): { mime: string; ext: string } | null {

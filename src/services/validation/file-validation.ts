@@ -20,6 +20,7 @@ export class FileValidationService {
     'audio/flac',
     'audio/mp4',
     'audio/aac',
+    'audio/webm',
   ];
   private static readonly MAX_SIZE = 100 * 1024 * 1024; // 100MB
   private static readonly MIN_DURATION = 0.5; // seconds
