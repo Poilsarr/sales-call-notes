@@ -12,11 +12,14 @@ interface UpgradePromptProps {
   featureName: string;
   onClose?: () => void;
   minimal?: boolean;
+  /** ponytail: SSR-resolved plan from server component, avoids the ~100ms flash where the banner shows before the client-side /api/billing fetch lands. Used by parent to pass user.plan straight from DB. */
+  serverPlan?: PlanTier;
 }
 
-export default function UpgradePrompt({ feature, featureName, onClose, minimal }: UpgradePromptProps) {
+export default function UpgradePrompt({ feature, featureName, onClose, minimal, serverPlan }: UpgradePromptProps) {
   const { user } = useUser();
-  const [currentPlan, setCurrentPlan] = useState<PlanTier>("free");
+  // ponytail: prefer serverPlan (no flash) over the client-fetched plan when available.
+  const [currentPlan, setCurrentPlan] = useState<PlanTier>(serverPlan ?? "free");
   const [upgrading, setUpgrading] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
   const [paddle, setPaddle] = useState<any>(null);
@@ -79,6 +82,11 @@ export default function UpgradePrompt({ feature, featureName, onClose, minimal }
     }
     return "pro" as PlanTier;
   })();
+
+  // ponytail: if the user's current plan already includes this feature, render nothing — the prompt is a "this needs plan X" banner, not a "you're amazing" widget. Skipping the render keeps paid users out of the funnel.
+  if (currentPlan && PLANS[currentPlan]?.features[feature] === true) {
+    return null;
+  }
 
   if (success) {
     return (

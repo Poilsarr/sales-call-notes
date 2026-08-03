@@ -188,10 +188,10 @@ export default function IntelligencePage() {
               <div className="p-2 rounded-lg bg-red-500/10">
                 <Crosshair className="w-5 h-5 text-red-400" />
               </div>
-              <span className="text-sm text-zinc-500">Total Mentions</span>
+              <span className="text-sm font-medium text-zinc-300">Total Mentions</span>
             </div>
             <p className="text-3xl font-semibold text-white">{summary.total}</p>
-            <p className="text-xs text-zinc-600 mt-1">Last {summary.days} days</p>
+            <p className="text-xs text-zinc-400 mt-1">Last {summary.days} days</p>
           </div>
         </motion.div>
 
@@ -206,10 +206,10 @@ export default function IntelligencePage() {
               <div className="p-2 rounded-lg bg-emerald-500/10">
                 <BarChart3 className="w-5 h-5 text-emerald-400" />
               </div>
-              <span className="text-sm text-zinc-500">Competitors Tracked</span>
+              <span className="text-sm font-medium text-zinc-300">Competitors Tracked</span>
             </div>
             <p className="text-3xl font-semibold text-white">{summary.uniqueCompetitors}</p>
-            <p className="text-xs text-zinc-600 mt-1">Unique names detected</p>
+            <p className="text-xs text-zinc-400 mt-1">Unique names detected</p>
           </div>
         </motion.div>
 
@@ -224,12 +224,12 @@ export default function IntelligencePage() {
               <div className="p-2 rounded-lg bg-blue-500/10">
                 <TrendingUp className="w-5 h-5 text-blue-400" />
               </div>
-              <span className="text-sm text-zinc-500">Top Competitor</span>
+              <span className="text-sm font-medium text-zinc-300">Top Competitor</span>
             </div>
             <p className="text-3xl font-semibold text-white">
               {trend[0]?.competitor ?? 'N/A'}
             </p>
-            <p className="text-xs text-zinc-600 mt-1">
+            <p className="text-xs text-zinc-400 mt-1">
               {trend[0] ? `${trend[0].count} mentions` : 'No data yet'}
             </p>
           </div>
@@ -269,7 +269,7 @@ export default function IntelligencePage() {
                           <span className="ml-2 text-xs text-zinc-500">(filtered)</span>
                         )}
                       </span>
-                      <span className="text-sm text-zinc-500">{item.count}x</span>
+                      <span className="text-sm text-zinc-400">{item.count}x</span>
                     </div>
                     <div className="h-2 bg-zinc-800 rounded-full overflow-hidden">
                       <div
@@ -362,7 +362,7 @@ export default function IntelligencePage() {
                       <span className="text-sm font-medium text-white">
                         {mention.competitor}
                       </span>
-                      <span className="text-xs text-zinc-600">
+                      <span className="text-xs text-zinc-400">
                         {new Date(mention.createdAt).toLocaleDateString(undefined, {
                           month: 'short',
                           day: 'numeric',
@@ -379,7 +379,7 @@ export default function IntelligencePage() {
                     {mention.call && (
                       <a
                         href={`/app/calls/${mention.call.id}`}
-                        className="inline-flex items-center gap-1 mt-2 text-xs text-zinc-500 hover:text-zinc-300 transition-colors"
+                        className="inline-flex items-center gap-1 mt-2 text-xs text-zinc-400 hover:text-zinc-200 transition-colors"
                       >
                         <ExternalLink className="w-3 h-3" />
                         {mention.call.filename}
