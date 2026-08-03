@@ -5,6 +5,7 @@ import { motion } from 'framer-motion';
 import { useRouter } from 'next/navigation';
 import { BarChart3, TrendingUp, Crosshair, ExternalLink } from 'lucide-react';
 import UpgradePrompt from '@/components/upgrade-prompt';
+import { CompetitorCharts } from '@/components/competitor-charts';
 
 interface CompetitorMention {
   id: string;
@@ -238,64 +239,7 @@ export default function IntelligencePage() {
 
       <UpgradePrompt feature="competitive_alerts" featureName="Competitive Alerts" minimal />
 
-      {trend.length > 0 ? (
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.4, delay: 0.3 }}
-          className="doppel-outer"
-        >
-          <div className="doppel-inner p-6">
-            <h2 className="text-lg font-medium text-white mb-4">Mention Frequency</h2>
-            <div className="space-y-3">
-              {trend.map((item) => {
-                const maxCount = trend[0].count;
-                const width = Math.max((item.count / maxCount) * 100, 4);
-                const isSelected = selectedCompetitor === item.competitor;
-                return (
-                  <button
-                    key={item.competitor}
-                    onClick={() =>
-                      setSelectedCompetitor(isSelected ? null : item.competitor)
-                    }
-                    className={`w-full text-left transition-all ${
-                      isSelected ? 'opacity-100' : 'opacity-80 hover:opacity-100'
-                    }`}
-                  >
-                    <div className="flex items-center justify-between mb-1">
-                      <span className="text-sm text-zinc-300 font-medium">
-                        {item.competitor}
-                        {isSelected && (
-                          <span className="ml-2 text-xs text-zinc-500">(filtered)</span>
-                        )}
-                      </span>
-                      <span className="text-sm text-zinc-400">{item.count}x</span>
-                    </div>
-                    <div className="h-2 bg-zinc-800 rounded-full overflow-hidden">
-                      <div
-                        className="h-full bg-gradient-to-r from-red-500 to-orange-400 rounded-full transition-all duration-500"
-                        style={{ width: `${width}%` }}
-                      />
-                    </div>
-                  </button>
-                );
-              })}
-            </div>
-          </div>
-        </motion.div>
-      ) : (
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.4, delay: 0.3 }}
-          className="doppel-outer"
-        >
-          <div className="doppel-inner p-6">
-            <h2 className="text-lg font-medium text-white mb-4">Mention Frequency</h2>
-            <p className="text-sm text-zinc-500 text-center py-8">No trend data available yet. Upload and analyze calls to see competitor mention trends.</p>
-          </div>
-        </motion.div>
-      )}
+      <CompetitorCharts trend={trend} mentions={mentions} />
 
       <motion.div
         initial={{ opacity: 0, y: 20 }}
