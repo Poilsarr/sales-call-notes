@@ -12,6 +12,7 @@ const MAGIC: Record<string, MagicSig[]> = {
     { offset: 0, bytes: [0xff, 0xfb], mime: 'audio/mpeg', ext: 'mp3' },
     { offset: 0, bytes: [0xff, 0xf3], mime: 'audio/mpeg', ext: 'mp3' },
     { offset: 0, bytes: [0xff, 0xf2], mime: 'audio/mpeg', ext: 'mp3' },
+    { offset: 0, bytes: [0xff], mime: 'audio/mpeg', ext: 'mp3', check: (buf: Buffer) => (buf[1] & 0xe0) === 0xe0 && buf[1] !== 0xff },
     { offset: 0, bytes: [0x52, 0x49, 0x46, 0x46], mime: 'audio/wav', ext: 'wav', check: (buf: Buffer) => buf.slice(8, 12).toString() === 'WAVE' },
     { offset: 0, bytes: [0x4f, 0x67, 0x67, 0x53], mime: 'audio/ogg', ext: 'ogg' },
     { offset: 0, bytes: [0x66, 0x4c, 0x61, 0x43], mime: 'audio/flac', ext: 'flac' },

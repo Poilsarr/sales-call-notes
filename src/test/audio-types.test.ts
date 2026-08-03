@@ -8,6 +8,13 @@ describe('detectAudioType', () => {
     expect(detectAudioType(buf)).toEqual({ mime: 'audio/mpeg', ext: 'mp3' });
   });
 
+  it('detects mp3 frame sync variants (MPEG 2.5 Layer 3, CRC, etc.)', () => {
+    for (const sync of [0xfb, 0xf3, 0xf2, 0xfa, 0xe3, 0xe2, 0xf0, 0xea]) {
+      const buf = Buffer.concat([Buffer.from([0xff, sync]), Buffer.alloc(16)]);
+      expect(detectAudioType(buf)).toEqual({ mime: 'audio/mpeg', ext: 'mp3' });
+    }
+  });
+
   it('detects wav via the RIFF/WAVE header', () => {
     const buf = Buffer.concat([
       Buffer.from('RIFF'),
