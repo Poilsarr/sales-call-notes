@@ -147,14 +147,15 @@ export default function CallsPage() {
 
   const exportCSV = () => {
     const headers = 'Filename,Date,Health Score,Sentiment,Action Items,Summary\n';
+    const cell = (v: unknown) => `"${sanitizeCsvCell(v)}"`;
     const rows = calls.map(c =>
       [
-        sanitizeCsvCell(c.displayName ?? c.filename),
-        sanitizeCsvCell(new Date(c.createdAt).toLocaleDateString()),
-        sanitizeCsvCell(c.healthScore ?? ''),
-        sanitizeCsvCell(c.sentiment ?? ''),
-        sanitizeCsvCell(c.actionItems.length),
-        sanitizeCsvCell(c.summary ?? ''),
+        cell(c.displayName ?? c.filename),
+        cell(new Date(c.createdAt).toLocaleDateString()),
+        cell(c.healthScore ?? ''),
+        cell(c.sentiment ?? ''),
+        cell(c.actionItems.length),
+        cell(c.summary ?? ''),
       ].join(',')
     ).join('\n');
     const blob = new Blob([headers + rows], { type: 'text/csv' });

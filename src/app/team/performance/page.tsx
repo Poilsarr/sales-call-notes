@@ -77,15 +77,16 @@ export default function TeamPerformancePage() {
 
   const exportCSV = () => {
     const headers = ['Date', 'Call', 'Owner', 'Assignee', 'Health Score', 'Sentiment', 'Action Items', 'Open'];
+    const cell = (v: unknown) => `"${sanitizeCsvCell(v)}"`;
     const rows = sortedCalls.map((call) => [
-      sanitizeCsvCell(new Date(call.createdAt).toLocaleDateString()),
-      sanitizeCsvCell(call.displayName ?? call.filename),
-      sanitizeCsvCell(call.ownerName),
-      sanitizeCsvCell(call.assigneeName || ''),
-      sanitizeCsvCell(call.healthScore?.toString() || ''),
-      sanitizeCsvCell(call.sentiment || ''),
-      sanitizeCsvCell(call.actionItemCount),
-      sanitizeCsvCell(call.openActionItems),
+      cell(new Date(call.createdAt).toLocaleDateString()),
+      cell(call.displayName ?? call.filename),
+      cell(call.ownerName),
+      cell(call.assigneeName || ''),
+      cell(call.healthScore?.toString() || ''),
+      cell(call.sentiment || ''),
+      cell(call.actionItemCount),
+      cell(call.openActionItems),
     ]);
 
     const csv = [headers, ...rows]
