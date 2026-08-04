@@ -6,6 +6,7 @@ import Link from 'next/link';
 import { Search, Filter, Phone, Download, Upload, Mic, Chrome, ArchiveRestore } from 'lucide-react';
 import UpgradePrompt from '@/components/upgrade-prompt';
 import { toast } from 'sonner';
+import { sanitizeCsvCell } from '@/lib/call-title';
 
 interface CallEntry {
   id: string;
@@ -18,12 +19,16 @@ interface CallEntry {
   sharedWithTeam?: boolean;
   ownerName?: string | null;
   assigneeName?: string | null;
+  title?: string | null;
+  displayName?: string;
 }
 
 interface ArchivedEntry {
   id: string;
   filename: string;
   createdAt: string;
+  title?: string | null;
+  displayName?: string;
 }
 
 type Tab = "active" | "archived";
@@ -132,19 +137,25 @@ export default function CallsPage() {
   // Server-side search already filtered; the client-side filter below
   // remains as a defensive narrowing on filename/summary (matches what
   // users would expect from the visible placeholder).
-  const filteredCalls = calls.filter(call =>
-    !searchQuery.trim() ||
-    (call.filename || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
-    (call.summary && call.summary.toLowerCase().includes(searchQuery.toLowerCase())) ||
-    // The full transcript match comes back from the server; this catches
-    // case-insensitive hits in filename/summary even if server missed.
-    false
-  );
+  const query = searchQuery.toLowerCase();
+  const matches = (c: CallEntry) =>
+    (c.filename || '').toLowerCase().includes(query) ||
+    (c.title || '').toLowerCase().includes(query) ||
+    (c.summary || '').toLowerCase().includes(query);
+
+  const filteredCalls = calls.filter(call => !searchQuery.trim() || matches(call));
 
   const exportCSV = () => {
     const headers = 'Filename,Date,Health Score,Sentiment,Action Items,Summary\n';
     const rows = calls.map(c =>
-      `"${c.filename}","${new Date(c.createdAt).toLocaleDateString()}",${c.healthScore ?? ''},"${c.sentiment ?? ''}",${c.actionItems.length},"${(c.summary || '').replace(/"/g, '""')}"`
+      [
+        sanitizeCsvCell(c.displayName ?? c.filename),
+        sanitizeCsvCell(new Date(c.createdAt).toLocaleDateString()),
+        sanitizeCsvCell(c.healthScore ?? ''),
+        sanitizeCsvCell(c.sentiment ?? ''),
+        sanitizeCsvCell(c.actionItems.length),
+        sanitizeCsvCell(c.summary ?? ''),
+      ].join(',')
     ).join('\n');
     const blob = new Blob([headers + rows], { type: 'text/csv' });
     const url = URL.createObjectURL(blob);

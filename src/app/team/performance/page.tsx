@@ -8,6 +8,7 @@ import Nav from '@/components/nav';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Loader2, Download, Phone, TrendingUp, Target } from 'lucide-react';
+import { sanitizeCsvCell } from '@/lib/call-title';
 
 interface CallPerformance {
   id: string;
@@ -19,6 +20,8 @@ interface CallPerformance {
   assigneeName: string | null;
   actionItemCount: number;
   openActionItems: number;
+  title?: string | null;
+  displayName?: string;
 }
 
 interface Member {
@@ -75,22 +78,18 @@ export default function TeamPerformancePage() {
   const exportCSV = () => {
     const headers = ['Date', 'Call', 'Owner', 'Assignee', 'Health Score', 'Sentiment', 'Action Items', 'Open'];
     const rows = sortedCalls.map((call) => [
-      new Date(call.createdAt).toLocaleDateString(),
-      call.filename,
-      call.ownerName,
-      call.assigneeName || '',
-      call.healthScore?.toString() || '',
-      call.sentiment || '',
-      call.actionItemCount,
-      call.openActionItems,
+      sanitizeCsvCell(new Date(call.createdAt).toLocaleDateString()),
+      sanitizeCsvCell(call.displayName ?? call.filename),
+      sanitizeCsvCell(call.ownerName),
+      sanitizeCsvCell(call.assigneeName || ''),
+      sanitizeCsvCell(call.healthScore?.toString() || ''),
+      sanitizeCsvCell(call.sentiment || ''),
+      sanitizeCsvCell(call.actionItemCount),
+      sanitizeCsvCell(call.openActionItems),
     ]);
 
     const csv = [headers, ...rows]
-      .map((row) =>
-        row
-          .map((cell) => `"${String(cell).replace(/"/g, '""')}"`)
-          .join(',')
-      )
+      .map((row) => row.join(','))
       .join('\n');
     const blob = new Blob([csv], { type: 'text/csv' });
     const url = URL.createObjectURL(blob);
