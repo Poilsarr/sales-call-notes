@@ -130,8 +130,8 @@ export default function IntelligencePage() {
         <div>
           <h1 className="text-3xl font-semibold text-white mb-2">Competitive Intelligence</h1>
         </div>
-        <div className="doppel-outer">
-          <div className="doppel-inner p-6 sm:p-8">
+        <div className="doppel-outer-dark">
+          <div className="doppel-inner-dark p-6 sm:p-8">
             <p className="text-zinc-200 font-medium mb-1">Your session expired.</p>
             <p className="text-zinc-500 text-sm mb-5">Sign back in to load your competitive data.</p>
             <a
@@ -154,8 +154,8 @@ export default function IntelligencePage() {
         <div>
           <h1 className="text-3xl font-semibold text-white mb-2">Competitive Intelligence</h1>
         </div>
-        <div className="doppel-outer">
-          <div className="doppel-inner p-6 sm:p-8">
+        <div className="doppel-outer-dark">
+          <div className="doppel-inner-dark p-6 sm:p-8">
             <p className="text-zinc-200 font-medium mb-1">Couldn&rsquo;t load competitive data.</p>
             <p className="text-zinc-500 text-sm font-mono">{error}</p>
           </div>
@@ -182,9 +182,9 @@ export default function IntelligencePage() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.4, delay: 0 }}
-          className="doppel-outer"
+          className="doppel-outer-dark"
         >
-          <div className="doppel-inner p-5">
+          <div className="doppel-inner-dark p-5">
             <div className="flex items-center gap-3 mb-3">
               <div className="p-2 rounded-lg bg-red-500/10">
                 <Crosshair className="w-5 h-5 text-red-400" />
@@ -200,9 +200,9 @@ export default function IntelligencePage() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.4, delay: 0.1 }}
-          className="doppel-outer"
+          className="doppel-outer-dark"
         >
-          <div className="doppel-inner p-5">
+          <div className="doppel-inner-dark p-5">
             <div className="flex items-center gap-3 mb-3">
               <div className="p-2 rounded-lg bg-emerald-500/10">
                 <BarChart3 className="w-5 h-5 text-emerald-400" />
@@ -218,9 +218,9 @@ export default function IntelligencePage() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.4, delay: 0.2 }}
-          className="doppel-outer"
+          className="doppel-outer-dark"
         >
-          <div className="doppel-inner p-5">
+          <div className="doppel-inner-dark p-5">
             <div className="flex items-center gap-3 mb-3">
               <div className="p-2 rounded-lg bg-blue-500/10">
                 <TrendingUp className="w-5 h-5 text-blue-400" />
@@ -245,9 +245,9 @@ export default function IntelligencePage() {
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.4, delay: 0.4 }}
-        className="doppel-outer"
+        className="doppel-outer-dark"
       >
-        <div className="doppel-inner p-6">
+        <div className="doppel-inner-dark p-6">
           <h2 className="text-lg font-medium text-white mb-4">
             {selectedCompetitor
               ? `Mentions of "${selectedCompetitor}"`

@@ -106,13 +106,109 @@ function SentimentBars({ mentions }: { mentions: Mention[] }) {
   );
 }
 
+const TIME_W = 720;
+const TIME_H = 170;
+const TIME_PAD_BOTTOM = 26;
+const TIME_DAYS = 30;
+
+function dayKey(d: Date): string {
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+}
+
+function MentionsOverTime({ mentions }: { mentions: Mention[] }) {
+  const days = useMemo(() => {
+    const byDay = new Map<string, number>();
+    for (const m of mentions) {
+      if (!m.createdAt) continue;
+      const t = new Date(m.createdAt).getTime();
+      if (!Number.isFinite(t)) continue;
+      const k = dayKey(new Date(t));
+      byDay.set(k, (byDay.get(k) ?? 0) + 1);
+    }
+    if (byDay.size === 0) return null;
+
+    const latest = Math.max(...Array.from(byDay.keys()).map((k) => new Date(`${k}T00:00:00Z`).getTime()));
+    const start = new Date(latest);
+    start.setUTCDate(start.getUTCDate() - (TIME_DAYS - 1));
+
+    const out: Array<{ key: string; label: string; count: number }> = [];
+    for (let i = 0; i < TIME_DAYS; i++) {
+      const d = new Date(start.getTime() + i * 86400000);
+      const k = dayKey(d);
+      out.push({
+        key: k,
+        label: d.toLocaleDateString(undefined, { month: 'short', day: 'numeric' }),
+        count: byDay.get(k) ?? 0,
+      });
+    }
+    return out;
+  }, [mentions]);
+
+  if (!days) return null;
+
+  const max = Math.max(...days.map((d) => d.count), 1);
+  const innerW = TIME_W - 8;
+  const barW = Math.max(innerW / days.length - 2, 1);
+  const plotH = TIME_H - TIME_PAD_BOTTOM - 8;
+  const step = innerW / days.length;
+
+  return (
+    <div className="doppel-outer-dark">
+      <div className="doppel-inner-dark p-5">
+        <div className="flex items-center gap-2 mb-4">
+          <span className="text-sm font-medium text-zinc-200">Mentions over time</span>
+          <span className="ml-auto text-xs text-zinc-400">Last {TIME_DAYS} days</span>
+        </div>
+        <svg
+          viewBox={`0 0 ${TIME_W} ${TIME_H}`}
+          role="img"
+          aria-label="Competitor mentions over the last 30 days"
+          className="w-full h-auto"
+        >
+          {days.map((d, i) => {
+            const h = (d.count / max) * plotH;
+            const x = 4 + i * step;
+            const showLabel = i % 5 === 0 || i === days.length - 1;
+            return (
+              <g key={d.key}>
+                {d.count > 0 && (
+                  <rect
+                    x={x}
+                    y={TIME_H - TIME_PAD_BOTTOM - h}
+                    width={barW}
+                    height={Math.max(h, 2)}
+                    rx="2"
+                    className="fill-red-500/70"
+                  />
+                )}
+                {showLabel && (
+                  <text
+                    x={x + barW / 2}
+                    y={TIME_H - 8}
+                    textAnchor="middle"
+                    className="fill-zinc-400"
+                    fontSize="10"
+                  >
+                    {d.label}
+                  </text>
+                )}
+              </g>
+            );
+          })}
+        </svg>
+      </div>
+    </div>
+  );
+}
+
 export function CompetitorCharts({ trend, mentions }: Props) {
   // ponytail: the previous inline bars were buttons — clicking a competitor filtered the mentions list below. Lost in the chart rewrite. Restored as a small chip row below the chart so the click→filter UX still works.
   const [selectedCompetitor, setSelectedCompetitor] = useState<string | null>(null);
   return (
-    <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
-      <div className="doppel-outer">
-        <div className="doppel-inner p-5">
+    <div className="space-y-4">
+      <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
+      <div className="doppel-outer-dark">
+        <div className="doppel-inner-dark p-5">
           <div className="flex items-center gap-2 mb-4">
             <span className="text-sm font-medium text-zinc-200">Mentions per competitor</span>
             <span className="ml-auto text-xs text-zinc-400">{trend.length} total</span>
@@ -142,8 +238,8 @@ export function CompetitorCharts({ trend, mentions }: Props) {
               </>}
         </div>
       </div>
-      <div className="doppel-outer">
-        <div className="doppel-inner p-5">
+      <div className="doppel-outer-dark">
+        <div className="doppel-inner-dark p-5">
           <div className="flex items-center gap-2 mb-4">
             <span className="text-sm font-medium text-zinc-200">Sentiment per competitor</span>
             <span className="ml-auto flex items-center gap-3 text-[11px] text-zinc-400">
@@ -154,6 +250,8 @@ export function CompetitorCharts({ trend, mentions }: Props) {
           </div>
           <SentimentBars mentions={mentions} />
         </div>
+      </div>
+      <MentionsOverTime mentions={mentions} />
       </div>
       {/* ponytail: hidden prop pass to mentions list isn't needed — the chip above sets local state that we'd need to lift. For now, the chart is read-only and the click-to-filter is a chip, not the bar itself. */}
     </div>
