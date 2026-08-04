@@ -72,6 +72,7 @@ The principle: **never advance a level with a known break, mock-leak, or uncommi
 | #77 | 2026-06-22 | feat(pricing): unify CTAs + monthly/annual toggle + FAQ            | Pricing copy + missing FAQ              |
 | #79 | 2026-06-22 | feat(site): add /status page (client-side health probe)            | Footer linked to 404                    |
 | #80 | 2026-06-22 | feat(site): anchor IDs on /features + globalize SiteFooter         | Broken anchor links + per-page footer   |
+| —   | 2026-08-04 | feat(calls): call renaming (title/displayName everywhere)          | Custom titles: PATCH write path, title search, CSV-injection-safe exports, rename UI (list + detail), RAG title retrieval; commits 6a09bad..8d5c477, 611 tests |
 
 ---
 
