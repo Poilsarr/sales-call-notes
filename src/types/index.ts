@@ -135,6 +135,8 @@ export interface CallRecord {
   id: string;
   createdAt: string;
   filename: string;
+  title?: string | null;
+  displayName?: string;
   transcript: string;
   language?: string;
   segments?: TranscriptSegment[];

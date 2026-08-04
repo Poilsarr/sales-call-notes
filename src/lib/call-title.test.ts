@@ -20,6 +20,9 @@ describe('validateTitle', () => {
     expect(validateTitle('a\u0000b\u0007c')).toEqual({ ok: true, value: 'abc' });
     expect(validateTitle('a\nb\tc')).toEqual({ ok: true, value: 'abc' });
   });
+  it('returns null for control-char-only input', () => {
+    expect(validateTitle('\u0000\u0007')).toEqual({ ok: true, value: null });
+  });
   it('rejects >120 code points (emoji count as 1 each)', () => {
     expect(validateTitle('😀'.repeat(120)).ok).toBe(true);
     expect(validateTitle('😀'.repeat(121)).ok).toBe(false);

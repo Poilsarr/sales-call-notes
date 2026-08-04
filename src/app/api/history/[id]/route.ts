@@ -4,6 +4,8 @@ import { auth } from '@clerk/nextjs/server';
 import { canAccessCall, canManageCall } from '@/lib/call-access';
 import { getUserByClerkId } from '@/lib/get-user';
 import { logAuditAction } from '@/lib/audit-logger';
+import { validateTitle } from '@/lib/call-title';
+import { cacheDel, makeCacheKey } from '@/lib/cache';
 
 export async function GET(req: Request, { params }: { params: { id: string } }) {
   try {
@@ -122,9 +124,15 @@ export async function PATCH(req: Request, { params }: { params: { id: string } }
       return NextResponse.json({ error: 'Access denied' }, { status: 403 });
     }
 
-    const { sharedWithTeam, assigneeId } = await req.json();
+    const body = await req.json().catch(() => ({}));
+    const { sharedWithTeam, assigneeId, title } = body;
     if (sharedWithTeam === true && !call.teamId) {
       return NextResponse.json({ error: 'Only team calls can be shared' }, { status: 400 });
+    }
+
+    const titleValidation = validateTitle(title);
+    if (!titleValidation.ok) {
+      return NextResponse.json({ error: titleValidation.error }, { status: 400 });
     }
 
     let nextAssigneeId = assigneeId;
@@ -142,6 +150,7 @@ export async function PATCH(req: Request, { params }: { params: { id: string } }
       data: {
         ...(typeof sharedWithTeam === 'boolean' ? { sharedWithTeam } : {}),
         ...(assigneeId !== undefined ? { assigneeId: nextAssigneeId } : {}),
+        ...(title !== undefined ? { title: titleValidation.value } : {}),
       },
       include: {
         assignee: {
@@ -150,9 +159,15 @@ export async function PATCH(req: Request, { params }: { params: { id: string } }
       },
     });
 
+    // Invalidate cached GET /api/calls/[id] (300s TTL). The list cache
+    // (60s, query-parameterized) self-expires; accept ≤60s staleness there.
+    await cacheDel(makeCacheKey('calls', clerkUserId, params.id));
+
     return NextResponse.json({
       sharedWithTeam: updated.sharedWithTeam,
       assignee: updated.assignee,
+      title: updated.title,
+      displayName: updated.title || updated.filename,
     });
   } catch (error) {
     return NextResponse.json({ error: 'Failed to update collaboration settings' }, { status: 500 });
