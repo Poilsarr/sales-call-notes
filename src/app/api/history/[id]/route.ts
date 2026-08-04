@@ -161,7 +161,7 @@ export async function PATCH(req: Request, { params }: { params: { id: string } }
 
     // Invalidate cached GET /api/calls/[id] (300s TTL). The list cache
     // (60s, query-parameterized) self-expires; accept ≤60s staleness there.
-    await cacheDel(makeCacheKey('calls', clerkUserId, params.id));
+    await cacheDel(makeCacheKey('calls', viewer.id, params.id));
 
     return NextResponse.json({
       sharedWithTeam: updated.sharedWithTeam,

@@ -36,23 +36,26 @@ vi.mock('@/lib/prisma', () => ({
   },
 }));
 
-vi.mock('@/lib/cache', () => ({
-  cacheDel: cacheDelMock,
-  makeCacheKey: (p: string, ...parts: (string | undefined)[]) =>
-    ['cache', p, ...parts].join(':'),
-}));
+vi.mock('@/lib/cache', async () => {
+  const actual = await vi.importActual<typeof import('@/lib/cache')>('@/lib/cache');
+  return { ...actual, cacheDel: cacheDelMock };
+});
 
 import { PATCH } from '@/app/api/history/[id]/route';
+import { makeCacheKey } from '@/lib/cache';
+
+const CLERK_USER_ID = 'user_2xxx';
+const DB_USER_ID = 'cm_db_id_1';
 
 const CALL = {
   id: 'call_1',
-  userId: 'user_1',
+  userId: DB_USER_ID,
   teamId: null,
   sharedWithTeam: false,
   filename: 'recording.mp3',
 };
 
-const VIEWER = { id: 'user_1', teamId: null, teamRole: 'OWNER' };
+const VIEWER = { id: DB_USER_ID, teamId: null, teamRole: 'OWNER' };
 
 function patch(body: unknown, id = 'call_1') {
   return PATCH(
@@ -67,7 +70,7 @@ function patch(body: unknown, id = 'call_1') {
 describe('PATCH /api/history/[id] — title write path', () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    authMock.mockResolvedValue({ userId: 'user_1' });
+    authMock.mockResolvedValue({ userId: CLERK_USER_ID });
     getUserMock.mockResolvedValue(VIEWER);
     callFindUniqueMock.mockResolvedValue(CALL);
   });
@@ -176,8 +179,8 @@ describe('PATCH /api/history/[id] — title write path', () => {
     await expect(unauthResponse.json()).resolves.toEqual({ error: 'Unauthorized' });
     expect(callFindUniqueMock).not.toHaveBeenCalled();
 
-    authMock.mockResolvedValue({ userId: 'user_2' });
-    getUserMock.mockResolvedValue({ id: 'user_2', teamId: null, teamRole: 'MEMBER' });
+    authMock.mockResolvedValue({ userId: CLERK_USER_ID });
+    getUserMock.mockResolvedValue({ id: 'cm_db_id_2', teamId: null, teamRole: 'MEMBER' });
 
     const forbiddenResponse = await patch({ title: 'Acme renewal' });
 
@@ -195,6 +198,6 @@ describe('PATCH /api/history/[id] — title write path', () => {
 
     await patch({ title: 'Acme renewal' });
 
-    expect(cacheDelMock).toHaveBeenCalledWith('cache:calls:user_1:call_1');
+    expect(cacheDelMock).toHaveBeenCalledWith(makeCacheKey('calls', DB_USER_ID, 'call_1'));
   });
 });
