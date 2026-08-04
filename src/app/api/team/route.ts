@@ -32,6 +32,8 @@ export async function GET() {
     let sharedCalls: Array<{
       id: string;
       filename: string;
+      title: string | null;
+      displayName: string;
       createdAt: Date;
       healthScore: number | null;
       ownerName: string | null;
@@ -62,6 +64,8 @@ export async function GET() {
       sharedCalls = teamCalls.map((call) => ({
         id: call.id,
         filename: call.filename,
+        title: call.title,
+        displayName: call.title || call.filename,
         createdAt: call.createdAt,
         healthScore: call.healthScore,
         ownerName: (call as any).user?.name || null,

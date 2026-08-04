@@ -35,6 +35,7 @@ export async function GET(req: Request) {
       ? {
           OR: [
             { filename: { contains: query, mode: 'insensitive' as const } },
+            { title: { contains: query, mode: 'insensitive' as const } },
             { transcript: { contains: query, mode: 'insensitive' as const } },
             { summary: { contains: query, mode: 'insensitive' as const } },
           ],
@@ -61,6 +62,8 @@ export async function GET(req: Request) {
       id: c.id,
       userId: c.userId,
       filename: c.filename,
+      title: c.title,
+      displayName: c.title || c.filename,
       transcript: c.transcript,
       language: c.language,
       summary: c.summary,

@@ -22,7 +22,7 @@ export async function POST(req: NextRequest) {
     // for THIS user instead of sending the entire history to the LLM.
     // Falls back to the 5 most recent calls if embeddings aren't indexed
     // yet (e.g. calls uploaded before indexing existed) or embedding fails.
-    let retrieved: { id: string; filename: string; summary: string | null; transcript: string | null }[] = [];
+    let retrieved: { id: string; filename: string; title: string | null; summary: string | null; transcript: string | null }[] = [];
     try {
       retrieved = await kg.searchByQuery(query, userId, 5);
     } catch (err) {
@@ -32,7 +32,7 @@ export async function POST(req: NextRequest) {
     if (retrieved.length === 0) {
       const recent = await prisma.call.findMany({
         where: { userId },
-        select: { id: true, filename: true, summary: true, transcript: true },
+        select: { id: true, filename: true, title: true, summary: true, transcript: true },
         orderBy: { createdAt: "desc" },
         take: 5,
       });
@@ -74,6 +74,8 @@ Respond concisely in plain text.`;
       relevantCalls: retrieved.map(c => ({
         id: c.id,
         filename: c.filename,
+        title: c.title,
+        displayName: c.title || c.filename,
         date: (c as any).createdAt ? new Date((c as any).createdAt).toISOString() : c.id,
         summary: c.summary,
       })),

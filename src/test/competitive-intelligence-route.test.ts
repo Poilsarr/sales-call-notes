@@ -330,7 +330,7 @@ describe('GET /api/competitive-intelligence', () => {
       );
     });
 
-    it('requests only id, filename, createdAt, and userId on the related call', async () => {
+    it('requests only id, filename, title, createdAt, and userId on the related call', async () => {
       authMock.mockResolvedValue({ userId: 'clerk_user_1' });
       upsertMock.mockResolvedValue(PRO_USER);
       findManyMock.mockResolvedValue([]);
@@ -341,7 +341,7 @@ describe('GET /api/competitive-intelligence', () => {
         expect.objectContaining({
           include: {
             call: {
-              select: { id: true, filename: true, createdAt: true, userId: true },
+              select: { id: true, filename: true, title: true, createdAt: true, userId: true },
             },
           },
         }),

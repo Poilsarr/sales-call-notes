@@ -122,7 +122,7 @@ export async function GET(req: Request) {
       where,
       include: {
         call: {
-          select: { id: true, filename: true, createdAt: true, userId: true },
+          select: { id: true, filename: true, title: true, createdAt: true, userId: true },
         },
       },
       orderBy: { createdAt: 'desc' },
@@ -177,7 +177,13 @@ export async function GET(req: Request) {
     }
 
     return NextResponse.json({
-      mentions,
+      mentions: mentions.map((m) => ({
+        ...m,
+        call: {
+          ...m.call,
+          displayName: m.call.title || m.call.filename,
+        },
+      })),
       trend,
       summary: {
         total,

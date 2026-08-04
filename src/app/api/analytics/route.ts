@@ -46,6 +46,7 @@ export async function GET(req: Request) {
       select: {
         id: true,
         filename: true,
+        title: true,
         createdAt: true,
         healthScore: true,
         sentiment: true,
@@ -147,6 +148,8 @@ export async function GET(req: Request) {
       return {
         id: c.id,
         filename: c.filename,
+        title: c.title,
+        displayName: c.title || c.filename,
         date: c.createdAt,
         healthScore: c.healthScore,
         sentiment: c.sentiment,

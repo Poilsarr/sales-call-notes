@@ -12,13 +12,13 @@ interface SharePageProps {
 export async function generateMetadata({ params }: SharePageProps): Promise<Metadata> {
   const call = await prisma.call.findUnique({
     where: { id: params.id, isPublic: true },
-    select: { filename: true, summary: true },
+    select: { filename: true, title: true, summary: true },
   });
 
   if (!call) return { title: 'Call Not Found', robots: { index: false, follow: false } };
 
   return {
-    title: `${call.filename} | Gauge`,
+    title: `${call.title || call.filename} | Gauge`,
     description: call.summary?.slice(0, 160) || 'Sales call analysis',
   };
 }
@@ -54,7 +54,7 @@ export default async function SharePage({ params }: SharePageProps) {
     <div className="min-h-screen bg-zinc-950 text-white">
       <div className="max-w-6xl mx-auto px-4 py-8">
         <header className="mb-8 pb-6 border-b border-zinc-800">
-          <h1 className="text-3xl font-bold mb-2">{call.filename}</h1>
+          <h1 className="text-3xl font-bold mb-2">{call.title || call.filename}</h1>
           <p className="text-zinc-400">
             Recorded by {call.user.name || call.user.email} on{' '}
             {new Date(call.createdAt).toLocaleDateString()}

@@ -69,7 +69,7 @@ export class KnowledgeGraphService {
     query: string,
     userId: string,
     limit = 5
-  ): Promise<{ id: string; filename: string; summary: string | null; transcript: string | null; createdAt: Date; similarity: number }[]> {
+  ): Promise<{ id: string; filename: string; title: string | null; summary: string | null; transcript: string | null; createdAt: Date; similarity: number }[]> {
     const queryEmbedding = await this.generateEmbedding(query.slice(0, 16000));
 
     const candidates = await prisma.call.findMany({
@@ -80,6 +80,7 @@ export class KnowledgeGraphService {
       select: {
         id: true,
         filename: true,
+        title: true,
         summary: true,
         transcript: true,
         createdAt: true,
@@ -93,6 +94,7 @@ export class KnowledgeGraphService {
       .map(call => ({
         id: call.id,
         filename: call.filename,
+        title: call.title,
         summary: call.summary,
         transcript: call.transcript,
         createdAt: call.createdAt,

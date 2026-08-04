@@ -17,6 +17,7 @@ export async function GET(req: Request) {
       select: {
         id: true,
         filename: true,
+        title: true,
         createdAt: true,
         healthScore: true,
         sentiment: true,
@@ -28,6 +29,8 @@ export async function GET(req: Request) {
       calls: calls.map((c) => ({
         id: c.id,
         filename: c.filename,
+        title: c.title,
+        displayName: c.title || c.filename,
         createdAt: c.createdAt,
         healthScore: c.healthScore,
         sentiment: c.sentiment,

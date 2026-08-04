@@ -48,6 +48,7 @@ export async function GET(req: NextRequest) {
           userId: user.id,
           OR: [
             { filename: { contains: query, mode: 'insensitive' as const } },
+            { title: { contains: query, mode: 'insensitive' as const } },
             { transcript: { contains: query, mode: 'insensitive' as const } },
             { summary: { contains: query, mode: 'insensitive' as const } },
           ],

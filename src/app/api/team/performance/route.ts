@@ -36,6 +36,8 @@ export async function GET() {
     const formatted = calls.map((call) => ({
       id: call.id,
       filename: call.filename,
+      title: call.title,
+      displayName: call.title || call.filename,
       createdAt: call.createdAt,
       healthScore: call.healthScore,
       sentiment: call.sentiment,
