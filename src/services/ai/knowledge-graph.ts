@@ -70,7 +70,8 @@ export class KnowledgeGraphService {
     userId: string,
     limit = 5
   ): Promise<{ id: string; filename: string; title: string | null; summary: string | null; transcript: string | null; createdAt: Date; similarity: number }[]> {
-    const queryEmbedding = await this.generateEmbedding(query.slice(0, 16000));
+    const sanitizedQuery = query.slice(0, 16000);
+    const queryEmbedding = await this.generateEmbedding(sanitizedQuery);
 
     const candidates = await prisma.call.findMany({
       where: {
@@ -88,9 +89,7 @@ export class KnowledgeGraphService {
       },
     });
 
-    if (candidates.length === 0) return [];
-
-    return candidates
+    const results = candidates
       .map(call => ({
         id: call.id,
         filename: call.filename,
@@ -100,8 +99,34 @@ export class KnowledgeGraphService {
         createdAt: call.createdAt,
         similarity: this.cosineSimilarity(queryEmbedding, call.embedding!),
       }))
-      .sort((a, b) => b.similarity - a.similarity)
-      .slice(0, limit);
+      .sort((a, b) => b.similarity - a.similarity);
+
+    const seen = new Set(results.map(call => call.id));
+
+    if (sanitizedQuery.trim()) {
+      const titleMatches = await prisma.call.findMany({
+        where: {
+          userId,
+          title: { contains: sanitizedQuery.trim(), mode: 'insensitive' },
+        },
+        select: {
+          id: true,
+          filename: true,
+          title: true,
+          summary: true,
+          transcript: true,
+          createdAt: true,
+        },
+      });
+
+      for (const call of titleMatches) {
+        if (seen.has(call.id)) continue;
+        seen.add(call.id);
+        results.push({ ...call, similarity: 0 });
+      }
+    }
+
+    return results.slice(0, limit);
   }
 
   private cosineSimilarity(vecA: number[], vecB: number[]): number {

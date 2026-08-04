@@ -1,0 +1,133 @@
+import type { NextRequest } from 'next/server';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
+
+const mocks = vi.hoisted(() => {
+  const embeddingsCreate = vi.fn();
+  const chatCompletionsCreate = vi.fn();
+  const createOpenAIClient = vi.fn(() => ({
+    embeddings: { create: embeddingsCreate },
+    chat: { completions: { create: chatCompletionsCreate } },
+  }));
+  return {
+    auth: vi.fn(),
+    callFindMany: vi.fn(),
+    embeddingsCreate,
+    chatCompletionsCreate,
+    createOpenAIClient,
+  };
+});
+
+vi.mock('@clerk/nextjs/server', () => ({ auth: mocks.auth }));
+vi.mock('@/lib/prisma', () => ({
+  default: { call: { findMany: mocks.callFindMany } },
+}));
+vi.mock('@/lib/openai-client', () => ({ createOpenAIClient: mocks.createOpenAIClient }));
+
+import { KnowledgeGraphService } from '@/services/ai/knowledge-graph';
+
+const USER_ID = 'u1';
+
+function indexedCall(overrides: Record<string, unknown> = {}) {
+  return {
+    id: 'c1',
+    filename: 'recording-1.mp3',
+    title: null,
+    summary: 'quarterly renewal talk',
+    transcript: 'we should renew',
+    createdAt: new Date('2026-06-01T10:00:00.000Z'),
+    embedding: [0.3, 0.4],
+    ...overrides,
+  };
+}
+
+function titledCall(overrides: Record<string, unknown> = {}) {
+  return {
+    id: 'c2',
+    filename: 'recording-2.mp3',
+    title: 'Acme Q3 renewal',
+    summary: null,
+    transcript: null,
+    createdAt: new Date('2026-06-02T10:00:00.000Z'),
+    ...overrides,
+  };
+}
+
+describe('KnowledgeGraphService.searchByQuery title fallback', () => {
+  let kg: KnowledgeGraphService;
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+    mocks.embeddingsCreate.mockResolvedValue({ data: [{ embedding: [0.1, 0.2] }] });
+    kg = new KnowledgeGraphService();
+  });
+
+  it('queries title matches and merges them after vector results', async () => {
+    mocks.callFindMany
+      .mockResolvedValueOnce([indexedCall()])
+      .mockResolvedValueOnce([titledCall()]);
+
+    const results = await kg.searchByQuery('Acme', USER_ID);
+
+    expect(mocks.callFindMany).toHaveBeenNthCalledWith(
+      2,
+      expect.objectContaining({
+        where: { userId: USER_ID, title: { contains: 'Acme', mode: 'insensitive' } },
+      }),
+    );
+    expect(results.map(r => r.id)).toEqual(['c1', 'c2']);
+    expect(results[0].similarity).toBeGreaterThan(0);
+    expect(results[1]).toMatchObject({ id: 'c2', title: 'Acme Q3 renewal', similarity: 0 });
+  });
+
+  it('dedupes by id and keeps vector results first', async () => {
+    const call = indexedCall({ title: 'Acme Q3 renewal' });
+    mocks.callFindMany.mockResolvedValueOnce([call]).mockResolvedValueOnce([call]);
+
+    const results = await kg.searchByQuery('Acme Q3 renewal', USER_ID);
+
+    expect(results).toHaveLength(1);
+    expect(results[0].id).toBe('c1');
+    expect(results[0].title).toBe('Acme Q3 renewal');
+  });
+
+  it('returns title matches when no embedded calls exist', async () => {
+    mocks.callFindMany
+      .mockResolvedValueOnce([])
+      .mockResolvedValueOnce([titledCall()]);
+
+    const results = await kg.searchByQuery('Acme', USER_ID);
+
+    expect(results).toHaveLength(1);
+    expect(results[0]).toMatchObject({ id: 'c2', similarity: 0 });
+  });
+});
+
+describe('/api/chat POST callContext includes title', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    mocks.auth.mockResolvedValue({ userId: USER_ID });
+    mocks.embeddingsCreate.mockResolvedValue({ data: [{ embedding: [0.1, 0.2] }] });
+    mocks.chatCompletionsCreate.mockResolvedValue({
+      choices: [{ message: { content: 'The renewal call went well.' } }],
+    });
+  });
+
+  it('passes the call title into the LLM context', async () => {
+    mocks.callFindMany
+      .mockResolvedValueOnce([indexedCall({ title: 'Acme Q3 renewal' })])
+      .mockResolvedValueOnce([]);
+
+    const { POST } = await import('@/app/api/chat/route');
+    const res = await POST(
+      new Request('http://x/api/chat', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ query: 'Acme Q3 renewal' }),
+      }) as unknown as NextRequest,
+    );
+
+    expect(res.status).toBe(200);
+    const createArgs = mocks.chatCompletionsCreate.mock.calls[0][0];
+    expect(createArgs.messages[1].content).toContain('"title": "Acme Q3 renewal"');
+  });
+});

@@ -42,6 +42,7 @@ export async function POST(req: NextRequest) {
     const openai = createOpenAIClient();
 
     const callContext = retrieved.map(c => ({
+      title: c.title,
       filename: c.filename,
       summary: c.summary,
       transcript: c.transcript?.slice(0, 3000),
