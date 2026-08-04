@@ -7,6 +7,7 @@ import { Search, Filter, Phone, Download, Upload, Mic, Chrome, ArchiveRestore } 
 import UpgradePrompt from '@/components/upgrade-prompt';
 import { toast } from 'sonner';
 import { sanitizeCsvCell } from '@/lib/call-title';
+import { CallTitleEditor } from '@/components/call-title-editor';
 
 interface CallEntry {
   id: string;
@@ -40,6 +41,7 @@ export default function CallsPage() {
   const [tab, setTab] = useState<Tab>("active");
   const [loading, setLoading] = useState(true);
   const [restoringId, setRestoringId] = useState<string | null>(null);
+  const [editingId, setEditingId] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [retention, setRetention] = useState<{ plan: string; callLimit: number | string; visibleCount: number }>({
     plan: "free",
@@ -87,6 +89,28 @@ export default function CallsPage() {
       toast.error("Failed to restore call");
     } finally {
       setRestoringId(null);
+    }
+  };
+
+  const renameCall = async (call: CallEntry, title: string | null) => {
+    try {
+      const res = await fetch(`/api/history/${call.id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ title }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(data.error || `Failed to rename (${res.status})`);
+      const displayName = data.displayName ?? title ?? call.filename;
+      setCalls((prev) =>
+        prev.map((c) => (c.id === call.id ? { ...c, title: data.title ?? null, displayName } : c)),
+      );
+      setEditingId(null);
+      toast.success('Call renamed');
+      return true;
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'Failed to rename call');
+      return false;
     }
   };
 
@@ -239,7 +263,7 @@ export default function CallsPage() {
                       <Phone className="w-5 h-5 text-zinc-400" />
                     </div>
                     <div>
-                      <p className="text-white font-medium">{call.filename}</p>
+                      <p className="text-white font-medium">{call.displayName ?? call.filename}</p>
                       <p className="text-sm text-zinc-500">
                         {new Date(call.createdAt).toLocaleDateString(undefined, { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}
                         {" · archived"}
@@ -379,12 +403,29 @@ export default function CallsPage() {
             )}
           </div>
         ) : (
-          filteredCalls.map((call, index) => (
+          filteredCalls.map((call, index) => {
+            const displayName = call.displayName ?? call.filename;
+            return (
             <div
               key={call.id}
               className="animate-fade-in"
               style={{ animationDelay: `${index * 50}ms`, animationFillMode: 'backwards' }}
             >
+              {editingId === call.id ? (
+                <div className="doppel-outer-dark hover:ring-emerald-500/30 transition-all cursor-pointer">
+                  <div className="doppel-inner-dark p-4 flex items-center justify-between">
+                    <div className="flex items-center gap-4 min-w-0">
+                      <div className="w-10 h-10 rounded-full bg-zinc-800 flex items-center justify-center">
+                        <Phone className="w-5 h-5 text-zinc-400" />
+                      </div>
+                      <CallTitleEditor
+                        displayName={displayName}
+                        onSave={(title) => renameCall(call, title)}
+                      />
+                    </div>
+                  </div>
+                </div>
+              ) : (
               <Link href={`/app/calls/${call.id}`}>
                 <div className="doppel-outer-dark hover:ring-emerald-500/30 transition-all cursor-pointer">
                   <div className="doppel-inner-dark p-4 flex items-center justify-between">
@@ -392,8 +433,15 @@ export default function CallsPage() {
                       <div className="w-10 h-10 rounded-full bg-zinc-800 flex items-center justify-center">
                         <Phone className="w-5 h-5 text-zinc-400" />
                       </div>
-                      <div>
-                        <p className="text-white font-medium">{call.filename}</p>
+                      <div className="min-w-0">
+                        <div className="flex items-center gap-1.5 min-w-0">
+                          <p className="text-white font-medium truncate">{displayName}</p>
+                          <CallTitleEditor
+                            displayName={displayName}
+                            disabled={editingId !== null && editingId !== call.id}
+                            onSave={(title) => renameCall(call, title)}
+                          />
+                        </div>
                         <p className="text-sm text-zinc-500">
                           {new Date(call.createdAt).toLocaleDateString(undefined, { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}
                           {call.actionItems.length > 0 && ` · ${call.actionItems.length} action items`}
@@ -425,8 +473,10 @@ export default function CallsPage() {
                   </div>
                 </div>
               </Link>
+              )}
             </div>
-          ))
+            );
+          })
         )}
         </div>
       </>

@@ -15,6 +15,8 @@ export function CallTitleEditor({ displayName, onSave, disabled }: CallTitleEdit
   const [saving, setSaving] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+  const pencilRef = useRef<HTMLButtonElement>(null);
+  const wasEditingRef = useRef(false);
 
   useEffect(() => {
     if (editing) {
@@ -23,6 +25,11 @@ export function CallTitleEditor({ displayName, onSave, disabled }: CallTitleEdit
       inputRef.current?.select();
     }
   }, [editing, displayName]);
+
+  useEffect(() => {
+    if (wasEditingRef.current && !editing) pencilRef.current?.focus();
+    wasEditingRef.current = editing;
+  }, [editing]);
 
   const close = () => {
     setEditing(false);
@@ -45,6 +52,7 @@ export function CallTitleEditor({ displayName, onSave, disabled }: CallTitleEdit
         ref={containerRef}
         className="flex items-center gap-2 min-w-0"
         onBlur={(e) => {
+          if (saving) return;
           if (!e.currentTarget.contains(e.relatedTarget as Node | null)) close();
         }}
       >
@@ -84,6 +92,7 @@ export function CallTitleEditor({ displayName, onSave, disabled }: CallTitleEdit
 
   return (
     <button
+      ref={pencilRef}
       aria-label="Rename call"
       disabled={disabled}
       className="shrink-0 p-1.5 rounded-md text-zinc-400 hover:text-white hover:bg-zinc-800 transition-colors disabled:opacity-40"

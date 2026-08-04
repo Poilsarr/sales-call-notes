@@ -8,6 +8,7 @@ import { toast } from 'sonner';
 import { TranscriptViewer } from '@/components/transcript-viewer';
 import { AnalysisPanel } from '@/components/analysis-panel';
 import { ChatSidebar } from '@/components/chat-sidebar';
+import { CallTitleEditor } from '@/components/call-title-editor';
 import { normalizeScorecard } from '@/lib/scorecard';
 import type { CollaborationComment, SpeakerMetric } from '@/types';
 
@@ -38,6 +39,9 @@ interface CallData {
     speakerMetrics?: SpeakerMetric[] | null;
   } | null;
   salesScorecard?: any;
+  title?: string | null;
+  displayName?: string;
+  filename?: string;
 }
 
 export default function CallDetailPage({ params }: { params: { id: string } }) {
@@ -78,6 +82,9 @@ export default function CallDetailPage({ params }: { params: { id: string } }) {
           canManageCollaboration: call.canManageCollaboration || false,
           analytics: call.analytics || null,
           salesScorecard: normalizeScorecard(call.insight?.salesScorecard),
+          title: call.title ?? null,
+          filename: call.filename,
+          displayName: call.title || call.filename,
         });
         setTeamMembers(team.members || []);
       } catch (e) {
@@ -104,6 +111,33 @@ export default function CallDetailPage({ params }: { params: { id: string } }) {
         };
       });
   }, [data?.transcript]);
+
+  const renameCall = async (title: string | null) => {
+    try {
+      const res = await fetch(`/api/history/${params.id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ title }),
+      });
+      const updated = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(updated.error || `Failed to rename (${res.status})`);
+      const displayName = updated.displayName ?? title ?? data?.filename ?? 'Call Details';
+      setData((current) =>
+        current
+          ? {
+              ...current,
+              title: updated.title ?? null,
+              displayName,
+            }
+          : current,
+      );
+      toast.success('Call renamed');
+      return true;
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'Failed to rename call');
+      return false;
+    }
+  };
 
   const updateCollaboration = async (payload: Record<string, unknown>) => {
     setSavingSettings(true);
@@ -223,8 +257,18 @@ export default function CallDetailPage({ params }: { params: { id: string } }) {
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       transition={{ duration: 0.5 }}
-      className="min-h-[calc(100vh-4rem)] grid grid-cols-1 xl:grid-cols-[0.95fr_0.95fr_0.7fr] gap-6"
+      className="min-h-[calc(100vh-4rem)] space-y-6"
     >
+      <div className="flex items-center gap-2 min-w-0">
+        <h1 className="text-2xl font-semibold text-white truncate">
+          {data.displayName ?? data.filename ?? 'Call Details'}
+        </h1>
+        <CallTitleEditor
+          displayName={data.displayName ?? data.filename ?? 'Call Details'}
+          onSave={renameCall}
+        />
+      </div>
+      <div className="grid grid-cols-1 xl:grid-cols-[0.95fr_0.95fr_0.7fr] gap-6">
       <div className="doppel-outer-dark">
         <div className="doppel-inner-dark p-6 lg:h-full overflow-hidden flex flex-col">
           <div className="flex items-center justify-between gap-3 mb-4">
@@ -434,6 +478,7 @@ export default function CallDetailPage({ params }: { params: { id: string } }) {
         <div className="doppel-inner-dark p-6 lg:h-full overflow-hidden flex flex-col">
           <ChatSidebar />
         </div>
+      </div>
       </div>
     </motion.div>
   );

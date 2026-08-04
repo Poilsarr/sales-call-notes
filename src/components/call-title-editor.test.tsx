@@ -137,4 +137,56 @@ describe("CallTitleEditor", () => {
     });
     expect(screen.getByRole("button", { name: "Rename call" })).toBeInTheDocument();
   });
+
+  it("stays open when blur moves focus to a control inside the editor", async () => {
+    renderEditor();
+    const input = await openEditor();
+    const container = input.parentElement as HTMLElement;
+    const saveButton = screen.getByRole("button", { name: "Save title" });
+
+    fireEvent.blur(container, { relatedTarget: saveButton });
+
+    expect(screen.getByRole("textbox", { name: "Call title" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Cancel" })).toBeInTheDocument();
+  });
+
+  it("closes when blur moves focus outside the editor", async () => {
+    renderEditor();
+    const input = await openEditor();
+    const container = input.parentElement as HTMLElement;
+
+    fireEvent.blur(container, { relatedTarget: null });
+
+    expect(screen.queryByRole("textbox", { name: "Call title" })).not.toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Rename call" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Rename call" })).toHaveFocus();
+  });
+
+  it("does not close on blur while a save is in flight", async () => {
+    let resolveSave: (ok: boolean) => void = () => {};
+    const onSave = vi.fn(
+      () =>
+        new Promise<boolean>((resolve) => {
+          resolveSave = resolve;
+        }),
+    );
+    renderEditor({ onSave });
+    const input = await openEditor();
+    const container = input.parentElement as HTMLElement;
+    fireEvent.change(input, { target: { value: "Deferred save" } });
+
+    fireEvent.click(screen.getByRole("button", { name: "Save title" }));
+    fireEvent.blur(container, { relatedTarget: null });
+
+    expect(screen.getByRole("textbox", { name: "Call title" })).toBeInTheDocument();
+
+    await act(async () => {
+      resolveSave(true);
+    });
+
+    await waitFor(() => {
+      expect(screen.queryByRole("textbox", { name: "Call title" })).not.toBeInTheDocument();
+    });
+    expect(screen.getByRole("button", { name: "Rename call" })).toBeInTheDocument();
+  });
 });
