@@ -8,16 +8,19 @@ function renderEditor(options?: {
   displayName?: string;
   onSave?: (title: string | null) => Promise<boolean>;
   disabled?: boolean;
+  onClose?: () => void;
 }) {
   const onSave = options?.onSave ?? vi.fn(async () => true);
+  const onClose = options?.onClose ?? vi.fn();
   render(
     createElement(CallTitleEditor, {
       displayName: options?.displayName ?? "Recording 2026-08-01.wav",
       onSave,
       disabled: options?.disabled,
+      onClose,
     }),
   );
-  return { onSave };
+  return { onSave, onClose };
 }
 
 async function openEditor(): Promise<HTMLElement> {
@@ -188,5 +191,27 @@ describe("CallTitleEditor", () => {
       expect(screen.queryByRole("textbox", { name: "Call title" })).not.toBeInTheDocument();
     });
     expect(screen.getByRole("button", { name: "Rename call" })).toBeInTheDocument();
+  });
+
+  it("calls onClose when the cancel button is clicked", async () => {
+    const { onClose } = renderEditor();
+    await openEditor();
+
+    fireEvent.click(screen.getByRole("button", { name: "Cancel" }));
+
+    expect(onClose).toHaveBeenCalledTimes(1);
+  });
+
+  it("calls onClose after a successful save", async () => {
+    const { onClose } = renderEditor();
+    const input = await openEditor();
+    fireEvent.change(input, { target: { value: "New name" } });
+
+    fireEvent.keyDown(input, { key: "Enter", isComposing: false });
+
+    await waitFor(() => {
+      expect(screen.queryByRole("textbox", { name: "Call title" })).not.toBeInTheDocument();
+    });
+    expect(onClose).toHaveBeenCalledTimes(1);
   });
 });

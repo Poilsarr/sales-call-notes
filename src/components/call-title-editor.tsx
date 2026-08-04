@@ -7,9 +7,10 @@ interface CallTitleEditorProps {
   displayName: string;
   onSave: (title: string | null) => Promise<boolean>;
   disabled?: boolean;
+  onClose?: () => void;
 }
 
-export function CallTitleEditor({ displayName, onSave, disabled }: CallTitleEditorProps) {
+export function CallTitleEditor({ displayName, onSave, disabled, onClose }: CallTitleEditorProps) {
   const [editing, setEditing] = useState(false);
   const [value, setValue] = useState(displayName);
   const [saving, setSaving] = useState(false);
@@ -34,6 +35,7 @@ export function CallTitleEditor({ displayName, onSave, disabled }: CallTitleEdit
   const close = () => {
     setEditing(false);
     setSaving(false);
+    onClose?.();
   };
 
   const save = async () => {

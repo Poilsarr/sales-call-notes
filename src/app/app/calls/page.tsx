@@ -420,6 +420,7 @@ export default function CallsPage() {
                       </div>
                       <CallTitleEditor
                         displayName={displayName}
+                        onClose={() => setEditingId(null)}
                         onSave={(title) => renameCall(call, title)}
                       />
                     </div>
