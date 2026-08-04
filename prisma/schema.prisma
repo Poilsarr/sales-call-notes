@@ -75,6 +75,7 @@ model Call {
   assigneeId         String?
   assignee           User?               @relation("callAssignments", fields: [assigneeId], references: [id])
   filename           String
+  title              String?
   audioUrl           String?
   duration           Int?
   transcript         String?
