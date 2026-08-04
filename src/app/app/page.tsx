@@ -16,6 +16,8 @@ interface AnalyticsData {
   recentCalls: Array<{
     id: string;
     filename: string;
+    title?: string | null;
+    displayName?: string;
     date: string;
     healthScore: number | null;
     sentiment: string | null;
@@ -225,7 +227,7 @@ export default function DashboardPage() {
                     className="flex items-center justify-between py-3 border-b border-zinc-800 hover:bg-zinc-800/50 px-3 rounded-lg transition-colors"
                   >
                     <div>
-                      <p className="text-white font-medium">{call.filename}</p>
+                      <p className="text-white font-medium">{call.displayName ?? call.filename}</p>
                       <p className="text-sm text-zinc-500">
                         {call.date ? new Date(call.date).toLocaleDateString(undefined, { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }) : 'Unknown date'}
                         {call.actionItemCount > 0 && ` · ${call.actionItemCount} action items`}

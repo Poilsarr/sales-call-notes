@@ -58,6 +58,8 @@ type AnalyticsData = {
   recentCalls: Array<{
     id: string;
     filename: string;
+    title?: string | null;
+    displayName?: string;
     date: string;
     healthScore: number | null;
     sentiment: string | null;
@@ -396,7 +398,7 @@ export default function DashboardPage() {
                       {chatResult.relevantCalls.map((c: any) => (
                         <div key={c.id} className="flex items-center gap-2 text-xs text-white/60 py-1">
                           <FileText className="w-3 h-3" />
-                          <span className="truncate">{c.filename}</span>
+                          <span className="truncate">{c.displayName ?? c.filename}</span>
                           <span className="text-white/30 shrink-0">{new Date(c.date).toLocaleDateString()}</span>
                         </div>
                       ))}
@@ -592,7 +594,7 @@ export default function DashboardPage() {
                         </div>
                         <div className="min-w-0">
                           <p className="text-sm font-medium text-white truncate group-hover:text-linear-indigo transition">
-                            {call.filename}
+                            {call.displayName ?? call.filename}
                           </p>
                           <p className="text-[11px] text-white/40">
                             {new Date(call.date).toLocaleDateString()}

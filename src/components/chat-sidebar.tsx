@@ -9,7 +9,7 @@ import Link from 'next/link';
 interface ChatMessage {
   role: 'user' | 'assistant';
   content: string;
-  relevantCalls?: Array<{ id: string; filename: string; date: string; summary: string | null }>;
+  relevantCalls?: Array<{ id: string; filename: string; title?: string | null; displayName?: string; date: string; summary: string | null }>;
 }
 
 export function ChatSidebar() {
@@ -95,7 +95,7 @@ export function ChatSidebar() {
                     className="flex items-center gap-1 text-xs text-emerald-400 hover:text-emerald-300 mb-1"
                   >
                     <ExternalLink className="w-3 h-3 shrink-0" />
-                    <span className="truncate">{call.filename}</span>
+                    <span className="truncate">{call.displayName ?? call.filename}</span>
                   </Link>
                 ))}
               </div>

@@ -18,6 +18,8 @@ interface CompetitorMention {
   call: {
     id: string;
     filename: string;
+    title?: string | null;
+    displayName?: string;
     createdAt: string;
   } | null;
 }
@@ -326,7 +328,7 @@ export default function IntelligencePage() {
                         className="inline-flex items-center gap-1 mt-2 text-xs text-zinc-400 hover:text-zinc-200 transition-colors"
                       >
                         <ExternalLink className="w-3 h-3" />
-                        {mention.call.filename}
+                        {mention.call.displayName ?? mention.call.filename}
                       </a>
                     )}
                   </div>

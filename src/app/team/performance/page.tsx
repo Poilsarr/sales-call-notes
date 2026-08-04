@@ -216,7 +216,7 @@ export default function TeamPerformancePage() {
                             href={`/app/calls/${call.id}`}
                             className="text-sm font-medium text-white hover:text-linear-indigo transition"
                           >
-                            {call.filename}
+                            {call.displayName ?? call.filename}
                           </Link>
                         </td>
                         <td className="px-6 py-4 text-sm text-white/60">{call.ownerName}</td>

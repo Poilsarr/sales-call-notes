@@ -42,6 +42,8 @@ interface Member {
 interface SharedCall {
   id: string;
   filename: string;
+  title?: string | null;
+  displayName?: string;
   createdAt: string;
   healthScore: number | null;
   ownerName: string | null;
@@ -433,7 +435,7 @@ export default function TeamPage() {
                         </div>
                         <div className="min-w-0">
                           <p className="text-sm font-medium text-white truncate group-hover:text-linear-indigo transition">
-                            {call.filename}
+                            {call.displayName ?? call.filename}
                           </p>
                           <p className="text-xs text-white/40">
                             {call.ownerName ? `Owner: ${call.ownerName}` : "Owner unavailable"}
