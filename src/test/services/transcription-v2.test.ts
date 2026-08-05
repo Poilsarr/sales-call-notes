@@ -142,6 +142,34 @@ describe("TranscriptionServiceV2 — BYOK key isolation", () => {
     expect(openaiClient.audio.transcriptions.create.mock.calls[0][0].model).toBe("whisper-1");
   });
 
+  it("escalates to whisper-1 on the OpenAI client when a Groq outage fails large-v3", async () => {
+    const service = new TranscriptionServiceV2({ openaiKey: OPENAI_KEY, groqKey: GROQ_KEY });
+    const openaiClient = mockCreateClient.mock.results.find((r) => !r.value.baseURL)!.value;
+    const groqClient = mockCreateClient.mock.results.find((r) => r.value.baseURL === GROQ_BASE)!.value;
+    groqClient.audio.transcriptions.create.mockRejectedValueOnce(new Error("groq upstream error"));
+
+    await service.transcribe(Buffer.from("x"), "whisper-large-v3");
+
+    expect(groqClient.audio.transcriptions.create).toHaveBeenCalledWith(
+      expect.objectContaining({ model: "whisper-large-v3" })
+    );
+    expect(openaiClient.audio.transcriptions.create).toHaveBeenCalledTimes(1);
+    expect(openaiClient.audio.transcriptions.create.mock.calls[0][0].model).toBe("whisper-1");
+  });
+
+  it("does not burn a doomed whisper-1 retry when Groq fails and no OpenAI key exists", async () => {
+    const service = new TranscriptionServiceV2({ groqKey: GROQ_KEY });
+    const groqClient = mockCreateClient.mock.results[0].value;
+    groqClient.audio.transcriptions.create.mockRejectedValue(new Error("groq upstream error"));
+
+    await expect(service.transcribe(Buffer.from("x"), "whisper-large-v3")).rejects.toThrow(
+      /whisper-1 transcription requires an OpenAI API key/
+    );
+
+    expect(groqClient.audio.transcriptions.create).toHaveBeenCalledTimes(1);
+    expect(groqClient.audio.transcriptions.create.mock.calls[0][0].model).toBe("whisper-large-v3");
+  });
+
   it("lets BYOK keys override env-provided shared keys", async () => {
     process.env.OPENAI_API_KEY = "sk-env-key-1234567890abcdef";
     process.env.GROQ_API_KEY = "gsk_env_key_1234567890abcdef";

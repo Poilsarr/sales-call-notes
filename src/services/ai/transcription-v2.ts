@@ -26,11 +26,15 @@ export class TranscriptionServiceV2 {
     this.openai = sharedOpenai ? createOpenAIClient({ apiKey: sharedOpenai }) : null;
     // Only build the Groq client when a real Groq key exists — sending an
     // OpenAI key to api.groq.com would 401 AND leak the key to a provider
-    // the user never consented to.
+    // the user never consented to. Fast-fail timeout/retries keep a hanging
+    // Groq call inside the "under 60 seconds" onboarding window so the
+    // escalation to whisper-1 (catch below) fires in bounded time.
     this.groqOpenai = sharedGroq
       ? createOpenAIClient({
           apiKey: sharedGroq,
           baseURL: 'https://api.groq.com/openai/v1',
+          timeout: 30_000,
+          maxRetries: 1,
         })
       : null;
   }
