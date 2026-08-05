@@ -10,8 +10,8 @@ export interface TranscriptionServiceOptions {
 }
 
 export class TranscriptionServiceV2 {
-  private openai: OpenAI;
-  private groqOpenai: OpenAI;
+  private openai: OpenAI | null = null;
+  private groqOpenai: OpenAI | null = null;
   private hasKeys: boolean;
 
   constructor(opts: TranscriptionServiceOptions = {}) {
@@ -21,7 +21,9 @@ export class TranscriptionServiceV2 {
     if (!this.hasKeys) {
       console.warn("TranscriptionServiceV2: no OPENAI_API_KEY, GROQ_API_KEY, or user BYOK key set. Transcription will be unavailable.");
     }
-    this.openai = createOpenAIClient({ apiKey: sharedOpenai || undefined });
+    // Only build the OpenAI client when a real key exists — the SDK otherwise
+    // ships an empty `Authorization: Bearer ` header to api.openai.com.
+    this.openai = sharedOpenai ? createOpenAIClient({ apiKey: sharedOpenai }) : null;
     // Only build the Groq client when a real Groq key exists — sending an
     // OpenAI key to api.groq.com would 401 AND leak the key to a provider
     // the user never consented to.
@@ -30,7 +32,7 @@ export class TranscriptionServiceV2 {
           apiKey: sharedGroq,
           baseURL: 'https://api.groq.com/openai/v1',
         })
-      : (undefined as unknown as OpenAI);
+      : null;
   }
 
   async transcribe(
@@ -52,7 +54,13 @@ export class TranscriptionServiceV2 {
     if (model === 'whisper-large-v3' && !this.groqOpenai) {
       model = 'whisper-1';
     }
-    const client = model === 'whisper-1' ? this.openai : this.groqOpenai;
+    // No OpenAI key configured → whisper-1 is a doomed empty-bearer call.
+    if (model === 'whisper-1' && !this.openai) {
+      throw new Error(
+        'whisper-1 transcription requires an OpenAI API key (OPENAI_API_KEY env or a user BYOK key).'
+      );
+    }
+    const client = model === 'whisper-1' ? this.openai! : this.groqOpenai!;
 
     try {
       const file = await toFile(audioBuffer, 'audio.wav', { type: 'audio/wav' });

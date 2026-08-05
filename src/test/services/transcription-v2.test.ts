@@ -74,19 +74,25 @@ describe("TranscriptionServiceV2 — BYOK key isolation", () => {
     void service;
   });
 
-  it("sends the Groq key only to the Groq client", () => {
+  it("builds only the Groq client when only a Groq key exists (no empty-bearer OpenAI client)", () => {
     const service = new TranscriptionServiceV2({ groqKey: GROQ_KEY });
 
-    expect(mockCreateClient).toHaveBeenCalledTimes(2);
-    const calls = mockCreateClient.mock.calls;
-    for (const [args] of calls) {
-      if (args.baseURL === GROQ_BASE) {
-        expect(args.apiKey).toBe(GROQ_KEY);
-      } else {
-        expect(args.apiKey).not.toBe(GROQ_KEY);
-      }
-    }
+    expect(mockCreateClient).toHaveBeenCalledTimes(1);
+    const [args] = mockCreateClient.mock.calls[0];
+    expect(args.baseURL).toBe(GROQ_BASE);
+    expect(args.apiKey).toBe(GROQ_KEY);
     void service;
+  });
+
+  it("throws an actionable error for explicit whisper-1 when no OpenAI key exists", async () => {
+    const service = new TranscriptionServiceV2({ groqKey: GROQ_KEY });
+
+    await expect(service.transcribe(Buffer.from("x"), "whisper-1")).rejects.toThrow(
+      /whisper-1 transcription requires an OpenAI API key/
+    );
+
+    const groqClient = mockCreateClient.mock.results[0].value;
+    expect(groqClient.audio.transcriptions.create).not.toHaveBeenCalled();
   });
 
   it("throws an actionable error on transcribe when no keys exist anywhere", async () => {

@@ -22,6 +22,9 @@ vi.mock('@/lib/prisma', () => ({
   default: { call: { findMany: mocks.callFindMany } },
 }));
 vi.mock('@/lib/openai-client', () => ({ createOpenAIClient: mocks.createOpenAIClient }));
+vi.mock('@/lib/secrets', () => ({
+  getSecret: (key: string) => (key === 'OPENAI_API_KEY' ? 'test-key' : ''),
+}));
 
 import { KnowledgeGraphService } from '@/services/ai/knowledge-graph';
 

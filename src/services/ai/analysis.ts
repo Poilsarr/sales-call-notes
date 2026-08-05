@@ -19,11 +19,16 @@ export interface AnalysisServiceOptions {
 }
 
 export class AnalysisService {
-  private openai: OpenAI;
+  private openai: OpenAI | null = null;
   private groqOpenai: OpenAI | null = null;
 
   constructor(opts: AnalysisServiceOptions = {}) {
-    this.openai = createOpenAIClient({ apiKey: opts.openaiKey || undefined });
+    const openaiKey = opts.openaiKey || getSecret("OPENAI_API_KEY");
+    // Only build the OpenAI client when a real key resolves — otherwise the
+    // SDK ships an empty `Authorization: Bearer ` header to api.openai.com.
+    if (openaiKey) {
+      this.openai = createOpenAIClient({ apiKey: openaiKey });
+    }
     const groqKey = opts.groqKey || getSecret("GROQ_API_KEY");
     if (groqKey) {
       this.groqOpenai = createOpenAIClient({
@@ -38,6 +43,12 @@ export class AnalysisService {
     // not enrollment/insurance. enrollment-calls asked for utility/insurance
     // entities (accountNumber, utilityCompany) that don't fit sales calls.
     const prompt = await this.loadPrompt(templateId || 'b2b-sales');
+
+    if (!this.openai) {
+      // No OpenAI key configured — skip straight to the Groq path instead
+      // of a doomed empty-bearer call against api.openai.com.
+      return this.analyzeWithGroq(transcript, prompt, segments);
+    }
 
     try {
       // ponytail: gpt-4o-mini for cost (~$0.001/call vs $0.01 gpt-4o).
@@ -56,22 +67,33 @@ export class AnalysisService {
       return this.parseResponse(response, segments);
     } catch (openaiError: any) {
       console.log('OpenAI analysis failed, trying Groq:', openaiError?.message?.slice(0, 100));
-
-      if (!this.groqOpenai) {
-        throw openaiError;
-      }
-
-      const response = await this.groqOpenai.chat.completions.create({
-        model: 'llama-3.3-70b-versatile',
-        messages: [
-          { role: 'system', content: prompt },
-          { role: 'user', content: cap(transcript) }
-        ],
-        response_format: { type: 'json_object' },
-        temperature: 0.3
-      });
-      return this.parseResponse(response, segments);
+      return this.analyzeWithGroq(transcript, prompt, segments, openaiError);
     }
+  }
+
+  private async analyzeWithGroq(
+    transcript: string,
+    prompt: string,
+    segments?: TranscriptionSegment[],
+    openaiError?: any,
+  ): Promise<CallAnalysis> {
+    if (!this.groqOpenai) {
+      if (openaiError) throw openaiError;
+      throw new Error(
+        'Analysis unavailable: set OPENAI_API_KEY or GROQ_API_KEY in Vercel env vars (or add a key in Settings → API Keys).'
+      );
+    }
+
+    const response = await this.groqOpenai.chat.completions.create({
+      model: 'llama-3.3-70b-versatile',
+      messages: [
+        { role: 'system', content: prompt },
+        { role: 'user', content: cap(transcript) }
+      ],
+      response_format: { type: 'json_object' },
+      temperature: 0.3
+    });
+    return this.parseResponse(response, segments);
   }
 
   private parseResponse(response: any, segments?: TranscriptionSegment[]): CallAnalysis {

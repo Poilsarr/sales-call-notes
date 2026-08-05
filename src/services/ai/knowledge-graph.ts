@@ -1,12 +1,28 @@
 import OpenAI from 'openai';
 import prisma from '@/lib/prisma';
 import { createOpenAIClient } from '@/lib/openai-client';
+import { getSecret } from '@/lib/secrets';
 
-const openai: OpenAI = createOpenAIClient({ timeout: 30000 });
+// ponytail: build the shared OpenAI client lazily and only when an API key
+// actually resolves. Creating the client without a key makes the SDK ship an
+// empty `Authorization: Bearer ` header to api.openai.com — a doomed round
+// trip (401) per request for Groq-only or keyless deployments.
+let sharedOpenai: OpenAI | null = null;
+function getSharedOpenAI(): OpenAI | null {
+  if (!sharedOpenai && getSecret("OPENAI_API_KEY")) {
+    sharedOpenai = createOpenAIClient({ timeout: 30000 });
+  }
+  return sharedOpenai;
+}
 
 export class KnowledgeGraphService {
   private async generateEmbedding(text: string, apiKey?: string): Promise<number[]> {
-    const client = apiKey ? createOpenAIClient({ apiKey, timeout: 30000 }) : openai;
+    const client = apiKey ? createOpenAIClient({ apiKey, timeout: 30000 }) : getSharedOpenAI();
+    if (!client) {
+      throw new Error(
+        'Embeddings unavailable: set OPENAI_API_KEY in env vars (or provide a user BYOK key).'
+      );
+    }
     const response = await client.embeddings.create({
       model: 'text-embedding-3-small',
       input: text,
