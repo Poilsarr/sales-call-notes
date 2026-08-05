@@ -24,7 +24,7 @@ export async function POST(req: NextRequest) {
     // yet (e.g. calls uploaded before indexing existed) or embedding fails.
     let retrieved: { id: string; filename: string; title: string | null; summary: string | null; transcript: string | null }[] = [];
     try {
-      retrieved = await kg.searchByQuery(query, userId, 5);
+      retrieved = await kg.searchByQuery(query, userId, 5, undefined, true);
     } catch (err) {
       console.error("RAG retrieval failed, falling back to recent calls:", err);
     }

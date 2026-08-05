@@ -4,17 +4,27 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 const mocks = vi.hoisted(() => {
   const searchByQuery = vi.fn();
   const getByokKeys = vi.fn();
+  const checkRateLimit = vi.fn();
   return {
     auth: vi.fn(),
     getUserByClerkId: vi.fn(),
     searchByQuery,
     getByokKeys,
+    checkRateLimit,
+    cacheGet: vi.fn(),
+    cacheSet: vi.fn(),
   };
 });
 
 vi.mock('@clerk/nextjs/server', () => ({ auth: mocks.auth }));
 vi.mock('@/lib/get-user', () => ({ getUserByClerkId: mocks.getUserByClerkId }));
 vi.mock('@/lib/byok-resolver', () => ({ getByokKeys: mocks.getByokKeys }));
+vi.mock('@/lib/rate-limit', () => ({ checkRateLimit: mocks.checkRateLimit }));
+vi.mock('@/lib/cache', () => ({
+  cacheGet: mocks.cacheGet,
+  cacheSet: mocks.cacheSet,
+  makeCacheKey: (...parts: string[]) => parts.join(':'),
+}));
 vi.mock('@/services/ai/knowledge-graph', () => ({
   KnowledgeGraphService: vi.fn().mockImplementation(function () {
     return { searchByQuery: mocks.searchByQuery };
@@ -55,6 +65,9 @@ describe('POST /api/calls/search', () => {
     mocks.getUserByClerkId.mockResolvedValue({ id: USER_ID });
     mocks.getByokKeys.mockResolvedValue({ dropped: [] });
     mocks.searchByQuery.mockResolvedValue([result()]);
+    mocks.checkRateLimit.mockResolvedValue({ success: true });
+    mocks.cacheGet.mockResolvedValue(null);
+    mocks.cacheSet.mockResolvedValue(undefined);
   });
 
   it('returns 401 when unauthenticated', async () => {
@@ -168,7 +181,8 @@ describe('POST /api/calls/search', () => {
     expect(payload.degraded).toBe(false);
   });
 
-  it('degrades to 503 (never 500) when the knowledge graph throws — e.g. no embedding key configured', async () => {
+  it('degrades to 503 (never 500) when the knowledge graph throws — no raw error echo', async () => {
+    const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
     mocks.searchByQuery.mockRejectedValue(
       new Error('Embeddings unavailable: set OPENAI_API_KEY in env vars (or provide a user BYOK key).')
     );
@@ -177,15 +191,55 @@ describe('POST /api/calls/search', () => {
     const payload = await jsonResponse(res);
 
     expect(res.status).toBe(503);
-    expect(payload.error).toMatch(/Embeddings unavailable/);
+    expect(payload).toEqual({ error: 'Search unavailable. Please try again.' });
+    expect(JSON.stringify(payload)).not.toContain('OPENAI_API_KEY');
+    expect(consoleSpy).toHaveBeenCalled();
+    consoleSpy.mockRestore();
   });
 
-  it('degrades to 503 on any unexpected service error', async () => {
+  it('degrades to 503 on any unexpected service error, logging server-side', async () => {
+    const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
     mocks.searchByQuery.mockRejectedValue(new Error('boom'));
 
     const res = await POST(makeRequest({ query: 'renewal' }));
 
     expect(res.status).toBe(503);
+    expect(consoleSpy).toHaveBeenCalled();
+    consoleSpy.mockRestore();
+  });
+
+  it('returns 429 when the rate limit is exceeded', async () => {
+    mocks.checkRateLimit.mockResolvedValue({ success: false });
+
+    const res = await POST(makeRequest({ query: 'renewal' }));
+
+    expect(res.status).toBe(429);
+    expect(mocks.searchByQuery).not.toHaveBeenCalled();
+  });
+
+  it('serves cached results without re-searching', async () => {
+    mocks.cacheGet.mockResolvedValue({
+      results: [result({ id: 'cached', similarity: 1 })],
+      degraded: false,
+    });
+
+    const res = await POST(makeRequest({ query: 'renewal' }));
+    const payload = await jsonResponse(res);
+
+    expect(res.status).toBe(200);
+    expect(payload.results[0].id).toBe('cached');
+    expect(mocks.searchByQuery).not.toHaveBeenCalled();
+  });
+
+  it('marks the response degraded when the user BYOK OpenAI key was dropped', async () => {
+    mocks.getByokKeys.mockResolvedValue({ dropped: ['openai'] });
+
+    const res = await POST(makeRequest({ query: 'renewal' }));
+    const payload = await jsonResponse(res);
+
+    expect(res.status).toBe(200);
+    expect(payload.degraded).toBe(true);
+    expect(mocks.searchByQuery).toHaveBeenCalledWith('renewal', USER_ID, 5, undefined);
   });
 
   it('clamps the limit between 1 and 10', async () => {

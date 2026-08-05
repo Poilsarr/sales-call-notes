@@ -379,16 +379,21 @@ export default function DashboardPage() {
             </CardHeader>
             <CardContent className="flex flex-col h-[calc(100%-80px)]">
               <div className="flex gap-2 mb-4">
+                <label htmlFor="ai-assistant-input" className="sr-only">
+                  Ask about your calls
+                </label>
                 <input
+                  id="ai-assistant-input"
                   value={chatQuery}
                   onChange={(e) => setChatQuery(e.target.value)}
                   onKeyDown={(e) => e.key === "Enter" && askChat()}
                   placeholder='e.g. "What objections came up last week?"'
-                  className="flex-1 px-4 py-2.5 rounded-xl bg-linear-black border border-linear-secondary text-sm text-white placeholder-white/30 focus:outline-none focus:border-linear-indigo/50"
+                  className="flex-1 px-4 py-2.5 rounded-xl bg-linear-black border border-linear-secondary text-sm text-white placeholder-white/50 focus:outline-none focus-visible:outline-2 focus-visible:outline-linear-indigo focus:border-linear-indigo/50"
                 />
                 <button
                   onClick={askChat}
                   disabled={chatLoading || !chatQuery.trim()}
+                  aria-label="Send question"
                   className="px-4 py-2.5 bg-linear-indigo rounded-xl text-xs font-semibold hover:bg-linear-indigo/80 transition disabled:opacity-50"
                 >
                   {chatLoading ? (
@@ -399,8 +404,14 @@ export default function DashboardPage() {
                 </button>
               </div>
 
+              <div
+                role="status"
+                aria-live="polite"
+                aria-busy={chatLoading}
+                className="flex-1"
+              >
               {chatResult ? (
-                <div className="flex-1 p-4 rounded-xl bg-linear-black border border-linear-secondary overflow-y-auto max-h-[360px]">
+                <div className="h-full p-4 rounded-xl bg-linear-black border border-linear-secondary overflow-y-auto max-h-[360px]">
                   <div className="flex items-start gap-2 mb-3">
                     <MessageSquare className="w-4 h-4 text-linear-indigo shrink-0 mt-0.5" />
                     <p className="text-sm text-white/80 leading-relaxed">{chatResult.answer}</p>
@@ -419,11 +430,12 @@ export default function DashboardPage() {
                   )}
                 </div>
               ) : (
-                <div className="flex-1 flex flex-col justify-center items-center text-center p-6 rounded-xl bg-linear-black border border-linear-secondary border-dashed">
+                <div className="h-full flex flex-col justify-center items-center text-center p-6 rounded-xl bg-linear-black border border-linear-secondary border-dashed">
                   <Brain className="w-8 h-8 text-white/10 mb-3" />
                   <p className="text-sm text-white/40">Ask about objections, next steps, or buyer sentiment.</p>
                 </div>
               )}
+              </div>
             </CardContent>
           </Card>
 

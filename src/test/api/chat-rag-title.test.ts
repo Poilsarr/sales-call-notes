@@ -64,7 +64,7 @@ describe('KnowledgeGraphService.searchByQuery title fallback', () => {
     kg = new KnowledgeGraphService();
   });
 
-  it('queries title matches and merges them after vector results', async () => {
+  it('queries title matches and merges them with a similarity floor', async () => {
     mocks.callFindMany
       .mockResolvedValueOnce([indexedCall()])
       .mockResolvedValueOnce([titledCall()]);
@@ -78,8 +78,40 @@ describe('KnowledgeGraphService.searchByQuery title fallback', () => {
       }),
     );
     expect(results.map(r => r.id)).toEqual(['c1', 'c2']);
-    expect(results[0].similarity).toBeGreaterThan(0);
-    expect(results[1]).toMatchObject({ id: 'c2', title: 'Acme Q3 renewal', similarity: 0 });
+    expect(results[0].similarity).toBeGreaterThan(0.6);
+    expect(results[1]).toMatchObject({ id: 'c2', title: 'Acme Q3 renewal', similarity: 0.95 });
+  });
+
+  it('does not select transcripts by default (search route strips them)', async () => {
+    mocks.callFindMany.mockResolvedValueOnce([indexedCall()]).mockResolvedValueOnce([]);
+
+    await kg.searchByQuery('Acme', USER_ID);
+
+    const candidateSelect = mocks.callFindMany.mock.calls[0][0].select;
+    expect(candidateSelect.transcript).toBeUndefined();
+    expect(candidateSelect.embedding).toBe(true);
+  });
+
+  it('includes transcripts when requested (chat context needs them)', async () => {
+    mocks.callFindMany.mockResolvedValueOnce([indexedCall()]).mockResolvedValueOnce([]);
+
+    const results = await kg.searchByQuery('Acme', USER_ID, 5, undefined, true);
+
+    expect(results[0].transcript).toBe('we should renew');
+    expect(mocks.callFindMany.mock.calls[0][0].select.transcript).toBe(true);
+  });
+
+  it('surfaces an exact title match even when vector results fill the limit', async () => {
+    const calls = ['c1', 'c3', 'c4', 'c5', 'c6'].map((id, i) =>
+      indexedCall({ id, embedding: [0.1, 0.1 * (i + 1)] })
+    );
+    mocks.callFindMany.mockResolvedValueOnce(calls).mockResolvedValueOnce([titledCall()]);
+
+    const results = await kg.searchByQuery('Acme Q3 renewal', USER_ID, 5);
+
+    expect(results.map(r => r.id)).toContain('c2');
+    expect(results.length).toBe(5);
+    expect(results.find(r => r.id === 'c2')!.similarity).toBe(0.95);
   });
 
   it('dedupes by id and keeps vector results first', async () => {
@@ -101,7 +133,7 @@ describe('KnowledgeGraphService.searchByQuery title fallback', () => {
     const results = await kg.searchByQuery('Acme', USER_ID);
 
     expect(results).toHaveLength(1);
-    expect(results[0]).toMatchObject({ id: 'c2', similarity: 0 });
+    expect(results[0]).toMatchObject({ id: 'c2', similarity: 0.95 });
   });
 });
 

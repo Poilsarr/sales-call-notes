@@ -86,30 +86,46 @@ export class KnowledgeGraphService {
   // RAG retrieval: embed the user's natural-language query and return the
   // top-N most similar calls owned by that user. This replaces sending the
   // entire call history to the LLM — which breaks past ~50 calls.
+  // includeTranscript=false keeps the per-request payload small (full
+  // transcripts for the whole corpus dominate it); only /api/chat needs it.
   async searchByQuery(
     query: string,
     userId: string,
     limit = 5,
-    apiKey?: string
+    apiKey?: string,
+    includeTranscript = false
   ): Promise<{ id: string; filename: string; title: string | null; summary: string | null; transcript: string | null; createdAt: Date; similarity: number }[]> {
     const sanitizedQuery = query.slice(0, 16000);
-    const queryEmbedding = await this.generateEmbedding(sanitizedQuery, apiKey);
+    const select = {
+      id: true,
+      filename: true,
+      title: true,
+      summary: true,
+      createdAt: true,
+      ...(includeTranscript ? { transcript: true } : {}),
+    } as const;
 
-    const candidates = await prisma.call.findMany({
-      where: {
-        userId,
-        NOT: { embedding: { equals: [] } },
-      },
-      select: {
-        id: true,
-        filename: true,
-        title: true,
-        summary: true,
-        transcript: true,
-        createdAt: true,
-        embedding: true,
-      },
-    });
+    // Embedding, corpus scan, and title fallback are independent — overlap
+    // them instead of serializing the latency chain.
+    const [queryEmbedding, candidates, titleMatches] = await Promise.all([
+      this.generateEmbedding(sanitizedQuery, apiKey),
+      prisma.call.findMany({
+        where: {
+          userId,
+          NOT: { embedding: { equals: [] } },
+        },
+        select: { ...select, embedding: true },
+      }),
+      sanitizedQuery.trim()
+        ? prisma.call.findMany({
+            where: {
+              userId,
+              title: { contains: sanitizedQuery.trim(), mode: 'insensitive' },
+            },
+            select,
+          })
+        : Promise.resolve([]),
+    ]);
 
     const results = candidates
       .map(call => ({
@@ -117,7 +133,7 @@ export class KnowledgeGraphService {
         filename: call.filename,
         title: call.title,
         summary: call.summary,
-        transcript: call.transcript,
+        transcript: includeTranscript ? call.transcript : null,
         createdAt: call.createdAt,
         similarity: this.cosineSimilarity(queryEmbedding, call.embedding!),
       }))
@@ -125,30 +141,28 @@ export class KnowledgeGraphService {
 
     const seen = new Set(results.map(call => call.id));
 
-    if (sanitizedQuery.trim()) {
-      const titleMatches = await prisma.call.findMany({
-        where: {
-          userId,
-          title: { contains: sanitizedQuery.trim(), mode: 'insensitive' },
-        },
-        select: {
-          id: true,
-          filename: true,
-          title: true,
-          summary: true,
-          transcript: true,
-          createdAt: true,
-        },
+    // Exact title matches get a near-perfect similarity floor so they rank
+    // above weak vector hits instead of being cut by slice(0, limit) when
+    // the corpus fills the limit — an exact title match is the strongest
+    // signal a query can carry.
+    const TITLE_MATCH_SIM = 0.95;
+    for (const call of titleMatches) {
+      if (seen.has(call.id)) continue;
+      seen.add(call.id);
+      results.push({
+        id: call.id,
+        filename: call.filename,
+        title: call.title,
+        summary: call.summary,
+        transcript: includeTranscript ? call.transcript : null,
+        createdAt: call.createdAt,
+        similarity: TITLE_MATCH_SIM,
       });
-
-      for (const call of titleMatches) {
-        if (seen.has(call.id)) continue;
-        seen.add(call.id);
-        results.push({ ...call, similarity: 0 });
-      }
     }
 
-    return results.slice(0, limit);
+    return results
+      .sort((a, b) => b.similarity - a.similarity)
+      .slice(0, limit);
   }
 
   private cosineSimilarity(vecA: number[], vecB: number[]): number {

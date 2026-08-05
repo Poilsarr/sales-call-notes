@@ -27,7 +27,7 @@ function okResponse(payload: unknown) {
 
 describe("CallSearch — dashboard semantic recall", () => {
   beforeEach(() => {
-    vi.clearAllMocks();
+    mockFetch.mockReset();
   });
 
   it("renders a labelled search input and submit button", () => {
@@ -70,7 +70,7 @@ describe("CallSearch — dashboard semantic recall", () => {
     fireEvent.change(screen.getByRole("searchbox", { name: /search your calls/i }), {
       target: { value: "objections" },
     });
-    fireEvent.submit(screen.getByRole("form", { name: /search your calls/i }));
+    fireEvent.submit(screen.getByRole("form", { name: /find calls by topic/i }));
 
     await waitFor(() => expect(mockFetch).toHaveBeenCalledTimes(1));
   });
@@ -145,7 +145,7 @@ describe("CallSearch — dashboard semantic recall", () => {
     fireEvent.click(searchBtn);
 
     const retryBtn = await screen.findByRole("button", { name: /retry/i });
-    expect(screen.getByText(/couldn.t search/i)).toBeDefined();
+    expect(screen.getByText(/couldn.t search your calls/i)).toBeDefined();
 
     mockFetch.mockResolvedValue(okResponse({ results: [result()], degraded: false }));
     fireEvent.click(retryBtn);
@@ -153,6 +153,51 @@ describe("CallSearch — dashboard semantic recall", () => {
     expect(screen.getByRole("button", { name: /retrying/i })).toBeDisabled();
     await waitFor(() => expect(screen.queryByRole("button", { name: /retrying/i })).toBeNull());
     expect(screen.getByRole("status").textContent).toContain("1 call");
+  });
+
+  it("renders the server-provided error message, not a hard-coded one", async () => {
+    mockFetch.mockResolvedValue({
+      ok: false,
+      status: 503,
+      json: () => Promise.resolve({ error: "Embeddings quota exceeded for your plan." }),
+    });
+    render(<CallSearch />);
+
+    fireEvent.change(screen.getByRole("searchbox", { name: /search your calls/i }), {
+      target: { value: "renewal" },
+    });
+    fireEvent.click(screen.getByRole("button", { name: /search/i }));
+
+    expect(await screen.findByText(/Embeddings quota exceeded for your plan/)).toBeDefined();
+  });
+
+  it("ignores a stale response that lands after a newer search", async () => {
+    let resolveSlow: (v: unknown) => void;
+    mockFetch
+      .mockReturnValueOnce(
+        new Promise((resolve) => {
+          resolveSlow = resolve;
+        })
+      )
+      .mockResolvedValueOnce(
+        okResponse({ results: [result({ id: "fresh", title: "Fresh result" })], degraded: false })
+      );
+
+    render(<CallSearch />);
+    const input = screen.getByRole("searchbox", { name: /search your calls/i });
+    const form = screen.getByRole("form", { name: /find calls by topic/i });
+
+    fireEvent.change(input, { target: { value: "first query" } });
+    fireEvent.click(screen.getByRole("button", { name: /search/i }));
+
+    fireEvent.change(input, { target: { value: "second query" } });
+    fireEvent.submit(form);
+
+    resolveSlow!(okResponse({ results: [result({ id: "stale", title: "Stale result" })], degraded: false }));
+
+    await waitFor(() => expect(screen.queryByText("Searching…")).toBeNull());
+    expect(screen.getByText("Fresh result")).toBeDefined();
+    expect(screen.queryByText("Stale result")).toBeNull();
   });
 
   it("degrades to a message when the service is unavailable (503)", async () => {
@@ -170,7 +215,7 @@ describe("CallSearch — dashboard semantic recall", () => {
     fireEvent.click(screen.getByRole("button", { name: /search/i }));
 
     const retryBtn = await screen.findByRole("button", { name: /retry/i });
-    expect(screen.getByText(/couldn.t search/i)).toBeDefined();
+    expect(screen.getByText(/Embeddings unavailable/)).toBeDefined();
     expect(retryBtn).toBeDefined();
   });
 });

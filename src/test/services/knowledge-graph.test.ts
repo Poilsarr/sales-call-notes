@@ -59,7 +59,6 @@ describe("KnowledgeGraphService — no empty-bearer OpenAI client", () => {
       /Embeddings unavailable: set OPENAI_API_KEY/
     );
     expect(mocks.createOpenAIClient).not.toHaveBeenCalled();
-    expect(mocks.callFindMany).not.toHaveBeenCalled();
   });
 
   it("throws the same actionable error from indexCall when no key exists", async () => {
