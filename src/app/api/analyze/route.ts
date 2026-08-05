@@ -140,24 +140,20 @@ export async function POST(req: Request) {
     // 1. Preprocess audio (optional — skip if ffmpeg unavailable on Vercel)
     let buffer = Buffer.from(fileBuffer);
     let duration = 0;
-    let model: 'whisper-1' | 'whisper-large-v3' = 'whisper-1';
+    // Groq-first: any available Groq key (shared or BYOK) → whisper-large-v3
+    // (cheaper + more accurate than whisper-1 on OpenAI); otherwise whisper-1.
+    const groqAvailable = Boolean(getSecret("GROQ_API_KEY") || byok.groqKey);
+    let model: 'whisper-1' | 'whisper-large-v3' = groqAvailable ? 'whisper-large-v3' : 'whisper-1';
     try {
       const audioPreprocessing = new AudioPreprocessingService();
       const preprocessed = await audioPreprocessing.preprocess(fileBuffer);
       buffer = Buffer.from(preprocessed.buffer);
       duration = preprocessed.duration;
-      model = audioPreprocessing.selectModel(duration);
-      // BYOK Groq keys are cheap — no need for paid whisper-1.
-      if (byok.groqKey) model = 'whisper-large-v3';
+      model = audioPreprocessing.selectModel(groqAvailable);
       console.log(`Audio preprocessed: ${duration}s, using model: ${model}`);
     } catch (e: any) {
       console.log(`Audio preprocessing skipped (ffmpeg unavailable): ${e?.message}`);
-      // Estimate duration from file size (~128kbps MP3 ≈ 16KB/s)
-      const estimatedDuration = Math.round(fileBuffer.length / 16000);
-      model = estimatedDuration < 300 ? 'whisper-1' : 'whisper-large-v3';
-      // BYOK Groq keys are free-tier cheap — no reason to use paid whisper-1.
-      if (byok.groqKey) model = 'whisper-large-v3';
-      console.log(`Using raw buffer, estimated ${estimatedDuration}s, model: ${model}`);
+      console.log(`Using raw buffer, estimated ${Math.round(fileBuffer.length / 16000)}s, model: ${model}`);
     }
 
     // 2. Transcribe

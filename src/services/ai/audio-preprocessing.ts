@@ -63,7 +63,11 @@ export class AudioPreprocessingService {
     });
   }
 
-  selectModel(duration: number): 'whisper-1' | 'whisper-large-v3' {
-    return duration < 300 ? 'whisper-1' : 'whisper-large-v3';
+  selectModel(groqAvailable: boolean): 'whisper-1' | 'whisper-large-v3' {
+    // Groq-first: whisper-large-v3 on Groq is cheaper per minute (~$0.002)
+    // than whisper-1 on OpenAI (~$0.006) AND more accurate, so any call that
+    // can use Groq does. Duration no longer decides — it only mattered when
+    // the OpenAI price per minute made long calls expensive.
+    return groqAvailable ? 'whisper-large-v3' : 'whisper-1';
   }
 }

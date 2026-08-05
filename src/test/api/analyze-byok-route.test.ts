@@ -230,7 +230,9 @@ describe("POST /api/analyze — BYOK branches", () => {
     mockGetByokKeys.mockResolvedValue({});
     mockValidate.mockResolvedValue({ isValid: true, error: null });
     mockPreprocess.mockResolvedValue({ buffer: new ArrayBuffer(4), duration: 60 });
-    mockSelectModel.mockReturnValue("whisper-1");
+    mockSelectModel.mockImplementation((groqAvailable: boolean) =>
+      groqAvailable ? "whisper-large-v3" : "whisper-1"
+    );
     mockTranscribe.mockResolvedValue(TRANSCRIPTION);
     mockPostProcess.mockResolvedValue({ correctedText: "hello world", corrections: [] });
     mockAnalyze.mockResolvedValue(ANALYSIS);
@@ -293,13 +295,13 @@ describe("POST /api/analyze — BYOK branches", () => {
     expect(mockIndexCall).toHaveBeenCalledWith("call-1", "sk-user-1234567890");
   });
 
-  it("forces whisper-large-v3 for Groq BYOK users in the preprocess-success branch", async () => {
+  it("routes to whisper-large-v3 for Groq BYOK users in the preprocess-success branch", async () => {
     mockGetByokKeys.mockResolvedValue({ groqKey: "gsk_user_1234567890" });
     mockPreprocess.mockResolvedValue({ buffer: new ArrayBuffer(4), duration: 60 });
 
     await POST(jsonRequest());
 
-    expect(mockSelectModel).toHaveBeenCalledWith(60);
+    expect(mockSelectModel).toHaveBeenCalledWith(true);
     expect(mockTranscribe).toHaveBeenCalledWith(
       expect.anything(),
       "whisper-large-v3",
@@ -308,12 +310,14 @@ describe("POST /api/analyze — BYOK branches", () => {
     );
   });
 
-  it("forces whisper-large-v3 for Groq BYOK users in the preprocess-fallback branch", async () => {
+  it("routes to whisper-large-v3 for Groq BYOK users in the preprocess-fallback branch", async () => {
     mockGetByokKeys.mockResolvedValue({ groqKey: "gsk_user_1234567890" });
     mockPreprocess.mockRejectedValue(new Error("ffmpeg unavailable"));
 
     await POST(jsonRequest());
 
+    // Preprocess failed, so selectModel never runs — the provider heuristic
+    // (Groq available → large-v3) is baked into the initial model choice.
     expect(mockSelectModel).not.toHaveBeenCalled();
     expect(mockTranscribe).toHaveBeenCalledWith(
       expect.anything(),
@@ -323,13 +327,43 @@ describe("POST /api/analyze — BYOK branches", () => {
     );
   });
 
-  it("uses whisper-1 for short calls without a Groq BYOK key", async () => {
+  it("routes to whisper-large-v3 when only the shared GROQ_API_KEY env is set", async () => {
+    process.env.GROQ_API_KEY = "gsk_shared_1234567890";
     process.env.OPENAI_API_KEY = "sk-shared";
-    mockPreprocess.mockResolvedValue({ buffer: new ArrayBuffer(4), duration: 60 });
-    mockSelectModel.mockReturnValue("whisper-1");
 
     await POST(jsonRequest());
 
+    expect(mockSelectModel).toHaveBeenCalledWith(true);
+    expect(mockTranscribe).toHaveBeenCalledWith(
+      expect.anything(),
+      "whisper-large-v3",
+      undefined,
+      expect.anything()
+    );
+  });
+
+  it("uses whisper-1 when no Groq key is available anywhere", async () => {
+    process.env.OPENAI_API_KEY = "sk-shared";
+    mockPreprocess.mockResolvedValue({ buffer: new ArrayBuffer(4), duration: 60 });
+
+    await POST(jsonRequest());
+
+    expect(mockSelectModel).toHaveBeenCalledWith(false);
+    expect(mockTranscribe).toHaveBeenCalledWith(
+      expect.anything(),
+      "whisper-1",
+      undefined,
+      expect.anything()
+    );
+  });
+
+  it("uses whisper-1 in the preprocess-fallback branch when no Groq key exists, regardless of file size", async () => {
+    process.env.OPENAI_API_KEY = "sk-shared";
+    mockPreprocess.mockRejectedValue(new Error("ffmpeg unavailable"));
+
+    await POST(jsonRequest());
+
+    expect(mockSelectModel).not.toHaveBeenCalled();
     expect(mockTranscribe).toHaveBeenCalledWith(
       expect.anything(),
       "whisper-1",

@@ -37,15 +37,15 @@ export class TranscriptionServiceV2 {
 
   async transcribe(
     audioBuffer: Buffer,
-    // ponytail: default to Groq whisper-large-v3 (~$0.005/call vs $0.18 on openai whisper-1).
-    // Caller can still pass 'whisper-1' if they need it. Existing fallback retry at line 48
-    // remains — when this call is 'whisper-1' and OpenAI fails, we still escalate.
+    // Default to Groq whisper-large-v3 (~$0.002/min vs ~$0.006 on OpenAI whisper-1).
+    // Caller can still pass 'whisper-1' if they need it. Existing fallback retry
+    // below remains — when this call is 'whisper-1' and OpenAI fails, we escalate.
     model: 'whisper-1' | 'whisper-large-v3' = 'whisper-large-v3',
     language?: string,
     options: { removeFillers?: boolean } = {},
     attempted: string[] = [],
   ): Promise<TranscriptionResult> {
-    // ponytail: fail fast with actionable message instead of generic 500
+    // Fail fast with actionable message instead of generic 500
     if (!this.hasKeys) {
       throw new Error("Transcription unavailable: set OPENAI_API_KEY or GROQ_API_KEY in Vercel env vars.");
     }

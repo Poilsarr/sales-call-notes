@@ -2,16 +2,14 @@ import { describe, it, expect } from 'vitest';
 import { AudioPreprocessingService } from './audio-preprocessing';
 
 describe('AudioPreprocessingService', () => {
-  it('should select whisper-1 for short audio (< 300s)', () => {
+  it('should select whisper-large-v3 when Groq is available (any duration)', () => {
     const service = new AudioPreprocessingService();
-    expect(service.selectModel(120)).toBe('whisper-1');
-    expect(service.selectModel(299)).toBe('whisper-1');
+    expect(service.selectModel(true)).toBe('whisper-large-v3');
   });
 
-  it('should select whisper-large-v3 for long audio (>= 300s)', () => {
+  it('should select whisper-1 when Groq is unavailable (any duration)', () => {
     const service = new AudioPreprocessingService();
-    expect(service.selectModel(300)).toBe('whisper-large-v3');
-    expect(service.selectModel(600)).toBe('whisper-large-v3');
+    expect(service.selectModel(false)).toBe('whisper-1');
   });
 
   it('should throw for empty buffer', async () => {
