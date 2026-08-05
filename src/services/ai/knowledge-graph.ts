@@ -15,6 +15,10 @@ function getSharedOpenAI(): OpenAI | null {
   return sharedOpenai;
 }
 
+export function _resetSharedOpenAIClientForTests(): void {
+  sharedOpenai = null;
+}
+
 export class KnowledgeGraphService {
   private async generateEmbedding(text: string, apiKey?: string): Promise<number[]> {
     const client = apiKey ? createOpenAIClient({ apiKey, timeout: 30000 }) : getSharedOpenAI();
@@ -85,10 +89,11 @@ export class KnowledgeGraphService {
   async searchByQuery(
     query: string,
     userId: string,
-    limit = 5
+    limit = 5,
+    apiKey?: string
   ): Promise<{ id: string; filename: string; title: string | null; summary: string | null; transcript: string | null; createdAt: Date; similarity: number }[]> {
     const sanitizedQuery = query.slice(0, 16000);
-    const queryEmbedding = await this.generateEmbedding(sanitizedQuery);
+    const queryEmbedding = await this.generateEmbedding(sanitizedQuery, apiKey);
 
     const candidates = await prisma.call.findMany({
       where: {

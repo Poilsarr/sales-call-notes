@@ -11,6 +11,7 @@ import { ProgressBar } from "@/components/ui/progress-bar";
 import { AreaChart } from "@/components/ui/area-chart";
 import { DonutChart } from "@/components/ui/donut-chart";
 import { Badge } from "@/components/ui/badge";
+import CallSearch from "@/components/call-search";
 import { getPlan, type PlanTier } from "@/lib/plans";
 import {
   BarChart3,
@@ -316,6 +317,18 @@ export default function DashboardPage() {
             </a>
           </div>
         )}
+
+        {/* Semantic recall */}
+        <Section
+          title="Search your calls"
+          description="Ask for any call in plain language — objections, budget talk, next steps."
+        >
+          <Card>
+            <CardContent>
+              <CallSearch />
+            </CardContent>
+          </Card>
+        </Section>
 
         {/* KPI grid */}
         <Section>
