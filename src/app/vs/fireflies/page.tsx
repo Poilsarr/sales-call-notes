@@ -4,7 +4,7 @@ import { VsComparisonPage, type ComparisonData } from "@/components/vs-compariso
 export const metadata: Metadata = {
   title: "Fireflies.ai Alternative: Gauge — Flat-Rate vs Per-Seat (2026)",
   description:
-    "Fireflies charges $10/seat/mo — 5 reps = $50/mo. Gauge is $9 flat. 600 free minutes, no bot auto-joining, BANT/MEDDIC sales extraction built in.",
+    "Fireflies charges $10/seat/mo — 5 reps = $50/mo. Gauge is $9 flat. 300 free minutes/mo, no bot auto-joining, BANT/MEDDIC sales extraction built in.",
   alternates: { canonical: "https://usegauge.com/vs/fireflies" },
   openGraph: {
     title: "Fireflies.ai Alternative: Gauge — Flat-Rate vs Per-Seat (2026)",
@@ -27,13 +27,13 @@ const data: ComparisonData = {
     "Fireflies is a serious conversation-intelligence product — 3M+ users, 500+ integrations, deep CRM sync. But their per-seat pricing kills small teams. 5 reps on Fireflies Pro = $50/mo. 5 reps on Gauge = $9/mo flat. Same features, half the bloat.",
   talkingPoints: [
     "Fireflies charges per-seat. We charge flat-rate. 5 users on Fireflies Pro = $50/mo. 5 users on us = $9/mo. Same math at any team size.",
-    "Fireflies' free tier loses your meetings after 800 minutes of storage. Ours: keep them, 300 minutes/mo with unlimited imports.",
+    "Fireflies' free tier loses your meetings after 800 minutes of storage. Ours: 300 minutes/mo of processing, 3 lifetime imports — and on Free we delete your original audio right after processing. Nothing to leak, ever.",
     "Fireflies sales coaching is $19/seat/mo. We include BANT/MEDDIC extraction in $9 flat.",
     "Fireflies bot joins meetings — same Otter problem. Ours: opt-in only, never auto-joins.",
     "Fireflies is built for enterprise. We're built for indie sellers, recruiters, and small teams who don't want a 5,000-feature platform.",
   ],
   tldr: [
-    { label: "Free tier", us: "300 min/mo, unlimited imports", them: "800 min storage cap" },
+    { label: "Free tier", us: "300 min/mo, 3 imports", them: "800 min storage cap" },
     { label: "Pro price (5 seats)", us: "$9/mo flat", them: "$50/mo ($10/seat × 5)" },
     { label: "Business price (5 seats)", us: "$29/mo flat", them: "$95/mo ($19/seat × 5)" },
     { label: "Pricing model", us: "Flat-rate", them: "Per-seat" },
@@ -60,8 +60,8 @@ const data: ComparisonData = {
       detail: "Fireflies auto-joins meetings as a bot — the same Otter problem that triggered a 2025 lawsuit. We never auto-join. You upload, we analyze.",
     },
     {
-      title: "Free tier that doesn't lose your data",
-      detail: "Fireflies caps free storage at 800 minutes — once you hit the cap, old meetings get buried. We give 300 min/mo with unlimited imports and don't penalize you for keeping history.",
+      title: "Free tier that deletes, not stores",
+      detail: "Fireflies keeps your audio in the cloud up to an 800-minute cap. Gauge Free deletes your original audio right after processing — there's no recording left to breach or subpoena. Your workspace keeps your 5 most recent calls; upgrade when you need history.",
     },
     {
       title: "Sales AI at $9, not $19/seat",
@@ -73,7 +73,7 @@ const data: ComparisonData = {
     },
   ],
   pricing: [
-    { tier: "Free", us: "$0 — 300 min/mo, unlimited imports", them: "$0 — 800 min storage cap" },
+    { tier: "Free", us: "$0 — 300 min/mo, 3 lifetime imports", them: "$0 — 800 min storage cap" },
     { tier: "Pro (1 user)", us: "$9/mo flat", them: "$10/seat/mo annual ($18 monthly)" },
     { tier: "Pro (5 users)", us: "$9/mo flat", them: "$50/mo ($10/seat × 5)" },
     { tier: "Business (5 users)", us: "$29/mo flat", them: "$95/mo ($19/seat × 5)" },
@@ -90,7 +90,7 @@ const data: ComparisonData = {
     "You don't want a bot auto-joining meetings — privacy matters to your clients",
     "You want BANT/MEDDIC extraction without paying $19/seat",
     "You're a recruiter, consultant, founder, or indie seller — not enterprise RevOps",
-    "You want a free tier that doesn't quietly cap your storage",
+    "You want a free tier that deletes your audio after processing — privacy by default",
   ],
   faq: [
     {

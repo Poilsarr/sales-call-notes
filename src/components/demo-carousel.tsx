@@ -132,7 +132,7 @@ export default function DemoCarousel() {
                 Get this on your calls.
               </h2>
               <p className="text-white/50 text-[13px] mb-5 max-w-md mx-auto">
-                Free forever for solo SDRs. Pro at $9/mo with unlimited minutes, CRM sync, and team alerts.
+                Free forever for solo SDRs. Pro at $9/mo with 1,200 minutes, CRM sync, and team alerts.
               </p>
               <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
                 <Link

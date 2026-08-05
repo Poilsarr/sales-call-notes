@@ -19,7 +19,7 @@ export const metadata: Metadata = {
 const alternatives = [
   {
     name: "Gauge",
-    free: "300 min/mo, unlimited imports",
+    free: "300 min/mo, 3 lifetime imports",
     paid: "$9/mo flat (not per-seat)",
     best: "Privacy-first, flat-rate, sales-trained AI",
     privacy: "Never auto-joins, GDPR-first",
@@ -95,7 +95,7 @@ export default function Page() {
         name: "What is the cheapest Otter.ai alternative for teams?",
         acceptedAnswer: {
           "@type": "Answer",
-          text: "Gauge is $9/mo flat — bring your whole team, no per-seat math. 5 users on Otter Business is $100/mo; 5 users on Fireflies Pro is $50/mo; 5 users on Gauge is $9/mo total.",
+          text: "Gauge is $9/mo flat for a 5-person team — no per-seat math. 5 users on Otter Business is $100/mo; 5 users on Fireflies Pro is $50/mo; 5 users on Gauge is $9/mo total.",
         },
       },
       {
@@ -323,7 +323,7 @@ export default function Page() {
               },
               {
                 q: "What is the cheapest Otter.ai alternative for teams?",
-                a: "Gauge is $9/mo flat — bring your whole team, no per-seat math. 5 users on Otter Business is $100/mo; 5 users on Fireflies Pro is $50/mo; 5 users on Gauge is $9/mo total.",
+                a: "Gauge is $9/mo flat for a 5-person team — no per-seat math. 5 users on Otter Business is $100/mo; 5 users on Fireflies Pro is $50/mo; 5 users on Gauge is $9/mo total.",
               },
               {
                 q: "Which Otter alternative doesn't auto-join meetings?",

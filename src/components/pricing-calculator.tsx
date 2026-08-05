@@ -5,8 +5,10 @@ import { Calculator, Users, ArrowRight, CheckCircle } from "lucide-react";
 import { trackEvent } from "@/lib/analytics";
 
 const GAUGE_PRO_MONTHLY = 9;
+const GAUGE_BUSINESS_MONTHLY = 29;
 const FIREFLIES_PER_SEAT = 10;
 const OTTER_PER_SEAT = 8.33;
+const PRO_SEAT_CAP = 5;
 
 function formatUSD(n: number): string {
   return "$" + Math.round(n).toLocaleString("en-US");
@@ -15,14 +17,18 @@ function formatUSD(n: number): string {
 export default function PricingCalculator() {
   const [teamSize, setTeamSize] = useState(5);
 
-  const { gauge, fireflies, otter, saveVsFireflies, saveVsOtter } = useMemo(() => {
-    const gauge = GAUGE_PRO_MONTHLY;
+  const { gauge, fireflies, otter, saveVsFireflies, saveVsOtter, gaugePlan } = useMemo(() => {
+    // Pro caps at 5 seats (plans.ts teamMemberLimit: 5) — beyond that the
+    // honest plan is Business, $29 flat, unlimited seats.
+    const usesBusiness = teamSize > PRO_SEAT_CAP;
+    const gauge = usesBusiness ? GAUGE_BUSINESS_MONTHLY : GAUGE_PRO_MONTHLY;
     const fireflies = teamSize * FIREFLIES_PER_SEAT;
     const otter = teamSize * OTTER_PER_SEAT;
     return {
       gauge,
       fireflies,
       otter,
+      gaugePlan: usesBusiness ? "Business" : "Pro",
       saveVsFireflies: (fireflies - gauge) * 12,
       saveVsOtter: (otter - gauge) * 12,
     };
@@ -73,18 +79,18 @@ export default function PricingCalculator() {
 
                 <p className="text-[11px] text-gray-400 mt-6">
                   Based on Fireflies Pro ($10/seat/mo) and Otter Pro ($8.33/seat/mo billed annually).
-                  Gauge Pro is $9/mo flat for up to 5 reps.
+                  Gauge Pro is $9/mo flat for up to 5 reps; above that, Business is $29/mo flat.
                 </p>
               </div>
 
               {/* Right: cost cards */}
               <div className="space-y-3">
                 <CostRow
-                  name="Gauge Pro"
+                  name={`Gauge ${gaugePlan}`}
                   price={gauge}
                   period="/month flat"
                   highlight
-                  note="Up to 5 reps"
+                  note={teamSize > PRO_SEAT_CAP ? "Unlimited seats — Business" : "Up to 5 reps"}
                 />
                 <CostRow
                   name="Fireflies.ai"

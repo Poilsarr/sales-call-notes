@@ -30,7 +30,7 @@ export default function FreePlanBanner({ plan }: FreePlanBannerProps) {
       <span className="flex items-center gap-2">
         <Zap className="w-4 h-4" />
         <span>
-          You&apos;re on the <strong>Free</strong> plan. Upgrade to Pro for unlimited calls, CRM sync, and team features.
+          You&apos;re on the <strong>Free</strong> plan. Upgrade to Pro for 4x more minutes, CRM sync, and team features.
         </span>
         <a
           href="/pricing"

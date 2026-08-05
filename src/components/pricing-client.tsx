@@ -39,7 +39,7 @@ const FAQ = [
   },
   {
     q: "What happens if I exceed my plan's minutes?",
-    a: "We never silently auto-charge you. You'll get a banner at 80% usage and an email at 100%. Uploads pause until you upgrade or your monthly cycle resets. No surprise overage fees.",
+    a: "We never silently auto-charge you. On the Free plan you'll see a usage banner at 80%. When you hit your limit, your oldest calls are archived — never deleted — until you upgrade or your monthly cycle resets. Pro and Business don't have upload pauses; their minute pools just continue. No surprise overage fees.",
   },
   {
     q: "Can I switch plans later?",
@@ -645,7 +645,7 @@ export default function PricingClient({
                     {
                       icon: CreditCard,
                       title: "Flat-rate pricing",
-                      body: "Stop multiplying per-seat costs. One price, whole team.",
+                      body: "Stop multiplying per-seat costs. One price. No per-seat math.",
                     },
                   ].map((item) => (
                     <div key={item.title} className="flex flex-col items-start">
@@ -692,7 +692,7 @@ export default function PricingClient({
                     {
                       icon: ShieldCheck,
                       title: "Predictable pricing",
-                      body: "Flat-rate plans. Add your whole team without multiplying the cost like per-seat tools do.",
+                      body: "Flat-rate plans. On Business, add your whole team without multiplying the cost like per-seat tools do.",
                     },
                   ].map((v) => (
                     <div key={v.title} className="flex flex-col items-start">

@@ -4,12 +4,12 @@ import { VsComparisonPage, type ComparisonData } from "@/components/vs-compariso
 export const metadata: Metadata = {
   title: "Otter.ai Alternative: Gauge — The Honest 2026 Comparison",
   description:
-    "Otter got sued in 2025 for recording meetings without consent. Gauge never auto-joins. Flat $9/mo (not per-seat), 600 free minutes, BANT/MEDDIC extraction built in.",
+    "Otter got sued in 2025 for recording meetings without consent. Gauge never auto-joins. Flat $9/mo (not per-seat), 300 free minutes/mo, BANT/MEDDIC extraction built in.",
   alternates: { canonical: "https://usegauge.com/vs/otter-ai" },
   openGraph: {
     title: "Otter.ai Alternative: Gauge — The Honest 2026 Comparison",
     description:
-      "Flat $9/mo vs $20/seat. 600 free minutes vs 300. No bot in your meeting. GDPR-first.",
+      "Flat $9/mo vs $20/seat. 300 free minutes each — ours stay private. No bot in your meeting. GDPR-first.",
     url: "https://usegauge.com/vs/otter-ai",
   },
 };
@@ -23,20 +23,20 @@ const data: ComparisonData = {
   competitorUsers: "10M+ users",
   metaTitle: "Otter.ai Alternative: Gauge — The Honest 2026 Comparison",
   metaDescription:
-    "Flat $9/mo vs $20/seat. 600 free minutes vs 300. No bot in your meeting. GDPR-first.",
+    "Flat $9/mo vs $20/seat. 300 free minutes each — ours stay private. No bot in your meeting. GDPR-first.",
   heroHeadline: "The Otter.ai alternative for people who don't want a bot in their meeting.",
   heroSubhead:
     "Otter is a great product — 10M+ users, Zoom partnership, 9 years of polish. But in 2025 they were sued for recording meetings without consent. We built Gauge for the people who read that headline and thought: never again.",
   talkingPoints: [
     "Otter got sued in 2025 for recording meetings without consent. We won't. Gauge never auto-joins — you upload the recording, you stay in control.",
-    "Otter's free tier gives you 300 minutes a month and 3 lifetime imports. Ours gives you 300 minutes a month and unlimited imports.",
+    "Otter's free tier gives you 300 minutes a month and 3 lifetime imports — so does ours. The difference: their bot auto-joins your calls, ours never joins.",
     "Otter charges $20/seat/month for Business. We charge $9 flat. 5 reps on Otter Business = $100/mo. 5 reps on us = $9/mo.",
     "Otter's AI summary is generic. Ours extracts BANT, MEDDIC, action items with owners and deadlines — built for sales.",
     "Otter auto-joins your meetings as a bot participant. We don't. You record, you upload, we analyze.",
   ],
   tldr: [
     { label: "Free tier minutes", us: "300/mo", them: "300/mo" },
-    { label: "Free tier imports", us: "Unlimited", them: "3 lifetime" },
+    { label: "Free tier imports", us: "3 lifetime", them: "3 lifetime" },
     { label: "Pro price", us: "$9/mo flat", them: "$6.67/mo (annual)" },
     { label: "Business price (5 seats)", us: "$29/mo flat", them: "$100/mo ($20/seat × 5)" },
     { label: "Bot joins meetings?", us: "Never", them: "Yes, auto-joins" },
@@ -66,8 +66,8 @@ const data: ComparisonData = {
       detail: "BANT, MEDDIC, SPICED, GPCTBA scorecards out of the box. Action items with owners and deadlines. Otter gives you a generic summary.",
     },
     {
-      title: "600 free minutes vs 300, unlimited imports vs 3",
-      detail: "Otter's free tier walls you in. Ours gives you more room to actually try the product.",
+      title: "Same free tier, but your recordings stay private",
+      detail: "Both give 300 minutes and 3 lifetime imports. The difference: Otter's bot auto-joins your meetings — and their 2025 lawsuit shows where that leads. We never join; you upload, you stay in control.",
     },
     {
       title: "Vertical specialization",
@@ -75,7 +75,7 @@ const data: ComparisonData = {
     },
   ],
   pricing: [
-    { tier: "Free", us: "$0 — 300 min/mo, unlimited imports", them: "$0 — 300 min/mo, 3 lifetime imports" },
+    { tier: "Free", us: "$0 — 300 min/mo, 3 lifetime imports", them: "$0 — 300 min/mo, 3 lifetime imports" },
     { tier: "Pro", us: "$9/mo flat (or $7.50 annual)", them: "$6.67/mo annual ($13.59 monthly)" },
     { tier: "Business (5 seats)", us: "$29/mo flat", them: "~$100/mo ($20/seat × 5)" },
     { tier: "Enterprise", us: "Custom — SSO, HIPAA, on-prem", them: "Custom — SLA, security review" },
@@ -109,7 +109,7 @@ const data: ComparisonData = {
     },
     {
       q: "Why is your Pro tier $9 flat when Otter's is $6.67?",
-      a: "Otter's $6.67 is per-seat, billed annually. Our $9 is flat — bring your whole team. On a 5-person team, Otter is $33/mo vs our $9/mo. The flat-rate model is the whole point.",
+      a: "Otter's $6.67 is per-seat, billed annually. Our $9 is flat — covers your whole 5-seat team. On a 5-person team, Otter is $33/mo vs our $9/mo. The flat-rate model is the whole point.",
     },
     {
       q: "Do you have Otter's mobile app?",
