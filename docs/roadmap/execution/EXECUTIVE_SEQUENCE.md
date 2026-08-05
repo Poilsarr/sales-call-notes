@@ -113,5 +113,24 @@ belongs to an earlier sequence; the agent arc renumbered). Commits on main:
 - [x] runtime smoke: /api/calls/search 401 unauth, /dashboard 307 Clerk gate
 - [x] orchestrator review findings applied in `98c90ef` (code review SEV-HIGHs,
       a11y, perf, Reality Checker kill-criterion metering)
-- [ ] orchestrator sign-off ruling for S4 arc → then S5 (transcription
-      hardening or /vs/gong per orchestrator's sequence)
+- [x] orchestrator APPROVED S4 arc (MED-1..3 tracked, not fixed — scale
+      triggers: pgvector at ~500 calls, keyless title-fallback, Upstash fail-open)
+
+## S5 ✅ Transcription hardening (Groq-first short calls) — SHIPPED
+Commit `603b91f`. Orchestrator-routed arc; scope: transcription-v2 + analyze
+route + tests only. BYOK, recall/search, marketing copy untouched.
+
+- [x] `selectModel` flipped from duration-based to provider-based:
+      Groq available → `whisper-large-v3`, else `whisper-1` (duration no
+      longer decides — large-v3 on Groq is ~$0.002/min vs ~$0.006 whisper-1)
+- [x] analyze route: single `groqAvailable` heuristic (shared GROQ_API_KEY
+      or BYOK groqKey) in preprocess-success and fallback branches
+- [x] empty-bearer invariant verified unchanged (transcription-v2 11 tests):
+      no OpenAI or Groq client built without a resolved key; large-v3 without
+      Groq downgrades to whisper-1, whisper-1 without OpenAI throws
+- [x] output-shape stability: parser untouched; transcription-v2 tests green
+- [x] hard gate: vitest 732/732 (88 files); `next build` exit 0
+- [x] runtime smoke + TTFB: /api/analyze 401 at 9ms (auth gate fast),
+      /dashboard 307 at 10ms; real transcription TTFB requires Clerk auth +
+      Groq key — env-limited, verify post-deploy via the analyze smoke
+- [ ] orchestrator sign-off for S5 → then /vs/gong (next arc)
