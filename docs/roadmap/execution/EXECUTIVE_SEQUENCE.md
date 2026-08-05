@@ -125,9 +125,11 @@ route + tests only. BYOK, recall/search, marketing copy untouched.
       longer decides — large-v3 on Groq is ~$0.002/min vs ~$0.006 whisper-1)
 - [x] analyze route: single `groqAvailable` heuristic (shared GROQ_API_KEY
       or BYOK groqKey) in preprocess-success and fallback branches
-- [x] empty-bearer invariant verified unchanged (transcription-v2 11 tests):
-      no OpenAI or Groq client built without a resolved key; large-v3 without
-      Groq downgrades to whisper-1, whisper-1 without OpenAI throws
+- [x] empty-bearer invariant verified unchanged (transcription-v2 tests, now
+      13): no OpenAI or Groq client built without a resolved key; large-v3
+      without Groq downgrades to whisper-1, whisper-1 without OpenAI throws
+- [x] P0 hardening `91c5293`: Groq client timeout 30s / maxRetries 1 bounds
+      outage escalation inside the 60s window; outage-direction tests added
 - [x] output-shape stability: parser untouched; transcription-v2 tests green
 - [x] hard gate: vitest 732/732 (88 files); `next build` exit 0
 - [x] runtime smoke + TTFB: /api/analyze 401 at 9ms (auth gate fast),
