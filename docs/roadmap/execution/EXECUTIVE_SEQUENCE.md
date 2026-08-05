@@ -92,3 +92,26 @@
 - [ ] update docs/roadmap/DEVELOPMENT_FRONTIER.md "Recently Shipped"
 - [ ] PR + merge flow per CLAUDE.md (admin squash, Vercel context hang
       recovery documented)
+
+## S4 (agent arc) ✅ Dashboard semantic recall — SHIPPED
+Note: distinct from the S4 transcription-hardening row above (that row
+belongs to an earlier sequence; the agent arc renumbered). Commits on main:
+`c4b50bc` (empty-bearer blocker) → `3768731` feat(recall) → `98c90ef` fix(recall).
+
+- [x] `POST /api/calls/search` — 401 unauth, 400 invalid query, 429
+      rate-limit (search: 30/min), 503 generic body (real error server-logged),
+      results never include transcript; `degraded` true only when a user BYOK
+      key actually dropped; 60s cache; `[recall]` metering log
+- [x] `searchByQuery` — parallel vector + title queries, title floor 0.95
+      with dedupe (never silently cut by limit), `includeTranscript` param
+      (only `/api/chat` passes true)
+- [x] CallSearch component — race-safe (requestId), a11y live region holds
+      only status text, results in `<section aria-label="Search results">`,
+      retry carries pending state, server messages rendered verbatim
+- [x] dashboard AI-assistant input labelled (`label htmlFor` + aria-label)
+- [x] hard gate: vitest 730/730 (88 files) green; `next build` exit 0
+- [x] runtime smoke: /api/calls/search 401 unauth, /dashboard 307 Clerk gate
+- [x] orchestrator review findings applied in `98c90ef` (code review SEV-HIGHs,
+      a11y, perf, Reality Checker kill-criterion metering)
+- [ ] orchestrator sign-off ruling for S4 arc → then S5 (transcription
+      hardening or /vs/gong per orchestrator's sequence)
