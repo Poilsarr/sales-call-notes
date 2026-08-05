@@ -70,7 +70,8 @@ export type FeatureId =
   | "unlimited_minutes"
   | "zapier"
   | "export_json"
-  | "export_csv";
+  | "export_csv"
+  | "byok";
 
 export interface PlanConfig {
   tier: PlanTier;
@@ -120,6 +121,7 @@ export const PLANS: Record<PlanTier, PlanConfig> = {
       unlimited_uploads: false,
       unlimited_minutes: false,
       priority_support: false,
+      byok: false,
     },
   },
   pro: {
@@ -159,6 +161,7 @@ export const PLANS: Record<PlanTier, PlanConfig> = {
       multi_language: false,
       unlimited_uploads: false,
       unlimited_minutes: false,
+      byok: true,
     },
   },
   business: {
@@ -202,6 +205,7 @@ export const PLANS: Record<PlanTier, PlanConfig> = {
       unlimited_uploads: true,
       unlimited_minutes: true,
       video_recording: true,
+      byok: true,
     },
   },
   enterprise: {
@@ -247,6 +251,7 @@ export const PLANS: Record<PlanTier, PlanConfig> = {
       unlimited_uploads: true,
       unlimited_minutes: true,
       video_recording: true,
+      byok: true,
     },
   },
 };

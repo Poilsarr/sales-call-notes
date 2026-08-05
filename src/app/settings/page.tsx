@@ -6,6 +6,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import Nav from "@/components/nav";
 import TeamBrandingForm from "@/components/team-branding-form";
 import APIKeysSettings from "@/components/api-keys-settings";
+import ByokSettings from "@/components/byok-settings";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { Section } from "@/components/ui/section";
 import { ProgressBar } from "@/components/ui/progress-bar";
@@ -15,6 +16,7 @@ import { NavTabs } from "@/components/ui/nav-tabs";
 import { Avatar } from "@/components/ui/avatar";
 import { getPlan, hasFeature, type FeatureId, type PlanTier } from "@/lib/plans";
 import { toast } from "sonner";
+import { Toaster } from "sonner";
 import {
   User,
   CreditCard,
@@ -215,6 +217,17 @@ export default function SettingsPage() {
   return (
     <main className="min-h-screen bg-linear-black text-white">
       <Nav />
+      <Toaster
+        position="top-right"
+        theme="dark"
+        toastOptions={{
+          style: {
+            background: '#141416',
+            color: '#ffffff',
+            border: '1px solid #1c1c20',
+          },
+        }}
+      />
       <div className="max-w-7xl mx-auto px-6 pt-28 pb-24">
         <div className="flex flex-col lg:flex-row gap-8">
           {/* Sidebar */}
@@ -292,6 +305,9 @@ export default function SettingsPage() {
             {tab === "api-keys" && (
               <Section title="API Keys" description="Manage programmatic access to your Gauge account.">
                 <APIKeysSettings />
+                <div className="mt-6">
+                  <ByokSettings />
+                </div>
               </Section>
             )}
 

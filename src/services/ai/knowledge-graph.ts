@@ -5,15 +5,16 @@ import { createOpenAIClient } from '@/lib/openai-client';
 const openai: OpenAI = createOpenAIClient({ timeout: 30000 });
 
 export class KnowledgeGraphService {
-  private async generateEmbedding(text: string): Promise<number[]> {
-    const response = await openai.embeddings.create({
+  private async generateEmbedding(text: string, apiKey?: string): Promise<number[]> {
+    const client = apiKey ? createOpenAIClient({ apiKey, timeout: 30000 }) : openai;
+    const response = await client.embeddings.create({
       model: 'text-embedding-3-small',
       input: text,
     });
     return response.data[0].embedding;
   }
 
-  async indexCall(callId: string) {
+  async indexCall(callId: string, apiKey?: string) {
     const call = await prisma.call.findUnique({
       where: { id: callId },
       select: { transcript: true, summary: true }
@@ -25,7 +26,7 @@ export class KnowledgeGraphService {
     // matches the analysis cap. text-embedding-3-small is $0.02/1M tokens
     // so a 4k-token embed ≈ $0.00008/call (cap from ~$0.0002-0.0005).
     const textToEmbed = `${call.summary || ''} ${call.transcript || ''}`.slice(0, 16000);
-    const embedding = await this.generateEmbedding(textToEmbed);
+    const embedding = await this.generateEmbedding(textToEmbed, apiKey);
 
     await prisma.call.update({
       where: { id: callId },

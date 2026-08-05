@@ -13,15 +13,21 @@ import { normalizeScorecard } from '@/lib/scorecard';
 const MAX_TRANSCRIPT_CHARS = 16000;
 const cap = (s: string) => (s.length > MAX_TRANSCRIPT_CHARS ? s.slice(0, MAX_TRANSCRIPT_CHARS) : s);
 
+export interface AnalysisServiceOptions {
+  openaiKey?: string;
+  groqKey?: string;
+}
+
 export class AnalysisService {
   private openai: OpenAI;
   private groqOpenai: OpenAI | null = null;
 
-  constructor() {
-    this.openai = createOpenAIClient();
-    if (getSecret("GROQ_API_KEY")) {
+  constructor(opts: AnalysisServiceOptions = {}) {
+    this.openai = createOpenAIClient({ apiKey: opts.openaiKey || undefined });
+    const groqKey = opts.groqKey || getSecret("GROQ_API_KEY");
+    if (groqKey) {
       this.groqOpenai = createOpenAIClient({
-        apiKey: getSecret("GROQ_API_KEY"),
+        apiKey: groqKey,
         baseURL: 'https://api.groq.com/openai/v1',
       });
     }

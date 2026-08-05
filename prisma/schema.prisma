@@ -27,6 +27,8 @@ model User {
   slackUserId               String?
   preferredTone             String?        @default("balanced")
   rubricEmphasis            String[]       @default([])
+  byokOpenaiKey             String?        @map("byok_openai_key")
+  byokGroqKey               String?        @map("byok_groq_key")
   ownedTeams                Team[]         @relation("teamOwner")
   calls                     Call[]
   assignedCalls             Call[]         @relation("callAssignments")

@@ -4,21 +4,33 @@ import { buildTranscriptionPrompt } from '@/lib/transcription-options';
 import { createOpenAIClient } from '@/lib/openai-client';
 import { getSecret } from '@/lib/secrets';
 
+export interface TranscriptionServiceOptions {
+  openaiKey?: string;
+  groqKey?: string;
+}
+
 export class TranscriptionServiceV2 {
   private openai: OpenAI;
   private groqOpenai: OpenAI;
   private hasKeys: boolean;
 
-  constructor() {
-    this.hasKeys = Boolean(getSecret("OPENAI_API_KEY") || getSecret("GROQ_API_KEY"));
+  constructor(opts: TranscriptionServiceOptions = {}) {
+    const sharedOpenai = opts.openaiKey || getSecret("OPENAI_API_KEY");
+    const sharedGroq = opts.groqKey || getSecret("GROQ_API_KEY");
+    this.hasKeys = Boolean(sharedOpenai || sharedGroq);
     if (!this.hasKeys) {
-      console.warn("TranscriptionServiceV2: no OPENAI_API_KEY or GROQ_API_KEY set. Transcription will be unavailable.");
+      console.warn("TranscriptionServiceV2: no OPENAI_API_KEY, GROQ_API_KEY, or user BYOK key set. Transcription will be unavailable.");
     }
-    this.openai = createOpenAIClient();
-    this.groqOpenai = createOpenAIClient({
-      apiKey: getSecret("GROQ_API_KEY") || getSecret("OPENAI_API_KEY") || "",
-      baseURL: 'https://api.groq.com/openai/v1',
-    });
+    this.openai = createOpenAIClient({ apiKey: sharedOpenai || undefined });
+    // Only build the Groq client when a real Groq key exists — sending an
+    // OpenAI key to api.groq.com would 401 AND leak the key to a provider
+    // the user never consented to.
+    this.groqOpenai = sharedGroq
+      ? createOpenAIClient({
+          apiKey: sharedGroq,
+          baseURL: 'https://api.groq.com/openai/v1',
+        })
+      : (undefined as unknown as OpenAI);
   }
 
   async transcribe(
@@ -34,6 +46,11 @@ export class TranscriptionServiceV2 {
     // ponytail: fail fast with actionable message instead of generic 500
     if (!this.hasKeys) {
       throw new Error("Transcription unavailable: set OPENAI_API_KEY or GROQ_API_KEY in Vercel env vars.");
+    }
+    // No Groq key configured → whisper-large-v3 (a Groq-only model) would
+    // 401 on OpenAI; fall straight to whisper-1 instead of a doomed call.
+    if (model === 'whisper-large-v3' && !this.groqOpenai) {
+      model = 'whisper-1';
     }
     const client = model === 'whisper-1' ? this.openai : this.groqOpenai;
 
@@ -52,6 +69,12 @@ export class TranscriptionServiceV2 {
       return this.parseVerboseJson(response);
     } catch (error) {
       const other = model === 'whisper-1' ? 'whisper-large-v3' : 'whisper-1';
+      // whisper-large-v3 is a Groq-only model — retrying it on the OpenAI
+      // client when no Groq key exists is a doomed 401. Throw the original
+      // error instead of burning a call against the wrong provider.
+      if (other === 'whisper-large-v3' && !this.groqOpenai) {
+        throw error;
+      }
       if (!attempted.includes(other)) {
         return this.transcribe(audioBuffer, other, language, options, [...attempted, model]);
       }

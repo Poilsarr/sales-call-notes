@@ -6,11 +6,11 @@ import { getSecret } from '@/lib/secrets';
 export class PostProcessingService {
   private openai: OpenAI;
 
-  constructor() {
-    if (!getSecret("OPENAI_API_KEY")) {
+  constructor(apiKey?: string) {
+    if (!apiKey && !getSecret("OPENAI_API_KEY")) {
       throw new Error('OPENAI_API_KEY is required for post-processing');
     }
-    this.openai = createOpenAIClient();
+    this.openai = createOpenAIClient({ apiKey: apiKey || undefined });
   }
 
   async correctEntities(transcript: string): Promise<{ correctedText: string; corrections: Correction[]; confidence: number }> {

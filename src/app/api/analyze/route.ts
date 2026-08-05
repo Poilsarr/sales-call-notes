@@ -12,6 +12,7 @@ import { WebhookService } from "@/services/webhooks";
 import { sendTranscriptReadyEmail } from "@/services/email";
 import { parseRemoveFillers } from '@/lib/transcription-options';
 import { getUserByClerkId } from '@/lib/get-user';
+import { getByokKeys } from '@/lib/byok-resolver';
 import { AnalyticsService } from '@/services/ai/analytics';
 import { PIIRedactorService } from '@/services/ai/pii-redactor';
 import { KnowledgeGraphService } from '@/services/ai/knowledge-graph';
@@ -109,21 +110,27 @@ export async function POST(req: Request) {
       }
     }
 
-    const user = await getUserByClerkId(clerkUserId);
-    const userId = user.id;
-
     const validator = new FileValidationService();
     const validation = await validator.validate(fileBuffer, fileName);
     if (!validation.isValid) {
       return NextResponse.json({ error: validation.error }, { status: 400 });
     }
 
+    // BYOK: Pro+ users can supply their own AI keys — their call bills
+    // against their key, not Gauge's shared pool. Resolved after file
+    // validation (junk uploads never pay an extra DB query), once, and used
+    // for every AI step below (transcription, post-processing, analysis,
+    // embeddings). Falls back to shared keys when unset.
+    const user = await getUserByClerkId(clerkUserId);
+    const userId = user.id;
+    const byok = await getByokKeys(userId);
+
     console.log(`Processing file: ${fileName}, size: ${fileBuffer.length}`);
 
     // --- TRANSCRIPTION PIPELINE ---
 
     // Guard: transcription requires at least one AI provider key.
-    if (!getSecret("OPENAI_API_KEY") && !getSecret("GROQ_API_KEY")) {
+    if (!getSecret("OPENAI_API_KEY") && !getSecret("GROQ_API_KEY") && !byok.openaiKey && !byok.groqKey) {
       return NextResponse.json(
         { error: "Transcription requires an AI API key. Set OPENAI_API_KEY or GROQ_API_KEY in Vercel env vars." },
         { status: 500 },
@@ -140,17 +147,21 @@ export async function POST(req: Request) {
       buffer = Buffer.from(preprocessed.buffer);
       duration = preprocessed.duration;
       model = audioPreprocessing.selectModel(duration);
+      // BYOK Groq keys are cheap — no need for paid whisper-1.
+      if (byok.groqKey) model = 'whisper-large-v3';
       console.log(`Audio preprocessed: ${duration}s, using model: ${model}`);
     } catch (e: any) {
       console.log(`Audio preprocessing skipped (ffmpeg unavailable): ${e?.message}`);
       // Estimate duration from file size (~128kbps MP3 ≈ 16KB/s)
       const estimatedDuration = Math.round(fileBuffer.length / 16000);
       model = estimatedDuration < 300 ? 'whisper-1' : 'whisper-large-v3';
+      // BYOK Groq keys are free-tier cheap — no reason to use paid whisper-1.
+      if (byok.groqKey) model = 'whisper-large-v3';
       console.log(`Using raw buffer, estimated ${estimatedDuration}s, model: ${model}`);
     }
 
     // 2. Transcribe
-    const transcriptionService = new TranscriptionServiceV2();
+    const transcriptionService = new TranscriptionServiceV2(byok);
     let transcription;
     try {
       transcription = await transcriptionService.transcribe(buffer, model, requestedLanguage, {
@@ -171,7 +182,7 @@ export async function POST(req: Request) {
         return quotaErrorResponse();
       }
       if (msg.includes('401') || msg.includes('Unauthorized') || msg.includes('Incorrect API key') || causeMsg.includes('401')) {
-        return NextResponse.json({ error: 'AI provider API key is invalid or expired. Check OPENAI_API_KEY and GROQ_API_KEY.' }, { status: 500 });
+        return NextResponse.json({ error: 'AI provider API key is invalid or expired. Check OPENAI_API_KEY and GROQ_API_KEY — or your saved keys under Settings → API Keys → Bring your own AI keys.' }, { status: 500 });
       }
       // Normalize generic connection/network errors into actionable messages
       if (msg.toLowerCase().includes('connection') || msg.toLowerCase().includes('network') || msg.toLowerCase().includes('timeout') || msg.toLowerCase().includes('econnrefused') || causeMsg.toLowerCase().includes('fetch failed')) {
@@ -229,7 +240,7 @@ export async function POST(req: Request) {
     let correctedText = transcription.text;
     let corrections: Correction[] = [];
     try {
-      const postProcessing = new PostProcessingService();
+      const postProcessing = new PostProcessingService(byok.openaiKey);
       const result = await postProcessing.correctEntities(transcription.text);
       correctedText = result.correctedText;
       corrections = result.corrections;
@@ -265,7 +276,7 @@ export async function POST(req: Request) {
     // --- ANALYSIS ---
     let analysisResult: Awaited<ReturnType<AnalysisService['analyze']>>;
     try {
-      const analysisService = new AnalysisService();
+      const analysisService = new AnalysisService(byok);
       analysisResult = await analysisService.analyze(
         correctedText,
         undefined,
@@ -392,7 +403,7 @@ export async function POST(req: Request) {
     // Index for semantic search
     try {
       const kgService = new KnowledgeGraphService();
-      await kgService.indexCall(call.id);
+      await kgService.indexCall(call.id, byok.openaiKey);
       console.log(`Call ${call.id} indexed in knowledge graph`);
     } catch (e) {
       console.log('Knowledge graph indexing failed:', e);
@@ -545,6 +556,16 @@ export async function POST(req: Request) {
       questionsAsked: callAnalytics.questionsAsked,
       personalizationHooks: personalization.hooks,
       archivedCount,
+      // BYOK: if a stored user key failed to decrypt (corrupt row / rotated
+      // master key), the call fell back to Gauge's shared pool — tell the
+      // client so the billing-isolation promise stays honest.
+      ...(byok.dropped && byok.dropped.length > 0
+        ? {
+            byokWarning:
+              "One of your saved AI keys could not be decrypted and was skipped. " +
+              "This call used Gauge's shared keys. Re-save your key under Settings → API Keys.",
+          }
+        : {}),
     });
   } catch (error: any) {
     if (isQuotaError(error)) {
