@@ -7,11 +7,10 @@ export async function GET() {
     const { userId } = await auth();
     if (!userId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
-    const user = await prisma.user.upsert({
+    const user = await prisma.user.findUnique({
       where: { clerkId: userId },
-      update: {},
-      create: { clerkId: userId, email: `${userId}@placeholder.dev`, name: '' },
     });
+    if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
     if (!user.teamId) {
       return NextResponse.json({ calls: [], members: [], hasTeam: false });

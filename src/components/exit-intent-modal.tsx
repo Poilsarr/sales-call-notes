@@ -19,9 +19,16 @@ export default function ExitIntentModal() {
     const alreadyShown = sessionStorage.getItem(SHOWN_KEY) === "true";
     if (alreadyShown) return;
 
+    // Listener is attached immediately but stays inert until the arm timer
+    // fires, so cleanup can always remove it synchronously with the effect.
+    let armed = false;
+    const armTimer = setTimeout(() => {
+      armed = true;
+    }, 3000);
+
     let triggered = false;
     const handleLeave = (e: MouseEvent) => {
-      if (triggered) return;
+      if (!armed || triggered) return;
       // Trigger when the cursor exits the viewport near the top (tab bar).
       if (e.clientY < 10) {
         triggered = true;
@@ -31,13 +38,10 @@ export default function ExitIntentModal() {
       }
     };
 
-    // Wait a few seconds so we don't fire for casual cursor movement.
-    const timer = setTimeout(() => {
-      document.addEventListener("mouseleave", handleLeave);
-    }, 3000);
+    document.addEventListener("mouseleave", handleLeave);
 
     return () => {
-      clearTimeout(timer);
+      clearTimeout(armTimer);
       document.removeEventListener("mouseleave", handleLeave);
     };
   }, []);

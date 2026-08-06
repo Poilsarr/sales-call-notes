@@ -36,7 +36,8 @@ export function ChatSidebar() {
     if (!input.trim() || !user?.id) return;
 
     const userMsg = input;
-    setMessages(prev => [...prev, { role: 'user', content: userMsg, _key: ++messageKeyRef.current } as any]);
+    const userKey = ++messageKeyRef.current;
+    setMessages(prev => [...prev, { role: 'user', content: userMsg, _key: userKey } as any]);
     setInput('');
     setIsLoading(true);
 
@@ -51,11 +52,12 @@ export function ChatSidebar() {
       const content = !res.ok && data.error
         ? `Error: ${data.error}`
         : data.answer || 'No response available.';
+      const assistantKey = ++messageKeyRef.current;
       setMessages(prev => [...prev, {
         role: 'assistant',
         content,
         relevantCalls: data.relevantCalls,
-        _key: ++messageKeyRef.current,
+        _key: assistantKey,
       } as any]);
     } catch {
       setMessages(prev => [...prev, { role: 'assistant', content: 'Failed to get response. Please try again.' }]);

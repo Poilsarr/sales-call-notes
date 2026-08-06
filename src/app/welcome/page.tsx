@@ -25,6 +25,7 @@ export default function WelcomePage() {
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [manualSyncing, setManualSyncing] = useState(false);
   const cancelled = useRef(false);
+  const redirectTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
     if (!isLoaded || !user) return;
@@ -43,7 +44,7 @@ export default function WelcomePage() {
           if (data.synced) {
             setPlan(data.plan!);
             setStatus("success");
-            setTimeout(() => {
+            redirectTimerRef.current = setTimeout(() => {
               if (!cancelled.current) {
                 window.location.href = "/app/intelligence";
               }
@@ -73,6 +74,10 @@ export default function WelcomePage() {
 
     return () => {
       cancelled.current = true;
+      if (redirectTimerRef.current) {
+        clearTimeout(redirectTimerRef.current);
+        redirectTimerRef.current = null;
+      }
     };
   }, [user, isLoaded]);
 

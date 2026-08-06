@@ -18,15 +18,20 @@ export function LiveTranscriptionPanel({ active, sessionId }: LiveTranscriptionP
   );
   const [entries, setEntries] = useState<TranscriptEntry[]>([]);
 
-  useEffect(() => {
-    if (!active) {
-      setStatus("idle");
-      setEntries([]);
-      return;
-    }
-
-    setStatus("connecting");
+  // Reset local view state when the active/sessionId props change. Adjusted
+  // during render (not in an effect) so there's no stale-frame flash between
+  // the prop change and the reset.
+  const [prevActive, setPrevActive] = useState(active);
+  const [prevSessionId, setPrevSessionId] = useState(sessionId);
+  if (prevActive !== active || prevSessionId !== sessionId) {
+    setPrevActive(active);
+    setPrevSessionId(sessionId);
+    setStatus(active ? "connecting" : "idle");
     setEntries([]);
+  }
+
+  useEffect(() => {
+    if (!active) return;
 
     const eventSource = new EventSource(
       `/api/transcribe/live?sessionId=${encodeURIComponent(sessionId)}`,

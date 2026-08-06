@@ -50,7 +50,17 @@ export function TranscriptionProgress({
   onViewCall,
 }: TranscriptionProgressProps) {
   const [elapsed, setElapsed] = useState(0);
-  const [animatedPct, setAnimatedPct] = useState(0);
+  const [animatedPct, setAnimatedPct] = useState(stage === "done" ? 100 : 0);
+
+  // Reset the elapsed counter when the stage prop changes. Adjusted during
+  // render (not in the interval effect) so the new stage never renders with
+  // a stale elapsed value.
+  const [prevStage, setPrevStage] = useState(stage);
+  if (prevStage !== stage) {
+    setPrevStage(stage);
+    setElapsed(0);
+    if (stage === "done") setAnimatedPct(100);
+  }
 
   // Estimated total time in seconds: ~3s per MB, minimum 15s
   const estimatedTotalSeconds = useMemo(
@@ -63,7 +73,6 @@ export function TranscriptionProgress({
     if (stage === "idle" || stage === "done" || stage === "error") {
       return;
     }
-    setElapsed(0);
     const interval = setInterval(() => {
       setElapsed((prev) => prev + 1);
     }, 1000);
@@ -72,14 +81,10 @@ export function TranscriptionProgress({
 
   // Animate progress based on stage
   useEffect(() => {
+    if (stage === "done" || stage === "error" || stage === "idle") {
+      return;
+    }
     const stageIdx = getStageIndex(stage);
-    if (stage === "done") {
-      setAnimatedPct(100);
-      return;
-    }
-    if (stage === "error" || stage === "idle") {
-      return;
-    }
     if (stageIdx === -1) return;
 
     const [min, max] = STAGES[stageIdx].pctRange;
