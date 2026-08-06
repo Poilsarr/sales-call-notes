@@ -105,8 +105,10 @@ export default function BillingPage() {
   const availablePlans: PlanTier[] = ["free", "pro", "business"];
 
   return (
-    <main id="main" className="min-h-screen bg-linear-black text-white">
+    <>
       <Nav />
+    <main id="main" className="min-h-screen bg-linear-black text-white">
+
       <div className="max-w-5xl mx-auto px-6 pt-32 pb-20">
         <div className="flex items-center justify-between mb-10">
           <div>
@@ -396,5 +398,6 @@ export default function BillingPage() {
         </div>
       </div>
     </main>
+    </>
   );
 }

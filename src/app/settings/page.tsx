@@ -215,8 +215,10 @@ export default function SettingsPage() {
   };
 
   return (
-    <main id="main" className="min-h-screen bg-linear-black text-white">
+    <>
       <Nav />
+    <main id="main" className="min-h-screen bg-linear-black text-white">
+
       <Toaster
         position="top-right"
         theme="dark"
@@ -592,6 +594,7 @@ export default function SettingsPage() {
         </div>
       </div>
     </main>
+    </>
   );
 }
 

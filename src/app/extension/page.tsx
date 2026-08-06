@@ -25,8 +25,10 @@ export const metadata = {
  */
 export default function ExtensionPage() {
   return (
-    <main id="main" className="min-h-screen bg-[#EFEFEF] text-gray-900">
+    <>
       <Nav />
+    <main id="main" className="min-h-screen bg-[#EFEFEF] text-gray-900">
+
 
       {/* HERO — 2-col: left copy + CTAs, right product mockup */}
       <section className="relative min-h-[100dvh] flex flex-col">
@@ -462,5 +464,6 @@ export default function ExtensionPage() {
       </section>
 
     </main>
+    </>
   );
 }

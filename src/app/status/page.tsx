@@ -9,12 +9,10 @@ export const metadata = {
 
 export default function StatusPage() {
   return (
-    <main id="main" className="min-h-screen bg-[#0a0a0b] text-white">
-      <div className="bg-[#0a0a0b]">
-        <Nav />
-      </div>
-
-      <section className="pt-20 pb-24 px-5 sm:px-8 lg:px-12">
+    <>
+      <Nav />
+      <main id="main" className="min-h-screen bg-[#0a0a0b] text-white">
+        <section className="pt-20 pb-24 px-5 sm:px-8 lg:px-12">
         <div className="max-w-3xl mx-auto">
           <div className="text-center mb-12">
             <div className="inline-flex items-center gap-2 text-[11px] uppercase tracking-[0.18em] text-[#F26522] mb-4">
@@ -46,5 +44,6 @@ export default function StatusPage() {
         </div>
       </section>
     </main>
+    </>
   );
 }

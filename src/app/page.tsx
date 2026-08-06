@@ -25,13 +25,14 @@ const capabilities = [
 
 export default function Home() {
   return (
-    <main id="main" className="min-h-screen bg-[#EFEFEF] text-gray-900 pb-20 lg:pb-0">
-      {/* HERO — on tall viewports the column flex stretches the hero; on mobile
+    <>
+      <Nav />
+      <main id="main" className="min-h-screen bg-[#EFEFEF] text-gray-900 pb-20 lg:pb-0">
+        {/* HERO — on tall viewports the column flex stretches the hero; on mobile
           we use natural flow so the content doesn't sit in the middle of a
           sea of empty space. */}
-      <section className="relative lg:min-h-[100dvh] flex flex-col">
-        <Nav />
-        <div className="hidden lg:block flex-1" />
+        <section className="relative lg:min-h-[100dvh] flex flex-col">
+          <div className="hidden lg:block flex-1" />
         <div className="relative z-20 w-full max-w-[1440px] mx-auto px-5 sm:px-8 lg:px-12 pt-10 pb-14 sm:pb-16 lg:pb-20">
           <div className="grid grid-cols-1 lg:grid-cols-[1.1fr_0.9fr] gap-10 lg:gap-16 items-center">
             {/* LEFT: headline + sub + CTAs */}
@@ -380,5 +381,6 @@ export default function Home() {
         <StickyMarketingCta label="Start with 300 free minutes/mo" href="/sign-up" cta="Start free" />
       </div>
     </main>
+    </>
   );
 }

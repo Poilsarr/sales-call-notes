@@ -118,8 +118,10 @@ export default function Page() {
   };
 
   return (
-    <main id="main" className="min-h-screen bg-white text-gray-900">
+    <>
       <Nav />
+    <main id="main" className="min-h-screen bg-white text-gray-900">
+
 
       {/* Hero */}
       <section className="pt-36 pb-12 sm:pt-40 sm:pb-16 px-5 sm:px-8 lg:px-12 bg-[#EFEFEF]">
@@ -391,5 +393,6 @@ export default function Page() {
         dangerouslySetInnerHTML={{ __html: JSON.stringify(faqJsonLd) }}
       />
     </main>
+    </>
   );
 }

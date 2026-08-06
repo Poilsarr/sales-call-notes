@@ -208,22 +208,27 @@ export default function TeamPage() {
 
   if (loading) {
     return (
+    <>
+      <Nav />
       <main id="main" className="min-h-screen bg-linear-black text-white">
-        <Nav />
+
         <div className="max-w-6xl mx-auto px-6 pt-32 pb-20">
           <div className="flex items-center justify-center h-64">
             <Loader2 className="w-6 h-6 animate-spin text-linear-indigo" />
           </div>
         </div>
       </main>
-    );
+    </>
+  );
   }
 
   const hasTeam = members.length > 0;
 
   return (
-    <main id="main" className="min-h-screen bg-linear-black text-white">
+    <>
       <Nav />
+    <main id="main" className="min-h-screen bg-linear-black text-white">
+
       <div className="max-w-6xl mx-auto px-6 pt-28 pb-24">
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-10">
@@ -462,6 +467,7 @@ export default function TeamPage() {
         </Section>
       </div>
     </main>
+    </>
   );
 }
 

@@ -21,8 +21,10 @@ export const metadata: Metadata = {
 
 export default function BlogIndexPage() {
   return (
-    <main id="main" className="min-h-screen bg-white text-gray-900">
+    <>
       <Nav />
+    <main id="main" className="min-h-screen bg-white text-gray-900">
+
       <div className="max-w-3xl mx-auto px-5 sm:px-8 lg:px-12 pt-36 pb-20">
         <h1 className="text-[clamp(1.5rem,3vw,2.5rem)] font-medium tracking-tight mb-2">Blog</h1>
         <p className="text-gray-400 text-[13px] mb-10">Notes for SDRs, RevOps, and sales engineers.</p>
@@ -62,5 +64,6 @@ export default function BlogIndexPage() {
         </div>
       </div>
     </main>
+    </>
   );
 }

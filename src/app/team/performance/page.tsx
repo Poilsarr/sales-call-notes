@@ -103,20 +103,25 @@ export default function TeamPerformancePage() {
 
   if (loading) {
     return (
+    <>
+      <Nav />
       <main id="main" className="min-h-screen bg-linear-black text-white">
-        <Nav />
+
         <div className="max-w-6xl mx-auto px-6 pt-32 pb-20">
           <div className="flex items-center justify-center h-64">
             <Loader2 className="w-6 h-6 animate-spin text-linear-indigo" />
           </div>
         </div>
       </main>
-    );
+    </>
+  );
   }
 
   return (
-    <main id="main" className="min-h-screen bg-linear-black text-white">
+    <>
       <Nav />
+    <main id="main" className="min-h-screen bg-linear-black text-white">
+
       <div className="max-w-6xl mx-auto px-6 pt-28 pb-24">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-10">
           <div>
@@ -263,5 +268,6 @@ export default function TeamPerformancePage() {
         </Card>
       </div>
     </main>
+    </>
   );
 }

@@ -25,7 +25,7 @@ export default function Nav() {
 
   return (
     <>
-      <nav className="fixed top-0 left-0 right-0 z-40 flex justify-center px-3 sm:px-4 pt-4 sm:pt-5">
+      <nav aria-label="Primary" className="fixed top-0 left-0 right-0 z-40 flex justify-center px-3 sm:px-4 pt-4 sm:pt-5">
         <div className="bg-white rounded-full p-[5px] flex items-center justify-between w-full max-w-[1440px] shadow-sm">
           {/* Left */}
           <div className="flex items-center gap-6">

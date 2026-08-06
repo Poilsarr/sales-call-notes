@@ -13,8 +13,10 @@ export default function OfflinePage() {
   }, []);
 
   return (
-    <main id="main" className="min-h-screen bg-white text-gray-900">
+    <>
       <Nav />
+    <main id="main" className="min-h-screen bg-white text-gray-900">
+
       <div className="max-w-3xl mx-auto px-5 sm:px-8 lg:px-12 pt-36 pb-20">
         <h1 className="text-[clamp(1.5rem,3vw,2.5rem)] font-medium tracking-tight mb-3">
           You&rsquo;re offline
@@ -40,5 +42,6 @@ export default function OfflinePage() {
         </div>
       </div>
     </main>
+    </>
   );
 }
