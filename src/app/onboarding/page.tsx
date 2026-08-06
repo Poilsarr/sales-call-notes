@@ -47,7 +47,7 @@ export default function OnboardingPage() {
   if (!hydrated) {
     // Skeleton layout matching the final page to prevent CLS during hydration.
     return (
-      <main className="min-h-screen bg-white text-gray-900">
+      <main id="main" className="min-h-screen bg-white text-gray-900">
         <header className="border-b border-gray-100 px-6 py-4 flex items-center justify-between">
           <span className="text-[13px] font-semibold tracking-tight">Gauge</span>
           <span className="text-[12px] text-gray-200">Skip onboarding</span>
@@ -69,7 +69,7 @@ export default function OnboardingPage() {
   }
 
   return (
-    <main className="min-h-screen bg-white text-gray-900">
+    <main id="main" className="min-h-screen bg-white text-gray-900">
       <header className="border-b border-gray-100 px-6 py-4 flex items-center justify-between">
         <Link href="/" className="text-[13px] font-semibold tracking-tight">Gauge</Link>
         <button onClick={skip} className="text-[12px] text-gray-400 hover:text-gray-700 transition-colors">

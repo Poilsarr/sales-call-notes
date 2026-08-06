@@ -27,7 +27,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
   return (
     <div className="flex h-screen bg-linear-black">
       <AppSidebar user={userData} />
-      <main className="flex-1 overflow-y-auto">
+      <main id="main" className="flex-1 overflow-y-auto">
         <AppBanners />
         <div className="p-8">
           <OnboardingChecklist />

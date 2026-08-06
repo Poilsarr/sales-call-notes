@@ -34,6 +34,24 @@
 }
 
 @layer components {
+  .skip-link {
+    position: fixed;
+    left: -9999px;
+    top: 16px;
+    z-index: 9999;
+    padding: 10px 16px;
+    background: #fff;
+    color: #111;
+    border: 1px solid #111;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 600;
+  }
+
+  .skip-link:focus {
+    left: 16px;
+  }
+
   .noise-overlay {
     position: fixed;
     inset: 0;

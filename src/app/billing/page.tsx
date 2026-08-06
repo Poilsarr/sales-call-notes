@@ -105,7 +105,7 @@ export default function BillingPage() {
   const availablePlans: PlanTier[] = ["free", "pro", "business"];
 
   return (
-    <main className="min-h-screen bg-linear-black text-white">
+    <main id="main" className="min-h-screen bg-linear-black text-white">
       <Nav />
       <div className="max-w-5xl mx-auto px-6 pt-32 pb-20">
         <div className="flex items-center justify-between mb-10">

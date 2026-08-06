@@ -6,7 +6,7 @@ export default function SignUpPage() {
   const { isLoaded } = useSignUp();
 
   return (
-    <main className="min-h-screen bg-[#EFEFEF] flex items-center justify-center px-4 py-20">
+    <main id="main" className="min-h-screen bg-[#EFEFEF] flex items-center justify-center px-4 py-20">
       <div className="w-full max-w-[400px]">
         <div className="text-center mb-8">
           <div className="w-10 h-10 bg-gray-900 rounded-full flex items-center justify-center mx-auto mb-4">

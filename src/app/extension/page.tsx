@@ -25,7 +25,7 @@ export const metadata = {
  */
 export default function ExtensionPage() {
   return (
-    <main className="min-h-screen bg-[#EFEFEF] text-gray-900">
+    <main id="main" className="min-h-screen bg-[#EFEFEF] text-gray-900">
       <Nav />
 
       {/* HERO — 2-col: left copy + CTAs, right product mockup */}

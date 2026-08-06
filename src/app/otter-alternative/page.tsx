@@ -118,7 +118,7 @@ export default function Page() {
   };
 
   return (
-    <main className="min-h-screen bg-white text-gray-900">
+    <main id="main" className="min-h-screen bg-white text-gray-900">
       <Nav />
 
       {/* Hero */}

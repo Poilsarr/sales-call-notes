@@ -59,7 +59,7 @@ export default function PartnerApplyPage() {
   };
 
   return (
-    <main className="min-h-screen bg-[#0a0a0b] text-white">
+    <main id="main" className="min-h-screen bg-[#0a0a0b] text-white">
       <header className="border-b border-white/5 sticky top-0 bg-[#0a0a0b]/90 backdrop-blur z-10">
         <div className="max-w-[1440px] mx-auto px-5 sm:px-8 lg:px-12 h-14 flex items-center justify-between">
           <Link href="/" className="flex items-center gap-2.5">

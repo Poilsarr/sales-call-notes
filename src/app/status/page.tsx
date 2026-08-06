@@ -9,7 +9,7 @@ export const metadata = {
 
 export default function StatusPage() {
   return (
-    <main className="min-h-screen bg-[#0a0a0b] text-white">
+    <main id="main" className="min-h-screen bg-[#0a0a0b] text-white">
       <div className="bg-[#0a0a0b]">
         <Nav />
       </div>

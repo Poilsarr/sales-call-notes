@@ -102,6 +102,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         />
       </head>
       <body className={`${geistSans.variable} ${geistMono.variable} font-sans antialiased bg-white text-gray-900`}>
+        <a href="#main" className="skip-link">
+          Skip to content
+        </a>
         <div className="noise-overlay" />
         <CommandMenu />
         <ClerkProvider signInUrl="/sign-in" signUpUrl="/sign-up" afterSignUpUrl="/app" afterSignInUrl="/app">

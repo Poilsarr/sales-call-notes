@@ -25,7 +25,7 @@ const capabilities = [
 
 export default function Home() {
   return (
-    <main className="min-h-screen bg-[#EFEFEF] text-gray-900 pb-20 lg:pb-0">
+    <main id="main" className="min-h-screen bg-[#EFEFEF] text-gray-900 pb-20 lg:pb-0">
       {/* HERO — on tall viewports the column flex stretches the hero; on mobile
           we use natural flow so the content doesn't sit in the middle of a
           sea of empty space. */}

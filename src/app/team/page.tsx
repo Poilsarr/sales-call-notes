@@ -208,7 +208,7 @@ export default function TeamPage() {
 
   if (loading) {
     return (
-      <main className="min-h-screen bg-linear-black text-white">
+      <main id="main" className="min-h-screen bg-linear-black text-white">
         <Nav />
         <div className="max-w-6xl mx-auto px-6 pt-32 pb-20">
           <div className="flex items-center justify-center h-64">
@@ -222,7 +222,7 @@ export default function TeamPage() {
   const hasTeam = members.length > 0;
 
   return (
-    <main className="min-h-screen bg-linear-black text-white">
+    <main id="main" className="min-h-screen bg-linear-black text-white">
       <Nav />
       <div className="max-w-6xl mx-auto px-6 pt-28 pb-24">
         {/* Header */}

@@ -97,7 +97,7 @@ export default function WelcomePage() {
   };
 
   return (
-    <main className="min-h-screen bg-white text-gray-900 flex flex-col">
+    <main id="main" className="min-h-screen bg-white text-gray-900 flex flex-col">
       <div className="flex-1 flex items-center justify-center px-5 py-20">
         <div className="max-w-md w-full text-center">
           {status === "syncing" && (

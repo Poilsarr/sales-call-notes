@@ -40,7 +40,7 @@ const PLANNED_VERSIONS = [
 
 export default function ApiDocsIndex() {
   return (
-    <main className="min-h-screen bg-white text-gray-900">
+    <main id="main" className="min-h-screen bg-white text-gray-900">
       <header className="border-b border-gray-200">
         <div className="max-w-[960px] mx-auto px-5 sm:px-8 lg:px-12 py-8">
           <div className="flex items-center gap-2 mb-3">
