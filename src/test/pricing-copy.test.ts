@@ -112,6 +112,50 @@ describe("comparison pages don't overclaim the free tier", () => {
   });
 });
 
+describe("comparison pages single-source metadata via generateMetadata", () => {
+  const pages: Array<[string, string]> = [
+    ["vs/otter-ai", read(VS_OTTER)],
+    ["vs/fireflies", read(VS_FIREFLIES)],
+    ["vs/tldv", read(VS_TLDV)],
+    ["vs/fathom", read(VS_FATHOM)],
+    ["vs/gong", read(VS_GONG)],
+  ];
+
+  it("never re-introduce a static export const metadata (drift source)", () => {
+    for (const [name, src] of pages) {
+      expect(src, `${name} re-added export const metadata`).not.toMatch(
+        /export\s+const\s+metadata/
+      );
+    }
+  });
+
+  it("derive title/description/openGraph from data.metaTitle + data.metaDescription", () => {
+    for (const [name, src] of pages) {
+      expect(src, `${name} lost generateMetadata`).toMatch(
+        /export function generateMetadata\(\): Metadata/
+      );
+      expect(src, `${name} title not sourced from data.metaTitle`).toMatch(
+        /title:\s*data\.metaTitle/
+      );
+      expect(src, `${name} description not sourced from data.metaDescription`).toMatch(
+        /description:\s*data\.metaDescription/
+      );
+      expect(src, `${name} og title not sourced from data.metaTitle`).toMatch(
+        /openGraph:\s*\{[^}]*title:\s*data\.metaTitle/
+      );
+      const desc = src.match(
+        /metaDescription\s*[=:]\s*\n?\s*"((?:[^"\\]|\\.)*)"/
+      );
+      expect(desc, `${name} has no metaDescription value`).not.toBeNull();
+      const occurrences = src.split('"' + desc![1] + '"').length - 1;
+      expect(
+        occurrences,
+        `${name} description string duplicated (${desc![1].slice(0, 40)}...)`
+      ).toBe(1);
+    }
+  });
+});
+
 describe("vs/gong hedges every unverified competitor number", () => {
   const gong = read(VS_GONG);
 

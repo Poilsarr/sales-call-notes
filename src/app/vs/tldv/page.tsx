@@ -1,17 +1,7 @@
 import type { Metadata } from "next";
 import { VsComparisonPage, type ComparisonData } from "@/components/vs-comparison";
 
-export const metadata: Metadata = {
-  title: "tl;dv Alternative: Gauge — Global Data + Flat Pricing (2026)",
-  description:
-    "tl;dv: $20/mo Pro with AI throttled, $60/mo Business for 3 users, EU-only data. Gauge: $9 flat, global US/EU/Asia regions, unlimited AI summaries.",
-  alternates: { canonical: "https://usegauge.com/vs/tldv" },
-  openGraph: {
-    title: "tl;dv Alternative: Gauge — Global Data + Flat Pricing (2026)",
-    description: "tl;dv Pro $20/mo, Business $60/3 users, EU-only. Us: $9 flat, global, unlimited AI.",
-    url: "https://usegauge.com/vs/tldv",
-  },
-};
+
 
 const data: ComparisonData = {
   slug: "tldv",
@@ -21,7 +11,7 @@ const data: ComparisonData = {
   competitorFunding: "$28M+ raised",
   competitorUsers: "1M+ users",
   metaTitle: "tl;dv Alternative: Gauge — Global Data + Flat Pricing (2026)",
-  metaDescription: "tl;dv Pro $20/mo, Business $60/3 users, EU-only. Us: $9 flat, global, unlimited AI.",
+  metaDescription: "tl;dv: $20/mo Pro with AI throttled, $60/mo Business for 3 users, EU-only data. Gauge: $9 flat, global US/EU/Asia regions, unlimited AI summaries.",
   heroHeadline: "The tl;dv alternative with global data residency and flat pricing.",
   heroSubhead:
     "tl;dv is genuinely strong — EU-GDPR wedge, multilingual, AI agents in 2024, $28M in funding. But: Pro is $20/mo with AI throttled, Business is $60/mo for just 3 users, data residency is EU-only, and Reddit is full of 'lost recordings' complaints. We're $9 flat, global regions, and we market 'zero lost meetings' as a feature.",
@@ -119,4 +109,17 @@ const data: ComparisonData = {
 
 export default function Page() {
   return <VsComparisonPage data={data} />;
+}
+
+export function generateMetadata(): Metadata {
+  return {
+    title: data.metaTitle,
+    description: data.metaDescription,
+    alternates: { canonical: "https://usegauge.com/vs/tldv" },
+    openGraph: {
+      title: data.metaTitle,
+      description: data.metaDescription,
+      url: "https://usegauge.com/vs/tldv",
+    },
+  };
 }

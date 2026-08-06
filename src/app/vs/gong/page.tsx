@@ -1,18 +1,7 @@
 import type { Metadata } from "next";
 import { VsComparisonPage, type ComparisonData } from "@/components/vs-comparison";
 
-export const metadata: Metadata = {
-  title: "Gong Alternative: Gauge — Flat $9 vs $1,300+/user/yr (2026)",
-  description:
-    "Gong's Foundations tier: $1,300–$1,600/user/yr (reported) + platform fees. Gauge: $9 flat for 5 seats. No platform fee, no seat minimums. 300 free min/mo.",
-  alternates: { canonical: "https://usegauge.com/vs/gong" },
-  openGraph: {
-    title: "Gong Alternative: Gauge — Flat $9 vs $1,300+/user/yr (2026)",
-    description:
-      "Gong pricing (reported): $1,300–$1,600/user/yr + platform fees. Gauge: $9 flat for 5 seats. No platform fee, no seat minimums.",
-    url: "https://usegauge.com/vs/gong",
-  },
-};
+
 
 const data: ComparisonData = {
   slug: "gong",
@@ -23,7 +12,7 @@ const data: ComparisonData = {
   competitorUsers: "6,500+ G2 reviews (4.8/5)",
   metaTitle: "Gong Alternative: Gauge — Flat $9 vs $1,300+/user/yr (2026)",
   metaDescription:
-    "Gong pricing (reported): $1,300–$1,600/user/yr + platform fees. Gauge: $9 flat for 5 seats, no platform fee.",
+    "Gong's Foundations tier: $1,300–$1,600/user/yr (reported) + platform fees. Gauge: $9 flat for 5 seats. No platform fee, no seat minimums. 300 free min/mo.",
   heroHeadline: "The Gong alternative without the $1,300+/user/yr price tag.",
   heroSubhead:
     "Gong built the category — deep deal intelligence, forecasts, live coaching, and a CRM ecosystem enterprises trust. They also charge reported rates of $1,300–$1,600/user/yr, plus a platform fee, plus add-on modules, with reported 5–8% renewal escalations built into contracts. Gauge is a flat $9/mo for 5 seats, $29/mo flat for unlimited. No platform fee. No seat minimums. No add-on bundles.",
@@ -128,4 +117,17 @@ const data: ComparisonData = {
 
 export default function Page() {
   return <VsComparisonPage data={data} />;
+}
+
+export function generateMetadata(): Metadata {
+  return {
+    title: data.metaTitle,
+    description: data.metaDescription,
+    alternates: { canonical: "https://usegauge.com/vs/gong" },
+    openGraph: {
+      title: data.metaTitle,
+      description: data.metaDescription,
+      url: "https://usegauge.com/vs/gong",
+    },
+  };
 }

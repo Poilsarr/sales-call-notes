@@ -1,17 +1,7 @@
 import type { Metadata } from "next";
 import { VsComparisonPage, type ComparisonData } from "@/components/vs-comparison";
 
-export const metadata: Metadata = {
-  title: "Fathom Alternative: Gauge — Flat-Rate + Private (2026)",
-  description:
-    "Fathom's free tier is unlimited but public-link only. Team tier is $15/seat × 5 = $75/mo. Gauge is $9 flat, private by default, sales-trained AI.",
-  alternates: { canonical: "https://usegauge.com/vs/fathom" },
-  openGraph: {
-    title: "Fathom Alternative: Gauge — Flat-Rate + Private (2026)",
-    description: "Fathom Team $15/seat × 5 = $75/mo. Ours = $9 flat. Private links, sales AI, no per-seat.",
-    url: "https://usegauge.com/vs/fathom",
-  },
-};
+
 
 const data: ComparisonData = {
   slug: "fathom",
@@ -21,7 +11,7 @@ const data: ComparisonData = {
   competitorFunding: "$20M+ raised",
   competitorUsers: "1M+ users",
   metaTitle: "Fathom Alternative: Gauge — Flat-Rate + Private (2026)",
-  metaDescription: "Fathom Team $15/seat × 5 = $75/mo. Ours = $9 flat. Private links, sales AI, no per-seat.",
+  metaDescription: "Fathom's free tier is unlimited but public-link only. Team tier is $15/seat × 5 = $75/mo. Gauge is $9 flat, private by default, sales-trained AI.",
   heroHeadline: "The Fathom alternative for people who want private links and flat pricing.",
   heroSubhead:
     "Fathom's \"free forever\" pitch is the best in category — unlimited recordings, unlimited transcription, unlimited storage. They fund it with Series A capital and B2B expansion at $15-25/seat. The catch: free is public-link only, and team pricing is per-seat. We're a sustainable indie alternative — flat $9, private by default, sales-trained AI.",
@@ -120,4 +110,17 @@ const data: ComparisonData = {
 
 export default function Page() {
   return <VsComparisonPage data={data} />;
+}
+
+export function generateMetadata(): Metadata {
+  return {
+    title: data.metaTitle,
+    description: data.metaDescription,
+    alternates: { canonical: "https://usegauge.com/vs/fathom" },
+    openGraph: {
+      title: data.metaTitle,
+      description: data.metaDescription,
+      url: "https://usegauge.com/vs/fathom",
+    },
+  };
 }

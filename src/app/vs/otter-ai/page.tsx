@@ -1,18 +1,7 @@
 import type { Metadata } from "next";
 import { VsComparisonPage, type ComparisonData } from "@/components/vs-comparison";
 
-export const metadata: Metadata = {
-  title: "Otter.ai Alternative: Gauge — The Honest 2026 Comparison",
-  description:
-    "Otter got sued in 2025 for recording meetings without consent. Gauge never auto-joins. Flat $9/mo (not per-seat), 300 free minutes/mo, BANT/MEDDIC extraction built in.",
-  alternates: { canonical: "https://usegauge.com/vs/otter-ai" },
-  openGraph: {
-    title: "Otter.ai Alternative: Gauge — The Honest 2026 Comparison",
-    description:
-      "Flat $9/mo vs $20/seat. 300 free minutes each — ours stay private. No bot in your meeting. GDPR-first.",
-    url: "https://usegauge.com/vs/otter-ai",
-  },
-};
+
 
 const data: ComparisonData = {
   slug: "otter-ai",
@@ -23,7 +12,7 @@ const data: ComparisonData = {
   competitorUsers: "10M+ users",
   metaTitle: "Otter.ai Alternative: Gauge — The Honest 2026 Comparison",
   metaDescription:
-    "Flat $9/mo vs $20/seat. 300 free minutes each — ours stay private. No bot in your meeting. GDPR-first.",
+    "Otter got sued in 2025 for recording meetings without consent. Gauge never auto-joins. Flat $9/mo (not per-seat), 300 free minutes/mo, BANT/MEDDIC extraction built in.",
   heroHeadline: "The Otter.ai alternative for people who don't want a bot in their meeting.",
   heroSubhead:
     "Otter is a great product — 10M+ users, Zoom partnership, 9 years of polish. But in 2025 they were sued for recording meetings without consent. We built Gauge for the people who read that headline and thought: never again.",
@@ -120,4 +109,17 @@ const data: ComparisonData = {
 
 export default function Page() {
   return <VsComparisonPage data={data} />;
+}
+
+export function generateMetadata(): Metadata {
+  return {
+    title: data.metaTitle,
+    description: data.metaDescription,
+    alternates: { canonical: "https://usegauge.com/vs/otter-ai" },
+    openGraph: {
+      title: data.metaTitle,
+      description: data.metaDescription,
+      url: "https://usegauge.com/vs/otter-ai",
+    },
+  };
 }

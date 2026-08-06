@@ -1,17 +1,7 @@
 import type { Metadata } from "next";
 import { VsComparisonPage, type ComparisonData } from "@/components/vs-comparison";
 
-export const metadata: Metadata = {
-  title: "Fireflies.ai Alternative: Gauge — Flat-Rate vs Per-Seat (2026)",
-  description:
-    "Fireflies charges $10/seat/mo — 5 reps = $50/mo. Gauge is $9 flat. 300 free minutes/mo, no bot auto-joining, BANT/MEDDIC sales extraction built in.",
-  alternates: { canonical: "https://usegauge.com/vs/fireflies" },
-  openGraph: {
-    title: "Fireflies.ai Alternative: Gauge — Flat-Rate vs Per-Seat (2026)",
-    description: "5 reps on Fireflies Pro = $50/mo. 5 reps on us = $9/mo flat. No bot auto-joining.",
-    url: "https://usegauge.com/vs/fireflies",
-  },
-};
+
 
 const data: ComparisonData = {
   slug: "fireflies",
@@ -21,7 +11,7 @@ const data: ComparisonData = {
   competitorFunding: "$19M+ raised",
   competitorUsers: "3M+ users",
   metaTitle: "Fireflies.ai Alternative: Gauge — Flat-Rate vs Per-Seat (2026)",
-  metaDescription: "5 reps on Fireflies Pro = $50/mo. 5 reps on us = $9/mo flat. No bot auto-joining.",
+  metaDescription: "Fireflies charges $10/seat/mo — 5 reps = $50/mo. Gauge is $9 flat. 300 free minutes/mo, no bot auto-joining, BANT/MEDDIC sales extraction built in.",
   heroHeadline: "The Fireflies alternative that doesn't charge you per seat.",
   heroSubhead:
     "Fireflies is a serious conversation-intelligence product — 3M+ users, 500+ integrations, deep CRM sync. But their per-seat pricing kills small teams. 5 reps on Fireflies Pro = $50/mo. 5 reps on Gauge = $9/mo flat. Same features, half the bloat.",
@@ -118,4 +108,17 @@ const data: ComparisonData = {
 
 export default function Page() {
   return <VsComparisonPage data={data} />;
+}
+
+export function generateMetadata(): Metadata {
+  return {
+    title: data.metaTitle,
+    description: data.metaDescription,
+    alternates: { canonical: "https://usegauge.com/vs/fireflies" },
+    openGraph: {
+      title: data.metaTitle,
+      description: data.metaDescription,
+      url: "https://usegauge.com/vs/fireflies",
+    },
+  };
 }
