@@ -66,19 +66,19 @@
 - [ ] page.tsx with verified numbers only (market-intel.md)
 - [ ] GATE: vitest → build → agents (copy truth agent)
 
-## S6 Security page extension (queued next after /vs/gong arc)
+## S6 Security page extension (SHIPPED 2026-08-06)
 Step 0 is the orchestrator-mandated skip link (SEV-3, deadline = this arc).
 Step 1 extends the existing `/security` page — it is an EXTENSION, not
 greenfield (7 sections already live: transit, at-rest, auth, CSP, AI
 providers, GDPR export, vulnerability disclosure).
 
-- [ ] STEP 0 (own single-concern commit `chore(a11y)`): skip link — add
+- [x] STEP 0 (own single-concern commit `chore(a11y)`): skip link — add
       `<a href="#main" class="skip-link">` as first element in
       `src/app/layout.tsx` body + `id="main"` on every page's `<main>`.
       ~24 pages, mechanical; onboarding/team/team-performance have 2
       `<main>` matches (fragments) — verify manually. Visually-hidden-
       until-focus CSS in globals.css. Smoke: tab-focus renders link.
-- [ ] STEP 1 `/security` page sections (own commit `feat(security)`):
+- [x] STEP 1 `/security` page sections (own commit `feat(security)`):
       - Honest checklist section: base = market-intel §3.2 (Avoma's list,
         14 items captured, NOT 20 — do not count falsely). Per item, mark
         Gauge's true status: ✓ live / roadmap / N/A — NEVER claim items
@@ -92,14 +92,22 @@ providers, GDPR export, vulnerability disclosure).
         consistent with /privacy page ("do not use your call data to
         train or improve AI models"); tie to DPA Art. 28.
       - Metadata description ≤160 chars; a11y AA on new sections.
-- [ ] GATE: vitest → build → smoke (security + privacy + one gated route)
+- [x] GATE: vitest → build → smoke (security + privacy + one gated route)
       → verification cloud scoped to Reality Checker (every new claim vs
       VENDORS.md / code / market-intel) + Accessibility Auditor (AA on
       changed sections, skip link) → orchestrator APPROVE → commits.
-- [ ] docs log: DEVELOPMENT_FRONTIER.md "Recently Shipped" + tracked-item
+- [x] docs log: DEVELOPMENT_FRONTIER.md "Recently Shipped" + tracked-item
       skip link marked RESOLVED.
+SHIPPED LOG 2026-08-06: commits 8ee8973 (skip link), 4d2689b (Nav out of
+main, aria-label), 57d764b (/security rewrite + 12 honesty pins), f82653c
+(export-token hash verification — closed REAL F5 vuln; underscore-safe
+Clerk user ID parse), ce12a0a (DPA no-training clause + provider roles).
+Orchestrator: APPROVE WITH TRIVIAL FIXES; re-gate 757 tests / build 0.
 Known risk: 20-point count drift (research has 14) — pin in tests that
 the checklist never claims a number of points, only items with status.
+FOLLOW-UP (P2): /pricing /changelog /roadmap /no-bot /features render
+<Nav /> without a <main> — global skip link is a no-op there; wrap in
+<main id="main"> or omit Nav.
 
 ## S7 Team custom vocabulary
 - [ ] model + migration + CRUD + prompt injection + settings UI

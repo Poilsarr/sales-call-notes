@@ -74,9 +74,11 @@ The principle: **never advance a level with a known break, mock-leak, or uncommi
 | #80 | 2026-06-22 | feat(site): anchor IDs on /features + globalize SiteFooter         | Broken anchor links + per-page footer   |
 | —   | 2026-08-04 | feat(calls): call renaming (title/displayName everywhere)          | Custom titles: PATCH write path, title search, CSV-injection-safe exports, rename UI (list + detail), RAG title retrieval; commits 6a09bad..8d5c477, 611 tests |
 | —   | 2026-08-06 | feat(vs): /vs/gong honest comparison page                          | S6 arc, orchestrator APPROVED: hedged Gong figures traced to market-intel.md (R15), Gauge figures 12/12 vs plans.ts, a11y fixes in shared vs-comparison (header 1.07:1→9:1, CTA→#C94F17 4.55:1, gray-600/500 text), footer regression fixed, meta 154 chars, 17-test honesty suite; commit a11d07a, 738 tests |
+| —   | 2026-08-06 | feat(security): honest 10-section security page + skip-link arc   | S6 extension, orchestrator APPROVED (trivial fixes): 14-item honest checklist (Live/Partial/Roadmap/N-A), no-training §5, sub-processor table vs VENDORS.md, export-token "7-day" claim, SSO Planned, DPA on request; REAL F5 vuln closed (export route now verifies token hash → 403; underscore-safe Clerk user ID parsing in gdpr-token); skip link bypasses nav site-wide (Nav out of main on 19 pages); DPA.md gained no-training clause + provider roles fixed; commits ce12a0a, 4d2689b, 57d764b, f82653c; 757 tests |
 
 **Tracked items (next arcs, from S6 orchestrator ruling):**
-- **Skip link (SEV-3, WCAG 2.4.1)** — site-wide, root layout only. Must land as its own PR next arc; if it doesn't, it gets an a11y-regression test.
+- **Skip link (SEV-3, WCAG 2.4.1)** — *RESOLVED* in the S6 security-extension arc: anchor first in body (commit 8ee8973) + `<Nav />` moved out of `<main id="main">` on all 19 co-rendering pages (commit 4d2689b); smoke-verified nav renders before main.
+- **Skip-link no-op pages (P2, orchestrator)** — `/pricing`, `/changelog`, `/roadmap`, `/no-bot`, `/features` render `<Nav />` but have no `<main>` element, so the global skip link is a silent no-op there. Follow-up: give each a `<main id="main">` wrapper or omit Nav.
 - **CTA orange token site-wide** — in-component #C94F17 stays; global brand token change (white-on-#F26522 fails AA) needs design sign-off + own arc.
 
 *Resolved: `data.metaDescription` dead-code item — single-sourced via `generateMetadata` (commit `3befcdc`): all vs pages derive title/description/openGraph from the data object; 2 regression tests pin it.*
