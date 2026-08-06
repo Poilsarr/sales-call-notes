@@ -1,6 +1,9 @@
 import type { MetadataRoute } from "next";
+import { prisma } from "@/lib/prisma";
 
 const SITE_URL = "https://usegauge.com";
+
+export const revalidate = 3600;
 
 /**
  * Dynamic sitemap.xml — public marketing pages only.
@@ -11,7 +14,7 @@ const SITE_URL = "https://usegauge.com";
  * Last reviewed when adding a new public route? Update the array
  * below + bump the <lastmod> for changed pages.
  */
-export default function sitemap(): MetadataRoute.Sitemap {
+export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const now = new Date();
   const lastWeek = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
 
@@ -42,10 +45,28 @@ export default function sitemap(): MetadataRoute.Sitemap {
     { path: "/dpa",       priority: 0.4,  changeFrequency: "yearly" as const },
   ];
 
-  return routes.map((r) => ({
+  const entries: MetadataRoute.Sitemap = routes.map((r) => ({
     url: `${SITE_URL}${r.path}`,
     lastModified: lastWeek,
     changeFrequency: r.changeFrequency,
     priority: r.priority,
   }));
+
+  try {
+    const publicCalls = await prisma.call.findMany({
+      where: { isPublic: true },
+      select: { id: true, updatedAt: true },
+      take: 500,
+    });
+    entries.push(...publicCalls.map((c) => ({
+      url: `${SITE_URL}/share/${c.id}`,
+      lastModified: c.updatedAt,
+      changeFrequency: "weekly" as const,
+      priority: 0.3,
+    })));
+  } catch (e) {
+    console.error("sitemap: public share query failed", (e as Error)?.message?.slice(0, 200));
+  }
+
+  return entries;
 }
