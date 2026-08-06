@@ -27,6 +27,7 @@ const VS_FIREFLIES = path.join(process.cwd(), "src/app/vs/fireflies/page.tsx");
 const OTTER_ALT = path.join(process.cwd(), "src/app/otter-alternative/page.tsx");
 const VS_TLDV = path.join(process.cwd(), "src/app/vs/tldv/page.tsx");
 const VS_FATHOM = path.join(process.cwd(), "src/app/vs/fathom/page.tsx");
+const VS_GONG = path.join(process.cwd(), "src/app/vs/gong/page.tsx");
 const CALCULATOR = path.join(process.cwd(), "src/components/pricing-calculator.tsx");
 const PRICING_PAGE = path.join(process.cwd(), "src/app/pricing/page.tsx");
 const DEMO_CAROUSEL = path.join(process.cwd(), "src/components/demo-carousel.tsx");
@@ -80,6 +81,7 @@ describe("comparison pages don't overclaim the free tier", () => {
     ["vs/otter-ai", read(VS_OTTER)],
     ["vs/fireflies", read(VS_FIREFLIES)],
     ["otter-alternative", read(OTTER_ALT)],
+    ["vs/gong", read(VS_GONG)],
   ];
 
   it("never claim '600 free minutes' (plans.ts free = 300)", () => {
@@ -110,6 +112,38 @@ describe("comparison pages don't overclaim the free tier", () => {
   });
 });
 
+describe("vs/gong hedges every unverified competitor number", () => {
+  const gong = read(VS_GONG);
+
+  it("never states a Gong price without the 'reported' hedge (R15)", () => {
+    // Every Gong-side figure must carry "reported" — Gong does not publish
+    // pricing; the numbers come from third-party cost analyses.
+    expect(gong).toMatch(/\$1,300–\$1,600\/user\/yr \(reported\)/);
+    expect(gong).toMatch(/\$5,000–\$15,000\+\/yr \(reported\)/);
+    expect(gong).toMatch(/25–56%/);
+    expect(gong).toMatch(/5–8%/);
+    const hedgeCount = (gong.match(/reported/gi) || []).length;
+    expect(hedgeCount, "every Gong claim should carry a reported hedge").toBeGreaterThanOrEqual(10);
+  });
+
+  it("uses the honest pricing footnote, not the public-pricing-pages footer", () => {
+    // The shared component default says "from their public pricing pages" —
+    // false for Gong. The page must set its own footnote.
+    expect(gong).toMatch(/Gong does not publish pricing/);
+    expect(gong).not.toMatch(/from their public pricing pages/);
+  });
+
+  it("names Gauge's real prices from plans.ts ($9 flat, $29 flat, 300 min, 3 imports)", () => {
+    expect(gong).toMatch(/\$9\/mo flat for 5 seats|\$9\/mo flat/);
+    expect(gong).toMatch(/\$29\/mo flat for unlimited/);
+    expect(gong).toMatch(/300 min\/mo, 3 lifetime imports/);
+  });
+
+  it("never claims a new latency number (60-second surfaces are shared-component only)", () => {
+    expect(gong).not.toMatch(/under 60 seconds|summary in 30|summaries in 30/i);
+  });
+});
+
 describe("every pricing-claim surface stays within plans.ts truth", () => {
   // All surfaces that talk about the free tier, including competitor rows
   // ("800 min" for Fireflies is *their* number and stays).
@@ -119,6 +153,7 @@ describe("every pricing-claim surface stays within plans.ts truth", () => {
     ["otter-alternative", read(OTTER_ALT)],
     ["vs/tldv", read(VS_TLDV)],
     ["vs/fathom", read(VS_FATHOM)],
+    ["vs/gong", read(VS_GONG)],
     ["pricing-calculator", read(CALCULATOR)],
     ["app/pricing", read(PRICING_PAGE)],
   ];

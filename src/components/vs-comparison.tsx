@@ -22,6 +22,12 @@ export type ComparisonData = {
   competitorWins: string[];
   ourWins: { title: string; detail: string }[];
   pricing: PricingRow[];
+  /**
+   * Overrides the pricing-table footnote. Required when the competitor does
+   * not publish pricing (e.g. Gong) — the default says "from their public
+   * pricing pages", which would be false.
+   */
+  pricingFootnote?: string;
   whoShouldPickCompetitor: string[];
   whoShouldPickUs: string[];
   faq: FaqItem[];
@@ -55,13 +61,13 @@ export function VsComparisonPage({ data }: { data: ComparisonData }) {
           <h1 className="text-[clamp(2rem,5vw,4rem)] font-medium leading-[1.08] tracking-[-0.03em] mb-4">
             {data.heroHeadline}
           </h1>
-          <p className="text-gray-500 max-w-2xl text-[15px] leading-relaxed mb-6">
+          <p className="text-gray-600 max-w-2xl text-[15px] leading-relaxed mb-6">
             {data.heroSubhead}
           </p>
           <div className="flex flex-wrap gap-3">
             <Link
               href="/sign-up"
-              className="group inline-flex items-center gap-2 bg-[#F26522] hover:bg-[#e05a1a] text-white text-[13px] rounded-full pl-5 pr-2 py-2 transition-colors duration-300"
+              className="group inline-flex items-center gap-2 bg-[#C94F17] hover:bg-[#b04011] text-white text-[13px] rounded-full pl-5 pr-2 py-2 transition-colors duration-300"
             >
               <span className="flex flex-col overflow-hidden h-[20px]">
                 <span className="transition-transform duration-500 ease-[cubic-bezier(0.25,0.1,0.25,1)] group-hover:-translate-y-1/2 leading-[20px]">
@@ -96,7 +102,7 @@ export function VsComparisonPage({ data }: { data: ComparisonData }) {
                   <thead>
                     <tr className="border-b border-gray-200">
                       <th className="text-left py-3 px-4 text-gray-500 font-medium">Feature</th>
-                      <th className="text-center py-3 px-4 text-white font-semibold bg-[#F26522]/[0.06] rounded-t-lg">
+                      <th className="text-center py-3 px-4 text-gray-900 font-semibold bg-[#F26522]/[0.06] rounded-t-lg">
                         <div className="flex items-center justify-center gap-1.5">
                           <span>{us}</span>
                           <span className="w-1 h-1 rounded-full bg-[#F26522]" />
@@ -158,7 +164,7 @@ export function VsComparisonPage({ data }: { data: ComparisonData }) {
                   </li>
                 ))}
               </ul>
-              <div className="mt-6 pt-6 border-t border-gray-100 text-[11px] text-gray-400">
+              <div className="mt-6 pt-6 border-t border-gray-100 text-[11px] text-gray-500">
                 Founded {data.competitorFounded} · {data.competitorFunding} · {data.competitorUsers}
               </div>
             </div>
@@ -190,7 +196,7 @@ export function VsComparisonPage({ data }: { data: ComparisonData }) {
                   <thead>
                     <tr className="border-b border-gray-200">
                       <th className="text-left py-3 px-4 text-gray-500 font-medium">Tier</th>
-                      <th className="text-center py-3 px-4 text-white font-semibold bg-[#F26522]/[0.06] rounded-t-lg">
+                      <th className="text-center py-3 px-4 text-gray-900 font-semibold bg-[#F26522]/[0.06] rounded-t-lg">
                         {us}
                       </th>
                       <th className="text-center py-3 px-4 text-gray-500 font-medium">{them}</th>
@@ -209,9 +215,19 @@ export function VsComparisonPage({ data }: { data: ComparisonData }) {
                   </tbody>
                 </table>
               </div>
-              <div className="px-4 py-3 text-[11px] text-gray-400 border-t border-gray-100">
-                Competitor pricing from their public pricing pages as of {lastUpdated}. Spotted a mistake?{" "}
-                <a href="mailto:hello@usegauge.com" className="underline hover:text-gray-600">Tell us</a>.
+              <div className="px-4 py-3 text-[11px] text-gray-500 border-t border-gray-100">
+                {data.pricingFootnote ??
+                  "Competitor pricing from their public pricing pages as of " +
+                    lastUpdated +
+                    ". Spotted a mistake? "}
+                {!data.pricingFootnote && (
+                  <>
+                    <a href="mailto:hello@usegauge.com" className="underline hover:text-gray-600">
+                      Tell us
+                    </a>
+                    .
+                  </>
+                )}
               </div>
             </div>
           </div>
@@ -306,7 +322,7 @@ export function VsComparisonPage({ data }: { data: ComparisonData }) {
                 </p>
                 <Link
                   href="/sign-up"
-                  className="group inline-flex items-center gap-2 bg-[#F26522] hover:bg-[#e05a1a] text-white text-[13px] rounded-full pl-5 pr-2 py-2 transition-colors duration-300"
+                  className="group inline-flex items-center gap-2 bg-[#C94F17] hover:bg-[#b04011] text-white text-[13px] rounded-full pl-5 pr-2 py-2 transition-colors duration-300"
                 >
                   <span className="flex flex-col overflow-hidden h-[20px]">
                     <span className="transition-transform duration-500 ease-[cubic-bezier(0.25,0.1,0.25,1)] group-hover:-translate-y-1/2 leading-[20px]">

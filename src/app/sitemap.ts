@@ -23,6 +23,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
     { path: "/otter-alternative", priority: 0.9, changeFrequency: "monthly" as const },
     { path: "/vs/fireflies", priority: 0.8, changeFrequency: "monthly" as const },
     { path: "/vs/fathom",  priority: 0.8, changeFrequency: "monthly" as const },
+    { path: "/vs/gong",    priority: 0.8, changeFrequency: "monthly" as const },
     { path: "/vs/tldv",    priority: 0.7, changeFrequency: "monthly" as const },
     { path: "/integrations-marketing", priority: 0.7, changeFrequency: "monthly" as const },
     { path: "/demo",      priority: 0.8,  changeFrequency: "monthly" as const },
