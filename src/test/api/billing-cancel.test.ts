@@ -6,12 +6,14 @@ const {
   mockPrismaUpdate,
   mockLogAuditAction,
   mockCaptureApiError,
+  mockPaddleCancel,
 } = vi.hoisted(() => ({
   mockAuth: vi.fn(),
   mockGetUserByClerkId: vi.fn(),
   mockPrismaUpdate: vi.fn(),
   mockLogAuditAction: vi.fn(),
   mockCaptureApiError: vi.fn(),
+  mockPaddleCancel: vi.fn(),
 }));
 
 vi.mock("@clerk/nextjs/server", () => ({
@@ -28,6 +30,14 @@ vi.mock("@/lib/prisma", () => ({
       update: mockPrismaUpdate,
     },
   },
+}));
+
+vi.mock("@/lib/paddle", () => ({
+  getPaddleClient: () => ({
+    subscriptions: {
+      cancel: mockPaddleCancel,
+    },
+  }),
 }));
 
 vi.mock("@/lib/audit-logger", () => ({
@@ -76,26 +86,28 @@ describe("POST /api/billing/cancel", () => {
     await expect(response.json()).resolves.toEqual({ error: "No active subscription" });
   });
 
-  it("returns 200 on successful cancellation", async () => {
+  it("cancels at Paddle, keeps plan until effective date, uses webhook-consistent status", async () => {
     mockAuth.mockResolvedValue({ userId: "test-user" });
     mockGetUserByClerkId.mockResolvedValue({
       id: "user-1",
       clerkId: "test-user",
       paddleSubscriptionId: "sub-123",
     });
+    mockPaddleCancel.mockResolvedValue({});
     mockPrismaUpdate.mockResolvedValue({});
 
     const response = await POST();
 
     expect(response.status).toBe(200);
-    await expect(response.json()).resolves.toEqual({ success: true });
+    await expect(response.json()).resolves.toMatchObject({ success: true });
+    expect(mockPaddleCancel).toHaveBeenCalledWith("sub-123", {
+      effectiveFrom: "next_billing_period",
+    });
     expect(mockPrismaUpdate).toHaveBeenCalledWith({
       where: { clerkId: "test-user" },
       data: {
-        plan: "FREE",
-        subscriptionStatus: "cancelled",
+        subscriptionStatus: "canceled",
         cancellationEffectiveDate: expect.any(Date),
-        credits: 5,
       },
     });
     expect(mockLogAuditAction).toHaveBeenCalledWith(
@@ -107,6 +119,21 @@ describe("POST /api/billing/cancel", () => {
     );
   });
 
+  it("returns 502 and does not touch local state when Paddle cancel fails", async () => {
+    mockAuth.mockResolvedValue({ userId: "test-user" });
+    mockGetUserByClerkId.mockResolvedValue({
+      id: "user-1",
+      clerkId: "test-user",
+      paddleSubscriptionId: "sub-123",
+    });
+    mockPaddleCancel.mockRejectedValue(new Error("Paddle API error"));
+
+    const response = await POST();
+
+    expect(response.status).toBe(502);
+    expect(mockPrismaUpdate).not.toHaveBeenCalled();
+  });
+
   it("returns 500 when database update fails", async () => {
     mockAuth.mockResolvedValue({ userId: "test-user" });
     mockGetUserByClerkId.mockResolvedValue({
@@ -114,6 +141,7 @@ describe("POST /api/billing/cancel", () => {
       clerkId: "test-user",
       paddleSubscriptionId: "sub-123",
     });
+    mockPaddleCancel.mockResolvedValue({});
     mockPrismaUpdate.mockRejectedValue(new Error("DB error"));
 
     const response = await POST();

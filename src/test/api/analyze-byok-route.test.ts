@@ -182,7 +182,7 @@ function jsonRequest(overrides: Record<string, unknown> = {}): Request {
     method: "POST",
     headers: { "content-type": "application/json" },
     body: JSON.stringify({
-      blobUrl: "https://blob.test/call.wav",
+      blobUrl: "https://store.blob.vercel-storage.com/call.wav",
       filename: "call.wav",
       removeFillers: true,
       ...overrides,

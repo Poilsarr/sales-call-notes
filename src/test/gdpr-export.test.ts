@@ -54,7 +54,7 @@ describe("buildUserExport", () => {
     await expect(buildUserExport("missing")).rejects.toThrow("User not found");
   });
 
-  it("scopes calls to user's team or personal calls", async () => {
+  it("scopes calls strictly to the user's own calls, even when in a team", async () => {
     (prisma.user.findUnique as any).mockResolvedValue({
       id: "u2",
       email: "u2@test.com",
@@ -72,14 +72,11 @@ describe("buildUserExport", () => {
 
     await buildUserExport("u2");
 
-    // Verify call query used teamId OR userId
+    // GDPR export must NOT include teammates' calls — scope to userId only,
+    // even when the requester belongs to a team.
     expect(prisma.call.findMany).toHaveBeenCalledWith(
       expect.objectContaining({
-        where: expect.objectContaining({
-          OR: expect.arrayContaining([
-            expect.objectContaining({ userId: "u2" }),
-          ]),
-        }),
+        where: { userId: "u2" },
       })
     );
   });
