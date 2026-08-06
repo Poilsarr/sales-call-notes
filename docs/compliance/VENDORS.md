@@ -10,8 +10,8 @@ Each row: vendor · purpose · data shared · region · security attestations.
 | Vercel Inc. | Application hosting, CDN, edge functions | All app data (transient) | US (multi-region: iad1, sfo1) | SOC2 Type 2, ISO 27001, DPA | ✓ active |
 | Neon (Databricks) | Postgres database | Customer content + account data | US (AWS us-east-1) | SOC2 Type 2, ISO 27001, DPA, HIPAA-eligible | ✓ active (free tier) |
 | Clerk (Clerk.com) | Authentication, user identity | Email, name, OAuth profile | US | SOC2 Type 2, DPA | ✓ active |
-| OpenAI, L.L.C. | LLM transcription + analysis | Anonymized transcripts (no PII to OpenAI when scrubber enabled) | US | SOC2 Type 2, DPA; data NOT used for training | ✓ active (quota-limited) |
-| Groq, Inc. | LLM fallback | Same as OpenAI | US | SOC2 Type 2, DPA | ✓ active |
+| Groq, Inc. | Transcription (default; Whisper large-v3) | Anonymized transcripts (no PII when scrubber enabled) | US | SOC2 Type 2, DPA | ✓ active |
+| OpenAI, L.L.C. | LLM analysis + transcription fallback | Anonymized transcripts (no PII to OpenAI when scrubber enabled) | US | SOC2 Type 2, DPA; data NOT used for training | ✓ active (quota-limited) |
 | Upstash | Redis (rate limits, BullMQ queues) | Per-user counters, queue jobs | US / EU available | SOC2 Type 2, DPA | ✓ active |
 | HubSpot | CRM (customer-initiated) | Per customer OAuth scope | US / EU | Customer-managed | conditional — only when customer connects |
 | Salesforce | CRM (customer-initiated) | Per customer OAuth scope | US / EU | Customer-managed | conditional |

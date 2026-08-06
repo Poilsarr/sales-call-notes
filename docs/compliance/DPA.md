@@ -31,6 +31,17 @@ Personal Data is processed; the Controller does.
 | Categories of data | Audio recordings, transcripts, names, emails, employer, role |
 | Categories of data subjects | Sales reps, prospects, customers named in calls |
 
+## 3a. No Training
+
+Gauge does not use Customer call data to train or fine-tune any AI model — not
+Customer data and not any other customer's data. Audio recordings and
+transcripts are processed solely to produce the requested notes, summaries,
+and insights.
+
+OpenAI does not use Customer API data to train its models (OpenAI's API
+commitment). Other sub-processors process data under their own standard
+data-processing terms; none are used by Gauge for model training.
+
 ## 4. Sub-Processors
 
 Gauge engages the following sub-processors. The Controller is notified
@@ -43,8 +54,8 @@ will work in good faith to provide an alternative.
 | **Vercel Inc.** | Application hosting | US (multi-region) | SOC2 Type 2, DPA available |
 | **Neon (Databricks)** | Postgres database hosting | US | SOC2 Type 2, DPA available |
 | **Clerk** | Authentication | US | SOC2 Type 2, DPA available |
-| **OpenAI, L.L.C.** | LLM (transcription, summarization, analysis) | US | DPA available; data NOT used for training |
-| **Groq, Inc.** | LLM fallback | US | DPA available |
+| **Groq, Inc.** | Transcription (default; Whisper large-v3) | US | DPA available |
+| **OpenAI, L.L.C.** | LLM analysis + transcription fallback | US | DPA available; data NOT used for training |
 | **Upstash** | Redis (rate limits, queues) | US / EU | SOC2 Type 2 |
 | **HubSpot / Salesforce / Google / Slack / Microsoft** | Customer-initiated integrations | Per customer | Customer-managed; covered by their own agreements |
 | **Resend / Postmark** (planned) | Transactional email | US | DPA available |
