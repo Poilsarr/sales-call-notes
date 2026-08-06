@@ -113,7 +113,7 @@ function BillingToggle({
         Annual
         <span
           className={`text-[9px] font-bold uppercase tracking-wide px-1.5 py-0.5 rounded-full ${
-            cycle === "annual" ? "bg-[#F26522] text-white" : "bg-[#F26522]/10 text-[#F26522]"
+            cycle === "annual" ? "bg-[#C94F17] text-white" : "bg-[#C94F17]/10 text-[#C94F17]"
           }`}
         >
           Save 17%
@@ -360,13 +360,13 @@ export default function PricingClient({
       {/* Plans */}
       <section className="pt-8 pb-16 sm:pt-12 sm:pb-20 lg:pt-16 lg:pb-28 px-5 sm:px-8 lg:px-12">
         <div className="max-w-[1440px] mx-auto mb-8 flex flex-col items-center gap-3 text-center">
-          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#F26522]/10 text-[#F26522] text-[11px] font-semibold">
+          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#C94F17]/10 text-[#C94F17] text-[11px] font-semibold">
             <CheckCircle size={11} /> Flat-rate pricing
           </span>
           <p className="text-[15px] text-gray-700 max-w-2xl">
             Fireflies is <strong className="text-gray-900">$10/rep/mo</strong> for a 5-rep team — that&apos;s{" "}
             <strong className="text-gray-900">$50/mo</strong>. Gauge Pro is{" "}
-            <strong className="text-[#F26522]">$9/mo flat for 5 seats</strong>. Same team, ~82% less.
+            <strong className="text-[#C94F17]">$9/mo flat for 5 seats</strong>. Same team, ~82% less.
           </p>
           <p className="text-[12px] text-gray-500 max-w-xl">
             No per-seat math at any tier. Pro caps at 5 seats so the price stays a price. Business is flat for unlimited seats.
@@ -399,7 +399,7 @@ export default function PricingClient({
                   }`}
                 >
                   {isPopular && (
-                    <div className="absolute -top-3 left-1/2 -translate-x-1/2 px-4 py-1 rounded-full bg-[#F26522] text-[10px] font-bold uppercase tracking-[0.15em] text-white whitespace-nowrap">
+                    <div className="absolute -top-3 left-1/2 -translate-x-1/2 px-4 py-1 rounded-full bg-[#C94F17] text-[12px] font-bold uppercase tracking-[0.15em] text-white whitespace-nowrap">
                       Most popular
                     </div>
                   )}
@@ -463,7 +463,7 @@ export default function PricingClient({
                       disabled={checkingOut || !!paddleError || pricesLoading}
                       className={`block w-full text-center py-3 rounded-full text-[12px] font-semibold transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed ${
                         isPopular
-                          ? "bg-[#F26522] text-white hover:bg-[#e05a1a] border border-transparent"
+                          ? "bg-[#C94F17] text-white hover:bg-[#A84310] border border-transparent"
                           : "bg-white text-gray-900 border border-gray-300 hover:border-gray-900 hover:bg-gray-50"
                       }`}
                     >

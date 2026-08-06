@@ -22,7 +22,7 @@ export function HeroCTA() {
     return (
       <Link
         href="/app/intelligence"
-        className="group inline-flex items-center gap-2 bg-[#F26522] hover:bg-[#e05a1a] text-white text-[13px] sm:text-[14px] rounded-full pl-5 sm:pl-6 pr-2 py-2"
+        className="group inline-flex items-center gap-2 bg-[#C94F17] hover:bg-[#A84310] text-white text-[13px] sm:text-[14px] rounded-full pl-5 sm:pl-6 pr-2 py-2"
       >
         <span>Open Intelligence</span>
         <span className="w-7 h-7 sm:w-8 sm:h-8 bg-white rounded-full flex items-center justify-center group-hover:rotate-45 transition-transform duration-500">
@@ -34,7 +34,7 @@ export function HeroCTA() {
 
   return (
     <SignInButton mode="modal">
-      <button className="group inline-flex items-center gap-2 bg-[#F26522] hover:bg-[#e05a1a] text-white text-[13px] sm:text-[14px] rounded-full pl-5 sm:pl-6 pr-2 py-2">
+      <button className="group inline-flex items-center gap-2 bg-[#C94F17] hover:bg-[#A84310] text-white text-[13px] sm:text-[14px] rounded-full pl-5 sm:pl-6 pr-2 py-2">
         <span>Start free</span>
         <span className="w-7 h-7 sm:w-8 sm:h-8 bg-white rounded-full flex items-center justify-center group-hover:rotate-45 transition-transform duration-500">
           <ArrowRight size={14} className="text-[#F26522]" />

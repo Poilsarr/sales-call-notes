@@ -84,6 +84,8 @@ export default function Nav() {
             onClick={() => setOpen(!open)}
             className="md:hidden bg-gray-900 rounded-full p-2 text-white"
             aria-label={open ? "Close menu" : "Open menu"}
+            aria-expanded={open}
+            aria-controls="mobile-menu"
           >
             {open ? <X size={18} /> : <Menu size={18} />}
           </button>
@@ -91,35 +93,46 @@ export default function Nav() {
       </nav>
 
       {/* Mobile Menu Overlay */}
-      {mounted && (
+      {/* When closed: hidden from AT and links removed from the tab order —
+          previously 7 invisible links stayed keyboard-focusable. */}
+      <div
+        id="mobile-menu"
+        aria-hidden={!open}
+        className={`fixed inset-0 z-50 flex flex-col justify-end transition-opacity duration-500 ease-[cubic-bezier(0.32,0.72,0,1)] ${
+          open ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none"
+        }`}
+      >
+        <button
+          type="button"
+          aria-label="Close menu"
+          tabIndex={open ? 0 : -1}
+          className="absolute inset-0 cursor-default bg-black/60"
+          onClick={() => setOpen(false)}
+        />
         <div
-          className={`fixed inset-0 z-50 flex flex-col justify-end transition-opacity duration-500 ease-[cubic-bezier(0.32,0.72,0,1)] ${
-            open ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none"
+          className={`relative bg-white rounded-2xl mx-3 mb-3 p-6 transition-transform duration-500 ease-[cubic-bezier(0.32,0.72,0,1)] ${
+            open ? "translate-y-0" : "translate-y-full"
           }`}
         >
-          <div className="absolute inset-0 bg-black/60" onClick={() => setOpen(false)} />
-          <div
-            className={`relative bg-white rounded-2xl mx-3 mb-3 p-6 transition-transform duration-500 ease-[cubic-bezier(0.32,0.72,0,1)] ${
-              open ? "translate-y-0" : "translate-y-full"
-            }`}
+          <nav className="flex flex-col gap-4 mb-8">
+            {links.map((link) => (
+              <Link
+                key={link.href}
+                href={link.href}
+                onClick={() => setOpen(false)}
+                tabIndex={open ? 0 : -1}
+                className="text-[28px] leading-[32px] font-medium text-gray-900"
+              >
+                {link.label}
+              </Link>
+            ))}
+          </nav>
+          <Link
+            href="/sign-up"
+            onClick={() => setOpen(false)}
+            tabIndex={open ? 0 : -1}
+            className="group bg-gray-900 text-white rounded-full pl-5 pr-2 py-2 inline-flex items-center gap-1.5 text-[13px] font-medium"
           >
-            <nav className="flex flex-col gap-4 mb-8">
-              {links.map((link) => (
-                <Link
-                  key={link.href}
-                  href={link.href}
-                  onClick={() => setOpen(false)}
-                  className="text-[28px] leading-[32px] font-medium text-gray-900"
-                >
-                  {link.label}
-                </Link>
-              ))}
-            </nav>
-            <Link
-              href="/sign-up"
-              onClick={() => setOpen(false)}
-              className="group bg-gray-900 text-white rounded-full pl-5 pr-2 py-2 inline-flex items-center gap-1.5 text-[13px] font-medium"
-            >
               <span className="flex flex-col overflow-hidden h-[20px]">
                 <span className="transition-transform duration-500 ease-[cubic-bezier(0.25,0.1,0.25,1)] group-hover:-translate-y-1/2 leading-[20px]">
                   Start free
@@ -131,16 +144,15 @@ export default function Nav() {
               </span>
             </Link>
             <Show when="signed-in">
-              <Link href="/app" onClick={() => setOpen(false)} className="block mt-4 text-[13px] text-gray-600 font-medium">
+              <Link href="/app" onClick={() => setOpen(false)} tabIndex={open ? 0 : -1} className="block mt-4 text-[13px] text-gray-600 font-medium">
                 Dashboard
               </Link>
             </Show>
-            <Link href="/sign-in" onClick={() => setOpen(false)} className="block mt-4 text-[13px] text-gray-600 font-medium">
+            <Link href="/sign-in" onClick={() => setOpen(false)} tabIndex={open ? 0 : -1} className="block mt-4 text-[13px] text-gray-600 font-medium">
               Sign In
             </Link>
           </div>
         </div>
-      )}
     </>
   );
 }

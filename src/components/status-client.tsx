@@ -186,7 +186,7 @@ export default function StatusClient() {
                   {badge.label}
                 </div>
                 {s.latencyMs != null && s.status === "operational" && (
-                  <div className="text-[10px] text-white/30 font-mono mt-0.5">
+                  <div className="text-[12px] text-white/50 font-mono mt-0.5">
                     {s.latencyMs}ms
                   </div>
                 )}

@@ -68,7 +68,7 @@ export default function SiteFooter() {
             </p>
             <div className="mt-5 flex items-center gap-2">
               <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-              <span className="text-[11px] text-white/40 font-mono uppercase tracking-wider">
+              <span className="text-[12px] text-white/60 font-mono uppercase tracking-wider">
                 All systems operational
               </span>
             </div>
@@ -98,10 +98,10 @@ export default function SiteFooter() {
 
         {/* Bottom bar */}
         <div className="mt-12 pt-6 border-t border-white/10 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
-          <div className="text-[11px] text-white/30">
+          <div className="text-[12px] text-white/50">
             © {new Date().getFullYear()} Gauge. All rights reserved.
           </div>
-          <div className="flex items-center gap-5 text-[11px] text-white/40">
+          <div className="flex items-center gap-5 text-[12px] text-white/50">
             <span>Made for SDRs who hate note-taking.</span>
             <a
               href="https://status.usegauge.com"

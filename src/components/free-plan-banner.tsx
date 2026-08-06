@@ -26,7 +26,7 @@ export default function FreePlanBanner({ plan }: FreePlanBannerProps) {
   if (dismissed || !plan || plan.toLowerCase() !== "free") return null;
 
   return (
-    <div className="bg-[#F26522] text-white px-4 py-2.5 flex items-center justify-between text-sm">
+    <div className="bg-[#C94F17] text-white px-4 py-2.5 flex items-center justify-between text-sm">
       <span className="flex items-center gap-2">
         <Zap className="w-4 h-4" />
         <span>

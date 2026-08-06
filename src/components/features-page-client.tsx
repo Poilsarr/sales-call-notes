@@ -205,7 +205,7 @@ function HeroMockup() {
           </div>
           <div className="space-y-2.5">
             <div className="flex items-start gap-2.5">
-              <span className="shrink-0 text-[10px] font-mono font-medium text-[#F26522] bg-[#F26522]/8 px-2 py-0.5 rounded-full leading-none mt-0.5">
+              <span className="shrink-0 text-[10px] font-mono font-medium text-[#C94F17] bg-[#C94F17]/8 px-2 py-0.5 rounded-full leading-none mt-0.5">
                 Sarah
               </span>
               <p className="text-[13px] text-gray-600 leading-relaxed">
@@ -539,7 +539,7 @@ function ComparisonSection() {
                   <th className="py-4 pl-6 pr-3 text-[11px] uppercase tracking-[0.12em] text-gray-500 font-medium">
                     Capability
                   </th>
-                  <th className="py-4 px-3 text-[12px] uppercase tracking-[0.12em] text-[#F26522] font-semibold">
+                  <th className="py-4 px-3 text-[12px] uppercase tracking-[0.12em] text-[#C94F17] font-semibold">
                     Gauge
                   </th>
                   <th className="py-4 px-3 text-[11px] uppercase tracking-[0.12em] text-gray-500 font-medium">
@@ -809,7 +809,7 @@ export default function FeaturesPageClient() {
                 <p className="text-gray-500 mb-8 text-[14px]">Join SDRs who cut their note-taking time by 80%.</p>
                 {isSignedIn ? (
                   <Link href="/app"
-                    className="group inline-flex items-center gap-2 bg-[#F26522] hover:bg-[#e05a1a] text-white text-[13px] rounded-full pl-5 pr-2 py-2 transition-colors duration-300">
+                    className="group inline-flex items-center gap-2 bg-[#C94F17] hover:bg-[#A84310] text-white text-[13px] rounded-full pl-5 pr-2 py-2 transition-colors duration-300">
                     <span className="flex flex-col overflow-hidden h-[20px]">
                       <span className="transition-transform duration-500 ease-[cubic-bezier(0.25,0.1,0.25,1)] group-hover:-translate-y-1/2 leading-[20px]">
                         Open Dashboard
@@ -822,7 +822,7 @@ export default function FeaturesPageClient() {
                   </Link>
                 ) : (
                   <SignInButton mode="modal">
-                    <button className="group inline-flex items-center gap-2 bg-[#F26522] hover:bg-[#e05a1a] text-white text-[13px] rounded-full pl-5 pr-2 py-2 transition-colors duration-300 cursor-pointer">
+                    <button className="group inline-flex items-center gap-2 bg-[#C94F17] hover:bg-[#A84310] text-white text-[13px] rounded-full pl-5 pr-2 py-2 transition-colors duration-300 cursor-pointer">
                       <span className="flex flex-col overflow-hidden h-[20px]">
                         <span className="transition-transform duration-500 ease-[cubic-bezier(0.25,0.1,0.25,1)] group-hover:-translate-y-1/2 leading-[20px]">
                           Get Started Free

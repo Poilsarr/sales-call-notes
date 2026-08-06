@@ -206,7 +206,7 @@ export function TranscriptionProgress({
             {stage === "done" && onViewCall && (
               <button
                 onClick={onViewCall}
-                className="px-4 py-2 rounded-full bg-[#F26522] hover:bg-[#e05a1a] text-white text-xs font-semibold transition-colors"
+                className="px-4 py-2 rounded-full bg-[#C94F17] hover:bg-[#A84310] text-white text-xs font-semibold transition-colors"
               >
                 View call →
               </button>

@@ -41,11 +41,11 @@ export default function StickyPricingCta() {
           <Link
             href="/sign-up"
             onClick={() => trackEvent("pricing_cta_click", { section: "sticky" })}
-            className="group inline-flex items-center gap-2 bg-[#F26522] hover:bg-[#e05a1a] text-white text-[12px] font-medium rounded-full pl-4 pr-1.5 py-1.5 transition-colors"
+            className="group inline-flex items-center gap-2 bg-[#C94F17] hover:bg-[#A84310] text-white text-[12px] font-medium rounded-full pl-4 pr-1.5 py-1.5 transition-colors"
           >
             <span>Start free</span>
             <span className="w-5 h-5 bg-white rounded-full flex items-center justify-center transition-transform group-hover:-rotate-45">
-              <ArrowRight size={11} className="text-[#F26522]" />
+              <ArrowRight size={11} className="text-[#C94F17]" />
             </span>
           </Link>
           <button

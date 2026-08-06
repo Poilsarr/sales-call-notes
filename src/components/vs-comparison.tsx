@@ -101,14 +101,14 @@ export function VsComparisonPage({ data }: { data: ComparisonData }) {
                 <table className="w-full text-[13px]">
                   <thead>
                     <tr className="border-b border-gray-200">
-                      <th className="text-left py-3 px-4 text-gray-500 font-medium">Feature</th>
-                      <th className="text-center py-3 px-4 text-gray-900 font-semibold bg-[#F26522]/[0.06] rounded-t-lg">
+                      <th scope="col" className="text-left py-3 px-4 text-gray-500 font-medium">Feature</th>
+                      <th scope="col" className="text-center py-3 px-4 text-gray-900 font-semibold bg-[#F26522]/[0.06] rounded-t-lg">
                         <div className="flex items-center justify-center gap-1.5">
                           <span>{us}</span>
                           <span className="w-1 h-1 rounded-full bg-[#F26522]" />
                         </div>
                       </th>
-                      <th className="text-center py-3 px-4 text-gray-500 font-medium">{them}</th>
+                      <th scope="col" className="text-center py-3 px-4 text-gray-500 font-medium">{them}</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -195,11 +195,11 @@ export function VsComparisonPage({ data }: { data: ComparisonData }) {
                 <table className="w-full text-[13px]">
                   <thead>
                     <tr className="border-b border-gray-200">
-                      <th className="text-left py-3 px-4 text-gray-500 font-medium">Tier</th>
-                      <th className="text-center py-3 px-4 text-gray-900 font-semibold bg-[#F26522]/[0.06] rounded-t-lg">
+                      <th scope="col" className="text-left py-3 px-4 text-gray-500 font-medium">Tier</th>
+                      <th scope="col" className="text-center py-3 px-4 text-gray-900 font-semibold bg-[#F26522]/[0.06] rounded-t-lg">
                         {us}
                       </th>
-                      <th className="text-center py-3 px-4 text-gray-500 font-medium">{them}</th>
+                      <th scope="col" className="text-center py-3 px-4 text-gray-500 font-medium">{them}</th>
                     </tr>
                   </thead>
                   <tbody>

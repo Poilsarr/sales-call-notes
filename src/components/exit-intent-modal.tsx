@@ -70,7 +70,7 @@ export default function ExitIntentModal() {
           <Link
             href="/sign-up"
             onClick={() => trackEvent("pricing_exit_intent_click")}
-            className="inline-flex items-center justify-center gap-2 bg-[#F26522] hover:bg-[#e05a1a] text-white text-[13px] font-medium rounded-full px-6 py-2.5 transition-colors"
+            className="inline-flex items-center justify-center gap-2 bg-[#C94F17] hover:bg-[#A84310] text-white text-[13px] font-medium rounded-full px-6 py-2.5 transition-colors"
           >
             Start free
           </Link>

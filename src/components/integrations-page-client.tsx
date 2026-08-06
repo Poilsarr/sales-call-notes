@@ -285,7 +285,7 @@ function IntegrationsContent() {
               ? "bg-amber-100 text-amber-700"
               : int.status === "Live" ? "bg-green-100 text-green-700"
               : int.status === "Coming Soon" ? "bg-yellow-100 text-yellow-700"
-              : int.status === "Business+" ? "bg-[#F26522]/10 text-[#F26522]"
+              : int.status === "Business+" ? "bg-[#C94F17]/10 text-[#C94F17]"
               : "bg-gray-100 text-gray-500";
             return (
               <div key={int.name} className="reveal" style={{ transitionDelay: `${i * 0.04}s` }}>
@@ -303,7 +303,7 @@ function IntegrationsContent() {
                       <div className="mt-5 pt-4 border-t border-gray-100 flex justify-end">
                         <a
                           href={int.href}
-                          className="inline-flex items-center gap-1.5 text-[11px] font-semibold text-[#F26522] hover:underline"
+                          className="inline-flex items-center gap-1.5 text-[11px] font-semibold text-[#C94F17] hover:underline"
                         >
                           Set up →
                         </a>
@@ -357,7 +357,7 @@ function IntegrationsContent() {
                                 <button
                                   onClick={() => toast.success(`CRM sync started for ${int.name}.`)}
                                   disabled={providerLoading[int.provider]}
-                                  className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-[#F26522] text-white text-[11px] font-semibold hover:bg-[#e05a1a] transition-all disabled:opacity-50"
+                                  className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-[#C94F17] text-white text-[11px] font-semibold hover:bg-[#A84310] transition-all disabled:opacity-50"
                                 >
                                   <Sparkles size={14} />
                                   Sync CRM
@@ -365,7 +365,7 @@ function IntegrationsContent() {
                               ) : (
                                 <button
                                   onClick={redirectToCrmEnv}
-                                  className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-[#F26522] text-white text-[11px] font-semibold hover:bg-[#e05a1a] transition-all"
+                                  className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-[#C94F17] text-white text-[11px] font-semibold hover:bg-[#A84310] transition-all"
                                 >
                                   <Link2 size={14} />
                                   Add credentials
@@ -404,7 +404,7 @@ function IntegrationsContent() {
                               onClick={() => connectProvider(int.provider)}
                               disabled={providerLoading[int.provider] || !isConfigured}
                               title={!isConfigured ? "OAuth credentials not configured" : undefined}
-                              className="shrink-0 inline-flex items-center gap-2 px-4 py-2 rounded-full bg-[#F26522] text-white text-[11px] font-semibold hover:bg-[#e05a1a] transition-all disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-[#F26522]"
+                              className="shrink-0 inline-flex items-center gap-2 px-4 py-2 rounded-full bg-[#C94F17] text-white text-[11px] font-semibold hover:bg-[#A84310] transition-all disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-[#C94F17]"
                             >
                               {providerLoading[int.provider] ? (
                                 <Loader2 size={14} className="animate-spin" />
@@ -435,7 +435,7 @@ function IntegrationsContent() {
                 <p className="text-gray-500 mb-8 text-[14px]">We support custom integrations via our REST API and webhooks.</p>
                 <Link
                   href="/sign-up"
-                  className="group inline-flex items-center gap-2 bg-[#F26522] hover:bg-[#e05a1a] text-white text-[13px] rounded-full pl-5 pr-2 py-2 transition-colors duration-300"
+                  className="group inline-flex items-center gap-2 bg-[#C94F17] hover:bg-[#A84310] text-white text-[13px] rounded-full pl-5 pr-2 py-2 transition-colors duration-300"
                 >
                   <span className="flex flex-col overflow-hidden h-[20px]">
                     <span className="transition-transform duration-500 ease-[cubic-bezier(0.25,0.1,0.25,1)] group-hover:-translate-y-1/2 leading-[20px]">
