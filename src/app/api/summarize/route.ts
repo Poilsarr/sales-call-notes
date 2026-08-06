@@ -1,7 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@clerk/nextjs/server";
+import prisma from "@/lib/prisma";
 import { AnalysisService } from "@/services/ai/analysis";
 import { getSecret } from "@/lib/secrets";
+import { getTeamVocabulary, MAX_PROMPT_ENTRIES } from "@/lib/team-vocabulary";
 
 export async function POST(req: NextRequest) {
   try {
@@ -21,8 +23,16 @@ export async function POST(req: NextRequest) {
       );
     }
 
+    const user = await prisma.user.findUnique({
+      where: { clerkId: userId },
+      select: { teamId: true },
+    });
+    const vocabulary = user?.teamId
+      ? await getTeamVocabulary(user.teamId, MAX_PROMPT_ENTRIES)
+      : [];
+
     const analysisService = new AnalysisService();
-    const analysis = await analysisService.analyze(transcript);
+    const analysis = await analysisService.analyze(transcript, undefined, undefined, vocabulary);
 
     return NextResponse.json({
       summary: analysis.executiveSummary || "",

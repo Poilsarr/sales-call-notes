@@ -4,6 +4,7 @@ import { createOpenAIClient } from '@/lib/openai-client';
 import { getSecret } from '@/lib/secrets';
 import { loadPromptTemplate, isValidTemplate, PromptTemplateId } from '@/lib/prompts-registry';
 import { normalizeScorecard } from '@/lib/scorecard';
+import { buildVocabularyPrompt, VocabularyEntry } from '@/lib/team-vocabulary';
 
 // ponytail: char-cap on transcript sent to the LLM. ~4 chars/token →
 // 16000 chars ≈ 4k tokens, enough headroom for 60-min calls.
@@ -38,11 +39,16 @@ export class AnalysisService {
     }
   }
 
-  async analyze(transcript: string, segments?: TranscriptionSegment[], templateId?: string): Promise<CallAnalysis> {
+  async analyze(
+    transcript: string,
+    segments?: TranscriptionSegment[],
+    templateId?: string,
+    vocabulary?: VocabularyEntry[],
+  ): Promise<CallAnalysis> {
     // ponytail: default to b2b-sales — this product is "sales-call-notes",
     // not enrollment/insurance. enrollment-calls asked for utility/insurance
     // entities (accountNumber, utilityCompany) that don't fit sales calls.
-    const prompt = await this.loadPrompt(templateId || 'b2b-sales');
+    const prompt = await this.loadPrompt(templateId || 'b2b-sales', vocabulary);
 
     if (!this.openai) {
       // No OpenAI key configured — skip straight to the Groq path instead
@@ -117,11 +123,15 @@ export class AnalysisService {
     return this.normalizeAnalysis(analysis);
   }
 
-  private async loadPrompt(domain: string): Promise<string> {
+  private async loadPrompt(domain: string, vocabulary?: VocabularyEntry[]): Promise<string> {
+    let template: string;
     if (isValidTemplate(domain)) {
-      return loadPromptTemplate(domain);
+      template = await loadPromptTemplate(domain);
+    } else {
+      template = await loadPromptTemplate('b2b-sales');
     }
-    return loadPromptTemplate('b2b-sales');
+    const vocabBlock = buildVocabularyPrompt(vocabulary || []);
+    return vocabBlock ? `${template}\n\n${vocabBlock}` : template;
   }
 
   private analyzeSentiment(segments: TranscriptionSegment[]): { timestamp: number; sentiment: string }[] {

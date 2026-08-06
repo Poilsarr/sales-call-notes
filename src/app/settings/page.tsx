@@ -5,6 +5,7 @@ import { useAuth, useUser } from "@clerk/nextjs";
 import { useRouter, useSearchParams } from "next/navigation";
 import Nav from "@/components/nav";
 import TeamBrandingForm from "@/components/team-branding-form";
+import TeamVocabularySettings from "@/components/team-vocabulary-settings";
 import APIKeysSettings from "@/components/api-keys-settings";
 import ByokSettings from "@/components/byok-settings";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
@@ -246,6 +247,9 @@ export default function SettingsPage() {
               <>
                 <Section title="Workspace" description="Team branding and workspace identity.">
                   <TeamBrandingForm />
+                </Section>
+                <Section title="Team vocabulary" description="Teach Gauge your internal terms — applied to every new call analysis.">
+                  <TeamVocabularySettings />
                 </Section>
               </>
             )}

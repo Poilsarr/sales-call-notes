@@ -272,11 +272,23 @@ export async function POST(req: Request) {
     // --- ANALYSIS ---
     let analysisResult: Awaited<ReturnType<AnalysisService['analyze']>>;
     try {
+      // S7: teams can teach the analyst their internal terminology — the
+      // glossary rides in the system prompt so summaries use the right words.
+      const vocabulary =
+        user.teamId
+          ? await prisma.vocabularyEntry.findMany({
+              where: { teamId: user.teamId },
+              orderBy: { term: 'asc' },
+              take: 50,
+              select: { id: true, term: true, definition: true },
+            })
+          : [];
       const analysisService = new AnalysisService(byok);
       analysisResult = await analysisService.analyze(
         correctedText,
         undefined,
         requestedTemplate || undefined,
+        vocabulary,
       );
       console.log('Analysis succeeded');
     } catch (e: any) {

@@ -47,19 +47,20 @@ model User {
 }
 
 model Team {
-  id           String        @id @default(cuid())
+  id           String            @id @default(cuid())
   name         String
-  slug         String        @unique
+  slug         String            @unique
   ownerId      String
-  owner        User          @relation("teamOwner", fields: [ownerId], references: [id])
-  members      User[]        @relation("teamMembers")
+  owner        User              @relation("teamOwner", fields: [ownerId], references: [id])
+  members      User[]            @relation("teamMembers")
   calls        Call[]
   integrations Integration[]
+  vocabulary   VocabularyEntry[]
   settings     String?
   brandColor   String? // hex e.g. "#5b21b6"; null = default indigo
   logoUrl      String? // https URL; null = default CP monogram
-  createdAt    DateTime      @default(now())
-  updatedAt    DateTime      @updatedAt
+  createdAt    DateTime          @default(now())
+  updatedAt    DateTime          @updatedAt
 
   @@index([slug])
   @@index([ownerId])
@@ -106,6 +107,18 @@ model Call {
   @@index([teamId])
   @@index([assigneeId])
   @@index([createdAt])
+}
+
+model VocabularyEntry {
+  id         String   @id @default(cuid())
+  teamId     String
+  team       Team     @relation(fields: [teamId], references: [id])
+  term       String
+  definition String
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@index([teamId])
 }
 
 model ActionItem {
