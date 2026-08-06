@@ -4,6 +4,7 @@ import prisma from "@/lib/prisma";
 import { getUserByClerkId } from "@/lib/get-user";
 import { generateApiKey } from "@/lib/api-key";
 import { logAuditAction } from "@/lib/audit-logger";
+import { getPlan, hasFeature } from "@/lib/plans";
 
 /**
  * GET  /api/v1/keys        — list current user's API keys (no raw secrets)
@@ -54,6 +55,10 @@ export async function POST(req: Request) {
     const scope = body.scope === "read_write" ? "read_write" : "read";
 
     const user = await getUserByClerkId(userId);
+    if (!hasFeature(getPlan(user.plan), "api_access")) {
+      return NextResponse.json({ error: "API access is a Pro plan feature" }, { status: 403 });
+    }
+
     const { raw, prefix, hash } = generateApiKey();
 
     const row = await prisma.apiKey.create({
