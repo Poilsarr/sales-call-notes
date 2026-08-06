@@ -78,7 +78,8 @@ The principle: **never advance a level with a known break, mock-leak, or uncommi
 **Tracked items (next arcs, from S6 orchestrator ruling):**
 - **Skip link (SEV-3, WCAG 2.4.1)** — site-wide, root layout only. Must land as its own PR next arc; if it doesn't, it gets an a11y-regression test.
 - **CTA orange token site-wide** — in-component #C94F17 stays; global brand token change (white-on-#F26522 fails AA) needs design sign-off + own arc.
-- **`data.metaDescription` is dead code** — declared on `ComparisonData`, never rendered, on all vs pages. Wire to a `<meta>` render or delete the field.
+
+*Resolved: `data.metaDescription` dead-code item — single-sourced via `generateMetadata` (commit `3befcdc`): all vs pages derive title/description/openGraph from the data object; 2 regression tests pin it.*
 
 ---
 
