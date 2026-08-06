@@ -6,7 +6,8 @@
 
 ## Stack
 
-- Next.js 15 (App Router, mostly server components)
+- Next.js 14.2.3 (App Router, mostly server components) — upgrade to 15 is
+  a tracked backlog item (pinned for the middleware-auth CVE fix)
 - TypeScript, strict
 - Clerk (auth + middleware)
 - Prisma + Neon Postgres
