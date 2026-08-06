@@ -30,7 +30,7 @@ Return ONLY valid JSON with this exact structure:
   "objections": [{"type": "price|timing|features|competition|security|integration|trust", "quote": "string", "handled": boolean, "resolution": "string"}],
   "roiAnalysis": {"currentCost": "string", "projectedSavings": "string", "paybackPeriod": "string", "metrics": ["string"]},
   "commitments": [{"who": "string", "what": "string", "by": "string"}],
-  "actionItems": [{"task": "string", "owner": "string", "priority": "high|medium|low", "due": "string"}],
+  "actionItems": [{"task": "string", "owner": "string", "priority": "high|medium|low", "due": "string", "timestamp": "number"}],
   "nextSteps": [{"step": "string", "date": "string", "owner": "string"}],
   "coachingNotes": {"strengths": ["string"], "improvements": ["string"], "tips": ["string"]},
   "riskFlags": ["string"],
@@ -39,6 +39,8 @@ Return ONLY valid JSON with this exact structure:
   "sentimentTimeline": [{"timestamp": number, "sentiment": "positive|neutral|negative"}]
 }
 ```
+
+For each action item, set `timestamp` to the seconds-from-start time matching the `[MM:SS]` timeline anchors in the transcript (omit or use `null` if not determinable).
 
 ## Examples
 

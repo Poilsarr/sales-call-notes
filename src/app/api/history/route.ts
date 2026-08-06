@@ -73,7 +73,7 @@ export async function GET(req: Request) {
       sharedWithTeam: c.sharedWithTeam,
       ownerName: c.user?.name || null,
       assigneeName: c.assignee?.name || null,
-      actionItems: c.actionItems.map(a => ({ task: a.task, owner: a.owner, due: a.due })),
+      actionItems: c.actionItems.map(a => ({ task: a.task, owner: a.owner, due: a.due, timestamp: a.timestamp })),
       keyDecisions: c.decisions.map(d => d.content),
       nextSteps: c.nextSteps.map(n => ({ step: n.step, date: n.date })),
     }));

@@ -8,6 +8,7 @@ const createActionItemSchema = z.object({
   task: z.string().min(1, 'Task is required').max(500),
   owner: z.string().max(200).default(''),
   due: z.string().nullable().optional(),
+  timestamp: z.number().nullable().optional(),
   callId: z.string().optional(),
 });
 
@@ -60,7 +61,7 @@ export async function POST(req: Request) {
       );
     }
 
-    const { task, owner, due, callId } = parsed.data;
+    const { task, owner, due, timestamp, callId } = parsed.data;
 
     let targetCallId = callId || (await getDefaultCall(user.id));
 
@@ -83,6 +84,7 @@ export async function POST(req: Request) {
         task,
         owner,
         due: due || null,
+        timestamp: timestamp ?? null,
         callId: targetCallId,
       },
     });

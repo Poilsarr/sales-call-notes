@@ -117,4 +117,23 @@ describe("AnalysisService — no empty-bearer OpenAI client", () => {
 
     await expect(service.analyze("some transcript")).rejects.toThrow("upstream error");
   });
+
+  it("appends [MM:SS] timeline anchors to the user message when segments are provided", async () => {
+    const service = new AnalysisService({ openaiKey: OPENAI_KEY });
+    const openaiClient = mockCreateClient.mock.results[0].value;
+
+    const segments = [
+      { id: 1, text: "hello, thanks for joining today", start: 0, end: 5 },
+      { id: 2, text: "budget is approved for Q1, send the proposal", start: 754, end: 762 },
+    ];
+
+    await service.analyze("transcript text", segments);
+
+    const args = openaiClient.chat.completions.create.mock.calls[0][0];
+    const userMessage = args.messages.find((m: { role: string }) => m.role === "user").content;
+    expect(userMessage).toContain("[timeline]");
+    expect(userMessage).toContain("[0:00]");
+    expect(userMessage).toContain("[12:34]");
+    expect(userMessage.startsWith("transcript text")).toBe(true);
+  });
 });

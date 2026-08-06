@@ -413,4 +413,36 @@ describe("POST /api/analyze — BYOK branches", () => {
     expect(body.byokWarning).toBeUndefined();
     expect(body.id).toBe("call-1");
   });
+
+  it("normalizes action items with timestamp: null when the LLM omits it", async () => {
+    mockGetByokKeys.mockResolvedValue({ openaiKey: "sk-user-1234567890" });
+    mockAnalyze.mockResolvedValue({
+      ...ANALYSIS,
+      actionItems: [{ task: "Send proposal", owner: "Jane", priority: "high", due: "Friday" }],
+    });
+
+    await POST(jsonRequest());
+
+    const createArgs = mockPrismaCallCreate.mock.calls[0][0];
+    expect(createArgs.data.actionItems.create).toEqual([
+      { task: "Send proposal", owner: "Jane", due: "Friday", timestamp: null },
+    ]);
+  });
+
+  it("normalizes action items with the LLM-provided timestamp", async () => {
+    mockGetByokKeys.mockResolvedValue({ openaiKey: "sk-user-1234567890" });
+    mockAnalyze.mockResolvedValue({
+      ...ANALYSIS,
+      actionItems: [
+        { task: "Send proposal", owner: "Jane", priority: "high", due: "Friday", timestamp: 754 },
+      ],
+    });
+
+    await POST(jsonRequest());
+
+    const createArgs = mockPrismaCallCreate.mock.calls[0][0];
+    expect(createArgs.data.actionItems.create).toEqual([
+      { task: "Send proposal", owner: "Jane", due: "Friday", timestamp: 754 },
+    ]);
+  });
 });

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useMemo } from 'react';
+import { forwardRef, useImperativeHandle, useState, useMemo, useRef } from 'react';
 import { motion } from 'framer-motion';
 import { Search, Download, Clipboard, X } from 'lucide-react';
 import { toast } from 'sonner';
@@ -11,10 +11,20 @@ interface TranscriptSegment {
   timestamp: number;
 }
 
-export function TranscriptViewer({ segments }: { segments: TranscriptSegment[] }) {
+export interface TranscriptViewerHandle {
+  seekTo: (seconds: number) => void;
+}
+
+interface TranscriptViewerProps {
+  segments: TranscriptSegment[];
+}
+
+export const TranscriptViewer = forwardRef<TranscriptViewerHandle, TranscriptViewerProps>(
+  function TranscriptViewer({ segments }, ref) {
   const [searchQuery, setSearchQuery] = useState('');
   const [rangeStart, setRangeStart] = useState<number | null>(null);
   const [rangeEnd, setRangeEnd] = useState<number | null>(null);
+  const segmentRefs = useRef<Map<number, HTMLElement>>(new Map());
 
   const filteredSegments = segments.filter(s =>
     s.text.toLowerCase().includes(searchQuery.toLowerCase())
@@ -71,6 +81,28 @@ export function TranscriptViewer({ segments }: { segments: TranscriptSegment[] }
     return timestamp >= lo && timestamp <= hi;
   };
 
+  useImperativeHandle(
+    ref,
+    () => ({
+      seekTo(seconds: number) {
+        // Snap to the segment whose timestamp is closest to the target.
+        // Segments without a usable numeric timestamp are skipped; if none
+        // qualify (or the segment is filtered out of the DOM), no-op safely.
+        const nearest = segments.reduce<TranscriptSegment | null>((best, s) => {
+          if (typeof s.timestamp !== 'number' || !Number.isFinite(s.timestamp)) return best;
+          if (best === null) return s;
+          return Math.abs(s.timestamp - seconds) < Math.abs(best.timestamp - seconds)
+            ? s
+            : best;
+        }, null);
+        if (nearest === null) return;
+        const el = segmentRefs.current.get(nearest.timestamp);
+        el?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      },
+    }),
+    [segments],
+  );
+
   return (
     <div className="h-full flex flex-col">
       <div className="flex items-center justify-between mb-4">
@@ -126,6 +158,10 @@ export function TranscriptViewer({ segments }: { segments: TranscriptSegment[] }
             key={index}
             type="button"
             onClick={() => onSegmentClick(segment.timestamp)}
+            ref={(el) => {
+              if (el) segmentRefs.current.set(segment.timestamp, el);
+              else segmentRefs.current.delete(segment.timestamp);
+            }}
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: Math.min(index * 0.03, 0.6) }}
@@ -147,7 +183,9 @@ export function TranscriptViewer({ segments }: { segments: TranscriptSegment[] }
       </div>
     </div>
   );
-}
+  },
+);
+TranscriptViewer.displayName = 'TranscriptViewer';
 
 function formatTime(seconds: number): string {
   const mins = Math.floor(seconds / 60);

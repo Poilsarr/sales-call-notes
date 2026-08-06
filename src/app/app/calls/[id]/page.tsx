@@ -1,11 +1,11 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { motion } from 'framer-motion';
 import { Download, MessageSquarePlus, Share2, UserRoundCheck, Link as LinkIcon, AlertCircle, FileQuestion, Play, Pause } from 'lucide-react';
 import { toast } from 'sonner';
 
-import { TranscriptViewer } from '@/components/transcript-viewer';
+import { TranscriptViewer, type TranscriptViewerHandle } from '@/components/transcript-viewer';
 import { AnalysisPanel } from '@/components/analysis-panel';
 import { ChatSidebar } from '@/components/chat-sidebar';
 import { CallTitleEditor } from '@/components/call-title-editor';
@@ -53,6 +53,7 @@ export default function CallDetailPage({ params }: { params: { id: string } }) {
   const [savingComment, setSavingComment] = useState(false);
   const [savingSettings, setSavingSettings] = useState(false);
   const [playing, setPlaying] = useState(false);
+  const transcriptViewerRef = useRef<TranscriptViewerHandle>(null);
 
   useEffect(() => {
     async function fetchCall() {
@@ -304,7 +305,7 @@ export default function CallDetailPage({ params }: { params: { id: string } }) {
             />
           )}
           <div className="flex-1 overflow-hidden">
-            <TranscriptViewer segments={segments} />
+            <TranscriptViewer ref={transcriptViewerRef} segments={segments} />
           </div>
         </div>
       </div>
@@ -313,6 +314,7 @@ export default function CallDetailPage({ params }: { params: { id: string } }) {
         <div className="doppel-outer-dark">
           <div className="doppel-inner-dark p-6 lg:h-full overflow-y-auto">
             <AnalysisPanel
+              onSeek={(ts) => transcriptViewerRef.current?.seekTo(ts)}
               analysis={{
                 executiveSummary: data.summary,
                 healthScore: data.healthScore,
@@ -320,6 +322,7 @@ export default function CallDetailPage({ params }: { params: { id: string } }) {
                   task: item.task || item.content,
                   owner: item.owner || 'Unknown',
                   priority: item.priority || 'medium',
+                  timestamp: item.timestamp,
                 })),
                 keyDecisions: data.decisions.map((d: any) => d.content || d),
                 nextSteps: data.nextSteps.map((s: any) => ({

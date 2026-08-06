@@ -6,8 +6,8 @@ import Link from 'next/link';
 import { Search, Filter, Phone, Download, Upload, Mic, Chrome, ArchiveRestore } from 'lucide-react';
 import UpgradePrompt from '@/components/upgrade-prompt';
 import { toast } from 'sonner';
-import { sanitizeCsvCell } from '@/lib/call-title';
 import { CallTitleEditor } from '@/components/call-title-editor';
+import { buildCallsCsv } from '@/lib/calls-export';
 
 interface CallEntry {
   id: string;
@@ -16,7 +16,7 @@ interface CallEntry {
   healthScore: number | null;
   sentiment: string | null;
   summary: string | null;
-  actionItems: Array<{ task: string; owner: string; due: string | null }>;
+  actionItems: Array<{ task: string; owner: string; due: string | null; timestamp?: number | null }>;
   sharedWithTeam?: boolean;
   ownerName?: string | null;
   assigneeName?: string | null;
@@ -170,19 +170,7 @@ export default function CallsPage() {
   const filteredCalls = calls.filter(call => !searchQuery.trim() || matches(call));
 
   const exportCSV = () => {
-    const headers = 'Filename,Date,Health Score,Sentiment,Action Items,Summary\n';
-    const cell = (v: unknown) => `"${sanitizeCsvCell(v)}"`;
-    const rows = calls.map(c =>
-      [
-        cell(c.displayName ?? c.filename),
-        cell(new Date(c.createdAt).toLocaleDateString()),
-        cell(c.healthScore ?? ''),
-        cell(c.sentiment ?? ''),
-        cell(c.actionItems.length),
-        cell(c.summary ?? ''),
-      ].join(',')
-    ).join('\n');
-    const blob = new Blob([headers + rows], { type: 'text/csv' });
+    const blob = new Blob([buildCallsCsv(calls)], { type: 'text/csv' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;

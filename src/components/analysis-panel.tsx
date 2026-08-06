@@ -9,6 +9,12 @@ interface Metric {
   evidence: string;
 }
 
+function formatTimestamp(seconds: number): string {
+  const mins = Math.floor(seconds / 60);
+  const secs = Math.floor(seconds % 60);
+  return `${mins}:${secs.toString().padStart(2, '0')}`;
+}
+
 function MetricRow({ name, metric }: { name: string; metric: Metric }) {
   const percentage = (metric.score / 10) * 100;
   return (
@@ -51,7 +57,7 @@ interface AnalysisPanelProps {
   analysis: {
     executiveSummary: string;
     healthScore: number;
-    actionItems: Array<{ task: string; owner: string; priority: string }>;
+    actionItems: Array<{ task: string; owner: string; priority: string; timestamp?: number }>;
     keyDecisions: string[];
     nextSteps: Array<{ step: string; date: string }>;
     interruptions?: number;
@@ -59,9 +65,10 @@ interface AnalysisPanelProps {
     speakerMetrics?: SpeakerMetric[];
     salesScorecard?: any;
   };
+  onSeek?: (timestamp: number) => void;
 }
 
-export function AnalysisPanel({ analysis }: AnalysisPanelProps) {
+export function AnalysisPanel({ analysis, onSeek }: AnalysisPanelProps) {
   return (
     <div className="space-y-6">
       <div>
@@ -173,18 +180,32 @@ export function AnalysisPanel({ analysis }: AnalysisPanelProps) {
           Action Items
         </h3>
         <div className="space-y-2">
-          {analysis.actionItems.map((item, index) => (
-            <div key={index} className="flex items-center justify-between py-2 px-3 bg-zinc-800/50 rounded-lg">
+          {analysis.actionItems.map((item, index) => {
+            const timestamp = item.timestamp;
+            return (
+            <div key={index} className="flex items-center justify-between gap-2 py-2 px-3 bg-zinc-800/50 rounded-lg">
               <span className="text-sm text-zinc-300">{item.task}</span>
-              <span className={`text-xs px-2 py-1 rounded-full ${
-                item.priority === 'high' ? 'bg-red-500/10 text-red-400' :
-                item.priority === 'medium' ? 'bg-amber-500/10 text-amber-400' :
-                'bg-zinc-700 text-zinc-400'
-              }`}>
-                {item.priority}
-              </span>
+              <div className="flex items-center gap-2 shrink-0">
+                {typeof timestamp === 'number' && onSeek && (
+                  <button
+                    type="button"
+                    onClick={() => onSeek(timestamp)}
+                    className="text-xs px-2 py-1 rounded-full bg-emerald-500/10 text-emerald-400 hover:bg-emerald-500/20 transition-colors"
+                  >
+                    Jump to {formatTimestamp(timestamp)}
+                  </button>
+                )}
+                <span className={`text-xs px-2 py-1 rounded-full ${
+                  item.priority === 'high' ? 'bg-red-500/10 text-red-400' :
+                  item.priority === 'medium' ? 'bg-amber-500/10 text-amber-400' :
+                  'bg-zinc-700 text-zinc-400'
+                }`}>
+                  {item.priority}
+                </span>
+              </div>
             </div>
-          ))}
+            );
+          })}
         </div>
       </div>
       

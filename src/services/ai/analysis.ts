@@ -64,7 +64,7 @@ export class AnalysisService {
         model: 'gpt-4o-mini',
         messages: [
           { role: 'system', content: prompt },
-          { role: "user", content: cap(transcript) }
+          { role: "user", content: this.buildUserMessage(transcript, segments) }
         ],
         response_format: { type: "json_object" },
         temperature: 0.3
@@ -94,12 +94,31 @@ export class AnalysisService {
       model: 'llama-3.3-70b-versatile',
       messages: [
         { role: 'system', content: prompt },
-        { role: 'user', content: cap(transcript) }
+        { role: 'user', content: this.buildUserMessage(transcript, segments) }
       ],
       response_format: { type: 'json_object' },
       temperature: 0.3
     });
     return this.parseResponse(response, segments);
+  }
+
+  private buildUserMessage(transcript: string, segments?: TranscriptionSegment[]): string {
+    if (!segments || segments.length === 0) {
+      return cap(transcript);
+    }
+    const timeline =
+      '\n\n[timeline]\n' +
+      segments
+        .map((s) => `[${this.formatTimestamp(s.start)}] ${s.text.slice(0, 100)}`)
+        .join('\n');
+    return cap(transcript + timeline);
+  }
+
+  private formatTimestamp(seconds: number): string {
+    const total = Math.max(0, Math.floor(seconds));
+    const m = Math.floor(total / 60);
+    const s = total % 60;
+    return `${m}:${s.toString().padStart(2, '0')}`;
   }
 
   private parseResponse(response: any, segments?: TranscriptionSegment[]): CallAnalysis {

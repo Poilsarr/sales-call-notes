@@ -128,6 +128,7 @@ model ActionItem {
   task        String
   owner       String
   due         String?
+  timestamp   Float?
   status      String    @default("PENDING")
   completedAt DateTime?
   createdAt   DateTime  @default(now())

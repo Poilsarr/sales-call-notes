@@ -9,6 +9,7 @@ const updateActionItemSchema = z.object({
   task: z.string().min(1).max(500).optional(),
   owner: z.string().max(200).optional(),
   due: z.string().nullable().optional(),
+  timestamp: z.number().nullable().optional(),
   status: z.enum(['PENDING', 'COMPLETED']).optional(),
 });
 
@@ -45,6 +46,7 @@ export async function PUT(req: Request, { params }: { params: { id: string } }) 
     if (parsed.data.task !== undefined) data.task = parsed.data.task;
     if (parsed.data.owner !== undefined) data.owner = parsed.data.owner;
     if (parsed.data.due !== undefined) data.due = parsed.data.due;
+    if (parsed.data.timestamp !== undefined) data.timestamp = parsed.data.timestamp;
     if (parsed.data.status !== undefined) {
       data.status = parsed.data.status;
       if (parsed.data.status === 'COMPLETED') {

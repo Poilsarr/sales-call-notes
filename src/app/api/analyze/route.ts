@@ -291,7 +291,15 @@ export async function POST(req: Request) {
       const analysisService = new AnalysisService(byok);
       analysisResult = await analysisService.analyze(
         correctedText,
-        undefined,
+        finalSegments.length > 0
+          ? finalSegments.map((s) => ({
+              id: 0,
+              text: s.text,
+              start: s.start,
+              end: s.end,
+              speaker: s.speaker,
+            }))
+          : undefined,
         requestedTemplate || undefined,
         vocabulary,
       );
@@ -346,6 +354,7 @@ export async function POST(req: Request) {
     // Normalize and save
     const actionItems = (analysisResult.actionItems ?? []).map((item: any) => ({
       task: item.task || '', owner: item.owner || '', due: item.due || null,
+      timestamp: (item as any).timestamp ?? null,
     }));
     const decisions = (analysisResult.commitments ?? []).map((d: any) => ({
       content: typeof d === 'string' ? d : d.what || '',
