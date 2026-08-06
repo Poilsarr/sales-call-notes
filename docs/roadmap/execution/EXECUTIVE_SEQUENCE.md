@@ -135,4 +135,34 @@ route + tests only. BYOK, recall/search, marketing copy untouched.
 - [x] runtime smoke + TTFB: /api/analyze 401 at 9ms (auth gate fast),
       /dashboard 307 at 10ms; real transcription TTFB requires Clerk auth +
       Groq key — env-limited, verify post-deploy via the analyze smoke
-- [ ] orchestrator sign-off for S5 → then /vs/gong (next arc)
+- [x] orchestrator APPROVED S5 arc (`093b1b6` docs log; P0 done as MED-3,
+      doc test count corrected to 13)
+
+## S5 ✅ /vs/gong honest comparison page — SHIPPED
+Commit `a11d07a`. Orchestrator-routed arc; scope: page + shared
+vs-comparison + sitemap + tests only. Sequence-number collision with the
+S5 row above (arc renumbering); the row "S5 /vs/gong page" at the top of
+this file is this arc's todo.
+
+- [x] page.tsx: hedged Gong figures only — every number traces to
+      docs/roadmap/market-intel.md (R15) with (reported)/reportedly;
+      Gauge figures 12/12 verified against src/lib/plans.ts
+- [x] pricingFootnote (Gong-only): honest "Gong does not publish pricing"
+      instead of the default "public pricing pages" text; other vs pages
+      untouched (default footer byte-identical, trailing period restored
+      via fragment + '.' node)
+- [x] no latency claims ("60 seconds"/"30 seconds"); privacy wedge says
+      "yours to delete" (soft-archive) — both pinned by tests
+- [x] a11y fixes in shared component: SEV-1 header text-white→gray-900
+      (1.07:1→9:1), SEV-2 CTA → #C94F17 (4.55:1, in-component only),
+      MED hero subhead gray-600, footnotes gray-500; metadata description
+      trimmed to 154 chars
+- [x] hard gate: vitest 738/738 (88 files) incl. 17-test honesty suite;
+      `next build` exit 0; smoke /vs/gong 200 TTFB 0.106s
+- [x] verification cloud (Reality Checker SHIP-WITH-FIXES, A11y FIX-FIRST,
+      Code Reviewer APPROVE) → all corrections applied → orchestrator
+      re-verified gate independently → APPROVED (confidence 0.9)
+- [x] tracked items written to DEVELOPMENT_FRONTIER.md: skip-link SEV-3
+      (layout-level, own PR next arc), CTA orange token site-wide
+      (design sign-off + own arc), dead data.metaDescription field (wire
+      or delete)

@@ -73,6 +73,12 @@ The principle: **never advance a level with a known break, mock-leak, or uncommi
 | #79 | 2026-06-22 | feat(site): add /status page (client-side health probe)            | Footer linked to 404                    |
 | #80 | 2026-06-22 | feat(site): anchor IDs on /features + globalize SiteFooter         | Broken anchor links + per-page footer   |
 | —   | 2026-08-04 | feat(calls): call renaming (title/displayName everywhere)          | Custom titles: PATCH write path, title search, CSV-injection-safe exports, rename UI (list + detail), RAG title retrieval; commits 6a09bad..8d5c477, 611 tests |
+| —   | 2026-08-06 | feat(vs): /vs/gong honest comparison page                          | S6 arc, orchestrator APPROVED: hedged Gong figures traced to market-intel.md (R15), Gauge figures 12/12 vs plans.ts, a11y fixes in shared vs-comparison (header 1.07:1→9:1, CTA→#C94F17 4.55:1, gray-600/500 text), footer regression fixed, meta 154 chars, 17-test honesty suite; commit a11d07a, 738 tests |
+
+**Tracked items (next arcs, from S6 orchestrator ruling):**
+- **Skip link (SEV-3, WCAG 2.4.1)** — site-wide, root layout only. Must land as its own PR next arc; if it doesn't, it gets an a11y-regression test.
+- **CTA orange token site-wide** — in-component #C94F17 stays; global brand token change (white-on-#F26522 fails AA) needs design sign-off + own arc.
+- **`data.metaDescription` is dead code** — declared on `ComparisonData`, never rendered, on all vs pages. Wire to a `<meta>` render or delete the field.
 
 ---
 
