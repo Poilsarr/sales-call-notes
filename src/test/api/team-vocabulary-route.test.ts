@@ -52,7 +52,7 @@ const mockPrisma = prisma as unknown as {
 const TEAM_ID = "team_1";
 
 beforeEach(() => {
-  mockAuth.mockReset().mockResolvedValue({ userId: "user_1" });
+  mockAuth.mockReset().mockResolvedValue({ userId: "user_1" } as any);
   mockRequireRole.mockReset().mockResolvedValue({ allowed: true, userRole: "ADMIN" });
   mockLog.mockReset();
   mockPrisma.user.findUnique.mockReset().mockResolvedValue({ teamId: TEAM_ID });
@@ -100,7 +100,7 @@ describe("GET /api/team/vocabulary", () => {
   });
 
   it("401s unauthenticated", async () => {
-    mockAuth.mockResolvedValue({ userId: null });
+    mockAuth.mockResolvedValue({ userId: null } as any);
     expect((await GET()).status).toBe(401);
   });
 });
