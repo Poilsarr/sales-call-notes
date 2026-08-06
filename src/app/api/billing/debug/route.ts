@@ -30,6 +30,13 @@ export async function GET(req: NextRequest) {
     const url = new URL(req.url);
     const queryEmail = url.searchParams.get("email");
 
+    // The query param exists to look up the CALLER's Paddle customer via a
+    // real email when the DB row holds a placeholder. Looking up any other
+    // email is an enumeration oracle — reject it.
+    if (queryEmail && queryEmail.toLowerCase() !== (user.email || "").toLowerCase()) {
+      return NextResponse.json({ error: "email must match your account" }, { status: 403 });
+    }
+
     // Accept real email from query param (the DB email may be a placeholder)
     const lookupEmail = (queryEmail || user.email).toLowerCase();
 

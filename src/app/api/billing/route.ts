@@ -87,25 +87,37 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ success: true, plan: "free" });
     }
 
-    const planConfig = PLANS[targetPlan as PlanTier];
-
     if (!user) {
-      const newUser = await prisma.user.create({
-        data: {
-          clerkId: userId,
-          email: "",
-          plan: targetPlan.toUpperCase() as any,
-          credits: 999,
-        },
-      });
-      await logAuditAction(newUser.id, "CREATE_USER_WITH_PLAN", newUser.id, "User", { plan: targetPlan });
-    } else {
-      await prisma.user.update({
-        where: { clerkId: userId },
-        data: { plan: targetPlan.toUpperCase() as any, credits: 999 },
-      });
-      await logAuditAction(user.id, "CHANGE_PLAN", user.id, "User", { newPlan: targetPlan });
+      // Never auto-create users with paid plans — previously this granted
+      // BUSINESS + 999 credits to anyone who called this endpoint.
+      return NextResponse.json(
+        { error: "No account found. Upgrade through checkout instead." },
+        { status: 403 },
+      );
     }
+
+    // Paid tiers must be backed by an active Paddle subscription for that
+    // plan. Previously any authenticated user could self-grant any paid plan.
+    const hasEntitlement =
+      user.subscriptionStatus === "active" &&
+      user.subscriptionPlan === targetPlan.toUpperCase();
+
+    if (!hasEntitlement) {
+      return NextResponse.json(
+        { error: "No active subscription for this plan. Upgrade through checkout." },
+        { status: 403 },
+      );
+    }
+
+    await prisma.user.update({
+      where: { clerkId: userId },
+      data: {
+        plan: targetPlan.toUpperCase() as any,
+        subscriptionStatus: "active",
+        subscriptionPlan: targetPlan.toUpperCase(),
+      },
+    });
+    await logAuditAction(user.id, "CHANGE_PLAN", user.id, "User", { newPlan: targetPlan });
 
     return NextResponse.json({ success: true, plan: targetPlan });
   } catch (error) {
