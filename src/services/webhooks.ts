@@ -12,6 +12,7 @@ export interface WebhookPayload {
   event: "call.created" | "call.analyzed" | "call.deleted";
   callId: string;
   userId: string;
+  teamId?: string | null;
   data: {
     summary?: string | null;
     healthScore?: number | null;
@@ -25,8 +26,18 @@ export interface WebhookPayload {
 
 export class WebhookService {
   async trigger(payload: WebhookPayload): Promise<void> {
+    // Deliver only to webhooks registered on the CALL's team. Without this
+    // filter, a single registered webhook (any team) receives every user's
+    // call data — a cross-tenant data leak.
+    // Integration.teamId is a required FK, so a teamless call has no
+    // webhooks to notify.
+    if (!payload.teamId) return;
     const integrations = await prisma.integration.findMany({
-      where: { provider: "webhook", enabled: true },
+      where: {
+        provider: "webhook",
+        enabled: true,
+        teamId: payload.teamId,
+      },
     });
 
     const results = await Promise.allSettled(
@@ -63,8 +74,19 @@ export class WebhookService {
     if (!url.startsWith("https://")) {
       throw new Error("Only HTTPS webhook URLs are allowed");
     }
-    const data: any = { provider: "webhook", config: JSON.stringify({ url }), enabled: true };
-    if (teamId) data.teamId = teamId;
-    await prisma.integration.create({ data });
+    // Integration.teamId is a required FK — registration without a team was
+    // silently throwing (permanent 500 on /api/webhooks). Require the caller
+    // to belong to a team so the webhook is scoped to it.
+    if (!teamId) {
+      throw new Error("Webhooks require a team workspace");
+    }
+    await prisma.integration.create({
+      data: {
+        provider: "webhook",
+        config: JSON.stringify({ url }),
+        enabled: true,
+        teamId,
+      },
+    });
   }
 }

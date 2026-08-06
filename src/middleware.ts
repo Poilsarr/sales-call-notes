@@ -5,7 +5,8 @@ import { rateLimitMiddleware } from "./middleware-rate-limit";
 import * as Sentry from "@sentry/nextjs";
 
 const isPublicApi = createRouteMatcher([
-  "/api/webhooks/(.*)",
+  "/api/webhooks/hubspot",
+  "/api/webhooks/salesforce",
   "/api/paddle/webhook",
   "/api/cron/(.*)",
   "/api/health",
@@ -107,12 +108,14 @@ export default clerkMiddleware(async (auth, req: NextRequest) => {
 //
 // /sign-in and /sign-up are Clerk-managed pages and MUST run through
 // middleware so Clerk can detect the "after sign-in" redirect. They're
-// in the matcher explicitly. /api/webhooks, /api/paddle/webhook,
-// /api/health, and /api/v1/* are public APIs that don't need Clerk
-// auth or rate-limit middleware.
+// in the matcher explicitly. /api/webhooks/hubspot, /api/webhooks/salesforce,
+// /api/paddle/webhook, /api/health, and /api/v1/* are public APIs that don't
+// need Clerk auth or rate-limit middleware. The USER webhook management
+// endpoint (/api/webhooks) must NOT be excluded here — without middleware,
+// auth() throws in production builds and every POST 500s.
 export const config = {
   matcher: [
-    "/api/((?!webhooks|paddle|health|partners|pricing-preview).*)",
+    "/api/((?!webhooks/hubspot|webhooks/salesforce|paddle|health|partners|pricing-preview).*)",
     "/dashboard/:path*",
     "/app/:path*",
     "/team/:path*",

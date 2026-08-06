@@ -17,9 +17,10 @@ export async function GET() {
       return NextResponse.json({ calls: [], members: [], hasTeam: false });
     }
 
-    // ponytail: fetch all team calls (not just shared), include owner/assignee/actionItems
+    // Team views show only calls the owner shared with the team
+    // (sharedWithTeam = true) — private member calls stay private.
     const calls = await prisma.call.findMany({
-      where: { teamId: user.teamId },
+      where: { teamId: user.teamId, sharedWithTeam: true },
       include: {
         actionItems: true,
         user: { select: { id: true, name: true, email: true } },

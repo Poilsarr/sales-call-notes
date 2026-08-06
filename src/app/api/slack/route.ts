@@ -3,6 +3,7 @@ import prisma from "@/lib/prisma";
 import { auth } from "@clerk/nextjs/server";
 import { getUserByClerkId } from "@/lib/get-user";
 import { SlackService } from "@/services/slack";
+import { canAccessCall } from "@/lib/call-access";
 
 export async function POST(req: NextRequest) {
   try {
@@ -25,6 +26,12 @@ export async function POST(req: NextRequest) {
 
     if (!call) {
       return NextResponse.json({ error: "Call not found" }, { status: 404 });
+    }
+
+    // IDOR guard: only the call owner (or a teammate when the call is
+    // shared with the team) may push a call to Slack.
+    if (!canAccessCall({ id: user.id, teamId: user.teamId, teamRole: user.teamRole }, call)) {
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
 
     const slack = new SlackService(teamId);

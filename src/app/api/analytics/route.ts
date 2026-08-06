@@ -202,6 +202,20 @@ export async function POST(req: Request) {
     const analytics = await analyticsService.analyzeCall(transcript, speakers || []);
 
     if (callId) {
+      const user = await getUserByClerkId(userId);
+
+      const targetCall = await prisma.call.findUnique({
+        where: { id: callId },
+        select: { userId: true, teamId: true, sharedWithTeam: true },
+      });
+      const ownCall = targetCall?.userId === user.id;
+      const teamSharedCall = Boolean(
+        targetCall?.sharedWithTeam && user.teamId && targetCall.teamId === user.teamId,
+      );
+      if (!targetCall || (!ownCall && !teamSharedCall)) {
+        return NextResponse.json({ error: 'Call not found' }, { status: 404 });
+      }
+
       await prisma.analytics.upsert({
         where: { callId },
         update: {

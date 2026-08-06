@@ -46,6 +46,7 @@ export async function GET(req: NextRequest) {
     const where = query
       ? {
           userId: user.id,
+          archived: false,
           OR: [
             { filename: { contains: query, mode: 'insensitive' as const } },
             { title: { contains: query, mode: 'insensitive' as const } },
@@ -53,7 +54,7 @@ export async function GET(req: NextRequest) {
             { summary: { contains: query, mode: 'insensitive' as const } },
           ],
         }
-      : { userId: user.id };
+      : { userId: user.id, archived: false };
 
     const [calls, total] = await Promise.all([
       prisma.call.findMany({

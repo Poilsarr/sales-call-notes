@@ -114,15 +114,28 @@ export async function POST(req: NextRequest) {
       });
     }
 
-    const integration = await prisma.integration.findFirst({
+    const integrations = await prisma.integration.findMany({
       where: { provider: "slack", enabled: true },
       include: { team: { include: { calls: true } } },
+    });
+
+    // Match the Slack workspace (payload.team_id) to the integration that
+    // registered it. Without this, findFirst picked an arbitrary team's
+    // integration and any workspace could query any team's calls.
+    const integration = integrations.find((i) => {
+      if (!i.config) return false;
+      try {
+        const config = JSON.parse(i.config) as { teamId?: string };
+        return config.teamId === payload.team_id;
+      } catch {
+        return false;
+      }
     });
 
     if (!integration) {
       return NextResponse.json({
         response_type: "ephemeral",
-        text: "No Slack integration found for your workspace. Ask your admin to connect Slack.",
+        text: "No Slack integration found for this workspace. Ask your admin to connect Slack.",
       });
     }
 

@@ -48,7 +48,9 @@ export async function POST(
       return NextResponse.json({ error: "Call not found" }, { status: 404 });
     }
 
-    if (call.user?.teamId && call.user.teamId !== user.teamId) {
+    // The call must belong to the admin's team — a null teamId on the call
+    // (or a different team) means it's not this team's data to sync.
+    if (!call.user?.teamId || call.user.teamId !== user.teamId) {
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
 

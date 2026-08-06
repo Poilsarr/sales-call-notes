@@ -16,7 +16,10 @@ export async function GET(req: NextRequest) {
   }
 
   const { searchParams } = new URL(req.url);
-  const sessionId = searchParams.get("sessionId") || "default";
+  const requestedSession = searchParams.get("sessionId") || "default";
+  // Namespace sessions per user — otherwise any authenticated user could
+  // subscribe to (or publish into) another user's live session.
+  const sessionId = `${userId}:${requestedSession}`;
 
   const stream = new ReadableStream({
     start(controller) {
@@ -64,7 +67,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "text required" }, { status: 400 });
     }
 
-    const resolvedSessionId = sessionId || "default";
+    const resolvedSessionId = `${userId}:${sessionId || "default"}`;
     const event = {
       type: "transcript" as const,
       sessionId: resolvedSessionId,

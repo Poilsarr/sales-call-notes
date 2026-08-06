@@ -227,9 +227,13 @@ const userDeleteWorker = new Worker("user-delete", async (job) => {
     });
     // Calls owned by user (cascades: actionItems, decisions, nextSteps, speakers, analytics, insight, comments, competitorMentions)
     await tx.call.deleteMany({ where: { userId } });
-    // Owned teams (cascades: integrations, members)
+    // Owned teams. Prisma defaults are Restrict here (members relation,
+    // VocabularyEntry relation), so null out memberships and delete
+    // dependent rows explicitly before deleting the team.
     const ownedTeams = await tx.team.findMany({ where: { ownerId: userId }, select: { id: true } });
     for (const t of ownedTeams) {
+      await tx.user.updateMany({ where: { teamId: t.id }, data: { teamId: null } });
+      await tx.vocabularyEntry.deleteMany({ where: { teamId: t.id } });
       await tx.integration.deleteMany({ where: { teamId: t.id } });
       await tx.team.delete({ where: { id: t.id } });
     }

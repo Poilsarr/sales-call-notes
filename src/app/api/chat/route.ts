@@ -3,16 +3,25 @@ import prisma from "@/lib/prisma";
 import { auth } from "@clerk/nextjs/server";
 import { createOpenAIClient } from "@/lib/openai-client";
 import { KnowledgeGraphService } from "@/services/ai/knowledge-graph";
+import { rateLimit } from "@/lib/rate-limit";
 
 export async function POST(req: NextRequest) {
   try {
     const { userId: sessionUserId } = await auth();
     if (!sessionUserId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
+    const rl = await rateLimit({ key: `chat:${sessionUserId}`, limit: 20, windowSec: 60 });
+    if (!rl.success) {
+      return NextResponse.json({ error: "Too many requests. Try again shortly." }, { status: 429 });
+    }
+
     const { query } = await req.json();
 
     if (!query) {
       return NextResponse.json({ error: "query required" }, { status: 400 });
+    }
+    if (typeof query !== "string" || query.length > 2000) {
+      return NextResponse.json({ error: "query must be a string of at most 2000 characters" }, { status: 400 });
     }
 
     const userId = sessionUserId;

@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { auth } from '@clerk/nextjs/server';
 import { createOpenAIClient } from '@/lib/openai-client';
 import { getSecret } from '@/lib/secrets';
 
@@ -6,14 +7,17 @@ export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
 
 export async function GET() {
+  const { userId } = await auth();
+  if (!userId) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  }
+
   const results: any = {
     timestamp: new Date().toISOString(),
     env: process.env.VERCEL_ENV ?? process.env.NODE_ENV ?? 'development',
     nodeVersion: process.version,
     openaiKeySet: Boolean(getSecret('OPENAI_API_KEY')),
     groqKeySet: Boolean(getSecret('GROQ_API_KEY')),
-    openaiKeyLength: getSecret('OPENAI_API_KEY').length,
-    groqKeyLength: getSecret('GROQ_API_KEY').length,
     tests: {},
   };
 

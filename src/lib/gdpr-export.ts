@@ -16,9 +16,11 @@ export async function buildUserExport(userId: string): Promise<ExportPayload> {
   const user = await prisma.user.findUnique({ where: { id: userId } });
   if (!user) throw new Error("User not found");
 
-  const callWhere = user.teamId
-    ? { OR: [{ userId: user.id }, { teamId: user.teamId }] }
-    : { userId: user.id };
+  // GDPR export = *this user's* data. Teammates' private calls (and even
+  // team-shared calls owned by others) are not the requester's data, so scope
+  // strictly to calls this user owns. The old OR[{userId},{teamId}] leaked
+  // every teammate's transcripts into any member's export.
+  const callWhere = { userId: user.id };
 
   const [calls, actionItems, decisions, nextSteps, comments, auditLogs] =
     await Promise.all([

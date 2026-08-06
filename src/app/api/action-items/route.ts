@@ -62,12 +62,28 @@ export async function POST(req: Request) {
 
     const { task, owner, due, callId } = parsed.data;
 
+    let targetCallId = callId || (await getDefaultCall(user.id));
+
+    if (callId) {
+      const targetCall = await prisma.call.findUnique({
+        where: { id: callId },
+        select: { userId: true, teamId: true, sharedWithTeam: true },
+      });
+      const ownCall = targetCall?.userId === user.id;
+      const teamSharedCall = Boolean(
+        targetCall?.sharedWithTeam && user.teamId && targetCall.teamId === user.teamId,
+      );
+      if (!targetCall || (!ownCall && !teamSharedCall)) {
+        return NextResponse.json({ error: 'Call not found' }, { status: 404 });
+      }
+    }
+
     const item = await prisma.actionItem.create({
       data: {
         task,
         owner,
         due: due || null,
-        callId: callId || (await getDefaultCall(user.id)),
+        callId: targetCallId,
       },
     });
 

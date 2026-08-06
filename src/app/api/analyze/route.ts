@@ -30,6 +30,7 @@ import { HubSpotService } from '@/services/crm/hubspot';
 import { SalesforceService } from '@/services/crm/salesforce';
 import { logAuditAction } from '@/lib/audit-logger';
 import { refreshIntegrationToken } from '@/lib/integrations/token-refresh';
+import { isTrustedBlobUrl } from '@/lib/blob-url';
 import { put as blobPut, del as blobDel } from '@vercel/blob';
 
 export const maxDuration = 300;
@@ -70,6 +71,10 @@ export async function POST(req: Request) {
       const token = process.env.BLOB_READ_WRITE_TOKEN;
       if (!token) {
         return NextResponse.json({ error: 'BLOB_READ_WRITE_TOKEN not set' }, { status: 500 });
+      }
+
+      if (!isTrustedBlobUrl(blobUrl)) {
+        return NextResponse.json({ error: 'Invalid blobUrl: must point to this store' }, { status: 400 });
       }
 
       const response = await fetch(blobUrl, {
@@ -378,7 +383,7 @@ export async function POST(req: Request) {
         transcript: finalTranscriptWithSpeakers,
         language: transcription.language || requestedLanguage || 'en',
         summary: analysisResult.executiveSummary || correctedText.slice(0, 500),
-        healthScore: typeof analysisResult.salesScorecard?.overallScore === 'number' ? analysisResult.salesScorecard.overallScore : Number(analysisResult.salesScorecard?.overallScore) || null,
+        healthScore: Number.isFinite(analysisResult.salesScorecard?.overallScore) ? analysisResult.salesScorecard.overallScore : null,
         sentiment: callAnalytics.sentiment,
         actionItems: { create: actionItems },
         decisions: { create: decisions },
@@ -504,6 +509,7 @@ export async function POST(req: Request) {
         event: "call.analyzed",
         callId: call.id,
         userId: user.id,
+        teamId: user.teamId,
         data: {
           summary: analysisResult.executiveSummary ?? null,
           healthScore: analysisResult.salesScorecard?.overallScore ?? null,

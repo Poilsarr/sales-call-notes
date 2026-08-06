@@ -10,12 +10,20 @@ interface SharePageProps {
 }
 
 export async function generateMetadata({ params }: SharePageProps): Promise<Metadata> {
-  const call = await prisma.call.findUnique({
-    where: { id: params.id, isPublic: true },
-    select: { filename: true, title: true, summary: true },
-  });
+  let call: { filename: string; title: string | null; summary: string | null } | null = null;
+  try {
+    call = await prisma.call.findUnique({
+      where: { id: params.id, isPublic: true },
+      select: { filename: true, title: true, summary: true },
+    });
+  } catch (e) {
+    console.error("Share metadata DB error:", e);
+  }
 
-  if (!call) return { title: 'Call Not Found', robots: { index: false, follow: false } };
+  // next 14.2.x: throwing notFound() here (instead of only in the page
+  // component) is what sets the HTTP 404 status — page-only notFound()
+  // streams the not-found UI with status 200.
+  if (!call) notFound();
 
   return {
     title: `${call.title || call.filename} | Gauge`,
@@ -24,17 +32,25 @@ export async function generateMetadata({ params }: SharePageProps): Promise<Meta
 }
 
 export default async function SharePage({ params }: SharePageProps) {
-  const call = await prisma.call.findUnique({
-    where: { id: params.id, isPublic: true },
-    include: {
-      actionItems: true,
-      decisions: true,
-      nextSteps: true,
-      analytics: true,
-      insight: true,
-      user: { select: { name: true, email: true } },
-    },
-  });
+  let call;
+  try {
+    call = await prisma.call.findUnique({
+      where: { id: params.id, isPublic: true },
+      include: {
+        actionItems: true,
+        decisions: true,
+        nextSteps: true,
+        analytics: true,
+        insight: true,
+        // email intentionally excluded — the share page is public and must
+        // not expose the owner's email address.
+        user: { select: { name: true } },
+      },
+    });
+  } catch (e) {
+    console.error("Share page DB error:", e);
+    notFound();
+  }
 
   if (!call) notFound();
 
@@ -56,7 +72,7 @@ export default async function SharePage({ params }: SharePageProps) {
         <header className="mb-8 pb-6 border-b border-zinc-800">
           <h1 className="text-3xl font-bold mb-2">{call.title || call.filename}</h1>
           <p className="text-zinc-400">
-            Recorded by {call.user.name || call.user.email} on{' '}
+            Recorded by {call.user.name || 'Gauge user'} on{' '}
             {new Date(call.createdAt).toLocaleDateString()}
           </p>
           {call.healthScore !== null && (
