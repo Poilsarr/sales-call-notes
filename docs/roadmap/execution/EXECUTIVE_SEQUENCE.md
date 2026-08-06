@@ -109,9 +109,12 @@ FOLLOW-UP (P2): /pricing /changelog /roadmap /no-bot /features render
 <Nav /> without a <main> — global skip link is a no-op there; wrap in
 <main id="main"> or omit Nav.
 
-## S7 Team custom vocabulary
-- [ ] model + migration + CRUD + prompt injection + settings UI
-- [ ] GATE: vitest → build → agents
+## S7 Team custom vocabulary (SHIPPED 2026-08-06)
+- [x] model + migration + CRUD + prompt injection + settings UI
+- [x] GATE: vitest → build → agents
+SHIPPED LOG 2026-08-06: commit 3fd7af3, orchestrator APPROVED (trivial fixes:
+/api/summarize now injects vocabulary too; UI copy says "new" call analysis;
+closing delimiter added). 92 files / 780 tests; build 0.
 
 ## S8 Action items first-class
 - [ ] migration (timestamp) + prompt + route + serializers
