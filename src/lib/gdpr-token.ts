@@ -66,7 +66,7 @@ export function issueExportToken(
 export function getExportTokenExpiryMs(token: string | null | undefined): number | null {
   if (!token || typeof token !== "string") return null;
   const parts = token.split("_");
-  if (parts.length !== 4 || parts[0] !== "exp") return null;
+  if (parts.length < 4 || parts[0] !== "exp") return null;
   const ms = Number(parts[1]);
   if (!Number.isFinite(ms) || ms <= 0) return null;
   return ms;
@@ -75,14 +75,16 @@ export function getExportTokenExpiryMs(token: string | null | undefined): number
 export function getExportTokenUserId(token: string | null | undefined): string | null {
   if (!token || typeof token !== "string") return null;
   const parts = token.split("_");
-  if (parts.length !== 4 || parts[0] !== "exp") return null;
-  return parts[3] || null;
+  if (parts.length < 4 || parts[0] !== "exp") return null;
+  // userIds (e.g. Clerk's user_...) may themselves contain underscores,
+  // so the userId is everything after exp_<ms>_<hash>_ joined back.
+  return parts.slice(3).join("_") || null;
 }
 
 export function getExportTokenHash(token: string | null | undefined): string | null {
   if (!token || typeof token !== "string") return null;
   const parts = token.split("_");
-  if (parts.length !== 4 || parts[0] !== "exp") return null;
+  if (parts.length < 4 || parts[0] !== "exp") return null;
   return parts[2] || null;
 }
 

@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { isExportTokenValid } from "@/lib/gdpr-token";
 
 export const dynamic = "force-dynamic";
 
@@ -9,10 +10,10 @@ export const dynamic = "force-dynamic";
  * Token format produced by the data-export worker:
  *   exp_<expiresAtMs>_<hash16>_<userId>
  *
- * Validates: token not expired, user exists, then re-runs the export
- * on demand and returns it as a JSON download. (Inline payload —
- * the worker stores the token in AuditLog metadata; in production
- * this would serve a presigned S3 URL.)
+ * Validates: token not expired, HMAC verified (constant-time), user
+ * exists, then re-runs the export on demand and returns it as a JSON
+ * download. (Inline payload — the worker stores the token in AuditLog
+ * metadata; in production this would serve a presigned S3 URL.)
  */
 export async function GET(req: Request) {
   try {
@@ -24,12 +25,14 @@ export async function GET(req: Request) {
     }
 
     const parts = token.split("_");
-    if (parts.length !== 4 || parts[0] !== "exp") {
+    if (parts.length < 4 || parts[0] !== "exp") {
       return NextResponse.json({ error: "Invalid token" }, { status: 400 });
     }
 
     const expiresAtMs = Number(parts[1]);
-    const userId = parts[3];
+    // Clerk user IDs contain underscores (user_2...), so the userId is
+    // everything after exp_<ms>_<hash>_ joined back together.
+    const userId = parts.slice(3).join("_");
 
     if (!expiresAtMs || !userId || Number.isNaN(expiresAtMs)) {
       return NextResponse.json({ error: "Malformed token" }, { status: 400 });
@@ -40,6 +43,13 @@ export async function GET(req: Request) {
         { error: "Download link expired. Request a new export." },
         { status: 410 }
       );
+    }
+
+    // HMAC verification (constant-time). A token with the right shape
+    // but a forged or borrowed hash MUST be rejected — this is what
+    // prevents guessing another user's export URL.
+    if (!isExportTokenValid(token, userId)) {
+      return NextResponse.json({ error: "Invalid download link" }, { status: 403 });
     }
 
     const user = await prisma.user.findUnique({

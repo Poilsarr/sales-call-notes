@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { getExportTokenExpiryMs, isExportTokenValid, issueExportToken, computeExportTokenHash } from "@/lib/gdpr-token";
+import { getExportTokenExpiryMs, getExportTokenUserId, isExportTokenValid, issueExportToken, computeExportTokenHash } from "@/lib/gdpr-token";
 
 // Pure unit tests — no DB, no HTTP. Token shape is the
 // single most failure-prone part of the export pipeline
@@ -38,6 +38,16 @@ describe("isExportTokenValid", () => {
     const token = issueExportToken(userId, 24 * 60 * 60 * 1000);
     expect(token).not.toBeNull();
     expect(isExportTokenValid(token!, userId, Date.now())).toBe(true);
+  });
+
+  // Regression: real Clerk user IDs (user_2abc...) contain underscores,
+  // so the userId must parse as everything after exp_<ms>_<hash>_.
+  it("round-trips tokens for userIds containing underscores", () => {
+    const clerkId = "user_2abc123xyz";
+    const token = issueExportToken(clerkId, 24 * 60 * 60 * 1000)!;
+    expect(getExportTokenUserId(token)).toBe(clerkId);
+    expect(isExportTokenValid(token, clerkId, Date.now())).toBe(true);
+    expect(isExportTokenValid(token, "user_2other", Date.now())).toBe(false);
   });
 
   it("rejects an expired token", () => {
