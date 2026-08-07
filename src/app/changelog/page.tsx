@@ -64,7 +64,7 @@ export default function ChangelogPage() {
   return (
     <>
       <Nav />
-      <div className="min-h-screen bg-white text-zinc-900">
+      <main id="main" className="min-h-screen bg-white text-zinc-900">
         <div className="max-w-3xl mx-auto px-6 py-20">
           <div className="eyebrow inline-flex items-center gap-2 mb-6">
             <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#F26522]/10 text-[#F26522] text-[11px] font-semibold">
@@ -126,7 +126,7 @@ export default function ChangelogPage() {
             for the full commit history.
           </p>
         </div>
-      </div>
+      </main>
     </>
   );
 }

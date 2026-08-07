@@ -686,8 +686,9 @@ export default function FeaturesPageClient() {
   }, { scope: heroRef });
 
   return (
-    <main className="min-h-screen bg-white text-gray-900 overflow-hidden selection:bg-[#F26522]/20">
+    <>
       <Nav />
+      <main id="main" className="min-h-screen bg-white text-gray-900 overflow-hidden selection:bg-[#F26522]/20">
 
       <section ref={heroRef} className="relative min-h-[90dvh] flex flex-col items-center justify-center px-5 sm:px-8 lg:px-12 pt-32 pb-24 sm:pb-32 bg-[#EFEFEF] overflow-hidden">
         <ParticleCanvas />
@@ -843,5 +844,6 @@ export default function FeaturesPageClient() {
 
       <StickyMarketingCta label="Start with 300 free minutes/mo" href="/sign-up" cta="Start free" />
     </main>
+    </>
   );
 }

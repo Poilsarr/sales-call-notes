@@ -11,7 +11,7 @@ export default function NoBotPage() {
   return (
     <>
       <Nav />
-      <div className="min-h-screen bg-white text-zinc-900">
+      <main id="main" className="min-h-screen bg-white text-zinc-900">
         {/* Hero */}
         <div className="max-w-4xl mx-auto px-6 pt-24 pb-16 text-center">
           <div className="eyebrow inline-flex items-center gap-2 mb-8">
@@ -209,7 +209,7 @@ export default function NoBotPage() {
             <ArrowRight className="w-5 h-5" />
           </Link>
         </div>
-      </div>
+      </main>
     </>
   );
 }

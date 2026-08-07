@@ -266,7 +266,7 @@ export default function PricingClient({
   );
 
   return (
-    <main className="flex-1 bg-white text-gray-900">
+    <main id="main" className="flex-1 bg-white text-gray-900">
       {/* Hero — two-column layout matching the home page. Left: copy + billing
           toggle. Right: a product preview card showing what Pro actually buys
           you, so visitors don't have to scroll to picture the value. */}
