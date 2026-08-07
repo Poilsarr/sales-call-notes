@@ -1,5 +1,6 @@
 {
   "buildCommand": "prisma migrate deploy && next build",
+  "nodeVersion": "22.x",
   "functions": {
     "src/app/api/analyze/route.ts": {
       "maxDuration": 300
