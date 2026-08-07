@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useUser, useAuth } from "@clerk/nextjs";
 import { useRouter } from "next/navigation";
 import Nav from "@/components/nav";
@@ -95,11 +95,18 @@ export default function TeamPage() {
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
 
-  useEffect(() => {
-    fetchMembers();
+  const resetState = useCallback(() => {
+    setMembers([]);
+    setSharedCalls([]);
+    setTeamAnalytics({
+      sharedCalls: 0,
+      avgHealthScore: 0,
+      openActionItems: 0,
+      assignedCalls: 0,
+    });
   }, []);
 
-  const fetchMembers = async () => {
+  const fetchMembers = useCallback(async () => {
     try {
       const res = await fetch("/api/team");
       let data: any = null;
@@ -132,18 +139,11 @@ export default function TeamPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [router, resetState]);
 
-  const resetState = () => {
-    setMembers([]);
-    setSharedCalls([]);
-    setTeamAnalytics({
-      sharedCalls: 0,
-      avgHealthScore: 0,
-      openActionItems: 0,
-      assignedCalls: 0,
-    });
-  };
+  useEffect(() => {
+    fetchMembers();
+  }, [fetchMembers]);
 
   const inviteMember = async () => {
     if (!inviteEmail.trim()) return;

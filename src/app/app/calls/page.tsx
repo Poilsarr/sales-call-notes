@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { useUser } from '@clerk/nextjs';
 import Link from 'next/link';
 import { Search, Filter, Phone, Download, Upload, Mic, Chrome, ArchiveRestore } from 'lucide-react';
@@ -50,13 +50,13 @@ export default function CallsPage() {
   });
   const searchRef = useRef<HTMLInputElement>(null);
 
-  const loadArchived = () => {
+  const loadArchived = useCallback(() => {
     if (!user?.id) return;
     fetch(`/api/calls/archived`, { cache: "no-store" })
       .then(async (r) => (r.ok ? r.json() : { calls: [] }))
       .then((d) => setArchived(Array.isArray(d.calls) ? d.calls : []))
       .catch(() => setArchived([]));
-  };
+  }, [user?.id]);
 
   const restoreCall = async (id: string) => {
     setRestoringId(id);
@@ -153,7 +153,7 @@ export default function CallsPage() {
 
   useEffect(() => {
     if (tab === "archived") loadArchived();
-  }, [tab, user?.id]);
+  }, [tab, loadArchived]);
 
   const isLimited = retention.callLimit !== "unlimited";
   const atLimit = isLimited && retention.visibleCount >= (retention.callLimit as number);

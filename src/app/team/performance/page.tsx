@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { useUser, useAuth } from '@clerk/nextjs';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
@@ -45,11 +45,7 @@ export default function TeamPerformancePage() {
   const [sortBy, setSortBy] = useState<'date' | 'health'>('date');
   const [filterOwner, setFilterOwner] = useState<string>('');
 
-  useEffect(() => {
-    fetchPerformance();
-  }, []);
-
-  const fetchPerformance = async () => {
+  const fetchPerformance = useCallback(async () => {
     try {
       const res = await fetch('/api/team/performance');
       if (res.ok) {
@@ -64,7 +60,11 @@ export default function TeamPerformancePage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [router]);
+
+  useEffect(() => {
+    fetchPerformance();
+  }, [fetchPerformance]);
 
   const sortedCalls = [...calls]
     .filter((call) => !filterOwner || call.ownerName === filterOwner)
