@@ -126,14 +126,23 @@ closing delimiter added). 92 files / 780 tests; build 0.
 - [ ] GATE: vitest → build → agents
 
 ## S10 RAG chat top-5 retrieval
-- [ ] chat context uses findSimilarCalls top-5
-- [ ] GATE: vitest → build → agents
+- [x] chat context uses top-5 retrieval (via `searchByQuery`, the correct
+      query→call API; `findSimilarCalls` is call-to-call and unused) —
+      BYOK-aware + user-scoping fix shipped
+- [x] GATE: vitest → build → agents
+SHIPPED LOG 2026-08-06: commit a28f248 (`fix(chat): RAG retrieval
+BYOK-aware + correct user scoping`), 832 tests, CI + React Doctor green on
+tip d457af1.
 
 ## S11 Ship
-- [ ] full gate, git status clean, single-concern commits per sub-task
-- [ ] update docs/roadmap/DEVELOPMENT_FRONTIER.md "Recently Shipped"
-- [ ] PR + merge flow per CLAUDE.md (admin squash, Vercel context hang
+- [x] full gate, git status clean, single-concern commits per sub-task
+- [x] update docs/roadmap/DEVELOPMENT_FRONTIER.md "Recently Shipped"
+- [x] PR + merge flow per CLAUDE.md (admin squash, Vercel context hang
       recovery documented)
+SHIPPED LOG 2026-08-07: S8 (c3dc3dd), S9 (aa3f570), S10 (a28f248) shipped
+to main with per-arc gates; CI green on tip; CI infra modernization
+commit 34d93de (checkout/setup-node v5, Node 22 LTS) verified green
+(3m47s CI, 37s React Doctor).
 
 ## S4 (agent arc) ✅ Dashboard semantic recall — SHIPPED
 Note: distinct from the S4 transcription-hardening row above (that row
