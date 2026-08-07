@@ -4,11 +4,16 @@ import { auth } from "@clerk/nextjs/server";
 import { createOpenAIClient } from "@/lib/openai-client";
 import { KnowledgeGraphService } from "@/services/ai/knowledge-graph";
 import { rateLimit } from "@/lib/rate-limit";
+import { getUserByClerkId } from "@/lib/get-user";
+import { getByokKeys } from "@/lib/byok-resolver";
 
 export async function POST(req: NextRequest) {
   try {
     const { userId: sessionUserId } = await auth();
     if (!sessionUserId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
+    const user = await getUserByClerkId(sessionUserId);
+    if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
     const rl = await rateLimit({ key: `chat:${sessionUserId}`, limit: 20, windowSec: 60 });
     if (!rl.success) {
@@ -24,7 +29,8 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "query must be a string of at most 2000 characters" }, { status: 400 });
     }
 
-    const userId = sessionUserId;
+    const userId = user.id;
+    const byok = await getByokKeys(user.id);
     const kg = new KnowledgeGraphService();
 
     // ponytail: RAG retrieval — embed the query, fetch top-5 similar calls
@@ -33,7 +39,7 @@ export async function POST(req: NextRequest) {
     // yet (e.g. calls uploaded before indexing existed) or embedding fails.
     let retrieved: { id: string; filename: string; title: string | null; summary: string | null; transcript: string | null }[] = [];
     try {
-      retrieved = await kg.searchByQuery(query, userId, 5, undefined, true);
+      retrieved = await kg.searchByQuery(query, userId, 5, byok.openaiKey, true);
     } catch (err) {
       console.error("RAG retrieval failed, falling back to recent calls:", err);
     }
@@ -41,7 +47,7 @@ export async function POST(req: NextRequest) {
     if (retrieved.length === 0) {
       const recent = await prisma.call.findMany({
         where: { userId },
-        select: { id: true, filename: true, title: true, summary: true, transcript: true },
+        select: { id: true, filename: true, title: true, summary: true, transcript: true, createdAt: true },
         orderBy: { createdAt: "desc" },
         take: 5,
       });

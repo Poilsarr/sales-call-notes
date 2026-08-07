@@ -10,6 +10,8 @@ const mocks = vi.hoisted(() => ({
     }
   },
   rateLimit: vi.fn(),
+  getUserByClerkId: vi.fn(),
+  getByokKeys: vi.fn(),
 }));
 
 vi.mock("@/lib/prisma", () => ({ default: mocks.prisma }));
@@ -17,6 +19,8 @@ vi.mock("@clerk/nextjs/server", () => ({ auth: mocks.auth }));
 vi.mock("@/lib/openai-client", () => ({ createOpenAIClient: mocks.createOpenAIClient }));
 vi.mock("@/services/ai/knowledge-graph", () => ({ KnowledgeGraphService: mocks.KnowledgeGraphService }));
 vi.mock("@/lib/rate-limit", () => ({ rateLimit: mocks.rateLimit }));
+vi.mock("@/lib/get-user", () => ({ getUserByClerkId: mocks.getUserByClerkId }));
+vi.mock("@/lib/byok-resolver", () => ({ getByokKeys: mocks.getByokKeys }));
 
 import { POST } from "@/app/api/chat/route";
 
@@ -30,9 +34,11 @@ const okResponse = () =>
   );
 
 describe("POST /api/chat guardrails", () => {
-  beforeEach(() => {
+beforeEach(() => {
     vi.clearAllMocks();
     mocks.auth.mockResolvedValue({ userId: "clerk-1" });
+    mocks.getUserByClerkId.mockResolvedValue({ id: "user-db-id", plan: "free" });
+    mocks.getByokKeys.mockResolvedValue({ openaiKey: "sk-byok-test", groqKey: undefined, dropped: [] });
     mocks.rateLimit.mockResolvedValue({ success: true });
     mocks.createOpenAIClient.mockReturnValue({
       chat: { completions: { create: vi.fn().mockResolvedValue({ choices: [{ message: { content: "answer" } }] }) } },
@@ -65,5 +71,12 @@ describe("POST /api/chat guardrails", () => {
     mocks.auth.mockResolvedValue({ userId: null });
     const res = await POST({ json: () => Promise.resolve({ query: "hello" }) } as any);
     expect(res.status).toBe(401);
+  });
+
+  it("returns 401 when the Clerk user has no matching DB record", async () => {
+    mocks.getUserByClerkId.mockResolvedValueOnce(null);
+    const res = await POST({ json: () => Promise.resolve({ query: "hello" }) } as any);
+    expect(res.status).toBe(401);
+    expect(mocks.getUserByClerkId).toHaveBeenCalledWith("clerk-1");
   });
 });

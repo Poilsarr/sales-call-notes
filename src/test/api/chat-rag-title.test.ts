@@ -1,5 +1,5 @@
 import type { NextRequest } from 'next/server';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 const mocks = vi.hoisted(() => {
   const embeddingsCreate = vi.fn();
@@ -11,6 +11,8 @@ const mocks = vi.hoisted(() => {
   return {
     auth: vi.fn(),
     callFindMany: vi.fn(),
+    getUserByClerkId: vi.fn(),
+    getByokKeys: vi.fn(),
     embeddingsCreate,
     chatCompletionsCreate,
     createOpenAIClient,
@@ -22,6 +24,8 @@ vi.mock('@/lib/prisma', () => ({
   default: { call: { findMany: mocks.callFindMany } },
 }));
 vi.mock('@/lib/openai-client', () => ({ createOpenAIClient: mocks.createOpenAIClient }));
+vi.mock('@/lib/get-user', () => ({ getUserByClerkId: mocks.getUserByClerkId }));
+vi.mock('@/lib/byok-resolver', () => ({ getByokKeys: mocks.getByokKeys }));
 vi.mock('@/lib/secrets', () => ({
   getSecret: (key: string) => (key === 'OPENAI_API_KEY' ? 'test-key' : ''),
 }));
@@ -138,13 +142,22 @@ describe('KnowledgeGraphService.searchByQuery title fallback', () => {
 });
 
 describe('/api/chat POST callContext includes title', () => {
+  let searchSpy: ReturnType<typeof vi.spyOn> | undefined;
+
   beforeEach(() => {
     vi.clearAllMocks();
     mocks.auth.mockResolvedValue({ userId: USER_ID });
+    mocks.getUserByClerkId.mockResolvedValue({ id: 'user-db-id', plan: 'free' });
+    mocks.getByokKeys.mockResolvedValue({ openaiKey: 'sk-byok-test', groqKey: undefined, dropped: [] });
     mocks.embeddingsCreate.mockResolvedValue({ data: [{ embedding: [0.1, 0.2] }] });
     mocks.chatCompletionsCreate.mockResolvedValue({
       choices: [{ message: { content: 'The renewal call went well.' } }],
     });
+  });
+
+  afterEach(() => {
+    searchSpy?.mockRestore();
+    searchSpy = undefined;
   });
 
   it('passes the call title into the LLM context', async () => {
@@ -164,5 +177,25 @@ describe('/api/chat POST callContext includes title', () => {
     expect(res.status).toBe(200);
     const createArgs = mocks.chatCompletionsCreate.mock.calls[0][0];
     expect(createArgs.messages[1].content).toContain('"title": "Acme Q3 renewal"');
+  });
+
+  it('scopes RAG to the DB user id and passes the user BYOK key to retrieval', async () => {
+    mocks.callFindMany.mockResolvedValue([]);
+
+    searchSpy = vi.spyOn(KnowledgeGraphService.prototype, 'searchByQuery');
+
+    const { POST } = await import('@/app/api/chat/route');
+    const res = await POST(
+      new Request('http://x/api/chat', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ query: 'query-arg' }),
+      }) as unknown as NextRequest,
+    );
+
+    expect(res.status).toBe(200);
+    expect(mocks.getUserByClerkId).toHaveBeenCalledWith(USER_ID);
+    expect(mocks.getByokKeys).toHaveBeenCalledWith('user-db-id');
+    expect(searchSpy).toHaveBeenCalledWith('query-arg', 'user-db-id', 5, 'sk-byok-test', true);
   });
 });
