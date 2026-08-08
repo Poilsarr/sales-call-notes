@@ -1,9 +1,11 @@
 'use client';
 
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { use, useEffect, useMemo, useRef, useState } from 'react';
 import { motion } from 'framer-motion';
 import { Download, MessageSquarePlus, Share2, UserRoundCheck, Link as LinkIcon, AlertCircle, FileQuestion, Play, Pause } from 'lucide-react';
 import { toast } from 'sonner';
+
+import Link from 'next/link';
 
 import { TranscriptViewer, type TranscriptViewerHandle } from '@/components/transcript-viewer';
 import { AnalysisPanel } from '@/components/analysis-panel';
@@ -44,7 +46,8 @@ interface CallData {
   filename?: string;
 }
 
-export default function CallDetailPage({ params }: { params: { id: string } }) {
+export default function CallDetailPage({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = use(params);
   const [data, setData] = useState<CallData | null>(null);
   const [teamMembers, setTeamMembers] = useState<TeamMember[]>([]);
   const [loading, setLoading] = useState(true);
@@ -59,7 +62,7 @@ export default function CallDetailPage({ params }: { params: { id: string } }) {
     async function fetchCall() {
       try {
         const [callRes, teamRes] = await Promise.all([
-          fetch(`/api/history/${params.id}`),
+          fetch(`/api/history/${id}`),
           fetch('/api/team'),
         ]);
         const call = await callRes.json();
@@ -97,7 +100,7 @@ export default function CallDetailPage({ params }: { params: { id: string } }) {
     }
 
     fetchCall();
-  }, [params.id]);
+  }, [id]);
 
   const segments = useMemo(() => {
     return (data?.transcript || '')
@@ -115,7 +118,7 @@ export default function CallDetailPage({ params }: { params: { id: string } }) {
 
   const renameCall = async (title: string | null) => {
     try {
-      const res = await fetch(`/api/history/${params.id}`, {
+      const res = await fetch(`/api/history/${id}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ title }),
@@ -143,7 +146,7 @@ export default function CallDetailPage({ params }: { params: { id: string } }) {
   const updateCollaboration = async (payload: Record<string, unknown>) => {
     setSavingSettings(true);
     try {
-      const res = await fetch(`/api/history/${params.id}`, {
+      const res = await fetch(`/api/history/${id}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),
@@ -175,7 +178,7 @@ export default function CallDetailPage({ params }: { params: { id: string } }) {
 
     setSavingComment(true);
     try {
-      const res = await fetch(`/api/history/${params.id}`, {
+      const res = await fetch(`/api/history/${id}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ body: commentBody }),
@@ -217,12 +220,12 @@ export default function CallDetailPage({ params }: { params: { id: string } }) {
             </div>
             <h2 className="text-lg font-medium text-white mb-2">Couldn&apos;t load this call</h2>
             <p className="text-sm text-zinc-400 mb-6">{error}</p>
-            <a
+            <Link
               href="/app/calls"
               className="inline-flex items-center justify-center gap-2 rounded-full bg-zinc-800 hover:bg-zinc-700 text-white text-sm font-medium px-5 py-2.5 transition-colors"
             >
               Back to calls
-            </a>
+            </Link>
           </div>
         </div>
       </div>
@@ -241,12 +244,12 @@ export default function CallDetailPage({ params }: { params: { id: string } }) {
             <p className="text-sm text-zinc-400 mb-6">
               This call may have been deleted, archived, or you don&apos;t have permission to view it.
             </p>
-            <a
+            <Link
               href="/app/calls"
               className="inline-flex items-center justify-center gap-2 rounded-full bg-zinc-800 hover:bg-zinc-700 text-white text-sm font-medium px-5 py-2.5 transition-colors"
             >
               Back to calls
-            </a>
+            </Link>
           </div>
         </div>
       </div>
@@ -372,7 +375,7 @@ export default function CallDetailPage({ params }: { params: { id: string } }) {
                     disabled={savingSettings}
                     onChange={async (e) => {
                       try {
-                        const res = await fetch(`/api/calls/${params.id}/share`, { method: 'POST' });
+                        const res = await fetch(`/api/calls/${id}/share`, { method: 'POST' });
                         const updated = await res.json();
                         if (!res.ok) throw new Error(updated.error || `Request failed (${res.status})`);
                         setData((c) => c ? { ...c, isPublic: updated.isPublic } : c);
@@ -389,7 +392,7 @@ export default function CallDetailPage({ params }: { params: { id: string } }) {
                   <button
                     onClick={async () => {
                       // ponytail: clipboard.writeText rejects on insecure context, missing permission, or focus loss. wrap with try/catch + toast so the user knows the click worked (or didn't).
-                      const link = `${window.location.origin}/share/${params.id}`;
+                      const link = `${window.location.origin}/share/${id}`;
                       try {
                         await navigator.clipboard.writeText(link);
                         toast.success('Share link copied to clipboard');

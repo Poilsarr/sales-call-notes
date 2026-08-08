@@ -97,7 +97,7 @@ export async function GET(req: NextRequest) {
       );
     }
 
-    const cookieStore = cookies();
+    const cookieStore = await cookies();
     const stored = cookieStore.get("oauth_google_calendar");
     if (!stored || stored.value !== state) {
       return NextResponse.redirect(

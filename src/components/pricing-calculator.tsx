@@ -2,6 +2,7 @@
 
 import { useState, useMemo } from "react";
 import { Calculator, Users, ArrowRight, CheckCircle } from "lucide-react";
+import Link from "next/link";
 import { trackEvent } from "@/lib/analytics";
 
 const GAUGE_PRO_MONTHLY = 9;
@@ -119,7 +120,7 @@ export default function PricingCalculator() {
                   </div>
                 </div>
 
-                <a
+                <Link
                   href="/sign-up"
                   onClick={() => trackEvent("pricing_cta_click", { section: "calculator", teamSize })}
                   className="mt-4 group inline-flex items-center gap-2 bg-[#F26522] hover:bg-[#e05a1a] text-white text-[13px] rounded-full pl-5 pr-2 py-2 transition-colors"
@@ -128,7 +129,7 @@ export default function PricingCalculator() {
                   <span className="w-7 h-7 bg-white rounded-full flex items-center justify-center transition-transform group-hover:-rotate-45">
                     <ArrowRight size={13} className="text-[#F26522]" />
                   </span>
-                </a>
+                </Link>
               </div>
             </div>
           </div>

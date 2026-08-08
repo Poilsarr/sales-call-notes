@@ -9,16 +9,17 @@ export const dynamic = "force-dynamic";
 
 export async function GET(
   _req: NextRequest,
-  { params }: { params: { id: string } },
+  { params }: { params: Promise<{ id: string }> },
 ) {
   try {
+    const { id } = await params;
     const { userId: clerkUserId } = await auth();
     if (!clerkUserId) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     const user = await getUserByClerkId(clerkUserId);
-    const cacheKey = makeCacheKey("calls", user.id, params.id);
+    const cacheKey = makeCacheKey("calls", user.id, id);
 
     const cached = await cacheGet<unknown>(cacheKey);
     if (cached) {
@@ -26,7 +27,7 @@ export async function GET(
     }
 
     const call = await prisma.call.findUnique({
-      where: { id: params.id },
+      where: { id },
       include: {
         speakers: true,
         analytics: true,

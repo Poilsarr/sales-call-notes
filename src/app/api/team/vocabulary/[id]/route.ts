@@ -26,12 +26,13 @@ async function getOwnedEntry(clerkId: string, entryId: string) {
  * PATCH /api/team/vocabulary/[id]
  *   Body: { term?, definition? } — ADMIN or OWNER only, team-scoped.
  */
-export async function PATCH(req: Request, { params }: { params: { id: string } }) {
+export async function PATCH(req: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
+    const { id } = await params;
     const { userId } = await auth();
     if (!userId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-    const { teamId, entry } = await getOwnedEntry(userId, params.id);
+    const { teamId, entry } = await getOwnedEntry(userId, id);
     if (!teamId) {
       return NextResponse.json(
         { error: "You need to be on a team to manage vocabulary." },
@@ -70,12 +71,13 @@ export async function PATCH(req: Request, { params }: { params: { id: string } }
 /**
  * DELETE /api/team/vocabulary/[id] — ADMIN or OWNER only, team-scoped.
  */
-export async function DELETE(_req: Request, { params }: { params: { id: string } }) {
+export async function DELETE(_req: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
+    const { id } = await params;
     const { userId } = await auth();
     if (!userId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-    const { teamId, entry } = await getOwnedEntry(userId, params.id);
+    const { teamId, entry } = await getOwnedEntry(userId, id);
     if (!teamId) {
       return NextResponse.json(
         { error: "You need to be on a team to manage vocabulary." },

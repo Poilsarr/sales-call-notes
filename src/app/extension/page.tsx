@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Download, Chrome, CheckCircle2, ExternalLink, ArrowRight, Mic, Captions, FileText, ListChecks, X } from "lucide-react";
+import { Download, Globe, CheckCircle2, ExternalLink, ArrowRight, Mic, Captions, FileText, ListChecks, X } from "lucide-react";
 import Nav from "@/components/nav";
 
 export const metadata = {
@@ -57,7 +57,7 @@ export default function ExtensionPage() {
                   rel="noopener noreferrer"
                   className="group inline-flex items-center gap-2 bg-[#F26522] hover:bg-[#e05a1a] text-white text-[13px] sm:text-[14px] rounded-full pl-5 sm:pl-6 pr-2 py-2"
                 >
-                  <Chrome size={16} className="text-white/90" />
+                  <Globe size={16} className="text-white/90" />
                   <span>Add to Chrome</span>
                   <span className="w-7 h-7 sm:w-8 sm:h-8 bg-white rounded-full flex items-center justify-center group-hover:rotate-45 transition-transform duration-500">
                     <ArrowRight size={14} className="text-[#F26522]" />
@@ -175,7 +175,7 @@ export default function ExtensionPage() {
               <div className="doppel-inner p-6 sm:p-8 h-full flex flex-col">
                 <div className="flex items-center gap-3 mb-4">
                   <div className="w-10 h-10 rounded-xl bg-[#F26522]/10 flex items-center justify-center">
-                    <Chrome size={18} className="text-[#F26522]" strokeWidth={1.5} />
+                    <Globe size={18} className="text-[#F26522]" strokeWidth={1.5} />
                   </div>
                   <div>
                     <p className="text-[10px] font-mono uppercase tracking-wider text-gray-400">
@@ -284,7 +284,7 @@ export default function ExtensionPage() {
                     Gauge login.
                   </>
                 ),
-                icon: <Chrome size={18} className="text-[#F26522]" strokeWidth={1.5} />,
+                icon: <Globe size={18} className="text-[#F26522]" strokeWidth={1.5} />,
               },
               {
                 n: "02",
@@ -452,7 +452,7 @@ export default function ExtensionPage() {
                 rel="noopener noreferrer"
                 className="group inline-flex items-center gap-2 bg-[#F26522] hover:bg-[#e05a1a] text-white text-[13px] rounded-full pl-5 pr-2 py-2"
               >
-                <Chrome size={14} className="text-white/90" />
+                <Globe size={14} className="text-white/90" />
                 <span>Add to Chrome</span>
                 <span className="w-7 h-7 bg-white rounded-full flex items-center justify-center group-hover:rotate-45 transition-transform duration-500">
                   <ArrowRight size={14} className="text-[#F26522]" />

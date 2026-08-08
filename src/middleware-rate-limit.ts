@@ -16,7 +16,8 @@ export async function rateLimitMiddleware(req: NextRequest) {
     return null;
   }
 
-  const ip = req.ip ?? req.headers.get("x-forwarded-for") ?? req.headers.get("x-real-ip") ?? "anonymous";
+  // Next 15 removed the NextRequest.ip getter — read the proxied headers instead.
+  const ip = req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || req.headers.get("x-real-ip") || "anonymous";
 
   // ponytail: /api/transcribe/live is the SSE publish sink for the live
   // transcription feature. The browser fires a POST on every speech

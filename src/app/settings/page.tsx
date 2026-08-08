@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 import { useAuth, useUser } from "@clerk/nextjs";
 import { useRouter, useSearchParams } from "next/navigation";
 import Nav from "@/components/nav";
@@ -74,12 +74,22 @@ export default function SettingsPage() {
   const { isLoaded: authLoaded, isSignedIn } = useAuth();
   const { user } = useUser();
   const router = useRouter();
-  const searchParams = useSearchParams();
-  const tab = searchParams.get("tab") || "general";
 
   useEffect(() => {
     if (authLoaded && !isSignedIn) router.replace("/sign-in");
   }, [authLoaded, isSignedIn, router]);
+
+  return (
+    <Suspense fallback={null}>
+      <SettingsContent user={user} />
+    </Suspense>
+  );
+}
+
+function SettingsContent({ user }: { user: ReturnType<typeof useUser>["user"] }) {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const tab = searchParams.get("tab") || "general";
 
   const [billing, setBilling] = useState<BillingInfo | null>(null);
   const [billingLoading, setBillingLoading] = useState(true);

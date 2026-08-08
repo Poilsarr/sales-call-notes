@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback } from "react";
 import { useUser } from "@clerk/nextjs";
 import type { Paddle } from "@paddle/paddle-js";
 import { CheckCircle, Loader2, ArrowRight, Zap, Plus, Minus, ShieldCheck, RotateCcw, CreditCard, Clock, TrendingUp, ArrowUpRight, Download } from "lucide-react";
+import Link from "next/link";
 import { trackEvent } from "@/lib/analytics";
 import type { Tier } from "@/lib/pricing-tiers";
 import PricingCalculator from "@/components/pricing-calculator";
@@ -716,7 +717,7 @@ export default function PricingClient({
                 <p className="text-gray-500 mb-8 text-[14px]">
                   Join SDRs who cut their note-taking time by 80%.
                 </p>
-                <a
+                <Link
                   href="/sign-up"
                   onClick={() => trackEvent("pricing_cta_click", { section: "bottom" })}
                   className="group inline-flex items-center gap-2 bg-[#F26522] hover:bg-[#e05a1a] text-white text-[13px] rounded-full pl-5 pr-2 py-2 transition-colors duration-300"
@@ -730,7 +731,7 @@ export default function PricingClient({
                   <span className="w-7 h-7 bg-white rounded-full flex items-center justify-center transition-transform duration-500 ease-[cubic-bezier(0.25,0.1,0.25,1)] group-hover:-rotate-45">
                     <ArrowRight size={14} className="text-[#F26522]" />
                   </span>
-                </a>
+                </Link>
               </div>
             </div>
           </div>

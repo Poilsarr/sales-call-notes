@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useRef, useEffect } from 'react';
+import { Suspense, useState, useRef, useEffect } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { Mic, Square, Upload, ExternalLink } from 'lucide-react';
 import { toast } from 'sonner';
@@ -30,6 +30,14 @@ type SpeechRecognitionEventLike = {
 };
 
 export default function RecordPage() {
+  return (
+    <Suspense fallback={null}>
+      <RecordContent />
+    </Suspense>
+  );
+}
+
+function RecordContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const [isRecording, setIsRecording] = useState(false);

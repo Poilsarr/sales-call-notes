@@ -11,15 +11,16 @@ import { logAuditAction } from "@/lib/audit-logger";
  */
 export async function DELETE(
   _req: Request,
-  { params }: { params: { id: string } },
+  { params }: { params: Promise<{ id: string }> },
 ) {
   try {
+    const { id } = await params;
     const { userId } = await auth();
     if (!userId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     const user = await getUserByClerkId(userId);
 
     const key = await prisma.apiKey.findUnique({
-      where: { id: params.id },
+      where: { id },
       select: { id: true, userId: true, revokedAt: true, name: true },
     });
     if (!key || key.userId !== user.id) {

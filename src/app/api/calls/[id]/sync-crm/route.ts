@@ -9,9 +9,10 @@ import { TeamsService } from "@/services/crm/teams";
 
 export async function POST(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params;
     const { userId: clerkUserId } = await auth();
     if (!clerkUserId) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -34,7 +35,7 @@ export async function POST(
     }
 
     const call = await prisma.call.findUnique({
-      where: { id: params.id },
+      where: { id },
       include: {
         actionItems: true,
         decisions: true,
@@ -93,7 +94,7 @@ export async function POST(
     }
 
     await prisma.call.update({
-      where: { id: params.id },
+      where: { id },
       data: {
         crmSynced: true,
         crmProvider: provider,

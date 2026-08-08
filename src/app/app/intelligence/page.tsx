@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
+import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { BarChart3, TrendingUp, Crosshair, ExternalLink } from 'lucide-react';
 import UpgradePrompt from '@/components/upgrade-prompt';
@@ -136,12 +137,12 @@ export default function IntelligencePage() {
           <div className="doppel-inner-dark p-6 sm:p-8">
             <p className="text-zinc-200 font-medium mb-1">Your session expired.</p>
             <p className="text-zinc-500 text-sm mb-5">Sign back in to load your competitive data.</p>
-            <a
+            <Link
               href="/sign-in"
               className="inline-flex items-center gap-1.5 px-4 py-2 rounded-full bg-[#F26522] hover:bg-[#e05a1a] text-white text-sm font-semibold transition"
             >
               Sign in
-            </a>
+            </Link>
           </div>
         </div>
       </div>

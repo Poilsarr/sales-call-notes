@@ -7,15 +7,16 @@ import { logAuditAction } from '@/lib/audit-logger';
 import { validateTitle } from '@/lib/call-title';
 import { cacheDel, makeCacheKey } from '@/lib/cache';
 
-export async function GET(req: Request, { params }: { params: { id: string } }) {
+export async function GET(req: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
+    const { id } = await params;
     const { userId: clerkUserId } = await auth();
     if (!clerkUserId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
     const viewer = await getUserByClerkId(clerkUserId);
 
     const call = await prisma.call.findUnique({
-      where: { id: params.id },
+      where: { id },
       include: {
         insight: true,
         actionItems: true,
@@ -63,15 +64,16 @@ export async function GET(req: Request, { params }: { params: { id: string } }) 
   }
 }
 
-export async function POST(req: Request, { params }: { params: { id: string } }) {
+export async function POST(req: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
+    const { id } = await params;
     const { userId: clerkUserId } = await auth();
     if (!clerkUserId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
     const viewer = await getUserByClerkId(clerkUserId);
 
     const call = await prisma.call.findUnique({
-      where: { id: params.id },
+      where: { id },
       select: { id: true, userId: true, teamId: true, sharedWithTeam: true },
     });
     if (!call) return NextResponse.json({ error: 'Call not found' }, { status: 404 });
@@ -86,7 +88,7 @@ export async function POST(req: Request, { params }: { params: { id: string } })
 
     const comment = await prisma.callComment.create({
       data: {
-        callId: params.id,
+        callId: id,
         userId: viewer.id,
         body: body.trim(),
       },
@@ -108,15 +110,16 @@ export async function POST(req: Request, { params }: { params: { id: string } })
   }
 }
 
-export async function PATCH(req: Request, { params }: { params: { id: string } }) {
+export async function PATCH(req: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
+    const { id } = await params;
     const { userId: clerkUserId } = await auth();
     if (!clerkUserId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
     const viewer = await getUserByClerkId(clerkUserId);
 
     const call = await prisma.call.findUnique({
-      where: { id: params.id },
+      where: { id },
       select: { id: true, userId: true, teamId: true, sharedWithTeam: true },
     });
     if (!call) return NextResponse.json({ error: 'Call not found' }, { status: 404 });
@@ -146,7 +149,7 @@ export async function PATCH(req: Request, { params }: { params: { id: string } }
     if (assigneeId === null) nextAssigneeId = null;
 
     const updated = await prisma.call.update({
-      where: { id: params.id },
+      where: { id },
       data: {
         ...(typeof sharedWithTeam === 'boolean' ? { sharedWithTeam } : {}),
         ...(assigneeId !== undefined ? { assigneeId: nextAssigneeId } : {}),
@@ -161,7 +164,7 @@ export async function PATCH(req: Request, { params }: { params: { id: string } }
 
     // Invalidate cached GET /api/calls/[id] (300s TTL). The list cache
     // (60s, query-parameterized) self-expires; accept ≤60s staleness there.
-    await cacheDel(makeCacheKey('calls', viewer.id, params.id));
+    await cacheDel(makeCacheKey('calls', viewer.id, id));
 
     return NextResponse.json({
       sharedWithTeam: updated.sharedWithTeam,
@@ -174,15 +177,16 @@ export async function PATCH(req: Request, { params }: { params: { id: string } }
   }
 }
 
-export async function DELETE(req: Request, { params }: { params: { id: string } }) {
+export async function DELETE(req: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
+    const { id } = await params;
     const { userId: clerkUserId } = await auth();
     if (!clerkUserId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
     const viewer = await getUserByClerkId(clerkUserId);
 
     const call = await prisma.call.findUnique({
-      where: { id: params.id },
+      where: { id },
       select: { id: true, userId: true, teamId: true, sharedWithTeam: true },
     });
     if (!call) return NextResponse.json({ error: 'Call not found' }, { status: 404 });
@@ -190,16 +194,16 @@ export async function DELETE(req: Request, { params }: { params: { id: string } 
       return NextResponse.json({ error: 'Access denied' }, { status: 403 });
     }
 
-    await prisma.callComment.deleteMany({ where: { callId: params.id } });
-    await prisma.callInsight.deleteMany({ where: { callId: params.id } });
-    await prisma.actionItem.deleteMany({ where: { callId: params.id } });
-    await prisma.decision.deleteMany({ where: { callId: params.id } });
-    await prisma.nextStep.deleteMany({ where: { callId: params.id } });
-    await prisma.speaker.deleteMany({ where: { callId: params.id } });
-    await prisma.analytics.deleteMany({ where: { callId: params.id } });
-    await prisma.call.delete({ where: { id: params.id } });
+    await prisma.callComment.deleteMany({ where: { callId: id } });
+    await prisma.callInsight.deleteMany({ where: { callId: id } });
+    await prisma.actionItem.deleteMany({ where: { callId: id } });
+    await prisma.decision.deleteMany({ where: { callId: id } });
+    await prisma.nextStep.deleteMany({ where: { callId: id } });
+    await prisma.speaker.deleteMany({ where: { callId: id } });
+    await prisma.analytics.deleteMany({ where: { callId: id } });
+    await prisma.call.delete({ where: { id } });
 
-    await logAuditAction(viewer.id, 'DELETE_CALL', params.id, 'Call', {
+    await logAuditAction(viewer.id, 'DELETE_CALL', id, 'Call', {
       userId: call.userId,
       teamId: call.teamId,
     });

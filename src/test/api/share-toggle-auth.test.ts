@@ -15,7 +15,7 @@ describe("POST /api/calls/[id]/share (auth awaited)", () => {
 
   it("returns 401 for unauthenticated requests (previously always-401)", async () => {
     mocks.auth.mockResolvedValue({ userId: null });
-    const res = await POST({} as any, { params: { id: "c1" } });
+    const res = await POST({} as any, { params: Promise.resolve({ id: "c1" }) });
     expect(res.status).toBe(401);
   });
 
@@ -25,7 +25,7 @@ describe("POST /api/calls/[id]/share (auth awaited)", () => {
     mocks.prisma.call.findUnique.mockResolvedValue({ id: "c1", userId: "u1", teamId: null, sharedWithTeam: false, isPublic: false });
     mocks.prisma.call.update.mockResolvedValue({ isPublic: true });
 
-    const res = await POST({ nextUrl: { origin: "http://localhost:3000" } } as any, { params: { id: "c1" } });
+    const res = await POST({ nextUrl: { origin: "http://localhost:3000" } } as any, { params: Promise.resolve({ id: "c1" }) });
     expect(res.status).toBe(200);
     const body = await res.json();
     expect(body.isPublic).toBe(true);
@@ -37,7 +37,7 @@ describe("POST /api/calls/[id]/share (auth awaited)", () => {
     mocks.prisma.user.findUnique.mockResolvedValue({ id: "u2", teamId: "t1", teamRole: "MEMBER" });
     mocks.prisma.call.findUnique.mockResolvedValue({ id: "c1", userId: "u1", teamId: "t1", sharedWithTeam: false, isPublic: false });
 
-    const res = await POST({} as any, { params: { id: "c1" } });
+    const res = await POST({} as any, { params: Promise.resolve({ id: "c1" }) });
     expect(res.status).toBe(403);
   });
 });

@@ -123,7 +123,7 @@ export async function GET(req: NextRequest) {
       );
     }
 
-    const cookieStore = cookies();
+    const cookieStore = await cookies();
     const stored = cookieStore.get("oauth_teams");
     if (!stored || stored.value !== nonce) {
       return NextResponse.redirect(

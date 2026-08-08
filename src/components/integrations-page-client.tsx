@@ -8,7 +8,7 @@ import Nav from "@/components/nav";
 import {
   Sparkles, Building2, BarChart3, MessageSquare, Calendar, Globe,
   Code, Layers, Share2, Users, Download, ArrowRight,
-  CheckCircle2, Loader2, Link2, Unplug, Zap, AlertCircle, Chrome,
+  CheckCircle2, Loader2, Link2, Unplug, Zap, AlertCircle,
 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -30,7 +30,7 @@ const integrations = [
   { icon: <Calendar size={22} />, name: "Outlook Calendar", desc: "Sync meetings from Microsoft 365 calendar for automatic capture.", status: "Coming Soon" },
   { icon: <Globe size={22} />, name: "Zoom", desc: "Record and transcribe Zoom meetings directly from the platform.", status: "Coming Soon" },
   { icon: <Globe size={22} />, name: "Google Meet", desc: "Live transcription and note-taking for Google Meet calls.", status: "Live", href: "/extension" },
-  { icon: <Chrome size={22} />, name: "Chrome Extension", desc: "Capture Google Meet captions live and save calls to your dashboard on meeting end.", status: "Live", href: "/extension" },
+  { icon: <Globe size={22} />, name: "Chrome Extension", desc: "Capture Google Meet captions live and save calls to your dashboard on meeting end.", status: "Live", href: "/extension" },
   { icon: <Layers size={22} />, name: "Slack", desc: "Post call summaries, action items, and weekly digests to Slack.", status: "Live", provider: "slack" as const },
   { icon: <Share2 size={22} />, name: "Zapier", desc: "Push Gauge events into 5,000+ apps via Zapier workflows.", status: "Live", href: "/integrations/zapier" },
   { icon: <Code size={22} />, name: "REST API", desc: "Build custom integrations with our full-featured REST API.", status: "Business+" },

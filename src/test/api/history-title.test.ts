@@ -63,7 +63,7 @@ function patch(body: unknown, id = 'call_1') {
       method: 'PATCH',
       body: JSON.stringify(body),
     }),
-    { params: { id } },
+    { params: Promise.resolve({ id }) },
   );
 }
 

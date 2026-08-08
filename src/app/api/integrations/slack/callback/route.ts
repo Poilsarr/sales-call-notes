@@ -94,7 +94,7 @@ export async function GET(req: NextRequest) {
       return NextResponse.redirect(new URL("/integrations?error=invalid_state", getAppUrl()));
     }
 
-    const cookieStore = cookies();
+    const cookieStore = await cookies();
     const stored = cookieStore.get("oauth_slack");
     if (!stored || stored.value !== nonce) {
       return NextResponse.redirect(new URL("/integrations?error=invalid_nonce", getAppUrl()));

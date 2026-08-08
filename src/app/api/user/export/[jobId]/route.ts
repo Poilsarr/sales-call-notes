@@ -6,19 +6,20 @@ import { exportQueue } from "@/services/queue";
 
 export async function GET(
   _req: Request,
-  { params }: { params: { jobId: string } }
+  { params }: { params: Promise<{ jobId: string }> }
 ) {
   try {
+    const { jobId } = await params;
     const { userId: clerkId } = await auth();
     if (!clerkId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
     const user = await getUserByClerkId(clerkId);
     if (!user) return NextResponse.json({ error: "User not found" }, { status: 404 });
 
-    const job = await exportQueue.getJob(params.jobId);
+    const job = await exportQueue.getJob(jobId);
     if (!job) {
       return NextResponse.json(
-        { error: "Job not found or expired", jobId: params.jobId },
+        { error: "Job not found or expired", jobId: jobId },
         { status: 404 }
       );
     }
@@ -32,7 +33,7 @@ export async function GET(
     }
 
     return NextResponse.json({
-      jobId: params.jobId,
+      jobId: jobId,
       state,
       progress: state === "completed" ? 100 : state === "failed" ? 0 : 50,
       downloadUrl: result?.downloadUrl ?? null,

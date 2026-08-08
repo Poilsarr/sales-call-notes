@@ -13,8 +13,9 @@ const updateActionItemSchema = z.object({
   status: z.enum(['PENDING', 'COMPLETED']).optional(),
 });
 
-export async function PUT(req: Request, { params }: { params: { id: string } }) {
+export async function PUT(req: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
+    const { id } = await params;
     const { userId } = await auth();
     if (!userId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
@@ -30,7 +31,7 @@ export async function PUT(req: Request, { params }: { params: { id: string } }) 
     }
 
     const existing = await prisma.actionItem.findUnique({
-      where: { id: params.id },
+      where: { id },
       include: { call: { select: { userId: true, teamId: true } } },
     });
 
@@ -57,11 +58,11 @@ export async function PUT(req: Request, { params }: { params: { id: string } }) 
     }
 
     const item = await prisma.actionItem.update({
-      where: { id: params.id },
+      where: { id },
       data,
     });
 
-    await logAuditAction(user.id, 'UPDATE_ACTION_ITEM', params.id, 'ActionItem', { changes: parsed.data });
+    await logAuditAction(user.id, 'UPDATE_ACTION_ITEM', id, 'ActionItem', { changes: parsed.data });
 
     return NextResponse.json({ item });
   } catch (error) {
@@ -70,15 +71,16 @@ export async function PUT(req: Request, { params }: { params: { id: string } }) 
   }
 }
 
-export async function DELETE(req: Request, { params }: { params: { id: string } }) {
+export async function DELETE(req: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
+    const { id } = await params;
     const { userId } = await auth();
     if (!userId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
     const user = await getUserByClerkId(userId);
 
     const existing = await prisma.actionItem.findUnique({
-      where: { id: params.id },
+      where: { id },
       include: { call: { select: { userId: true, teamId: true } } },
     });
 
@@ -90,9 +92,9 @@ export async function DELETE(req: Request, { params }: { params: { id: string } 
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
     }
 
-    await prisma.actionItem.delete({ where: { id: params.id } });
+    await prisma.actionItem.delete({ where: { id } });
 
-    await logAuditAction(user.id, 'DELETE_ACTION_ITEM', params.id, 'ActionItem');
+    await logAuditAction(user.id, 'DELETE_ACTION_ITEM', id, 'ActionItem');
 
     return NextResponse.json({ success: true });
   } catch (error) {

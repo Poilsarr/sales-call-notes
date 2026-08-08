@@ -33,7 +33,7 @@ describe("GATE 0 evidence: real AI call proof", () => {
     expect(proof.ok).toBe(true);
     expect(proof.status).toBeGreaterThanOrEqual(200);
     expect(proof.status).toBeLessThan(300);
-    expect(proof.provider).toMatch(/^(openai|groq|anthropic|deepgram)$/);
+    expect(proof.provider).toMatch(/^(openai|groq|anthropic|deepgram|omniroute)$/);
     expect(typeof proof.reply).toBe("string");
     expect(proof.reply.length).toBeGreaterThan(0);
     expect(typeof proof.latencyMs).toBe("number");

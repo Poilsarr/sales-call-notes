@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useUser } from '@clerk/nextjs';
 import Link from 'next/link';
-import { Search, Filter, Phone, Download, Upload, Mic, Chrome, ArchiveRestore } from 'lucide-react';
+import { Search, Filter, Phone, Download, Upload, Mic, Globe, ArchiveRestore } from 'lucide-react';
 import UpgradePrompt from '@/components/upgrade-prompt';
 import { toast } from 'sonner';
 import { CallTitleEditor } from '@/components/call-title-editor';
@@ -374,7 +374,7 @@ export default function CallsPage() {
                       className="flex-1 flex items-center justify-between"
                     >
                       <span className="text-white font-medium inline-flex items-center gap-1.5">
-                        <Chrome className="w-3.5 h-3.5 text-zinc-300" />
+                        <Globe className="w-3.5 h-3.5 text-zinc-300" />
                         Capture live from Google Meet
                       </span>
                       <span className="text-[11px] text-zinc-500">auto-save</span>

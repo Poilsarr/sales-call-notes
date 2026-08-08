@@ -91,8 +91,8 @@ function generateNonce(): string {
   return crypto.randomBytes(16).toString("hex");
 }
 
-function setOAuthCookie(provider: string, nonce: string) {
-  const cookieStore = cookies();
+async function setOAuthCookie(provider: string, nonce: string) {
+  const cookieStore = await cookies();
   cookieStore.set(`oauth_${provider}`, nonce, {
     httpOnly: true,
     secure: process.env.NODE_ENV === "production",
@@ -102,9 +102,9 @@ function setOAuthCookie(provider: string, nonce: string) {
   });
 }
 
-function validateOAuthCookie(provider: string, nonce: string): boolean {
+async function validateOAuthCookie(provider: string, nonce: string): Promise<boolean> {
   try {
-    const cookieStore = cookies();
+    const cookieStore = await cookies();
     const stored = cookieStore.get(`oauth_${provider}`);
     if (!stored || stored.value !== nonce) return false;
     cookieStore.delete(`oauth_${provider}`);
@@ -184,7 +184,7 @@ function serializeStatuses(
   );
 }
 
-function buildHubSpotAuthUrl() {
+async function buildHubSpotAuthUrl() {
   const sandbox = getDevSandboxCredentials("hubspot");
   const clientId = sandbox?.clientId || getSecret("HUBSPOT_CLIENT_ID");
   if (!clientId) {
@@ -192,7 +192,7 @@ function buildHubSpotAuthUrl() {
   }
 
   const nonce = generateNonce();
-  setOAuthCookie("hubspot", nonce);
+  await setOAuthCookie("hubspot", nonce);
 
   const params = new URLSearchParams({
     client_id: clientId,
@@ -205,7 +205,7 @@ function buildHubSpotAuthUrl() {
   return `https://app.hubspot.com/oauth/authorize?${params.toString()}`;
 }
 
-function buildSalesforceAuthUrl() {
+async function buildSalesforceAuthUrl() {
   const sandbox = getDevSandboxCredentials("salesforce");
   const clientId = sandbox?.clientId || getSecret("SALESFORCE_CLIENT_ID");
   if (!clientId) {
@@ -213,7 +213,7 @@ function buildSalesforceAuthUrl() {
   }
 
   const nonce = generateNonce();
-  setOAuthCookie("salesforce", nonce);
+  await setOAuthCookie("salesforce", nonce);
 
   const params = new URLSearchParams({
     client_id: clientId,
@@ -226,7 +226,7 @@ function buildSalesforceAuthUrl() {
   return `${getSalesforceAuthBase()}/services/oauth2/authorize?${params.toString()}`;
 }
 
-function buildSlackAuthUrl() {
+async function buildSlackAuthUrl() {
   const sandbox = getDevSandboxCredentials("slack");
   const clientId = sandbox?.clientId || getSecret("SLACK_CLIENT_ID");
   if (!clientId) {
@@ -234,7 +234,7 @@ function buildSlackAuthUrl() {
   }
 
   const nonce = generateNonce();
-  setOAuthCookie("slack", nonce);
+  await setOAuthCookie("slack", nonce);
 
   const params = new URLSearchParams({
     client_id: clientId,
@@ -252,7 +252,7 @@ function getSlackRedirectUri() {
   return `${getAppUrl()}/api/integrations/slack/callback`;
 }
 
-function buildTeamsAuthUrl() {
+async function buildTeamsAuthUrl() {
   const sandbox = getDevSandboxCredentials("teams");
   const clientId = sandbox?.clientId || (getSecret("TEAMS_CLIENT_ID") || getSecret("MICROSOFT_CLIENT_ID"));
   if (!clientId) {
@@ -260,7 +260,7 @@ function buildTeamsAuthUrl() {
   }
 
   const nonce = generateNonce();
-  setOAuthCookie("teams", nonce);
+  await setOAuthCookie("teams", nonce);
 
   const params = new URLSearchParams({
     client_id: clientId,
@@ -458,15 +458,15 @@ export async function GET(req: NextRequest) {
 
       let authUrl: string;
       if (providerParam === "hubspot") {
-        authUrl = buildHubSpotAuthUrl();
+        authUrl = await buildHubSpotAuthUrl();
       } else if (providerParam === "salesforce") {
-        authUrl = buildSalesforceAuthUrl();
+        authUrl = await buildSalesforceAuthUrl();
       } else if (providerParam === "slack") {
-        authUrl = buildSlackAuthUrl();
+        authUrl = await buildSlackAuthUrl();
       } else if (providerParam === "google_calendar") {
         authUrl = `${getAppUrl()}/api/integrations/google/connect`;
       } else {
-        authUrl = buildTeamsAuthUrl();
+        authUrl = await buildTeamsAuthUrl();
       }
 
       return NextResponse.json({ authUrl });
@@ -524,7 +524,7 @@ export async function POST(req: NextRequest) {
     }
 
     const [stateProvider, nonce] = (rawState ?? "").split(":");
-    if (stateProvider !== provider || !validateOAuthCookie(provider, nonce)) {
+    if (stateProvider !== provider || !(await validateOAuthCookie(provider, nonce))) {
       return NextResponse.json({ error: "Invalid OAuth state" }, { status: 403 });
     }
 

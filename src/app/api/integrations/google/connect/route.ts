@@ -26,7 +26,7 @@ export async function GET() {
 
     const nonce = generateNonce();
 
-    const cookieStore = cookies();
+    const cookieStore = await cookies();
     cookieStore.set("oauth_google_calendar", nonce, {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",

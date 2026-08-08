@@ -1,3 +1,4 @@
+import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { prisma } from '@/lib/prisma';
 import { TranscriptViewer } from '@/components/transcript-viewer';
@@ -6,14 +7,15 @@ import { normalizeScorecard } from '@/lib/scorecard';
 import type { Metadata } from 'next';
 
 interface SharePageProps {
-  params: { id: string };
+  params: Promise<{ id: string }>;
 }
 
 export async function generateMetadata({ params }: SharePageProps): Promise<Metadata> {
+  const { id } = await params;
   let call: { filename: string; title: string | null; summary: string | null } | null = null;
   try {
     call = await prisma.call.findUnique({
-      where: { id: params.id, isPublic: true },
+      where: { id, isPublic: true },
       select: { filename: true, title: true, summary: true },
     });
   } catch (e) {
@@ -32,10 +34,11 @@ export async function generateMetadata({ params }: SharePageProps): Promise<Meta
 }
 
 export default async function SharePage({ params }: SharePageProps) {
+  const { id } = await params;
   let call;
   try {
     call = await prisma.call.findUnique({
-      where: { id: params.id, isPublic: true },
+      where: { id, isPublic: true },
       include: {
         actionItems: true,
         decisions: true,
@@ -119,9 +122,9 @@ export default async function SharePage({ params }: SharePageProps) {
         <footer className="text-center py-8 border-t border-zinc-800">
           <p className="text-zinc-400 text-sm">
             Powered by{' '}
-            <a href="/" className="text-emerald-400 hover:text-emerald-300 font-medium">
+            <Link href="/" className="text-emerald-400 hover:text-emerald-300 font-medium">
               Gauge
-            </a>
+            </Link>
             {' '}— AI-powered sales call analysis
           </p>
         </footer>

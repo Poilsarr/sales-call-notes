@@ -153,7 +153,7 @@ describe("PATCH /api/team/vocabulary/[id]", () => {
       method: "PATCH",
       headers: { "content-type": "application/json" },
       body: JSON.stringify(body),
-    }), { params: { id: "entry_1" } });
+    }), { params: Promise.resolve({ id: "entry_1" }) });
 
   it("updates an entry owned by the team", async () => {
     mockPrisma.vocabularyEntry.findFirst.mockResolvedValue({
@@ -175,7 +175,7 @@ describe("PATCH /api/team/vocabulary/[id]", () => {
 describe("DELETE /api/team/vocabulary/[id]", () => {
   const del = () =>
     DELETE(new Request("http://localhost/api/team/vocabulary/entry_1", { method: "DELETE" }),
-      { params: { id: "entry_1" } });
+      { params: Promise.resolve({ id: "entry_1" }) });
 
   it("deletes an entry owned by the team", async () => {
     mockPrisma.vocabularyEntry.findFirst.mockResolvedValue({

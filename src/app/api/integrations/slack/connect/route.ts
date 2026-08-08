@@ -33,8 +33,8 @@ function generateNonce(): string {
   return crypto.randomBytes(16).toString("hex");
 }
 
-function setOAuthCookie(nonce: string) {
-  const cookieStore = cookies();
+async function setOAuthCookie(nonce: string) {
+  const cookieStore = await cookies();
   cookieStore.set("oauth_slack", nonce, {
     httpOnly: true,
     secure: process.env.NODE_ENV === "production",
@@ -58,7 +58,7 @@ export async function GET() {
     }
 
     const nonce = generateNonce();
-    setOAuthCookie(nonce);
+    await setOAuthCookie(nonce);
 
     const params = new URLSearchParams({
       client_id: clientId,
