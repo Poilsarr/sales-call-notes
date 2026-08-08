@@ -7,9 +7,12 @@
  * Captures: latency, HTTP status, response shape, token usage.
  * Writes the result to scripts/.proof-openai.json for CI to gate on.
  *
- * Tries OpenAI first, then Groq fallback. Whichever responds first
- * with 2xx is the proof. Matches the wrapper's fallback order in
- * src/services/ai/transcription.ts.
+ * Tries OpenAI first, then Groq fallback, then Anthropic, then the
+ * local OmniRoute relay (OpenAI-compatible, model auto/best-fast).
+ * Whichever responds first with 2xx is the proof. OpenAI+Groq match the
+ * wrapper's fallback order in src/services/ai/transcription.ts;
+ * Anthropic and OmniRoute are last-resort connectivity proofs
+ * (provider change is a separate concern).
  */
 import { writeFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
@@ -19,6 +22,9 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 
 const openaiKey = process.env.OPENAI_API_KEY;
 const groqKey = process.env.GROQ_API_KEY;
+const anthropicKey = process.env.ANTHROPIC_API_KEY;
+const omnirouteBase = process.env.OMNIROUTE_BASE_URL || "http://127.0.0.1:20128/v1";
+const omnirouteKey = process.env.OMNIROUTE_API_KEY;
 
 const results = [];
 let success = null;
@@ -47,6 +53,34 @@ if (!success && groqKey) {
     max_tokens: 20,
     temperature: 0,
   }, { Authorization: `Bearer ${groqKey}` });
+  results.push(r);
+  if (r.ok) success = r;
+}
+
+if (!success && anthropicKey) {
+  const r = await probe("anthropic", "https://api.anthropic.com/v1/messages", {
+    model: "claude-3-5-haiku-latest",
+    max_tokens: 20,
+    messages: [
+      { role: "user", content: "Reply with exactly one short word: ping" },
+    ],
+  }, {
+    "x-api-key": anthropicKey,
+    "anthropic-version": "2023-06-01",
+  });
+  results.push(r);
+  if (r.ok) success = r;
+}
+
+if (!success && omnirouteKey) {
+  const r = await probe("omniroute", `${omnirouteBase}/chat/completions`, {
+    model: "auto/best-fast",
+    messages: [
+      { role: "user", content: "Reply with exactly one short word." },
+    ],
+    max_tokens: 20,
+    temperature: 0,
+  }, { Authorization: `Bearer ${omnirouteKey}` });
   results.push(r);
   if (r.ok) success = r;
 }
@@ -88,6 +122,9 @@ async function probe(provider, url, body, headers) {
   const latencyMs = Date.now() - start;
   let parsed;
   try { parsed = JSON.parse(text); } catch { parsed = { raw: text }; }
+  const reply =
+    parsed.choices?.[0]?.message?.content ??
+    (Array.isArray(parsed.content) ? parsed.content.map((c) => c.text ?? "").join("") : null);
   return {
     provider,
     ok: res.ok,
@@ -95,7 +132,7 @@ async function probe(provider, url, body, headers) {
     latencyMs,
     model: parsed.model ?? body.model,
     usage: parsed.usage ?? null,
-    reply: parsed.choices?.[0]?.message?.content ?? null,
+    reply,
     error: parsed.error?.message ?? null,
   };
 }

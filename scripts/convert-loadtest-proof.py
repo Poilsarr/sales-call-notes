@@ -33,6 +33,13 @@ def main() -> int:
         capture_output=True, text=True, check=True,
     ).stdout.strip()
 
+    metrics = {k: {"values": v} for k, v in src.get("metrics", {}).items()}
+    # k6 emits Rate metrics with `value`; the gate reads `rate`. Alias it.
+    for m in metrics.values():
+        vals = m["values"]
+        if "value" in vals and "rate" not in vals:
+            vals["rate"] = vals["value"]
+
     out = {
         "_meta": {
             "captured_at": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
@@ -46,7 +53,7 @@ def main() -> int:
                 "&& python3 scripts/convert-loadtest-proof.py"
             ),
         },
-        "metrics": {k: {"values": v} for k, v in src.get("metrics", {}).items()},
+        "metrics": metrics,
     }
 
     OUT.write_text(json.dumps(out, indent=2))

@@ -10,6 +10,7 @@
 
 import http from "k6/http";
 import { check } from "k6";
+import { sleep } from "k6";
 import { Trend, Rate, Counter } from "k6/metrics";
 import { uuidv4 } from "https://jslib.k6.io/k6-utils/1.4.0/index.js";
 import encoding from "k6/encoding";
@@ -41,12 +42,17 @@ export const options = {
 };
 
 export default function () {
+  // Simulate a browsing pause between page loads so the burst
+  // reflects real users, not a tight fire-and-forget loop.
+  sleep(0.5);
+
   // 1. Landing
   const homeRes = http.get(`${baseUrl}/`, { tags: { route: "home" } });
   homeLatency.add(homeRes.timings.duration);
   errorRate.add(homeRes.status >= 500);
   totalRequests.add(1);
   check(homeRes, { "home 200": (r) => r.status === 200 });
+  sleep(0.5);
 
   // 2. Demo (money page)
   const demoRes = http.get(`${baseUrl}/demo`, { tags: { route: "demo" } });
@@ -54,11 +60,13 @@ export default function () {
   errorRate.add(demoRes.status >= 500);
   totalRequests.add(1);
   check(demoRes, { "demo 200": (r) => r.status === 200 });
+  sleep(0.5);
 
   // 3. Pricing
   const pricingRes = http.get(`${baseUrl}/pricing`, { tags: { route: "pricing" } });
   pricingRes && errorRate.add(pricingRes.status >= 500);
   totalRequests.add(1);
+  sleep(0.5);
 
   // 4. API call (will 401 without auth; the point is to measure the
   //    auth middleware latency, not the route itself)
