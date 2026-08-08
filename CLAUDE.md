@@ -6,8 +6,9 @@
 
 ## Stack
 
-- Next.js 14.2.3 (App Router, mostly server components) — upgrade to 15 is
-  a tracked backlog item (pinned for the middleware-auth CVE fix)
+- Next.js 15.5.23 (App Router, mostly server components) — upgrade
+  from 14.2.3 shipped in the NEXT15 arc (see
+  `docs/roadmap/execution/plans/NEXT15-PLAN.md`)
 - TypeScript, strict
 - Clerk (auth + middleware)
 - Prisma + Neon Postgres
@@ -19,6 +20,21 @@
 
 ## Workflow conventions
 
+0. **SWARM AGENTS BY DEFAULT — MANDATORY.** For ANY build, feature,
+   refactor, or even a *suggestion* of what to do next: dispatch
+   parallel subagents before touching code. Minimum pattern:
+   - **Explore wave** — 2+ parallel read-only agents map the surface
+     (file inventory, risk inventory, fact-finding) with exact
+     file:line references.
+   - **Plan** — converge their reports into a plan doc under
+     `docs/roadmap/execution/plans/<ARC>-PLAN.md` before editing.
+   - **Execute wave** — 2+ parallel executors on DISJOINT file sets,
+     each with a full self-contained script + verification.
+   - **Gate** — orchestrator runs tsc / eslint / vitest / build /
+     smoke; **Ship** — single-concern commits, sequential pushes,
+     CI green; docs row in `DEVELOPMENT_FRONTIER.md`.
+   This applies even to small changes — the waves scale with the
+   change. Orchestrator never edits code in the execution wave.
 1. **One concern per PR.** A PR is either UI, infra, docs, or
    test — never a mix. Atomic diffs make admin-merges safe.
 2. **Every PR must hit `git status --short` cleanly** before push.
