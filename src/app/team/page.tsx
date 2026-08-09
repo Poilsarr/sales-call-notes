@@ -222,8 +222,6 @@ export default function TeamPage() {
   );
   }
 
-  const hasTeam = members.length > 0;
-
   return (
     <>
       <Nav />
@@ -306,7 +304,7 @@ export default function TeamPage() {
         {/* Invite + Members */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-10">
           <div className="lg:col-span-2 space-y-6">
-            {isAdmin && (
+            {(isAdmin || members.length === 0) && (
               <Card>
                 <CardHeader>
                   <div className="flex items-center gap-3">
@@ -378,7 +376,7 @@ export default function TeamPage() {
                       <p className="text-xs text-white/40 mb-4 max-w-sm">
                         Share call summaries, action items, and coaching insights across your team.
                       </p>
-                      <p className="text-xs text-white/30">Create a team by inviting your first member.</p>
+                      <p className="text-xs text-white/30">Invite your first teammate with the form above — they&rsquo;ll join as a member, and you&rsquo;ll be the admin.</p>
                     </div>
                   )}
                 </div>
