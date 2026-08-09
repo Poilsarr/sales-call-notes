@@ -6,7 +6,7 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 // so '@/lib/get-user' is mocked entirely to keep its prisma import from loading.
 vi.mock("@/lib/prisma", () => ({
   default: {
-    user: { findUnique: vi.fn(), update: vi.fn() },
+    user: { findUnique: vi.fn(), update: vi.fn(), count: vi.fn() },
     team: { findUnique: vi.fn(), create: vi.fn() },
     call: { findMany: vi.fn(), updateMany: vi.fn() },
     auditLog: { create: vi.fn() },
@@ -41,7 +41,7 @@ const mockGetUser = vi.mocked(getUserByClerkId);
 const mockRequireRole = vi.mocked(requireRole);
 const mockLog = vi.mocked(logAuditAction);
 const mockPrisma = prisma as unknown as {
-  user: { findUnique: ReturnType<typeof vi.fn>; update: ReturnType<typeof vi.fn> };
+  user: { findUnique: ReturnType<typeof vi.fn>; update: ReturnType<typeof vi.fn>; count: ReturnType<typeof vi.fn> };
   team: { findUnique: ReturnType<typeof vi.fn>; create: ReturnType<typeof vi.fn> };
   call: { findMany: ReturnType<typeof vi.fn>; updateMany: ReturnType<typeof vi.fn> };
   auditLog: { create: ReturnType<typeof vi.fn> };
@@ -192,6 +192,7 @@ describe("POST /api/team", () => {
     mockGetUser.mockResolvedValueOnce({
       id: "user_1",
       teamId: null,
+      plan: "PRO",
       name: "Alice",
       email: "a@x.com",
     } as any);
@@ -250,6 +251,88 @@ describe("POST /api/team", () => {
       "User",
       expect.objectContaining({ teamId: "t_new" }),
     );
+  });
+
+  it("blocks the first invite on the free plan", async () => {
+    mockGetUser.mockResolvedValueOnce({
+      id: "user_1",
+      teamId: null,
+      plan: "FREE",
+      name: "Alice",
+      email: "a@x.com",
+    } as any);
+    mockPrisma.user.findUnique.mockResolvedValueOnce({
+      id: "user_2",
+      email: "b@x.com",
+      teamId: null,
+    } as any);
+    const r = await POST(postRequest({ email: "b@x.com" }));
+    expect(r.status).toBe(403);
+    const body = await r.json();
+    expect(body.error).toContain("Team workspaces are a Pro feature");
+    expect(mockPrisma.team.create).not.toHaveBeenCalled();
+    expect(mockPrisma.user.update).not.toHaveBeenCalled();
+    expect(mockPrisma.user.count).not.toHaveBeenCalled();
+  });
+
+  it("blocks the 6th member on the pro plan", async () => {
+    mockGetUser.mockResolvedValueOnce({
+      id: "user_1",
+      teamId: "t_1",
+      plan: "PRO",
+      name: "Alice",
+      email: "a@x.com",
+    } as any);
+    mockRequireRole.mockResolvedValueOnce({ userRole: "ADMIN", allowed: true });
+    mockPrisma.user.findUnique.mockResolvedValueOnce({
+      id: "user_2",
+      email: "b@x.com",
+      teamId: null,
+    } as any);
+    mockPrisma.user.count.mockResolvedValueOnce(5);
+    const r = await POST(postRequest({ email: "b@x.com" }));
+    expect(r.status).toBe(403);
+    const body = await r.json();
+    expect(body.error).toContain("Pro limit of 5 members");
+    expect(mockPrisma.user.count).toHaveBeenCalledWith({ where: { teamId: "t_1" } });
+    expect(mockPrisma.user.update).not.toHaveBeenCalled();
+  });
+
+  it("allows an invite under the pro limit", async () => {
+    mockGetUser.mockResolvedValueOnce({
+      id: "user_1",
+      teamId: "t_1",
+      plan: "PRO",
+      name: "Alice",
+      email: "a@x.com",
+    } as any);
+    mockRequireRole.mockResolvedValueOnce({ userRole: "ADMIN", allowed: true });
+    mockPrisma.user.findUnique.mockResolvedValueOnce({
+      id: "user_2",
+      email: "b@x.com",
+      teamId: null,
+    } as any);
+    mockPrisma.user.count.mockResolvedValueOnce(3);
+    mockPrisma.team.findUnique.mockResolvedValueOnce({ id: "t_1" } as any);
+    mockPrisma.user.update.mockResolvedValueOnce({} as any);
+    mockPrisma.call.updateMany.mockResolvedValueOnce({ count: 1 } as any);
+    // Refetch after the invite — must include the members select.
+    mockPrisma.team.findUnique.mockResolvedValueOnce({
+      id: "t_1",
+      name: "Acme Team",
+      slug: "team-1",
+      members: [
+        { id: "user_1", name: "Alice", email: "a@x.com", teamRole: "ADMIN", avatar: null },
+        { id: "user_2", name: null, email: "b@x.com", teamRole: "MEMBER", avatar: null },
+      ],
+    } as any);
+
+    const r = await POST(postRequest({ email: "b@x.com" }));
+    expect(r.status).toBe(200);
+    const body = await r.json();
+    expect(body.members).toHaveLength(2);
+    expect(mockPrisma.user.count).toHaveBeenCalledWith({ where: { teamId: "t_1" } });
+    expect(mockPrisma.team.create).not.toHaveBeenCalled();
   });
 });
 

@@ -4,6 +4,7 @@ import prisma from '@/lib/prisma';
 import { getUserByClerkId } from '@/lib/get-user';
 import { requireRole } from '@/lib/rbac';
 import { logAuditAction } from '@/lib/audit-logger';
+import { getPlan } from '@/lib/plans';
 
 export async function GET() {
   try {
@@ -117,6 +118,25 @@ export async function POST(req: Request) {
 
     if (targetUser.teamId) {
       return NextResponse.json({ error: 'User is already on a team' }, { status: 409 });
+    }
+
+    const plan = ((inviter.plan as string | undefined) ?? 'FREE').toLowerCase();
+    const limit = getPlan(plan).teamMemberLimit;
+    if (typeof limit === 'number') {
+      const currentSeats = inviter.teamId
+        ? await prisma.user.count({ where: { teamId: inviter.teamId } })
+        : 1;
+      if (currentSeats + 1 > limit) {
+        return NextResponse.json(
+          {
+            error:
+              limit === 1
+                ? 'Team workspaces are a Pro feature. Upgrade to Pro to invite up to 5 members.'
+                : 'You\'ve reached the Pro limit of 5 members. Upgrade to Business for unlimited seats, or remove a member first.',
+          },
+          { status: 403 },
+        );
+      }
     }
 
     let team = inviter.teamId
