@@ -21,6 +21,7 @@ Return ONLY valid JSON with this exact structure (no markdown, no code fences):
     "techStack": ["string"],
     "decisionTimeline": "string"
   },
+  "competitorsMentioned": [{"name": "competitor name", "context": "what was said about them", "sentiment": "positive|negative|neutral"}],
   "salesScorecard": {
     "meddic": {
       "metrics": {"score": 0-10, "evidence": "string", "summary": "quantified business outcome discussed"},

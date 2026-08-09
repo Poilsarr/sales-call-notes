@@ -20,6 +20,7 @@ Return ONLY valid JSON with this exact structure:
     "techStack": ["string"],
     "decisionTimeline": "string"
   },
+  "competitorsMentioned": [{"name": "competitor name", "context": "what was said about them", "sentiment": "positive|negative|neutral"}],
   "salesScorecard": {
     "meddic": {"metrics": {"score": 0-10, "evidence": "string"}, "economicBuyer": {"score": 0-10, "evidence": "string"}, "decisionCriteria": {"score": 0-10, "evidence": "string"}, "decisionProcess": {"score": 0-10, "evidence": "string"}, "identifyPain": {"score": 0-10, "evidence": "string"}, "champion": {"score": 0-10, "evidence": "string"}},
     "bant": {"budget": {"score": 0-10, "evidence": "string"}, "authority": {"score": 0-10, "evidence": "string"}, "need": {"score": 0-10, "evidence": "string"}, "timeline": {"score": 0-10, "evidence": "string"}},
@@ -81,7 +82,7 @@ Marcus: "Great. Budget is approved for Q1. Can you send a formal proposal by end
 - If budget not discussed: Set bant.budget to 0-2, add to riskFlags "Budget not confirmed"
 - If technical proof-of-concept requested: Add to actionItems with high priority, note in riskFlags "POC required before decision"
 - If procurement/legal involved: Add stakeholders to stakeholderMap, extend decisionTimeline accordingly
-- If competitor mentioned: Add to keyEntities.competitors, assess competitive positioning in coachingNotes
+- If competitor mentioned: Add to keyEntities.competitors and competitorsMentioned (with context and lowercase sentiment), assess competitive positioning in coachingNotes
 - If deal size unclear: Note in riskFlags "Deal size not quantified"
 - If security/compliance requirements discussed: Extract to riskFlags and actionItems for follow-up
 - If multi-year contract discussed: Include in keyEntities.contractLength with terms
