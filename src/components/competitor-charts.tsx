@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useMemo } from 'react';
 
 type Sentiment = 'positive' | 'neutral' | 'negative';
 
@@ -19,6 +19,8 @@ interface Trend {
 interface Props {
   trend: Trend[];
   mentions: Mention[];
+  selectedCompetitor: string | null;
+  onSelectCompetitor: (competitor: string | null) => void;
 }
 
 interface SentimentBucket { positive: number; neutral: number; negative: number; }
@@ -201,9 +203,7 @@ function MentionsOverTime({ mentions }: { mentions: Mention[] }) {
   );
 }
 
-export function CompetitorCharts({ trend, mentions }: Props) {
-  // ponytail: the previous inline bars were buttons — clicking a competitor filtered the mentions list below. Lost in the chart rewrite. Restored as a small chip row below the chart so the click→filter UX still works.
-  const [selectedCompetitor, setSelectedCompetitor] = useState<string | null>(null);
+export function CompetitorCharts({ trend, mentions, selectedCompetitor, onSelectCompetitor }: Props) {
   return (
     <div className="space-y-4">
       <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
@@ -223,7 +223,7 @@ export function CompetitorCharts({ trend, mentions }: Props) {
                     return (
                       <button
                         key={t.competitor}
-                        onClick={() => setSelectedCompetitor(sel ? null : t.competitor)}
+                        onClick={() => onSelectCompetitor(sel ? null : t.competitor)}
                         className={`px-2.5 py-1 rounded-full text-[11px] border transition-colors ${
                           sel
                             ? 'bg-red-500/20 border-red-500/50 text-red-200'
@@ -253,7 +253,10 @@ export function CompetitorCharts({ trend, mentions }: Props) {
       </div>
       <MentionsOverTime mentions={mentions} />
       </div>
-      {/* ponytail: hidden prop pass to mentions list isn't needed — the chip above sets local state that we'd need to lift. For now, the chart is read-only and the click-to-filter is a chip, not the bar itself. */}
+      {/* ponytail: the chip click is lifted to the page — it refetches
+          /api/competitive-intelligence?competitor=X, so the trend and
+          mentions list shrink to the selected competitor. Clicking the
+          chip again clears the filter. */}
     </div>
   );
 }

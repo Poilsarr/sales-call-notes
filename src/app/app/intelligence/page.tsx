@@ -56,10 +56,18 @@ export default function IntelligencePage() {
   const [isAuthError, setIsAuthError] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [selectedCompetitor, setSelectedCompetitor] = useState<string | null>(null);
+  // ponytail: bumping retryCount re-runs the fetch so the error card
+  // gets a working "Try again" without a full page reload.
+  const [retryCount, setRetryCount] = useState(0);
   // ponytail: close = back to workspace root, not /dashboard.
   const handleUpgradeClose = () => router.push("/app");
 
   useEffect(() => {
+    // Clear stale failure states up front so a successful retry
+    // (or a fresh filter selection) re-renders the real data.
+    setError(null);
+    setIsAuthError(false);
+    setIsPlanLocked(false);
     const params = selectedCompetitor ? `?competitor=${encodeURIComponent(selectedCompetitor)}` : '';
     fetch(`/api/competitive-intelligence${params}`)
       .then((r) => {
@@ -74,7 +82,8 @@ export default function IntelligencePage() {
         //                         use this feature on their plan)
         //   401 → "data" null, isAuthError true → re-auth prompt
         //   4xx/5xx → "data" null, error string set → error card
-        //   network → fallback empty data
+        //   network → "data" null, error string set → error card
+        //   (same card as 4xx/5xx — no fake-empty fallback)
         if (!r.ok) {
           return r.json().catch(() => ({})).then((body) => {
             if (r.status === 403 && body?.code === 'PLAN_REQUIRED') {
@@ -93,11 +102,12 @@ export default function IntelligencePage() {
         }
         return r.json().then(setData);
       })
-      .catch(() =>
-        setData({ mentions: [], trend: [], summary: { total: 0, uniqueCompetitors: 0, days: 30 } })
-      )
+      .catch(() => {
+        setData(null);
+        setError('Network error — could not load competitive data.');
+      })
       .finally(() => setLoading(false));
-  }, [selectedCompetitor]);
+  }, [selectedCompetitor, retryCount]);
 
   if (loading) {
     return (
@@ -161,6 +171,12 @@ export default function IntelligencePage() {
           <div className="doppel-inner-dark p-6 sm:p-8">
             <p className="text-zinc-200 font-medium mb-1">Couldn&rsquo;t load competitive data.</p>
             <p className="text-zinc-500 text-sm font-mono">{error}</p>
+            <button
+              onClick={() => setRetryCount((c) => c + 1)}
+              className="mt-5 inline-flex items-center gap-1.5 px-4 py-2 rounded-full bg-[#F26522] hover:bg-[#e05a1a] text-white text-sm font-semibold transition"
+            >
+              Try again
+            </button>
           </div>
         </div>
       </div>
@@ -192,7 +208,9 @@ export default function IntelligencePage() {
               <div className="p-2 rounded-lg bg-red-500/10">
                 <Crosshair className="w-5 h-5 text-red-400" />
               </div>
-              <span className="text-sm font-medium text-zinc-300">Total Mentions</span>
+              <span className="text-sm font-medium text-zinc-300">
+                {selectedCompetitor ? `Mentions of "${selectedCompetitor}"` : 'Total Mentions'}
+              </span>
             </div>
             <p className="text-3xl font-semibold text-white">{summary.total}</p>
             <p className="text-xs text-zinc-400 mt-1">Last {summary.days} days</p>
@@ -240,9 +258,12 @@ export default function IntelligencePage() {
         </motion.div>
       </div>
 
-      <UpgradePrompt feature="competitive_alerts" featureName="Competitive Alerts" minimal />
-
-      <CompetitorCharts trend={trend} mentions={mentions} />
+      <CompetitorCharts
+        trend={trend}
+        mentions={mentions}
+        selectedCompetitor={selectedCompetitor}
+        onSelectCompetitor={setSelectedCompetitor}
+      />
 
       <motion.div
         initial={{ opacity: 0, y: 20 }}
@@ -257,6 +278,12 @@ export default function IntelligencePage() {
               : 'Recent Mentions'}
           </h2>
 
+          {summary.total > mentions.length && (
+            <p className="text-xs text-zinc-400 mb-4">
+              Showing the most recent {mentions.length} of {summary.total} mentions.
+            </p>
+          )}
+
           {mentions.length === 0 ? (
             <div className="rounded-xl border border-dashed border-zinc-800 bg-zinc-900/30 p-8 sm:p-10">
               <div className="flex items-start gap-4">
@@ -268,9 +295,9 @@ export default function IntelligencePage() {
                     No competitor mentions found yet.
                   </p>
                   <p className="text-[13px] text-zinc-400 leading-relaxed mb-5">
-                    Every call is scanned for Gong, Otter, Chorus, Fireflies,
-                    and 40+ other names. The moment a prospect says one,
-                    it shows up here with the exact line and the speaker.
+                    Every uploaded call is scanned for Gong, Otter, Chorus,
+                    Fireflies, and 40+ other names. When a prospect mentions
+                    one, it shows up here — linked to the call it came from.
                   </p>
                   <div className="flex flex-wrap gap-2">
                     <a
