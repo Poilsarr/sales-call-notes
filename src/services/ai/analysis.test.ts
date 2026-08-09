@@ -147,6 +147,7 @@ describe('AnalysisService', () => {
 
     expect(result.executiveSummary).toBe('No summary available');
     expect(result.actionItems).toEqual([]);
+    expect(result.competitorsMentioned).toEqual([]);
     expect(result.closeProbability).toBe(50);
     expect(result.talkRatio).toEqual({ rep: 0.5, prospect: 0.5 });
     expect(result.coachingNotes).toEqual({ strengths: [], improvements: [], tips: [] });
@@ -198,5 +199,85 @@ describe('AnalysisService', () => {
     const result = await service.analyze('Transcript');
 
     expect(result.closeProbability).toBe(100);
+  });
+
+  it('should preserve and lowercase competitorsMentioned through parse + normalize', async () => {
+    const mockCreate = vi.fn().mockResolvedValue({
+      choices: [{
+        message: {
+          content: JSON.stringify({
+            executiveSummary: 'Evaluating competitors',
+            callType: 'b2b-sales',
+            competitorsMentioned: [
+              { name: 'Gong', context: 'We are evaluating Gong', sentiment: 'Negative' },
+              { name: 'Otter', context: 'Used for notes', sentiment: 'positive' },
+            ],
+          }),
+        },
+      }],
+    });
+
+    class MockOpenAI {
+      chat = { completions: { create: mockCreate } };
+    }
+
+    vi.mock('openai', () => {
+      const MockOpenAI = vi.fn();
+      return { default: MockOpenAI, OpenAI: MockOpenAI };
+    });
+
+    vi.mock('fs', () => ({
+      default: { readFileSync: vi.fn().mockReturnValue('# Test Prompt\nAnalyze this call.') },
+      promises: { readFile: vi.fn().mockResolvedValue('# Test Prompt\nAnalyze this call.') }
+    }));
+
+    const { OpenAI } = await import('openai');
+    (OpenAI as any).mockImplementation(MockOpenAI);
+
+    const { AnalysisService } = await import('./analysis');
+    const service = new AnalysisService();
+    const result = await service.analyze('Transcript with competitor mentions');
+
+    expect(result.competitorsMentioned).toEqual([
+      { name: 'Gong', context: 'We are evaluating Gong', sentiment: 'negative' },
+      { name: 'Otter', context: 'Used for notes', sentiment: 'positive' },
+    ]);
+  });
+
+  it('should return empty array for non-array competitorsMentioned', async () => {
+    const mockCreate = vi.fn().mockResolvedValue({
+      choices: [{
+        message: {
+          content: JSON.stringify({
+            executiveSummary: 'Test',
+            callType: 'b2b-sales',
+            competitorsMentioned: { name: 'Gong' },
+          }),
+        },
+      }],
+    });
+
+    class MockOpenAI {
+      chat = { completions: { create: mockCreate } };
+    }
+
+    vi.mock('openai', () => {
+      const MockOpenAI = vi.fn();
+      return { default: MockOpenAI, OpenAI: MockOpenAI };
+    });
+
+    vi.mock('fs', () => ({
+      default: { readFileSync: vi.fn().mockReturnValue('# Test Prompt\nAnalyze this call.') },
+      promises: { readFile: vi.fn().mockResolvedValue('# Test Prompt\nAnalyze this call.') }
+    }));
+
+    const { OpenAI } = await import('openai');
+    (OpenAI as any).mockImplementation(MockOpenAI);
+
+    const { AnalysisService } = await import('./analysis');
+    const service = new AnalysisService();
+    const result = await service.analyze('Transcript');
+
+    expect(result.competitorsMentioned).toEqual([]);
   });
 });
