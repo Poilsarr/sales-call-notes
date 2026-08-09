@@ -1,0 +1,227 @@
+import { fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+
+// Mock the heavy/dependency-heavy imports the Intelligence page pulls
+// in so the tests exercise the page's own state machine (loading →
+// 403 / 401 / 5xx / network / empty / populated) instead of framer
+// motion's runtime or SVG internals.
+vi.mock('framer-motion', () => ({
+  motion: {
+    div: ({ children, ...rest }: any) => <div {...rest}>{children}</div>,
+  },
+}));
+
+vi.mock('next/link', () => ({
+  default: ({ children, href, ...rest }: any) => (
+    <a href={href} {...rest}>
+      {children}
+    </a>
+  ),
+}));
+
+vi.mock('next/navigation', () => ({
+  useRouter: () => ({ push: vi.fn(), replace: vi.fn() }),
+}));
+
+vi.mock('@/components/upgrade-prompt', () => ({
+  default: ({ featureName }: { featureName: string }) => (
+    <div data-testid="upgrade-prompt">{featureName}</div>
+  ),
+}));
+
+// Chip mock: render trend competitors as clickable buttons so the
+// selectedCompetitor → refetch wiring can be tested without depending
+// on CompetitorCharts' SVG internals.
+vi.mock('@/components/competitor-charts', () => ({
+  CompetitorCharts: ({ trend, onSelectCompetitor }: any) => (
+    <div>
+      {(trend ?? []).map((t: { competitor: string }) => (
+        <button
+          key={t.competitor}
+          data-testid={`chip-${t.competitor}`}
+          onClick={() => onSelectCompetitor(t.competitor)}
+        >
+          {t.competitor}
+        </button>
+      ))}
+    </div>
+  ),
+}));
+
+const ok = (body: unknown) =>
+  ({ ok: true, status: 200, json: async () => body } as Response);
+
+const err = (status: number, body: unknown) =>
+  ({ ok: false, status, json: async () => body } as Response);
+
+const gongMention = {
+  id: 'm1',
+  competitor: 'Gong',
+  context: 'They mentioned Gong.',
+  sentiment: 'positive',
+  mentionedBy: 'Prospect',
+  timestamp: 1700000000000,
+  createdAt: new Date().toISOString(),
+  call: {
+    id: 'c1',
+    filename: 'acme-discovery.mp3',
+    displayName: 'Acme Corp discovery call',
+    createdAt: new Date().toISOString(),
+  },
+};
+
+const populatedBody = {
+  mentions: [gongMention],
+  trend: [
+    { competitor: 'Gong', count: 4 },
+    { competitor: 'Otter', count: 2 },
+  ],
+  summary: { total: 6, uniqueCompetitors: 2, days: 30 },
+};
+
+describe('IntelligencePage (/app/intelligence)', () => {
+  beforeEach(() => {
+    vi.resetModules();
+    vi.stubGlobal('fetch', vi.fn());
+  });
+
+  afterEach(() => {
+    vi.unstubAllGlobals();
+  });
+
+  it('renders stat cards, the mention row, and the truncation caption for populated data', async () => {
+    vi.mocked(fetch).mockResolvedValue(ok(populatedBody));
+
+    const { default: IntelligencePage } = await import('./page');
+    render(<IntelligencePage />);
+
+    await waitFor(() => {
+      expect(screen.getByText('Total Mentions')).toBeInTheDocument();
+    });
+    // First stat card: Total Mentions → summary.total (6).
+    expect(screen.getByText('6')).toBeInTheDocument();
+    expect(screen.getByText('Competitors Tracked')).toBeInTheDocument();
+    expect(screen.getByText('2')).toBeInTheDocument();
+    // Top Competitor card shows trend[0].competitor + its count.
+    expect(screen.getByText('Top Competitor')).toBeInTheDocument();
+    expect(screen.getByText('4 mentions')).toBeInTheDocument();
+    expect(screen.getAllByText('Gong').length).toBeGreaterThanOrEqual(1);
+    // The mention row renders the context snippet.
+    expect(screen.getByText(/They mentioned Gong/)).toBeInTheDocument();
+    // summary.total (6) > mentions.length (1) → truncation caption.
+    expect(
+      screen.getByText(/Showing the most recent 1 of 6 mentions\./)
+    ).toBeInTheDocument();
+  });
+
+  it('renders the plan-locked upgrade prompt on 403 PLAN_REQUIRED (no stat cards)', async () => {
+    vi.mocked(fetch).mockResolvedValue(
+      err(403, {
+        error: 'Upgrade to Pro to access competitive intelligence',
+        code: 'PLAN_REQUIRED',
+      })
+    );
+
+    const { default: IntelligencePage } = await import('./page');
+    render(<IntelligencePage />);
+
+    await waitFor(() => {
+      expect(screen.getByTestId('upgrade-prompt')).toBeInTheDocument();
+    });
+    expect(screen.getByTestId('upgrade-prompt').textContent).toBe(
+      'Competitive Intelligence'
+    );
+    expect(screen.queryByText('Total Mentions')).toBeNull();
+  });
+
+  it('renders the session-expired message on 401', async () => {
+    vi.mocked(fetch).mockResolvedValue(err(401, {}));
+
+    const { default: IntelligencePage } = await import('./page');
+    render(<IntelligencePage />);
+
+    await waitFor(() => {
+      expect(screen.getByText(/Your session expired\./)).toBeInTheDocument();
+    });
+  });
+
+  it('renders the error card with the API message on 5xx', async () => {
+    vi.mocked(fetch).mockResolvedValue(
+      err(500, { message: 'Failed to fetch competitive intelligence' })
+    );
+
+    const { default: IntelligencePage } = await import('./page');
+    render(<IntelligencePage />);
+
+    await waitFor(() => {
+      expect(screen.getByText(/Couldn.t load competitive data\./)).toBeInTheDocument();
+    });
+    expect(
+      screen.getByText(/Failed to fetch competitive intelligence/)
+    ).toBeInTheDocument();
+  });
+
+  it('renders the network error card — NOT the empty state — when fetch rejects', async () => {
+    vi.mocked(fetch).mockRejectedValue(new TypeError('Network request failed'));
+
+    const { default: IntelligencePage } = await import('./page');
+    render(<IntelligencePage />);
+
+    await waitFor(() => {
+      expect(
+        screen.getByText(/Network error.*could not load competitive data/)
+      ).toBeInTheDocument();
+    });
+    // Locks the honesty fix: a network failure must never fall back to
+    // the fake-empty "No competitor mentions found yet." state.
+    expect(screen.queryByText(/No competitor mentions found yet/)).toBeNull();
+  });
+
+  it('renders the softened empty-state copy for an empty success response', async () => {
+    vi.mocked(fetch).mockResolvedValue(
+      ok({
+        mentions: [],
+        trend: [],
+        summary: { total: 0, uniqueCompetitors: 0, days: 30 },
+      })
+    );
+
+    const { default: IntelligencePage } = await import('./page');
+    render(<IntelligencePage />);
+
+    await waitFor(() => {
+      expect(screen.getByText(/No competitor mentions found yet\./)).toBeInTheDocument();
+    });
+    expect(screen.getByText(/linked to the call it came from/)).toBeInTheDocument();
+  });
+
+  it('re-fetches with ?competitor= when a competitor chip is clicked', async () => {
+    vi.mocked(fetch)
+      .mockResolvedValueOnce(ok(populatedBody))
+      .mockResolvedValueOnce(
+        ok({
+          mentions: [gongMention],
+          trend: [{ competitor: 'Gong', count: 4 }],
+          summary: { total: 4, uniqueCompetitors: 1, days: 30 },
+        })
+      );
+
+    const { default: IntelligencePage } = await import('./page');
+    render(<IntelligencePage />);
+
+    await waitFor(() => {
+      expect(screen.getByTestId('chip-Gong')).toBeInTheDocument();
+    });
+    fireEvent.click(screen.getByTestId('chip-Gong'));
+
+    // The second fetch (index 1) must target the filtered endpoint.
+    await waitFor(() => {
+      const url = vi.mocked(fetch).mock.calls[1]?.[0] as string;
+      expect(url).toContain('competitor=Gong');
+    });
+    // Stat-card label + mentions heading both switch to filtered copy.
+    await waitFor(() => {
+      expect(screen.getAllByText(/Mentions of "Gong"/)).toHaveLength(2);
+    });
+  });
+});
