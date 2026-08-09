@@ -129,7 +129,8 @@ export async function GET(req: Request) {
       take: limit,
     });
 
-    const total = mentions.length;
+    const totalCount = await prisma.competitorMention.count({ where });
+    const total = totalCount;
 
     let trend: TrendShape;
     let uniqueCompetitors: number;

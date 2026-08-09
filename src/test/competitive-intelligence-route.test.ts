@@ -5,11 +5,13 @@ const {
   upsertMock,
   findManyMock,
   groupByMock,
+  countMock,
 } = vi.hoisted(() => ({
   authMock: vi.fn(),
   upsertMock: vi.fn(),
   findManyMock: vi.fn(),
   groupByMock: vi.fn(),
+  countMock: vi.fn(),
 }));
 
 vi.mock('@clerk/nextjs/server', () => ({
@@ -24,6 +26,7 @@ vi.mock('@/lib/prisma', () => ({
     competitorMention: {
       findMany: findManyMock,
       groupBy: groupByMock,
+      count: countMock,
     },
   },
 }));
@@ -157,6 +160,7 @@ describe('GET /api/competitive-intelligence', () => {
           },
         },
       ]);
+      countMock.mockResolvedValue(1);
 
       const response = await GET(
         new Request(
@@ -175,6 +179,15 @@ describe('GET /api/competitive-intelligence', () => {
         }),
       );
       expect(groupByMock).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: expect.objectContaining({
+            createdAt: { gte: expect.any(Date) },
+            competitor: { contains: 'acme', mode: 'insensitive' },
+            call: { userId: 'user_1', teamId: 'team_a' },
+          }),
+        }),
+      );
+      expect(countMock).toHaveBeenCalledWith(
         expect.objectContaining({
           where: expect.objectContaining({
             createdAt: { gte: expect.any(Date) },
@@ -266,6 +279,7 @@ describe('GET /api/competitive-intelligence', () => {
       upsertMock.mockResolvedValue(PRO_USER);
       findManyMock.mockResolvedValue([]);
       groupByMock.mockResolvedValue([]);
+      countMock.mockResolvedValue(0);
 
       const response = await GET(new Request('http://localhost/api/competitive-intelligence'));
 
@@ -286,6 +300,7 @@ describe('GET /api/competitive-intelligence', () => {
         { competitor: 'Globex', _count: { competitor: 3 } },
         { competitor: 'Initech', _count: { competitor: 1 } },
       ]);
+      countMock.mockResolvedValue(11);
 
       const response = await GET(new Request('http://localhost/api/competitive-intelligence'));
 
@@ -296,7 +311,7 @@ describe('GET /api/competitive-intelligence', () => {
           { competitor: 'Globex', count: 3 },
           { competitor: 'Initech', count: 1 },
         ],
-        summary: { total: 0, uniqueCompetitors: 3, topCompetitor: 'Acme' },
+        summary: { total: 11, uniqueCompetitors: 3, topCompetitor: 'Acme' },
       });
     });
 
