@@ -1,0 +1,42 @@
+{
+  "ok": true,
+  "templates": {
+    "b2b-sales": {
+      "mentions": [
+        {
+          "name": "gong",
+          "context": "too expensive",
+          "sentiment": "negative"
+        },
+        {
+          "name": "fathom",
+          "context": "free tier is tempting",
+          "sentiment": "positive"
+        }
+      ],
+      "failures": []
+    },
+    "enrollment-calls": {
+      "mentions": [
+        {
+          "name": "Gong",
+          "context": "Too expensive, sticker price per seat was a concern",
+          "sentiment": "negative"
+        },
+        {
+          "name": "Fathom",
+          "context": "Free tier is tempting, considering it for the team",
+          "sentiment": "positive"
+        }
+      ],
+      "failures": []
+    }
+  },
+  "rawIds": [
+    "gong",
+    "fathom",
+    "Gong",
+    "Fathom"
+  ],
+  "timestamp": "2026-08-09T17:38:22.932Z"
+}
