@@ -187,6 +187,25 @@ export default function IntelligencePage() {
   const trend = data?.trend ?? [];
   const summary = data?.summary ?? { total: 0, uniqueCompetitors: 0, days: 30 };
 
+  // ponytail: pre-compute deal risks (negative sentiment = actionable threat)
+  const dealRisks = mentions.filter(m => m.sentiment === 'negative').slice(0, 3);
+
+  // ponytail: map competitor names to /vs/* pages for one-click playbooks
+  const getPlaybookUrl = (competitor: string): string | null => {
+    const map: Record<string, string> = {
+      'gong': '/vs/gong',
+      'otter': '/vs/otter-ai',
+      'otter.ai': '/vs/otter-ai',
+      'fireflies': '/vs/fireflies',
+      'fireflies.ai': '/vs/fireflies',
+      'fathom': '/vs/fathom',
+      "tl;dv": '/vs/tldv',
+      'tldv': '/vs/tldv',
+    };
+    const key = competitor.toLowerCase().trim();
+    return map[key] ?? null;
+  };
+
   return (
     <div className="space-y-8">
       <div>
@@ -195,6 +214,63 @@ export default function IntelligencePage() {
           Track competitor mentions across all your calls. Know what prospects are saying.
         </p>
       </div>
+
+      {/* ponytail: deal risk section — shows first if there are threats */}
+      {dealRisks.length > 0 && (
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.4 }}
+          className="doppel-outer-dark border-red-500/30"
+        >
+          <div className="doppel-inner-dark p-5">
+            <div className="flex items-center gap-2 mb-4">
+              <div className="p-1.5 rounded bg-red-500/20">
+                <Crosshair className="w-4 h-4 text-red-400" />
+              </div>
+              <span className="text-sm font-semibold text-red-300">Deal Risks Detected</span>
+              <span className="ml-auto text-xs text-zinc-400">{dealRisks.length} threat{dealRisks.length > 1 ? 's' : ''}</span>
+            </div>
+            <div className="space-y-3">
+              {dealRisks.map(risk => {
+                const playbook = getPlaybookUrl(risk.competitor);
+                return (
+                  <div key={risk.id} className="p-3 rounded-lg bg-red-500/5 border border-red-500/20">
+                    <div className="flex items-start justify-between gap-3 mb-2">
+                      <div>
+                        <span className="text-sm font-medium text-white">{risk.competitor}</span>
+                        {risk.call && (
+                          <span className="text-xs text-zinc-500 ml-2">• {new Date(risk.createdAt).toLocaleDateString()}</span>
+                        )}
+                      </div>
+                      {playbook && (
+                        <a
+                          href={playbook}
+                          className="shrink-0 text-[11px] px-2 py-1 rounded bg-red-500/20 text-red-300 hover:bg-red-500/30 transition"
+                        >
+                          How to beat →
+                        </a>
+                      )}
+                    </div>
+                    {risk.context && (
+                      <p className="text-sm text-zinc-300 italic">&ldquo;{risk.context}&rdquo;</p>
+                    )}
+                    {risk.call && (
+                      <a
+                        href={`/app/calls/${risk.call.id}`}
+                        className="inline-flex items-center gap-1 mt-2 text-xs text-zinc-400 hover:text-zinc-200"
+                      >
+                        <ExternalLink className="w-3 h-3" />
+                        {risk.call.displayName ?? risk.call.filename}
+                      </a>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        </motion.div>
+      )}
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <motion.div
@@ -318,50 +394,62 @@ export default function IntelligencePage() {
             </div>
           ) : (
             <div className="space-y-3">
-              {mentions.map((mention, i) => (
-                <div
-                  key={mention.id}
-                  role="listitem"
-                  className="flex items-start gap-4 p-4 rounded-lg bg-zinc-800/50 border border-zinc-800"
-                >
+              {mentions.map((mention) => {
+                const playbook = getPlaybookUrl(mention.competitor);
+                return (
                   <div
-                    className={`shrink-0 px-2.5 py-1 rounded-full text-xs font-medium border ${getSentimentColor(
-                      mention.sentiment
-                    )}`}
+                    key={mention.id}
+                    role="listitem"
+                    className="p-4 rounded-lg bg-zinc-800/50 border border-zinc-800"
                   >
-                    {getSentimentLabel(mention.sentiment)}
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2 mb-1">
-                      <span className="text-sm font-medium text-white">
-                        {mention.competitor}
-                      </span>
-                      <span className="text-xs text-zinc-400">
-                        {new Date(mention.createdAt).toLocaleDateString(undefined, {
-                          month: 'short',
-                          day: 'numeric',
-                          hour: '2-digit',
-                          minute: '2-digit',
-                        })}
-                      </span>
-                    </div>
+                    {/* ponytail: context FIRST, competitor name SECOND */}
                     {mention.context && (
-                      <p className="text-sm text-zinc-400 line-clamp-2">
+                      <p className="text-sm text-zinc-200 mb-3 leading-relaxed">
                         &ldquo;{mention.context}&rdquo;
                       </p>
                     )}
-                    {mention.call && (
-                      <a
-                        href={`/app/calls/${mention.call.id}`}
-                        className="inline-flex items-center gap-1 mt-2 text-xs text-zinc-400 hover:text-zinc-200 transition-colors"
-                      >
-                        <ExternalLink className="w-3 h-3" />
-                        {mention.call.displayName ?? mention.call.filename}
-                      </a>
-                    )}
+                    <div className="flex items-start justify-between gap-3 flex-wrap">
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <div
+                          className={`px-2.5 py-1 rounded-full text-xs font-medium border ${getSentimentColor(
+                            mention.sentiment
+                          )}`}
+                        >
+                          {getSentimentLabel(mention.sentiment)}
+                        </div>
+                        <span className="text-sm font-medium text-white">
+                          {mention.competitor}
+                        </span>
+                        <span className="text-xs text-zinc-500">
+                          {new Date(mention.createdAt).toLocaleDateString(undefined, {
+                            month: 'short',
+                            day: 'numeric',
+                          })}
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        {playbook && (
+                          <a
+                            href={playbook}
+                            className="text-[11px] px-2 py-1 rounded bg-zinc-700/50 text-zinc-300 hover:bg-zinc-700 transition"
+                          >
+                            Playbook →
+                          </a>
+                        )}
+                        {mention.call && (
+                          <a
+                            href={`/app/calls/${mention.call.id}`}
+                            className="text-[11px] px-2 py-1 rounded bg-zinc-700/50 text-zinc-300 hover:bg-zinc-700 transition flex items-center gap-1"
+                          >
+                            <ExternalLink className="w-3 h-3" />
+                            Call
+                          </a>
+                        )}
+                      </div>
+                    </div>
                   </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           )}
         </div>
