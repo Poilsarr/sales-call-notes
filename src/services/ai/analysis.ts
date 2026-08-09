@@ -196,7 +196,12 @@ export class AnalysisService {
       callType: raw.callType || 'b2b-sales',
       participants: Array.isArray(raw.participants) ? raw.participants : [],
       keyEntities: raw.keyEntities || {},
-      competitorsMentioned: Array.isArray(raw.competitorsMentioned) ? raw.competitorsMentioned : [],
+      competitorsMentioned: Array.isArray(raw.competitorsMentioned)
+        ? raw.competitorsMentioned.map((m) => ({
+            ...m,
+            sentiment: typeof m.sentiment === 'string' ? m.sentiment.toLowerCase() : m.sentiment,
+          }))
+        : [],
       salesScorecard: normalizeScorecard(raw.salesScorecard),
       stakeholderMap: raw.stakeholderMap || [],
       painPoints: raw.painPoints || [],
