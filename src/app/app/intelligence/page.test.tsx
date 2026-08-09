@@ -79,6 +79,28 @@ const populatedBody = {
   summary: { total: 6, uniqueCompetitors: 2, days: 30 },
 };
 
+const legacyMention = {
+  id: 'm2',
+  competitor: 'Gong',
+  context: null,
+  sentiment: null,
+  mentionedBy: null,
+  timestamp: null,
+  createdAt: '2026-08-01T00:00:00.000Z',
+  call: {
+    id: 'c2',
+    filename: 'acme-discovery.mp3',
+    displayName: 'Acme Corp discovery call',
+    createdAt: '2026-08-01T00:00:00.000Z',
+  },
+};
+
+const legacyPopulatedBody = {
+  mentions: [legacyMention],
+  trend: [{ competitor: 'Gong', count: 1 }],
+  summary: { total: 1, uniqueCompetitors: 1, days: 30 },
+};
+
 describe('IntelligencePage (/app/intelligence)', () => {
   beforeEach(() => {
     vi.resetModules();
@@ -223,5 +245,35 @@ describe('IntelligencePage (/app/intelligence)', () => {
     await waitFor(() => {
       expect(screen.getAllByText(/Mentions of "Gong"/)).toHaveLength(2);
     });
+  });
+
+  it('renders the honesty banner when mentions have no context or sentiment (legacy calls)', async () => {
+    vi.mocked(fetch).mockResolvedValue(ok(legacyPopulatedBody));
+
+    const { default: IntelligencePage } = await import('./page');
+    render(<IntelligencePage />);
+
+    await waitFor(() => {
+      expect(screen.getByText('Total Mentions')).toBeInTheDocument();
+    });
+    expect(
+      screen.getByText(
+        /1 mention\(s\) detected, but these calls were analyzed before competitor tracking shipped/
+      )
+    ).toBeInTheDocument();
+  });
+
+  it('does not render the honesty banner when mentions have context and sentiment', async () => {
+    vi.mocked(fetch).mockResolvedValue(ok(populatedBody));
+
+    const { default: IntelligencePage } = await import('./page');
+    render(<IntelligencePage />);
+
+    await waitFor(() => {
+      expect(screen.getByText('Total Mentions')).toBeInTheDocument();
+    });
+    expect(
+      screen.queryByText(/mention\(s\) detected, but these calls were analyzed before/)
+    ).toBeNull();
   });
 });

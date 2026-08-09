@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { BarChart3, TrendingUp, Crosshair, ExternalLink } from 'lucide-react';
+import { BarChart3, TrendingUp, Crosshair, ExternalLink, Info } from 'lucide-react';
 import UpgradePrompt from '@/components/upgrade-prompt';
 import { CompetitorCharts } from '@/components/competitor-charts';
 
@@ -348,6 +348,18 @@ export default function IntelligencePage() {
         className="doppel-outer-dark"
       >
         <div className="doppel-inner-dark p-6">
+          {mentions.length > 0 &&
+            summary.total > 0 &&
+            mentions.every((m) => !m.context && !m.sentiment) && (
+              <div className="mb-4 flex items-start gap-2.5 p-4 rounded-lg bg-zinc-800/50 border border-zinc-800">
+                <Info className="w-4 h-4 text-zinc-400 mt-px shrink-0" />
+                <p className="text-[13px] text-zinc-400 leading-relaxed">
+                  {mentions.length} mention(s) detected, but these calls were
+                  analyzed before competitor tracking shipped &mdash; context
+                  and sentiment aren&rsquo;t available for them yet.
+                </p>
+              </div>
+            )}
           <h2 className="text-lg font-medium text-white mb-4">
             {selectedCompetitor
               ? `Mentions of "${selectedCompetitor}"`

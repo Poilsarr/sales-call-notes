@@ -59,7 +59,7 @@ async function main() {
   const rawIds: string[] = [];
 
   for (const templateId of TEMPLATE_IDS) {
-    const entry = { mentions: [] as unknown[], failures: [] as string[] };
+    const entry: (typeof results)[string] = { mentions: [] as unknown[], failures: [] as string[] };
     results[templateId] = entry;
     try {
       const analysis = await service.analyze(TRANSCRIPT, undefined, templateId);
