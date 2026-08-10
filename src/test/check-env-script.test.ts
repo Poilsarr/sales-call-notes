@@ -124,6 +124,16 @@ describe('check-env script', () => {
     expect(groups).toContain('Slack');
   });
 
+  it('validates GOOGLE_REDIRECT_URI as an optional var in the Google group', () => {
+    const summary = checkEnv(buildEnv({}));
+    const google = summary.results.filter((r) => r.group === 'Google (Calendar)');
+    const redirect = google.find((r) => r.key === 'GOOGLE_REDIRECT_URI');
+    expect(redirect?.level).toBe('optional');
+    expect(redirect?.status).toBe('missing');
+    const required = google.filter((r) => r.level === 'required').map((r) => r.key).sort();
+    expect(required).toEqual(['GOOGLE_CLIENT_ID', 'GOOGLE_CLIENT_SECRET']);
+  });
+
   it('handles a fully empty env without throwing', () => {
     const summary = checkEnv({} as NodeJS.ProcessEnv);
     expect(summary.ok).toBe(false);

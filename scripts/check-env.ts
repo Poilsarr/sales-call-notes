@@ -71,6 +71,7 @@ export const ENV_GROUPS: readonly EnvGroup[] = [
     vars: [
       { key: "GOOGLE_CLIENT_ID", level: "required" },
       { key: "GOOGLE_CLIENT_SECRET", level: "required" },
+      { key: "GOOGLE_REDIRECT_URI", level: "optional", description: "Defaults to /api/integrations/google/callback" },
     ],
   },
   {
@@ -82,6 +83,13 @@ export const ENV_GROUPS: readonly EnvGroup[] = [
       { key: "SLACK_SIGNING_SECRET", level: "optional", description: "Slash commands" },
       { key: "SLACK_WEBHOOK_URL", level: "optional", description: "Legacy fallback" },
       { key: "SLACK_REDIRECT_URI", level: "optional" },
+    ],
+  },
+  {
+    name: "Integrations Security",
+    description: "At-rest encryption of OAuth tokens",
+    vars: [
+      { key: "ENCRYPTION_KEY", level: "optional", description: "32-byte base64 key (openssl rand -base64 32); absent = plaintext tokens" },
     ],
   },
   {
