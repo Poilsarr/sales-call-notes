@@ -1,9 +1,10 @@
 import type { NextRequest } from "next/server";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-const { mockAuth, mockGetUserByClerkId, mockFindFirst, mockCreate, mockUpdate, mockGetSecret, mockDevSandboxEnabled, mockDevSandboxCredentials, mockLogAuditAction, mockPrismaTeamCreate, mockPrismaUserUpdate, mockPrismaUserFindUnique, mockCookieStore } = vi.hoisted(() => ({
+const { mockAuth, mockGetUserByClerkId, mockRequireRole, mockFindFirst, mockCreate, mockUpdate, mockGetSecret, mockDevSandboxEnabled, mockDevSandboxCredentials, mockLogAuditAction, mockPrismaTeamCreate, mockPrismaUserUpdate, mockPrismaUserFindUnique, mockCookieStore } = vi.hoisted(() => ({
   mockAuth: vi.fn(),
   mockGetUserByClerkId: vi.fn(),
+  mockRequireRole: vi.fn(),
   mockFindFirst: vi.fn(),
   mockCreate: vi.fn(),
   mockUpdate: vi.fn(),
@@ -24,6 +25,23 @@ vi.mock("@clerk/nextjs/server", () => ({
 vi.mock("@/lib/get-user", () => ({
   getUserByClerkId: mockGetUserByClerkId,
 }));
+
+vi.mock("@/lib/rbac", () => ({
+  requireRole: mockRequireRole,
+}));
+
+const mockTeamUser = {
+  id: "user-1",
+  clerkId: "test-user",
+  email: "test@example.com",
+  name: "Test User",
+  teamId: "team-1",
+};
+
+function mockAdminTeamUser() {
+  mockGetUserByClerkId.mockResolvedValue(mockTeamUser);
+  mockRequireRole.mockResolvedValue({ allowed: true, userRole: "ADMIN" });
+}
 
 vi.mock("@/lib/prisma", () => ({
   default: {
@@ -61,6 +79,10 @@ vi.mock("next/headers", () => ({
 
 import { GET as ConnectGET } from "@/app/api/integrations/teams/connect/route";
 import { GET as CallbackGET } from "@/app/api/integrations/teams/callback/route";
+import { decryptConfig } from "@/lib/integrations/config-crypto";
+
+// 32-byte test key (base64) — mirrors src/lib/integrations/config-crypto.test.ts
+const TEST_ENCRYPTION_KEY = "YWJjZGVmZ2hpamtsbW5vcHFyc3R1dnd4eXoxMjM0NTY=";
 
 function mockNextRequest(url: string): NextRequest {
   const req = new Request(url);
@@ -86,8 +108,21 @@ describe("Teams Connect", () => {
     await expect(response.json()).resolves.toEqual({ error: "Unauthorized" });
   });
 
+  it("returns 403 for a team member", async () => {
+    mockAuth.mockResolvedValue({ userId: "test-user" });
+    mockAdminTeamUser();
+    mockRequireRole.mockResolvedValue({ allowed: false, userRole: "MEMBER" });
+
+    const response = await ConnectGET();
+
+    expect(response.status).toBe(403);
+    await expect(response.json()).resolves.toEqual({ error: "Forbidden" });
+    expect(mockRequireRole).toHaveBeenCalledWith("test-user", "team-1", "ADMIN");
+  });
+
   it("returns 400 when TEAMS_CLIENT_ID is not configured", async () => {
     mockAuth.mockResolvedValue({ userId: "test-user" });
+    mockAdminTeamUser();
     mockGetSecret.mockImplementation((key: string) => {
       if (key === "NEXT_PUBLIC_APP_URL") return "http://localhost:3000";
       return "";
@@ -102,6 +137,7 @@ describe("Teams Connect", () => {
 
   it("redirects to Microsoft OAuth URL when configured", async () => {
     mockAuth.mockResolvedValue({ userId: "test-user" });
+    mockAdminTeamUser();
     mockGetSecret.mockImplementation((key: string) => {
       if (key === "TEAMS_CLIENT_ID") return "test-teams-client-id";
       if (key === "NEXT_PUBLIC_APP_URL") return "http://localhost:3000";
@@ -120,6 +156,7 @@ describe("Teams Connect", () => {
 
   it("uses MICROSOFT_CLIENT_ID as fallback", async () => {
     mockAuth.mockResolvedValue({ userId: "test-user" });
+    mockAdminTeamUser();
     mockGetSecret.mockImplementation((key: string) => {
       if (key === "MICROSOFT_CLIENT_ID") return "fallback-ms-client-id";
       if (key === "NEXT_PUBLIC_APP_URL") return "http://localhost:3000";
@@ -135,6 +172,7 @@ describe("Teams Connect", () => {
 
   it("uses custom tenant when MICROSOFT_TENANT_ID is set", async () => {
     mockAuth.mockResolvedValue({ userId: "test-user" });
+    mockAdminTeamUser();
     mockGetSecret.mockImplementation((key: string) => {
       if (key === "TEAMS_CLIENT_ID") return "test-teams-client-id";
       if (key === "MICROSOFT_TENANT_ID") return "custom-tenant";
@@ -226,6 +264,7 @@ describe("Teams Callback", () => {
       name: "Test User",
       teamId: "team-1",
     });
+    mockRequireRole.mockResolvedValue({ allowed: true, userRole: "ADMIN" });
     mockDevSandboxEnabled.mockReturnValue(true);
     mockDevSandboxCredentials.mockReturnValue({
       clientId: "dev-teams-client-id",
@@ -256,6 +295,64 @@ describe("Teams Callback", () => {
         }),
       }),
     );
+  });
+
+  it("encrypts the stored config at rest when ENCRYPTION_KEY is set", async () => {
+    mockAuth.mockResolvedValue({ userId: "test-user" });
+    mockCookieStore.get.mockImplementation((key: string) => {
+      if (key === "oauth_teams") return { value: "test-nonce" };
+      return undefined;
+    });
+    mockGetSecret.mockImplementation((key: string) => {
+      if (key === "NEXT_PUBLIC_APP_URL") return "http://localhost:3000";
+      if (key === "TEAMS_CLIENT_ID") return "dev-teams-client-id";
+      if (key === "TEAMS_CLIENT_SECRET") return "dev-teams-client-secret";
+      if (key === "ENCRYPTION_KEY") return TEST_ENCRYPTION_KEY;
+      return "";
+    });
+    mockGetUserByClerkId.mockResolvedValue({
+      id: "user-1",
+      clerkId: "test-user",
+      email: "test@example.com",
+      name: "Test User",
+      teamId: "team-1",
+    });
+    mockRequireRole.mockResolvedValue({ allowed: true, userRole: "ADMIN" });
+    mockDevSandboxEnabled.mockReturnValue(true);
+    mockDevSandboxCredentials.mockReturnValue({
+      clientId: "dev-teams-client-id",
+      clientSecret: "dev-teams-client-secret",
+      redirectUri: "http://localhost:3000/api/integrations/teams/callback",
+      scope: ["offline_access", "User.Read", "Calendars.ReadWrite", "OnlineMeetings.ReadWrite"],
+      notesUrl: "https://portal.azure.com/",
+    });
+    mockFindFirst.mockResolvedValue(null);
+    mockCreate.mockResolvedValue({
+      id: "int-1",
+      teamId: "team-1",
+      provider: "teams",
+      syncedAt: new Date("2025-01-15T00:00:00.000Z"),
+    });
+
+    const req = mockNextRequest("http://localhost/api/integrations/teams/callback?code=test-code&state=teams:test-nonce");
+    const response = await CallbackGET(req);
+
+    expect(response.status).toBe(307);
+    expect(response.headers.get("location")).toContain("teams=connected");
+
+    const createCall = mockCreate.mock.calls[0][0] as { data: { config: string } };
+    const stored = createCall.data.config;
+
+    expect(stored.startsWith("v1:")).toBe(true);
+    expect(stored).not.toContain("dev-teams-access-token");
+    expect(stored).not.toContain("accessToken");
+
+    const decrypted = decryptConfig(stored);
+    expect(decrypted).not.toBeNull();
+    expect(JSON.parse(decrypted as string)).toMatchObject({
+      accessToken: "dev-teams-access-token:test-code",
+      refreshToken: "dev-teams-refresh-token",
+    });
   });
 
   it("creates team for user without teamId", async () => {
@@ -323,6 +420,7 @@ describe("Teams Callback", () => {
       name: "Test User",
       teamId: "team-1",
     });
+    mockRequireRole.mockResolvedValue({ allowed: true, userRole: "ADMIN" });
     mockDevSandboxEnabled.mockReturnValue(true);
     mockDevSandboxCredentials.mockReturnValue({
       clientId: "dev-teams-client-id",
@@ -365,5 +463,37 @@ describe("Teams Callback", () => {
 
     expect(response.status).toBe(307);
     expect(response.headers.get("location")).toContain("error=invalid_state");
+  });
+
+  it("redirects with forbidden for a team member", async () => {
+    mockAuth.mockResolvedValue({ userId: "test-user" });
+    mockCookieStore.get.mockImplementation((key: string) => {
+      if (key === "oauth_teams") return { value: "test-nonce" };
+      return undefined;
+    });
+    mockGetSecret.mockImplementation((key: string) => {
+      if (key === "NEXT_PUBLIC_APP_URL") return "http://localhost:3000";
+      if (key === "TEAMS_CLIENT_ID") return "dev-teams-client-id";
+      if (key === "TEAMS_CLIENT_SECRET") return "dev-teams-client-secret";
+      return "";
+    });
+    mockGetUserByClerkId.mockResolvedValue(mockTeamUser);
+    mockRequireRole.mockResolvedValue({ allowed: false, userRole: "MEMBER" });
+    mockDevSandboxEnabled.mockReturnValue(true);
+    mockDevSandboxCredentials.mockReturnValue({
+      clientId: "dev-teams-client-id",
+      clientSecret: "dev-teams-client-secret",
+      redirectUri: "http://localhost:3000/api/integrations/teams/callback",
+      scope: ["offline_access", "User.Read", "Calendars.ReadWrite", "OnlineMeetings.ReadWrite"],
+      notesUrl: "https://portal.azure.com/",
+    });
+
+    const req = mockNextRequest("http://localhost/api/integrations/teams/callback?code=test-code&state=teams:test-nonce");
+    const response = await CallbackGET(req);
+
+    expect(response.status).toBe(307);
+    expect(response.headers.get("location")).toContain("error=forbidden");
+    expect(mockCreate).not.toHaveBeenCalled();
+    expect(mockUpdate).not.toHaveBeenCalled();
   });
 });

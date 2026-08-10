@@ -6,6 +6,7 @@ import { requireRole } from "@/lib/rbac";
 import { HubSpotService } from "@/services/crm/hubspot";
 import { SalesforceService } from "@/services/crm/salesforce";
 import { TeamsService } from "@/services/crm/teams";
+import { decryptConfig } from "@/lib/integrations/config-crypto";
 
 export async function POST(
   req: NextRequest,
@@ -62,7 +63,8 @@ export async function POST(
     let instanceUrl: string | undefined;
     if (integration?.config) {
       try {
-        const parsed = JSON.parse(integration.config);
+        // Legacy plaintext passes through; `v1:` envelopes are decrypted.
+        const parsed = JSON.parse(decryptConfig(integration.config) ?? "");
         instanceUrl = parsed.instanceUrl ?? undefined;
       } catch {
         return NextResponse.json({ error: "Integration not configured" }, { status: 400 });
@@ -89,7 +91,9 @@ export async function POST(
       result = await salesforce.syncCall(crmCall);
     } else {
       const teams = new TeamsService();
-      const mockToken = integration?.config ? JSON.parse(integration.config).accessToken : null;
+      const mockToken = integration?.config
+        ? JSON.parse(decryptConfig(integration.config) ?? "{}").accessToken
+        : null;
       result = await teams.syncCall(crmCall, mockToken || "");
     }
 

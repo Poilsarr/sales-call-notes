@@ -6,6 +6,19 @@ const mockFindMany = vi.fn();
 const mockCallFindMany = vi.fn();
 const mockCallFindUnique = vi.fn();
 
+const { mockGetSecret } = vi.hoisted(() => ({ mockGetSecret: vi.fn() }));
+
+// Default: no ENCRYPTION_KEY (legacy plaintext behavior). The encryption
+// test below overrides per-test to opt in.
+mockGetSecret.mockImplementation((key: string) => {
+  const map: Record<string, string> = {
+    SLACK_WEBHOOK_URL: "https://hooks.slack.com/test",
+    SLACK_SIGNING_SECRET: "test-signing-secret",
+    NEXT_PUBLIC_APP_URL: "https://usegauge.com",
+  };
+  return map[key] || "";
+});
+
 vi.mock("@/lib/prisma", () => ({
   default: {
     integration: {
@@ -20,18 +33,14 @@ vi.mock("@/lib/prisma", () => ({
 }));
 
 vi.mock("@/lib/secrets", () => ({
-  getSecret: (key: string) => {
-    const map: Record<string, string> = {
-      SLACK_WEBHOOK_URL: "https://hooks.slack.com/test",
-      SLACK_SIGNING_SECRET: "test-signing-secret",
-      NEXT_PUBLIC_APP_URL: "https://usegauge.com",
-    };
-    return map[key] || "";
-  },
+  getSecret: mockGetSecret,
 }));
 
 import { SlackService } from "@/services/slack";
 import { generateWeeklyDigest } from "@/services/slack-digest";
+import { encryptConfig } from "@/lib/integrations/config-crypto";
+
+const TEST_ENCRYPTION_KEY = "YWJjZGVmZ2hpamtsbW5vcHFyc3R1dnd4eXoxMjM0NTY=";
 
 const mockFetch = vi.fn();
 global.fetch = mockFetch;
@@ -81,6 +90,47 @@ describe("SlackService", () => {
           body: JSON.stringify({ users: "U12345" }),
         }),
       );
+      expect(mockFetch).toHaveBeenNthCalledWith(
+        2,
+        "https://slack.com/api/chat.postMessage",
+        expect.objectContaining({
+          body: expect.stringContaining("Hello from Gauge"),
+        }),
+      );
+    });
+
+    it("should read a bot token from an encrypted config", async () => {
+      mockGetSecret.mockImplementation((key: string) => {
+        if (key === "ENCRYPTION_KEY") return TEST_ENCRYPTION_KEY;
+        const map: Record<string, string> = {
+          SLACK_WEBHOOK_URL: "https://hooks.slack.com/test",
+          SLACK_SIGNING_SECRET: "test-signing-secret",
+          NEXT_PUBLIC_APP_URL: "https://usegauge.com",
+        };
+        return map[key] || "";
+      });
+      mockFindFirst.mockResolvedValue({
+        id: "int-1",
+        teamId: "team-1",
+        provider: "slack",
+        enabled: true,
+        config: encryptConfig(mockBotConfig),
+      });
+
+      mockFetch
+        .mockResolvedValueOnce({
+          ok: true,
+          json: async () => ({ ok: true, channel: { id: "D12345" } }),
+        })
+        .mockResolvedValueOnce({
+          ok: true,
+          json: async () => ({ ok: true }),
+        });
+
+      const service = new SlackService("team-1");
+      const result = await service.sendDirectMessage("U12345", "Hello from Gauge");
+
+      expect(result).toBe(true);
       expect(mockFetch).toHaveBeenNthCalledWith(
         2,
         "https://slack.com/api/chat.postMessage",
@@ -157,6 +207,56 @@ describe("SlackService", () => {
       expect(messageBody.channel).toBe("#general");
       expect(messageBody.text).toBe("New call notes: Q1-review.mp3");
       expect(messageBody.blocks[0].text.text).toBe("📞 Q1-review.mp3");
+    });
+
+    it("should use custom channel from integration config", async () => {
+      mockFindFirst.mockResolvedValue({
+        id: "int-1",
+        teamId: "team-1",
+        provider: "slack",
+        enabled: true,
+        config: JSON.stringify({ ...JSON.parse(mockBotConfig), channel: "#sales-alerts" }),
+      });
+
+      let messageBody: any = null;
+      mockFetch.mockImplementation(async (url: string, opts?: any) => {
+        if (url.includes("slack.com/api/chat.postMessage")) {
+          messageBody = JSON.parse(opts?.body || "{}");
+          return { ok: true, json: async () => ({ ok: true }) };
+        }
+        return { ok: false, json: async () => ({}) };
+      });
+
+      const service = new SlackService("team-1");
+      const result = await service.sendCallSummary(message);
+
+      expect(result).toBe(true);
+      expect(messageBody.channel).toBe("#sales-alerts");
+    });
+
+    it("should fall back to #general when channel is empty in config", async () => {
+      mockFindFirst.mockResolvedValue({
+        id: "int-1",
+        teamId: "team-1",
+        provider: "slack",
+        enabled: true,
+        config: JSON.stringify({ ...JSON.parse(mockBotConfig), channel: "" }),
+      });
+
+      let messageBody: any = null;
+      mockFetch.mockImplementation(async (url: string, opts?: any) => {
+        if (url.includes("slack.com/api/chat.postMessage")) {
+          messageBody = JSON.parse(opts?.body || "{}");
+          return { ok: true, json: async () => ({ ok: true }) };
+        }
+        return { ok: false, json: async () => ({}) };
+      });
+
+      const service = new SlackService("team-1");
+      const result = await service.sendCallSummary(message);
+
+      expect(result).toBe(true);
+      expect(messageBody.channel).toBe("#general");
     });
 
     it("should send DM to assignee when slackUserId provided", async () => {
@@ -274,6 +374,64 @@ describe("SlackService", () => {
 
       expect(result).toBe(true);
       expect(messageBody.blocks[0].text.text).toContain("Q1-review.mp3");
+    });
+
+    it("should use custom channel from integration config", async () => {
+      mockFindFirst.mockResolvedValue({
+        id: "int-1",
+        teamId: "team-1",
+        provider: "slack",
+        enabled: true,
+        config: JSON.stringify({ ...JSON.parse(mockBotConfig), channel: "#competitor-alerts" }),
+      });
+
+      let messageBody: any = null;
+      mockFetch.mockImplementation(async (url: string, opts?: any) => {
+        if (url.includes("slack.com/api/chat.postMessage")) {
+          messageBody = JSON.parse(opts?.body || "{}");
+          return { ok: true, json: async () => ({ ok: true }) };
+        }
+        return { ok: false, json: async () => ({}) };
+      });
+
+      const service = new SlackService("team-1");
+      const result = await service.sendCompetitorAlert(
+        [{ name: "Acme Corp", context: "mentioned pricing", sentiment: "negative" }],
+        "Q1-review.mp3",
+        "https://usegauge.com/calls/123",
+      );
+
+      expect(result).toBe(true);
+      expect(messageBody.channel).toBe("#competitor-alerts");
+    });
+
+    it("should default to #general when config has no channel", async () => {
+      mockFindFirst.mockResolvedValue({
+        id: "int-1",
+        teamId: "team-1",
+        provider: "slack",
+        enabled: true,
+        config: mockBotConfig,
+      });
+
+      let messageBody: any = null;
+      mockFetch.mockImplementation(async (url: string, opts?: any) => {
+        if (url.includes("slack.com/api/chat.postMessage")) {
+          messageBody = JSON.parse(opts?.body || "{}");
+          return { ok: true, json: async () => ({ ok: true }) };
+        }
+        return { ok: false, json: async () => ({}) };
+      });
+
+      const service = new SlackService("team-1");
+      const result = await service.sendCompetitorAlert(
+        [{ name: "Acme Corp", context: "mentioned pricing", sentiment: "negative" }],
+        "Q1-review.mp3",
+        "https://usegauge.com/calls/123",
+      );
+
+      expect(result).toBe(true);
+      expect(messageBody.channel).toBe("#general");
     });
 
     it("should return false when no competitors", async () => {

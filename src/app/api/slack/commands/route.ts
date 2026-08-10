@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import crypto from "crypto";
 import prisma from "@/lib/prisma";
 import { getSecret } from "@/lib/secrets";
+import { decryptConfig } from "@/lib/integrations/config-crypto";
 
 type SlackCommandPayload = {
   token: string;
@@ -125,7 +126,9 @@ export async function POST(req: NextRequest) {
     const integration = integrations.find((i) => {
       if (!i.config) return false;
       try {
-        const config = JSON.parse(i.config) as { teamId?: string };
+        // decryptConfig passes legacy plaintext through and never throws;
+        // an undecryptable row just fails the match.
+        const config = JSON.parse(decryptConfig(i.config) ?? "null") as { teamId?: string };
         return config.teamId === payload.team_id;
       } catch {
         return false;

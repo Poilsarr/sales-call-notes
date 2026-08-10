@@ -9,6 +9,7 @@ import { HubSpotService } from "@/services/crm/hubspot";
 import { SalesforceService } from "@/services/crm/salesforce";
 import { logAuditAction } from "@/lib/audit-logger";
 import { AnalysisService } from "@/services/ai/analysis";
+import { decryptConfig } from "@/lib/integrations/config-crypto";
 
 // ponytail: pass RedisOptions to BullMQ Worker (it owns the connection).
 // Avoids ioredis/bullmq version-skew TS error.
@@ -127,7 +128,11 @@ const analysisWorker = new Worker("analysis", async (job) => {
                   const service = new HubSpotService(user.teamId);
                   await service.syncCall(crmCall);
                 } else {
-                  const config = integration.config ? JSON.parse(integration.config) : {};
+                  // Config may be legacy plaintext or an encrypted envelope.
+                  // decryptConfig never throws; on failure fall back to {} so
+                  // the sync degrades (login.salesforce.com) instead of dying.
+                  const rawConfig = integration.config ? decryptConfig(integration.config) : null;
+                  const config = rawConfig ? JSON.parse(rawConfig) : {};
                   const service = new SalesforceService(user.teamId, config.instanceUrl || null);
                   await service.syncCall(crmCall);
                 }

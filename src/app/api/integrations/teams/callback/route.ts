@@ -4,12 +4,14 @@ import { cookies } from "next/headers";
 
 import prisma from "@/lib/prisma";
 import { getUserByClerkId } from "@/lib/get-user";
+import { requireRole } from "@/lib/rbac";
 import { getSecret } from "@/lib/secrets";
 import {
   getDevSandboxCredentials,
   isDevSandboxEnabled,
 } from "@/lib/integrations/dev-sandbox";
 import { logAuditAction } from "@/lib/audit-logger";
+import { encryptConfig } from "@/lib/integrations/config-crypto";
 
 const TEAMS_SCOPES = [
   "offline_access",
@@ -133,6 +135,18 @@ export async function GET(req: NextRequest) {
     cookieStore.delete("oauth_teams");
 
     const user = await getUserByClerkId(userId);
+
+    // Only admins may write workspace OAuth credentials (see google/callback
+    // for the same reasoning). Users without a team create their own below.
+    if (user.teamId) {
+      const { allowed } = await requireRole(userId, user.teamId, "ADMIN");
+      if (!allowed) {
+        return NextResponse.redirect(
+          new URL("/integrations?error=forbidden", getAppUrl()),
+        );
+      }
+    }
+
     const config = await exchangeCode(code);
 
     if (!user.teamId) {
@@ -166,7 +180,7 @@ export async function GET(req: NextRequest) {
       await prisma.integration.update({
         where: { id: existing.id },
         data: {
-          config: JSON.stringify(config),
+          config: encryptConfig(JSON.stringify(config)),
           enabled: true,
           syncedAt: new Date(),
         },
@@ -176,7 +190,7 @@ export async function GET(req: NextRequest) {
         data: {
           teamId,
           provider: "teams",
-          config: JSON.stringify(config),
+          config: encryptConfig(JSON.stringify(config)),
           enabled: true,
           syncedAt: new Date(),
         },

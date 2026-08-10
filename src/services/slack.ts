@@ -8,6 +8,7 @@ type SlackMessage = {
 
 import { getSecret } from "@/lib/secrets";
 import prisma from "@/lib/prisma";
+import { decryptConfig } from "@/lib/integrations/config-crypto";
 
 type SlackConfig = {
   accessToken: string;
@@ -16,6 +17,7 @@ type SlackConfig = {
   botUserId: string;
   authedUserId: string;
   scope: string;
+  channel?: string;
 };
 
 export class SlackService {
@@ -27,7 +29,7 @@ export class SlackService {
     this.teamId = teamId || "";
   }
 
-  private async getBotToken(): Promise<string | null> {
+  private async getIntegrationConfig(): Promise<SlackConfig | null> {
     if (!this.teamId) return null;
 
     const integration = await prisma.integration.findFirst({
@@ -36,12 +38,22 @@ export class SlackService {
 
     if (!integration?.config) return null;
 
+    // Legacy plaintext passes through; `v1:` envelopes are decrypted.
+    // decryptConfig never throws; undecryptable rows are treated as
+    // unconfigured instead of crashing the request.
+    const rawConfig = decryptConfig(integration.config);
+    if (!rawConfig) return null;
+
     try {
-      const config = JSON.parse(integration.config) as SlackConfig;
-      return config.accessToken || null;
+      return JSON.parse(rawConfig) as SlackConfig;
     } catch {
       return null;
     }
+  }
+
+  private async getBotToken(): Promise<string | null> {
+    const config = await this.getIntegrationConfig();
+    return config?.accessToken || null;
   }
 
   async sendDirectMessage(userSlackId: string, text: string): Promise<boolean> {
@@ -95,7 +107,8 @@ export class SlackService {
   }
 
   private async postToChannel(blocks: any[], message: SlackMessage): Promise<boolean> {
-    const token = await this.getBotToken();
+    const config = await this.getIntegrationConfig();
+    const token = config?.accessToken || null;
 
     if (token) {
       try {
@@ -106,7 +119,7 @@ export class SlackService {
             "Content-Type": "application/json",
           },
           body: JSON.stringify({
-            channel: "#general",
+            channel: config?.channel || "#general",
             text: `New call notes: ${message.filename}`,
             blocks,
             unfurl_links: false,
@@ -181,7 +194,8 @@ export class SlackService {
   }
 
   async sendCompetitorAlert(competitors: Array<{ name: string; context: string | null; sentiment: string | null }>, filename: string, callUrl: string): Promise<boolean> {
-    const token = await this.getBotToken();
+    const config = await this.getIntegrationConfig();
+    const token = config?.accessToken || null;
     if (!token && !this.webhookUrl) return false;
     if (competitors.length === 0) return false;
 
@@ -223,7 +237,7 @@ export class SlackService {
             Authorization: `Bearer ${token}`,
             "Content-Type": "application/json",
           },
-          body: JSON.stringify({ channel: "#general", text, blocks, unfurl_links: false }),
+          body: JSON.stringify({ channel: config?.channel || "#general", text, blocks, unfurl_links: false }),
         });
         const data = await res.json();
         return data.ok === true;

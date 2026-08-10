@@ -1,5 +1,6 @@
 import prisma from "@/lib/prisma";
 import { getSecret } from "@/lib/secrets";
+import { decryptConfig, encryptConfig } from "@/lib/integrations/config-crypto";
 
 type IntegrationConfig = {
   accessToken?: string;
@@ -20,9 +21,15 @@ export async function refreshIntegrationToken(
 
   if (!integration?.config) return null;
 
+  // Config may be a legacy plaintext JSON blob or a `v1:` encrypted
+  // envelope (config-crypto). decryptConfig handles both transparently and
+  // never throws; an undecryptable row is treated as unconfigured.
+  const rawConfig = decryptConfig(integration.config);
+  if (!rawConfig) return null;
+
   let config: IntegrationConfig;
   try {
-    config = JSON.parse(integration.config);
+    config = JSON.parse(rawConfig);
   } catch {
     return null;
   }
@@ -55,7 +62,9 @@ export async function refreshIntegrationToken(
   await prisma.integration.update({
     where: { id: integration.id },
     data: {
-      config: JSON.stringify({ ...config, ...updated }),
+      // Re-encrypt on refresh: this doubles as the lazy migration that
+      // upgrades a legacy plaintext row to the `v1:` envelope.
+      config: encryptConfig(JSON.stringify({ ...config, ...updated })),
       syncedAt: new Date(),
     },
   });

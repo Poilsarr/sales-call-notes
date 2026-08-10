@@ -30,6 +30,7 @@ import { HubSpotService } from '@/services/crm/hubspot';
 import { SalesforceService } from '@/services/crm/salesforce';
 import { logAuditAction } from '@/lib/audit-logger';
 import { refreshIntegrationToken } from '@/lib/integrations/token-refresh';
+import { decryptConfig } from '@/lib/integrations/config-crypto';
 import { isTrustedBlobUrl } from '@/lib/blob-url';
 import { put as blobPut, del as blobDel } from '@vercel/blob';
 
@@ -495,7 +496,11 @@ export async function POST(req: Request) {
                 const service = new HubSpotService(user.teamId);
                 result = await service.syncCall(crmCall);
               } else {
-                const config = integration.config ? JSON.parse(integration.config) : {};
+                // Legacy plaintext passes through; encrypted envelopes are
+                // decrypted. decryptConfig never throws — on failure treat as
+                // unconfigured ({}) so the sync degrades gracefully.
+                const rawConfig = integration.config ? decryptConfig(integration.config) : null;
+                const config = rawConfig ? JSON.parse(rawConfig) : {};
                 const service = new SalesforceService(user.teamId, config.instanceUrl || null);
                 result = await service.syncCall(crmCall);
               }

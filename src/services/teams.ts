@@ -1,5 +1,6 @@
 import prisma from "@/lib/prisma";
 import { refreshIntegrationToken } from "@/lib/integrations/token-refresh";
+import { decryptConfig } from "@/lib/integrations/config-crypto";
 
 type TeamsConfig = {
   accessToken?: string;
@@ -42,8 +43,14 @@ export class TeamsService {
 
     if (!integration?.config) return null;
 
+    // Legacy plaintext passes through; `v1:` envelopes are decrypted.
+    // decryptConfig never throws; undecryptable rows are treated as
+    // unconfigured instead of crashing the request.
+    const rawConfig = decryptConfig(integration.config);
+    if (!rawConfig) return null;
+
     try {
-      return JSON.parse(integration.config) as TeamsConfig;
+      return JSON.parse(rawConfig) as TeamsConfig;
     } catch {
       return null;
     }

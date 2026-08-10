@@ -4,12 +4,14 @@ import { cookies } from "next/headers";
 
 import prisma from "@/lib/prisma";
 import { getUserByClerkId } from "@/lib/get-user";
+import { requireRole } from "@/lib/rbac";
 import { getSecret } from "@/lib/secrets";
 import {
   getDevSandboxCredentials,
   isDevSandboxEnabled,
 } from "@/lib/integrations/dev-sandbox";
 import { logAuditAction } from "@/lib/audit-logger";
+import { encryptConfig } from "@/lib/integrations/config-crypto";
 
 function getAppUrl() {
   const url = getSecret("NEXT_PUBLIC_APP_URL");
@@ -102,6 +104,16 @@ export async function GET(req: NextRequest) {
     cookieStore.delete("oauth_slack");
 
     const user = await getUserByClerkId(userId);
+
+    // Only admins may write workspace OAuth credentials (see google/callback
+    // for the same reasoning). Users without a team create their own below.
+    if (user.teamId) {
+      const { allowed } = await requireRole(userId, user.teamId, "ADMIN");
+      if (!allowed) {
+        return NextResponse.redirect(new URL("/integrations?error=forbidden", getAppUrl()));
+      }
+    }
+
     const config = await exchangeCode(code);
 
     if (!user.teamId) {
@@ -131,7 +143,7 @@ export async function GET(req: NextRequest) {
       await prisma.integration.update({
         where: { id: existing.id },
         data: {
-          config: JSON.stringify(config),
+          config: encryptConfig(JSON.stringify(config)),
           enabled: true,
           syncedAt: new Date(),
         },
@@ -141,7 +153,7 @@ export async function GET(req: NextRequest) {
         data: {
           teamId,
           provider: "slack",
-          config: JSON.stringify(config),
+          config: encryptConfig(JSON.stringify(config)),
           enabled: true,
           syncedAt: new Date(),
         },

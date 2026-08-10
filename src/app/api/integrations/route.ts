@@ -13,6 +13,7 @@ import {
   isDevSandboxEnabled,
   type SandboxProvider,
 } from "@/lib/integrations/dev-sandbox";
+import { decryptConfig, encryptConfig } from "@/lib/integrations/config-crypto";
 import { checkRateLimit } from "@/lib/rate-limit";
 
 type SupportedProvider = "hubspot" | "salesforce" | "teams" | "slack" | "google_calendar";
@@ -22,6 +23,14 @@ type IntegrationStatus = {
   enabled: boolean;
   syncedAt: string | null;
   configured: boolean;
+  sandbox: boolean;
+};
+
+// GET /api/integrations response shape (no `action`):
+// { integrations: Record<SupportedProvider, { connected, enabled, syncedAt, configured, sandbox }>, configuredProviders: Record<SupportedProvider, boolean> }
+type IntegrationsResponse = {
+  integrations: Record<SupportedProvider, IntegrationStatus>;
+  configuredProviders: Record<SupportedProvider, boolean>;
 };
 
 const SUPPORTED_PROVIDERS: SupportedProvider[] = ["hubspot", "salesforce", "teams", "slack", "google_calendar"];
@@ -91,9 +100,26 @@ function generateNonce(): string {
   return crypto.randomBytes(16).toString("hex");
 }
 
-async function setOAuthCookie(provider: string, nonce: string) {
+// RFC 7636 S256 PKCE helpers (Salesforce; docs/INTEGRATIONS.md).
+// Verifier: 64 base64url chars from 48 crypto-random bytes (within the
+// spec's 43-128 char range). Challenge: base64url(SHA-256(verifier)).
+function generatePkceVerifier(): string {
+  return crypto.randomBytes(48).toString("base64url");
+}
+
+function generatePkceChallenge(verifier: string): string {
+  return crypto.createHash("sha256").update(verifier).digest("base64url");
+}
+
+/**
+ * Stores the OAuth nonce in an httpOnly cookie. When a PKCE verifier is
+ * supplied (salesforce), it is stored alongside the nonce as
+ * `<nonce>:<verifier>` — both halves are crypto-random and contain no
+ * colons, so the split is unambiguous.
+ */
+async function setOAuthCookie(provider: string, nonce: string, verifier?: string) {
   const cookieStore = await cookies();
-  cookieStore.set(`oauth_${provider}`, nonce, {
+  cookieStore.set(`oauth_${provider}`, verifier ? `${nonce}:${verifier}` : nonce, {
     httpOnly: true,
     secure: process.env.NODE_ENV === "production",
     sameSite: "lax",
@@ -102,15 +128,23 @@ async function setOAuthCookie(provider: string, nonce: string) {
   });
 }
 
-async function validateOAuthCookie(provider: string, nonce: string): Promise<boolean> {
+/**
+ * Validates the stored nonce and returns the PKCE verifier bound to it.
+ * Returns `null` when the nonce is missing/mismatched, `""` for providers
+ * without PKCE (legacy plain-nonce cookie), or the verifier string.
+ * The cookie is consumed (deleted) on success.
+ */
+async function validateOAuthCookie(provider: string, nonce: string): Promise<string | null> {
   try {
     const cookieStore = await cookies();
     const stored = cookieStore.get(`oauth_${provider}`);
-    if (!stored || stored.value !== nonce) return false;
+    if (!stored) return null;
+    const [storedNonce, verifier] = stored.value.split(":");
+    if (storedNonce !== nonce) return null;
     cookieStore.delete(`oauth_${provider}`);
-    return true;
+    return verifier ?? "";
   } catch {
-    return false;
+    return null;
   }
 }
 
@@ -163,9 +197,13 @@ function serializeStatuses(
       const record = records.find((item) => item.provider === provider);
       let hasAccessToken = false;
 
-      if (record?.config) {
+      // Stored config may be legacy plaintext or a `v1:` encrypted envelope.
+      // Decrypt server-side only to determine connection state — the raw
+      // config (and any tokens in it) never leaves this function.
+      const rawConfig = decryptConfig(record?.config ?? null);
+      if (rawConfig) {
         try {
-          const parsed = JSON.parse(record.config) as { accessToken?: string };
+          const parsed = JSON.parse(rawConfig) as { accessToken?: string };
           hasAccessToken = Boolean(parsed.accessToken);
         } catch {
           hasAccessToken = false;
@@ -177,6 +215,7 @@ function serializeStatuses(
         enabled: Boolean(record?.enabled),
         syncedAt: record?.syncedAt?.toISOString() ?? null,
         configured: isProviderConfigured(provider),
+        sandbox: isDevSandboxEnabled(),
       };
       return acc;
     },
@@ -213,7 +252,8 @@ async function buildSalesforceAuthUrl() {
   }
 
   const nonce = generateNonce();
-  await setOAuthCookie("salesforce", nonce);
+  const verifier = generatePkceVerifier();
+  await setOAuthCookie("salesforce", nonce, verifier);
 
   const params = new URLSearchParams({
     client_id: clientId,
@@ -221,6 +261,8 @@ async function buildSalesforceAuthUrl() {
     response_type: "code",
     scope: SALESFORCE_SCOPES.join(" "),
     state: `salesforce:${nonce}`,
+    code_challenge: generatePkceChallenge(verifier),
+    code_challenge_method: "S256",
   });
 
   return `${getSalesforceAuthBase()}/services/oauth2/authorize?${params.toString()}`;
@@ -321,16 +363,23 @@ async function exchangeHubSpotCode(code: string) {
   };
 }
 
-async function exchangeSalesforceCode(code: string) {
+async function exchangeSalesforceCode(code: string, verifier?: string) {
   const sandbox = getDevSandboxCredentials("salesforce");
   const clientId = sandbox?.clientId || getSecret("SALESFORCE_CLIENT_ID");
-  const clientSecret = sandbox?.clientSecret || getSecret("SALESFORCE_CLIENT_SECRET");
-  if (!clientId || !clientSecret) {
+  if (!clientId) {
     throw new Error("Missing Salesforce OAuth credentials");
   }
 
   if (sandbox) {
     return buildSandboxTokenResponse("salesforce", code);
+  }
+
+  // PKCE S256 (docs/INTEGRATIONS.md): the connected app is a *public client*
+  // — "Require Secret for Web Server Flow" is unchecked and PKCE replaces the
+  // secret. Sending client_secret would be wrong for that setup, so the token
+  // request carries only the code_verifier as proof of possession.
+  if (!verifier) {
+    throw new Error("Missing PKCE verifier for Salesforce OAuth");
   }
 
   const response = await fetch(`${getSalesforceAuthBase()}/services/oauth2/token`, {
@@ -341,9 +390,9 @@ async function exchangeSalesforceCode(code: string) {
     body: new URLSearchParams({
       grant_type: "authorization_code",
       client_id: clientId,
-      client_secret: clientSecret,
       redirect_uri: getRedirectUri(),
       code,
+      code_verifier: verifier,
     }),
   });
 
@@ -489,10 +538,12 @@ export async function GET(req: NextRequest) {
       {} as Record<SupportedProvider, boolean>,
     );
 
-    return NextResponse.json({
+    const response: IntegrationsResponse = {
       integrations: serializeStatuses(records),
       configuredProviders,
-    });
+    };
+
+    return NextResponse.json(response);
   } catch (error) {
     return NextResponse.json(
       { error: error instanceof Error ? error.message : "Failed to load integrations" },
@@ -524,7 +575,11 @@ export async function POST(req: NextRequest) {
     }
 
     const [stateProvider, nonce] = (rawState ?? "").split(":");
-    if (stateProvider !== provider || !(await validateOAuthCookie(provider, nonce))) {
+    const verifier = await validateOAuthCookie(provider, nonce);
+    // A salesforce nonce must be bound to a PKCE verifier — a legacy
+    // nonce-only cookie (pre-PKCE build) cannot prove possession of the
+    // authorization code and is rejected.
+    if (stateProvider !== provider || verifier === null || (provider === "salesforce" && verifier === "")) {
       return NextResponse.json({ error: "Invalid OAuth state" }, { status: 403 });
     }
 
@@ -543,7 +598,7 @@ export async function POST(req: NextRequest) {
     if (provider === "hubspot") {
       config = await exchangeHubSpotCode(code);
     } else if (provider === "salesforce") {
-      config = await exchangeSalesforceCode(code);
+      config = await exchangeSalesforceCode(code, verifier || undefined);
     } else {
       config = await exchangeTeamsCode(code);
     }
@@ -559,7 +614,7 @@ export async function POST(req: NextRequest) {
       ? await prisma.integration.update({
           where: { id: existing.id },
           data: {
-            config: JSON.stringify(config),
+            config: encryptConfig(JSON.stringify(config)),
             enabled: true,
             syncedAt: new Date(),
           },
@@ -568,7 +623,7 @@ export async function POST(req: NextRequest) {
           data: {
             teamId,
             provider,
-            config: JSON.stringify(config),
+            config: encryptConfig(JSON.stringify(config)),
             enabled: true,
             syncedAt: new Date(),
           },

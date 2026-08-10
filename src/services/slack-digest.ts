@@ -1,4 +1,5 @@
 import prisma from "@/lib/prisma";
+import { decryptConfig } from "@/lib/integrations/config-crypto";
 
 type SlackConfig = {
   accessToken: string;
@@ -34,7 +35,9 @@ export async function generateWeeklyDigest(): Promise<number> {
 
     let config: SlackConfig;
     try {
-      config = JSON.parse(integration.config);
+      // Legacy plaintext passes through; `v1:` envelopes are decrypted.
+      // decryptConfig never throws; undecryptable rows just get skipped.
+      config = JSON.parse(decryptConfig(integration.config) ?? "");
     } catch {
       continue;
     }

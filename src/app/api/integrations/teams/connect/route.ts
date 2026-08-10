@@ -4,6 +4,8 @@ import crypto from "crypto";
 import { cookies } from "next/headers";
 
 import { getSecret } from "@/lib/secrets";
+import { getUserByClerkId } from "@/lib/get-user";
+import { requireRole } from "@/lib/rbac";
 import {
   getDevSandboxCredentials,
   isDevSandboxEnabled,
@@ -52,6 +54,14 @@ export async function GET() {
     const { userId } = await auth();
     if (!userId) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    const user = await getUserByClerkId(userId);
+    if (user.teamId) {
+      const { allowed } = await requireRole(userId, user.teamId, "ADMIN");
+      if (!allowed) {
+        return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+      }
     }
 
     const sandbox = getDevSandboxCredentials("teams");

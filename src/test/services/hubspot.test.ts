@@ -3,6 +3,18 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 const mockFindFirst = vi.fn();
 const mockUpdate = vi.fn();
 
+const { mockGetSecret } = vi.hoisted(() => ({ mockGetSecret: vi.fn() }));
+
+// Default: no ENCRYPTION_KEY (legacy plaintext behavior). Encryption tests
+// override per-test to opt in.
+mockGetSecret.mockImplementation((key: string) => {
+  const map: Record<string, string> = {
+    HUBSPOT_CLIENT_ID: "test-hs-client-id",
+    HUBSPOT_CLIENT_SECRET: "test-hs-client-secret",
+  };
+  return map[key] || "";
+});
+
 vi.mock("@/lib/prisma", () => ({
   default: {
     integration: {
@@ -13,16 +25,13 @@ vi.mock("@/lib/prisma", () => ({
 }));
 
 vi.mock("@/lib/secrets", () => ({
-  getSecret: (key: string) => {
-    const map: Record<string, string> = {
-      HUBSPOT_CLIENT_ID: "test-hs-client-id",
-      HUBSPOT_CLIENT_SECRET: "test-hs-client-secret",
-    };
-    return map[key] || "";
-  },
+  getSecret: mockGetSecret,
 }));
 
 import { HubSpotService } from "@/services/crm/hubspot";
+import { encryptConfig, decryptConfig } from "@/lib/integrations/config-crypto";
+
+const TEST_ENCRYPTION_KEY = "YWJjZGVmZ2hpamtsbW5vcHFyc3R1dnd4eXoxMjM0NTY=";
 
 const mockFetch = vi.fn();
 global.fetch = mockFetch;
@@ -231,5 +240,84 @@ describe("HubSpotService", () => {
       "https://api.hubapi.com/oauth/v1/token",
       expect.anything(),
     );
+  });
+
+  it("should read a token from an encrypted config (decrypt on read)", async () => {
+    mockGetSecret.mockImplementation((key: string) =>
+      key === "ENCRYPTION_KEY" ? TEST_ENCRYPTION_KEY : "",
+    );
+    const futureExpiry = new Date(Date.now() + 3600000).toISOString();
+    mockFindFirst.mockResolvedValue({
+      id: "int-1",
+      teamId: "team-1",
+      provider: "hubspot",
+      enabled: true,
+      config: encryptConfig(
+        JSON.stringify({
+          accessToken: "valid-token",
+          refreshToken: "refresh-token",
+          expiresAt: futureExpiry,
+        }),
+      ),
+    });
+
+    mockCrmResponses();
+
+    const service = new HubSpotService("team-1");
+    const result = await service.syncCall(mockCall);
+
+    expect(result).toEqual({ contactId: "hs-contact-1", dealId: "hs-deal-1" });
+    // Valid (unexpired) token from the encrypted row — no refresh call.
+    expect(mockFetch).not.toHaveBeenCalledWith(
+      "https://api.hubapi.com/oauth/v1/token",
+      expect.anything(),
+    );
+  });
+
+  it("should re-encrypt on refresh (lazy migration of legacy plaintext)", async () => {
+    mockGetSecret.mockImplementation((key: string) =>
+      key === "ENCRYPTION_KEY"
+        ? TEST_ENCRYPTION_KEY
+        : key === "HUBSPOT_CLIENT_ID"
+          ? "test-hs-client-id"
+          : key === "HUBSPOT_CLIENT_SECRET"
+            ? "test-hs-client-secret"
+            : "",
+    );
+    const pastExpiry = new Date(Date.now() - 3600000).toISOString();
+    mockFindFirst.mockResolvedValue({
+      id: "int-1",
+      teamId: "team-1",
+      provider: "hubspot",
+      enabled: true,
+      // Legacy plaintext row — the pre-encryption format.
+      config: JSON.stringify({
+        accessToken: "expired-token",
+        refreshToken: "refresh-token",
+        expiresAt: pastExpiry,
+      }),
+    });
+
+    mockCrmResponses();
+
+    const service = new HubSpotService("team-1");
+    const result = await service.syncCall(mockCall);
+
+    expect(result).toEqual({ contactId: "hs-contact-1", dealId: "hs-deal-1" });
+
+    const updateCall = mockUpdate.mock.calls[0][0] as { data: { config: string } };
+    const stored = updateCall.data.config;
+
+    // The refreshed config is stored encrypted, not as legacy plaintext.
+    expect(stored.startsWith("v1:")).toBe(true);
+    expect(stored).not.toContain("refreshed-token");
+
+    // And it round-trips to the refreshed token set.
+    const decrypted = decryptConfig(stored);
+    expect(decrypted).not.toBeNull();
+    expect(JSON.parse(decrypted as string)).toMatchObject({
+      accessToken: "refreshed-token",
+      refreshToken: "new-refresh-token",
+    });
   });
 });

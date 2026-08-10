@@ -68,7 +68,11 @@ const SANDBOX_VALUES: Record<SandboxProvider, SandboxCredentials> = {
 let warned = false;
 
 export function isDevSandboxEnabled(): boolean {
-  return process.env.NODE_ENV === "development";
+  // Local development only. Vercel sets VERCEL=1 in every deployed
+  // environment (including preview/development builds), so requiring
+  // NODE_ENV=development AND VERCEL !== "1" guarantees the fake
+  // credentials never leak into a deployed build.
+  return process.env.NODE_ENV === "development" && process.env.VERCEL !== "1";
 }
 
 export function getDevSandboxCredentials(
@@ -80,7 +84,7 @@ export function getDevSandboxCredentials(
   if (!warned) {
     warned = true;
     console.warn(
-      "[dev-sandbox] Using fake OAuth credentials. NODE_ENV=development. " +
+      "[dev-sandbox] Using fake OAuth credentials (local development only). " +
         "Real HUBSPOT/SALESFORCE/TEAMS env vars are ignored. " +
         "See docs/INTEGRATIONS.md for production setup.",
     );
