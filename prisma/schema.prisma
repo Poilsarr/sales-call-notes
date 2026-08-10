@@ -203,6 +203,7 @@ model Integration {
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
 
+  @@unique([teamId, provider])
   @@index([teamId])
   @@index([provider])
 }
