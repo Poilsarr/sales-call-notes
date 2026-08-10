@@ -1,11 +1,30 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Section } from "@/components/ui/section";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import { Calendar, CheckCircle, Link2, Loader2 } from "lucide-react";
+import IntegrationHealth from "@/components/integration-health";
+
+type IntegrationStatus = {
+  connected: boolean;
+  enabled: boolean;
+  syncedAt: string | null;
+  configured: boolean;
+  sandbox: boolean;
+};
+
+type IntegrationsStatusRecord = Record<string, IntegrationStatus>;
+
+const PROVIDER_BY_ID: Record<string, string> = {
+  hubspot: "hubspot",
+  salesforce: "salesforce",
+  teams: "teams",
+  slack: "slack",
+  google: "google_calendar",
+};
 
 const INTEGRATIONS = [
   { id: "hubspot", name: "HubSpot", category: "CRM", status: "live", description: "Sync contacts, deals, and notes" },
@@ -19,8 +38,30 @@ const INTEGRATIONS = [
 ];
 
 export default function IntegrationsPanel() {
-  const [calendarConnected, setCalendarConnected] = useState(false);
+  const [statusRecord, setStatusRecord] = useState<IntegrationsStatusRecord | null>(null);
   const [connecting, setConnecting] = useState(false);
+
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        const res = await fetch("/api/integrations");
+        if (!res.ok) return;
+        const data = await res.json();
+        if (!cancelled && data?.integrations) {
+          setStatusRecord(data.integrations as IntegrationsStatusRecord);
+        }
+      } catch {
+        // keep the static directory fallback
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  const calendarConnected = !!statusRecord?.["google_calendar"]?.connected;
+  const calendarSandbox = !!statusRecord?.["google_calendar"]?.sandbox;
 
   const connectCalendar = async () => {
     setConnecting(true);
@@ -53,9 +94,12 @@ export default function IntegrationsPanel() {
               </div>
             </div>
             {calendarConnected ? (
-              <Badge variant="success">
-                <CheckCircle className="w-3 h-3" /> Connected
-              </Badge>
+              <div className="flex items-center gap-2">
+                <Badge variant="success">
+                  <CheckCircle className="w-3 h-3" /> Connected
+                </Badge>
+                {calendarSandbox ? <SandboxTag /> : null}
+              </div>
             ) : (
               <button
                 onClick={connectCalendar}
@@ -70,26 +114,52 @@ export default function IntegrationsPanel() {
         </Card>
       </Section>
 
+      {statusRecord ? <IntegrationHealth integrations={statusRecord} /> : null}
+
       <Section title="Integrations directory" description="Available connections for your workspace.">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {INTEGRATIONS.map((integration) => (
-            <Card key={integration.id} className="group hover:border-white/10 transition-colors">
-              <CardContent className="p-5">
-                <div className="flex items-start justify-between mb-3">
-                  <IntegrationIcon id={integration.id} />
-                  <Badge variant="warning">
-                    {integration.status === "live" ? "Not configured" : "Coming soon"}
-                  </Badge>
-                </div>
-                <div className="text-sm font-medium text-white mb-1">{integration.name}</div>
-                <div className="text-xs text-white/40 mb-3">{integration.description}</div>
-                <div className="text-[10px] text-white/30 uppercase tracking-wider">{integration.category}</div>
-              </CardContent>
-            </Card>
-          ))}
+          {INTEGRATIONS.map((integration) => {
+            const provider = PROVIDER_BY_ID[integration.id];
+            const providerStatus = provider ? statusRecord?.[provider] : undefined;
+
+            return (
+              <Card key={integration.id} className="group hover:border-white/10 transition-colors">
+                <CardContent className="p-5">
+                  <div className="flex items-start justify-between mb-3">
+                    <IntegrationIcon id={integration.id} />
+                    <div className="flex items-center gap-2">
+                      {integration.status === "soon" ? (
+                        <Badge variant="warning">Coming soon</Badge>
+                      ) : !statusRecord ? (
+                        <Badge variant="warning">Not configured</Badge>
+                      ) : providerStatus?.connected ? (
+                        <Badge variant="success">
+                          <CheckCircle className="w-3 h-3" /> Connected
+                        </Badge>
+                      ) : providerStatus?.configured ? (
+                        <Badge>Ready to connect</Badge>
+                      ) : (
+                        <Badge>Not configured</Badge>
+                      )}
+                      {providerStatus?.sandbox ? <SandboxTag /> : null}
+                    </div>
+                  </div>
+                  <div className="text-sm font-medium text-white mb-1">{integration.name}</div>
+                  <div className="text-xs text-white/40 mb-3">{integration.description}</div>
+                  <div className="text-[10px] text-white/30 uppercase tracking-wider">{integration.category}</div>
+                </CardContent>
+              </Card>
+            );
+          })}
         </div>
       </Section>
     </>
+  );
+}
+
+function SandboxTag() {
+  return (
+    <span className="text-[9px] font-semibold uppercase tracking-wider text-white/30">SANDBOX</span>
   );
 }
 

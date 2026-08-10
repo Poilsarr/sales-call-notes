@@ -12,7 +12,7 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 
-type SupportedProvider = "hubspot" | "salesforce" | "teams" | "slack";
+type SupportedProvider = "hubspot" | "salesforce" | "teams" | "slack" | "google_calendar";
 
 type ProviderStatus = {
   connected: boolean;
@@ -26,7 +26,7 @@ const integrations = [
   { icon: <Building2 size={22} />, name: "HubSpot", desc: "Sync call notes and action items directly to HubSpot CRM deals and contacts.", status: "Live", provider: "hubspot" as const },
   { icon: <BarChart3 size={22} />, name: "Salesforce", desc: "Push transcripts, summaries, and tasks to Salesforce opportunities.", status: "Live", provider: "salesforce" as const },
   { icon: <MessageSquare size={22} />, name: "Microsoft Teams", desc: "Create Planner tasks and send channel messages with call summaries.", status: "Live", provider: "teams" as const },
-  { icon: <Calendar size={22} />, name: "Google Calendar", desc: "Auto-join meetings and transcribe from your calendar events.", status: "Coming Soon" },
+  { icon: <Calendar size={22} />, name: "Google Calendar", desc: "Auto-detect meetings and join them for transcription.", category: "Calendar", status: "Live", provider: "google_calendar" as const },
   { icon: <Calendar size={22} />, name: "Outlook Calendar", desc: "Sync meetings from Microsoft 365 calendar for automatic capture.", status: "Coming Soon" },
   { icon: <Globe size={22} />, name: "Zoom", desc: "Record and transcribe Zoom meetings directly from the platform.", status: "Coming Soon" },
   { icon: <Globe size={22} />, name: "Google Meet", desc: "Live transcription and note-taking for Google Meet calls.", status: "Live", href: "/extension" },
@@ -56,12 +56,14 @@ function IntegrationsContent() {
     salesforce: { connected: false, enabled: false, syncedAt: null, configured: false },
     teams: { connected: false, enabled: false, syncedAt: null, configured: false },
     slack: { connected: false, enabled: false, syncedAt: null, configured: false },
+    google_calendar: { connected: false, enabled: false, syncedAt: null, configured: false },
   });
   const [providerLoading, setProviderLoading] = useState<Record<SupportedProvider, boolean>>({
     hubspot: false,
     salesforce: false,
     teams: false,
     slack: false,
+    google_calendar: false,
   });
   const [initialLoadDone, setInitialLoadDone] = useState(false);
   const observerRef = useRef<IntersectionObserver | null>(null);
@@ -106,6 +108,7 @@ function IntegrationsContent() {
   const providerParam = stateParam?.split(":")[0] ?? null;
   const slackConnected = searchParams.get("slack");
   const teamsConnected = searchParams.get("teams");
+  const googleConnected = searchParams.get("google");
   const errorParam = searchParams.get("error");
 
   useEffect(() => {
@@ -141,6 +144,16 @@ function IntegrationsContent() {
         ...prev,
         teams: { ...prev.teams, connected: true, enabled: true, syncedAt: new Date().toISOString(), error: undefined },
       }));
+      router.replace("/integrations");
+      return;
+    }
+
+    if (googleConnected === "connected") {
+      handledCallbackRef.current = true;
+      toast.success("Google Calendar connected");
+      // The server has already persisted the connection; refetch so the
+      // provider state reflects the authoritative list.
+      void loadProviderStates();
       router.replace("/integrations");
       return;
     }
@@ -190,7 +203,7 @@ function IntegrationsContent() {
         router.replace("/integrations");
       }
     })();
-  }, [router, code, providerParam, searchParams, stateParam, slackConnected, teamsConnected, errorParam]);
+  }, [router, code, providerParam, searchParams, stateParam, slackConnected, teamsConnected, googleConnected, errorParam, loadProviderStates]);
 
   const connectProvider = async (provider: SupportedProvider) => {
     if (!providerStates[provider].configured) {

@@ -1,4 +1,4 @@
-import { render, screen, fireEvent, waitFor } from "@testing-library/react";
+import { render, screen, fireEvent, waitFor, within } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import IntegrationsPanel from "@/components/settings/integrations-panel";
 
@@ -19,6 +19,33 @@ function okResponse(payload: unknown) {
   } as Response;
 }
 
+function status(
+  overrides: Partial<{
+    connected: boolean;
+    enabled: boolean;
+    syncedAt: string | null;
+    configured: boolean;
+    sandbox: boolean;
+  }> = {},
+) {
+  return {
+    connected: false,
+    enabled: false,
+    syncedAt: null,
+    configured: false,
+    sandbox: false,
+    ...overrides,
+  };
+}
+
+function directory() {
+  return within(screen.getByText("Integrations directory").closest("section") as HTMLElement);
+}
+
+function connectedApps() {
+  return within(screen.getByText("Connected apps").closest("section") as HTMLElement);
+}
+
 describe("IntegrationsPanel", () => {
   let assignMock: ReturnType<typeof vi.fn>;
 
@@ -34,6 +61,7 @@ describe("IntegrationsPanel", () => {
   });
 
   it("renders the Connected apps and Integrations directory sections", () => {
+    mockFetch.mockRejectedValue(new Error("network down"));
     render(<IntegrationsPanel />);
 
     expect(screen.getByText("Connected apps")).toBeDefined();
@@ -42,12 +70,63 @@ describe("IntegrationsPanel", () => {
     expect(screen.getByRole("button", { name: /connect/i })).toBeDefined();
   });
 
-  it("shows honest status badges — no Live badge text anywhere", () => {
+  it("keeps honest static badges when the status fetch fails", async () => {
+    mockFetch.mockRejectedValue(new Error("network down"));
     render(<IntegrationsPanel />);
+
+    await waitFor(() => expect(mockFetch).toHaveBeenCalledWith("/api/integrations"));
 
     expect(screen.getAllByText("Not configured")).toHaveLength(5);
     expect(screen.getAllByText("Coming soon")).toHaveLength(3);
     expect(screen.queryByText("Live")).toBeNull();
+    expect(screen.queryByText("Connected")).toBeNull();
+    expect(screen.queryByText("SANDBOX")).toBeNull();
+  });
+
+  it("shows a Connected badge and hides the Connect button when Google Calendar is connected", async () => {
+    mockFetch.mockResolvedValue(
+      okResponse({
+        integrations: { google_calendar: status({ connected: true }) },
+        configuredProviders: [],
+      }),
+    );
+    render(<IntegrationsPanel />);
+
+    await waitFor(() => expect(connectedApps().getAllByText("Connected")).toHaveLength(1));
+    expect(screen.queryByRole("button", { name: /connect/i })).toBeNull();
+  });
+
+  it("derives directory badges from the fetched status", async () => {
+    mockFetch.mockResolvedValue(
+      okResponse({
+        integrations: {
+          hubspot: status({ connected: true }),
+          salesforce: status({ configured: true }),
+          teams: status(),
+          slack: status(),
+          google_calendar: status(),
+        },
+        configuredProviders: ["hubspot", "salesforce"],
+      }),
+    );
+    render(<IntegrationsPanel />);
+
+    await waitFor(() => expect(directory().getAllByText("Not configured")).toHaveLength(3));
+    expect(directory().getAllByText("Connected")).toHaveLength(1);
+    expect(directory().getAllByText("Ready to connect")).toHaveLength(1);
+    expect(directory().getAllByText("Coming soon")).toHaveLength(3);
+  });
+
+  it("appends a SANDBOX tag next to the badge when the provider is in sandbox mode", async () => {
+    mockFetch.mockResolvedValue(
+      okResponse({
+        integrations: { hubspot: status({ sandbox: true }) },
+        configuredProviders: [],
+      }),
+    );
+    render(<IntegrationsPanel />);
+
+    await waitFor(() => expect(directory().getAllByText("SANDBOX")).toHaveLength(1));
   });
 
   it("requests an auth URL from /api/integrations and redirects to it on success", async () => {

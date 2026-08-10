@@ -1,15 +1,21 @@
-import { fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import IntegrationsPageClient from "@/components/integrations-page-client";
+import { toast } from "sonner";
 
 // The page's actions navigate via useRouter().replace; hoist the mock
-// so assertions can inspect exactly where it was pointed.
-const { replaceMock } = vi.hoisted(() => ({ replaceMock: vi.fn() }));
+// so assertions can inspect exactly where it was pointed. The search
+// params are read from a mutable holder so tests can simulate
+// OAuth callback URLs (e.g. ?google=connected).
+const { replaceMock, searchParamsMock } = vi.hoisted(() => ({
+  replaceMock: vi.fn(),
+  searchParamsMock: { params: new URLSearchParams() },
+}));
 
 vi.mock("next/navigation", () => ({
   useRouter: () => ({ replace: replaceMock, push: vi.fn() }),
-  useSearchParams: () => new URLSearchParams(),
+  useSearchParams: () => searchParamsMock.params,
 }));
 
 vi.mock("next/link", () => ({
@@ -60,6 +66,7 @@ const unconfiguredStates = {
   salesforce: providerState(),
   teams: providerState(),
   slack: providerState(),
+  google_calendar: providerState(),
 };
 
 const okResponse = (payload: unknown) =>
@@ -72,6 +79,9 @@ const okResponse = (payload: unknown) =>
 describe("IntegrationsPageClient", () => {
   beforeEach(() => {
     replaceMock.mockReset();
+    searchParamsMock.params = new URLSearchParams();
+    vi.mocked(toast.success).mockClear();
+    vi.mocked(toast.error).mockClear();
     globalThis.IntersectionObserver = IntersectionObserverStub as unknown as typeof IntersectionObserver;
     vi.stubGlobal("fetch", vi.fn());
   });
@@ -126,8 +136,8 @@ describe("IntegrationsPageClient", () => {
     const links = await screen.findAllByRole("link", {
       name: /add oauth credentials/i,
     });
-    // One per unconfigured provider card (hubspot, salesforce, teams, slack).
-    expect(links).toHaveLength(4);
+    // One per unconfigured provider card (hubspot, salesforce, teams, slack, google_calendar).
+    expect(links).toHaveLength(5);
     for (const link of links) {
       expect(link).toHaveAttribute("href", "/settings?tab=integrations");
     }
@@ -158,5 +168,54 @@ describe("IntegrationsPageClient", () => {
     expect(screen.queryByText(/CRM sync started/)).toBeNull();
     // The Connected status for the connected HubSpot card is still rendered.
     expect(screen.getByText("Connected")).toBeInTheDocument();
+  });
+
+  it("handles ?google=connected with a success toast and refetches the integration list", async () => {
+    vi.mocked(fetch).mockResolvedValue(
+      okResponse({ integrations: unconfiguredStates, configuredProviders: {} })
+    );
+
+    searchParamsMock.params = new URLSearchParams("google=connected");
+    render(<IntegrationsPageClient />);
+
+    // Success toast fires (and no generic error toast).
+    await waitFor(() => {
+      expect(toast.success).toHaveBeenCalledWith("Google Calendar connected");
+    });
+    expect(toast.error).not.toHaveBeenCalled();
+
+    // On-mount list load + the callback-triggered refetch = 2 calls to the
+    // list endpoint.
+    await waitFor(() => {
+      expect(fetch).toHaveBeenCalledTimes(2);
+    });
+    expect(fetch).toHaveBeenNthCalledWith(1, "/api/integrations", expect.objectContaining({ cache: "no-store" }));
+    expect(fetch).toHaveBeenNthCalledWith(2, "/api/integrations", expect.objectContaining({ cache: "no-store" }));
+
+    // The callback param is cleared so it is not re-processed on re-render.
+    expect(replaceMock).toHaveBeenCalledWith("/integrations");
+  });
+
+  it("renders the Google Calendar provider card as a live provider", async () => {
+    vi.mocked(fetch).mockResolvedValue(
+      okResponse({
+        integrations: {
+          ...unconfiguredStates,
+          google_calendar: providerState({ configured: true }),
+        },
+        configuredProviders: {},
+      })
+    );
+
+    render(<IntegrationsPageClient />);
+
+    const heading = await screen.findByRole("heading", { name: "Google Calendar" });
+    expect(heading).toBeInTheDocument();
+
+    const card = heading.closest(".doppel-outer") as HTMLElement;
+    // Live provider badge, an actionable Connect button, and no "Coming Soon".
+    expect(within(card).getByText("Live")).toBeInTheDocument();
+    expect(within(card).getByRole("button", { name: /connect/i })).toBeInTheDocument();
+    expect(within(card).queryByText("Coming Soon")).toBeNull();
   });
 });

@@ -2,7 +2,7 @@
 
 import { use, useEffect, useMemo, useRef, useState } from 'react';
 import { motion } from 'framer-motion';
-import { Download, MessageSquarePlus, Share2, UserRoundCheck, Link as LinkIcon, AlertCircle, FileQuestion, Play, Pause } from 'lucide-react';
+import { Download, MessageSquarePlus, Share2, UserRoundCheck, Link as LinkIcon, AlertCircle, FileQuestion, Play, Pause, RefreshCw } from 'lucide-react';
 import { toast } from 'sonner';
 
 import Link from 'next/link';
@@ -46,6 +46,12 @@ interface CallData {
   filename?: string;
 }
 
+// Providers the POST /api/calls/[id]/sync-crm endpoint accepts. The
+// team's configured provider is discovered from /api/integrations on
+// mount; hubspot is the fallback when none is reported.
+type CrmProvider = 'hubspot' | 'salesforce' | 'teams';
+const CRM_PROVIDERS: CrmProvider[] = ['hubspot', 'salesforce', 'teams'];
+
 export default function CallDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
   const [data, setData] = useState<CallData | null>(null);
@@ -55,20 +61,34 @@ export default function CallDetailPage({ params }: { params: Promise<{ id: strin
   const [commentBody, setCommentBody] = useState('');
   const [savingComment, setSavingComment] = useState(false);
   const [savingSettings, setSavingSettings] = useState(false);
+  const [syncingCrm, setSyncingCrm] = useState(false);
+  const [crmProvider, setCrmProvider] = useState<CrmProvider>('hubspot');
   const [playing, setPlaying] = useState(false);
   const transcriptViewerRef = useRef<TranscriptViewerHandle>(null);
 
   useEffect(() => {
     async function fetchCall() {
       try {
-        const [callRes, teamRes] = await Promise.all([
+        const [callRes, teamRes, integrationsRes] = await Promise.all([
           fetch(`/api/history/${id}`),
           fetch('/api/team'),
+          fetch('/api/integrations'),
         ]);
         const call = await callRes.json();
         const team = await teamRes.json();
 
         if (!callRes.ok) throw new Error(call.error || 'Failed to load call');
+
+        // Pick the CRM provider this team has configured so the sync
+        // button POSTs a provider the endpoint accepts. Non-fatal: the
+        // endpoint still owns the real auth/config gate, and hubspot is
+        // the fallback if integrations can't be read.
+        const integrations = await integrationsRes.json().catch(() => null);
+        const configuredProvider = CRM_PROVIDERS.find(
+          (p) => integrations?.configuredProviders?.[p],
+        );
+        if (configuredProvider) setCrmProvider(configuredProvider);
+
         setData({
           id: call.id,
           transcript: call.transcript,
@@ -140,6 +160,26 @@ export default function CallDetailPage({ params }: { params: Promise<{ id: strin
     } catch (err) {
       toast.error(err instanceof Error ? err.message : 'Failed to rename call');
       return false;
+    }
+  };
+
+  const syncToCrm = async () => {
+    setSyncingCrm(true);
+    try {
+      const res = await fetch(`/api/calls/${id}/sync-crm`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ provider: crmProvider }),
+      });
+      const body = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(body.error || `Sync failed (${res.status})`);
+      toast.success(body.message || 'Call synced to CRM');
+      return true;
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'Sync failed');
+      return false;
+    } finally {
+      setSyncingCrm(false);
     }
   };
 
@@ -263,14 +303,25 @@ export default function CallDetailPage({ params }: { params: Promise<{ id: strin
       transition={{ duration: 0.5 }}
       className="min-h-[calc(100vh-4rem)] space-y-6"
     >
-      <div className="flex items-center gap-2 min-w-0">
-        <h1 className="text-2xl font-semibold text-white truncate">
-          {data.displayName ?? data.filename ?? 'Call Details'}
-        </h1>
-        <CallTitleEditor
-          displayName={data.displayName ?? data.filename ?? 'Call Details'}
-          onSave={renameCall}
-        />
+      <div className="flex items-center justify-between gap-3 flex-wrap min-w-0">
+        <div className="flex items-center gap-2 min-w-0">
+          <h1 className="text-2xl font-semibold text-white truncate">
+            {data.displayName ?? data.filename ?? 'Call Details'}
+          </h1>
+          <CallTitleEditor
+            displayName={data.displayName ?? data.filename ?? 'Call Details'}
+            onSave={renameCall}
+          />
+        </div>
+        <button
+          onClick={() => void syncToCrm()}
+          disabled={syncingCrm}
+          title="Sync this call's notes and transcript to your connected CRM (admins only)"
+          className="inline-flex items-center gap-2 rounded-full bg-zinc-900/70 px-3 py-1.5 text-sm text-zinc-200 hover:bg-zinc-800 transition-colors disabled:opacity-50"
+        >
+          <RefreshCw className={syncingCrm ? 'w-4 h-4 animate-spin' : 'w-4 h-4'} />
+          {syncingCrm ? 'Syncing...' : 'Sync to CRM'}
+        </button>
       </div>
       <div className="grid grid-cols-1 xl:grid-cols-[0.95fr_0.95fr_0.7fr] gap-6">
       <div className="doppel-outer-dark">
