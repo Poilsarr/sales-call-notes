@@ -43,7 +43,7 @@ function IntegrationsContent() {
   const router = useRouter();
 
   const redirectToCrmEnv = () => {
-    router.replace("/settings?tab=crm");
+    router.replace("/settings?tab=integrations");
   };
 
   useEffect(() => {
@@ -345,7 +345,7 @@ function IntegrationsContent() {
                                   <span>Credentials not set</span>
                                 </div>
                                 <p className="text-[11px] text-gray-400 mt-0.5">
-                                  <Link href="/settings?tab=crm" className="underline underline-offset-2 hover:text-gray-600">Add OAuth credentials</Link> to enable.
+                                  <Link href="/settings?tab=integrations" className="underline underline-offset-2 hover:text-gray-600">Add OAuth credentials</Link> to enable.
                                 </p>
                               </>
                             )}
@@ -354,14 +354,13 @@ function IntegrationsContent() {
                           {int.provider === "hubspot" || int.provider === "salesforce" ? (
                             <div className="flex items-center gap-2 shrink-0">
                               {providerStates[int.provider].connected ? (
-                                <button
-                                  onClick={() => toast.success(`CRM sync started for ${int.name}.`)}
-                                  disabled={providerLoading[int.provider]}
-                                  className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-[#C94F17] text-white text-[11px] font-semibold hover:bg-[#A84310] transition-all disabled:opacity-50"
+                                <Link
+                                  href="/settings?tab=integrations"
+                                  className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-[#C94F17] text-white text-[11px] font-semibold hover:bg-[#A84310] transition-all"
                                 >
-                                  <Sparkles size={14} />
-                                  Sync CRM
-                                </button>
+                                  <Link2 size={14} />
+                                  Manage
+                                </Link>
                               ) : (
                                 <button
                                   onClick={redirectToCrmEnv}
