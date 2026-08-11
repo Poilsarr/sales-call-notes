@@ -12,5 +12,5 @@ test('protected dashboard redirects to sign-in', async ({ page }) => {
 
 test('pricing page shows plans', async ({ page }) => {
   await page.goto('/pricing');
-  await expect(page.locator('text=Pro')).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Pro', exact: true })).toBeVisible();
 });
