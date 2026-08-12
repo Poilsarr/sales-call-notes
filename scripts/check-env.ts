@@ -34,6 +34,10 @@ export const ENV_GROUPS: readonly EnvGroup[] = [
       { key: "OPENAI_API_KEY", level: "required" },
       { key: "GROQ_API_KEY", level: "required" },
       { key: "HF_TOKEN", level: "optional" },
+      { key: "DIARIZATION_PROVIDER", level: "optional", description: "deepgram = live diarization; unset = fallback" },
+      { key: "LANGFUSE_PUBLIC_KEY", level: "optional", description: "Langfuse project public key (LLM tracing)" },
+      { key: "LANGFUSE_SECRET_KEY", level: "optional", description: "Langfuse project secret key (LLM tracing)" },
+      { key: "LANGFUSE_BASE_URL", level: "optional", description: "Langfuse base URL; defaults to https://cloud.langfuse.com" },
     ],
   },
   {
@@ -151,6 +155,22 @@ export function checkEnv(env: NodeJS.ProcessEnv = process.env): CheckSummary {
   let requiredMissing = 0;
   let optionalSet = 0;
   let optionalMissing = 0;
+
+  const prodHosts = ["ep-long-tooth-ap5os155-pooler.c-7.us-east-1.aws.neon.tech",
+    "ep-long-tooth-ap5os155.c-7.us-east-1.aws.neon.tech"];
+  const dbUrl = env.DATABASE_URL ?? env.DATABASE_URL_UNPOOLED ?? "";
+  const pointsAtProd = prodHosts.some((h) => dbUrl.includes(h));
+  if (pointsAtProd && env.NODE_ENV !== "production") {
+    results.push({
+      group: "SAFETY",
+      key: "DATABASE_URL",
+      level: "required",
+      status: "missing",
+      description: "REFUSED: local env points at the PRODUCTION database. Use a dev branch (see .env.example).",
+    });
+    requiredMissing += 1;
+    return { results, requiredSet, requiredMissing, optionalSet, optionalMissing, ok: false };
+  }
 
   for (const group of ENV_GROUPS) {
     for (const v of group.vars) {

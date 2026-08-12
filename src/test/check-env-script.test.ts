@@ -155,6 +155,43 @@ describe('check-env script', () => {
     expect(hubspot?.status).toBe('missing');
   });
 
+  it('refuses the production DATABASE_URL in non-production envs', () => {
+    const summary = checkEnv(
+      buildEnv({
+        DATABASE_URL: 'postgresql://user:pass@ep-long-tooth-ap5os155-pooler.c-7.us-east-1.aws.neon.tech/neondb?sslmode=require',
+      }),
+    );
+    const db = summary.results.find((r) => r.key === 'DATABASE_URL');
+    expect(db?.group).toBe('SAFETY');
+    expect(db?.status).toBe('missing');
+    expect(db?.description).toMatch(/PRODUCTION database/);
+    expect(summary.requiredMissing).toBe(1);
+    expect(summary.ok).toBe(false);
+    expect(summarize(summary)).toEqual({
+      requiredSet: 0,
+      requiredMissing: 1,
+      optionalSet: 0,
+      optionalMissing: 0,
+      ok: false,
+    });
+  });
+
+  it('allows the production DATABASE_URL when NODE_ENV=production', () => {
+    const summary = checkEnv(
+      buildEnv({
+        DATABASE_URL: 'postgresql://user:pass@ep-long-tooth-ap5os155-pooler.c-7.us-east-1.aws.neon.tech/neondb?sslmode=require',
+        NODE_ENV: 'production',
+      }),
+    );
+    expect(summarize(summary)).toEqual({
+      requiredSet: REQUIRED_KEYS.length,
+      requiredMissing: 0,
+      optionalSet: 1,
+      optionalMissing: expect.any(Number),
+      ok: true,
+    });
+  });
+
   it('produces a printable report with status text for every var', () => {
     const summary = checkEnv(buildEnv({}));
     const report = formatReport(summary, { color: false });

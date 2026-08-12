@@ -19,11 +19,18 @@ function getLangfuseConfig() {
   return _config as Record<string, string>;
 }
 
+const wrappedClients = new WeakMap<object, object>();
+
 export function wrapClient<T extends object>(client: T): T {
+  const existing = wrappedClients.get(client);
+  if (existing) return existing as T;
   const cfg = getLangfuseConfig();
   if (!cfg) return client;
   try {
-    return observeOpenAI(client, cfg) as T;
+    const wrapped = observeOpenAI(client, { ...cfg, clientInitParams: cfg }) as T;
+    wrappedClients.set(client, wrapped);
+    wrappedClients.set(wrapped, wrapped);
+    return wrapped;
   } catch {
     return client;
   }
