@@ -7,6 +7,7 @@ const SECRET_KEY_PATTERNS = [
   /DATABASE_URL\s*[:=]\s*[^\s,;'"]+/gi,
   /CLERK_SECRET_KEY\s*[:=]\s*[^\s,;'"]+/gi,
   /OPENAI_API_KEY\s*[:=]\s*[^\s,;'"]+/gi,
+  /DEEPGRAM_API_KEY\s*[:=]\s*[^\s,;'"]+/gi,
   /GROQ_API_KEY\s*[:=]\s*[^\s,;'"]+/gi,
   /HUBSPOT_CLIENT_SECRET\s*[:=]\s*[^\s,;'"]+/gi,
   /SALESFORCE_CLIENT_SECRET\s*[:=]\s*[^\s,;'"]+/gi,

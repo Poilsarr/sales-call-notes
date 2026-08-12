@@ -18,6 +18,9 @@ const {
   mockSelectModel,
   mockEnforceRetention,
   mockTrack,
+  mockDiarize,
+  mockPrismaCallInsightUpsert,
+  mockPrismaKnowledgeEntityUpsert,
 } = vi.hoisted(() => ({
   mockAuth: vi.fn(),
   mockGetUserByClerkId: vi.fn(),
@@ -36,6 +39,9 @@ const {
   mockSelectModel: vi.fn(),
   mockEnforceRetention: vi.fn(),
   mockTrack: vi.fn(),
+  mockDiarize: vi.fn(),
+  mockPrismaCallInsightUpsert: vi.fn(),
+  mockPrismaKnowledgeEntityUpsert: vi.fn(),
 }));
 
 vi.mock("@clerk/nextjs/server", () => ({
@@ -57,7 +63,9 @@ vi.mock("@/lib/sentry", () => ({
 vi.mock("@/lib/prisma", () => ({
   default: {
     call: { create: mockPrismaCallCreate },
-    callInsight: { upsert: vi.fn().mockResolvedValue({}) },
+    callInsight: { upsert: mockPrismaCallInsightUpsert },
+    knowledgeEntity: { upsert: mockPrismaKnowledgeEntityUpsert, findUnique: vi.fn() },
+    knowledgeRelation: { create: vi.fn() },
     integration: { findMany: vi.fn().mockResolvedValue([]) },
     user: { update: vi.fn() },
   },
@@ -127,7 +135,7 @@ vi.mock("@/services/ai/audio-preprocessing", () => {
 
 vi.mock("@/services/ai/diarization", () => {
   class MockDiarize {
-    diarize = vi.fn().mockRejectedValue(new Error("python unavailable"));
+    diarize = mockDiarize;
   }
   return { DiarizationService: MockDiarize };
 });
@@ -198,6 +206,14 @@ const TRANSCRIPTION = {
   model: "whisper-1",
 };
 
+const TWO_GAP_TRANSCRIPTION = {
+  ...TRANSCRIPTION,
+  segments: [
+    { id: 0, text: "first", start: 0, end: 1.0, words: [] },
+    { id: 1, text: "second", start: 3.0, end: 4.0, words: [] },
+  ],
+};
+
 const ANALYSIS = {
   executiveSummary: "Summary",
   callType: "discovery",
@@ -224,6 +240,8 @@ describe("POST /api/analyze — BYOK branches", () => {
     mockTranscriptionCtorArgs.length = 0;
     delete process.env.OPENAI_API_KEY;
     delete process.env.GROQ_API_KEY;
+    delete process.env.DIARIZATION_PROVIDER;
+    delete process.env.DEEPGRAM_API_KEY;
     process.env.BLOB_READ_WRITE_TOKEN = "test-token";
     mockAuth.mockResolvedValue({ userId: "clerk-1" });
     mockGetUserByClerkId.mockResolvedValue({ id: "user-1", plan: "PRO" });
@@ -241,6 +259,9 @@ describe("POST /api/analyze — BYOK branches", () => {
     mockIndexCall.mockResolvedValue(undefined);
     mockEnforceRetention.mockResolvedValue(0);
     mockPrismaCallCreate.mockResolvedValue({ id: "call-1" });
+    mockPrismaCallInsightUpsert.mockResolvedValue({});
+    mockPrismaKnowledgeEntityUpsert.mockResolvedValue({ id: "ent-1" });
+    mockDiarize.mockRejectedValue(new Error("deepgram unavailable"));
     global.fetch = vi.fn().mockResolvedValue(
       new Response(new Uint8Array(4096).buffer, { status: 200 })
     );
@@ -444,5 +465,99 @@ describe("POST /api/analyze — BYOK branches", () => {
     expect(createArgs.data.actionItems.create).toEqual([
       { task: "Send proposal", owner: "Jane", due: "Friday", timestamp: 754 },
     ]);
+  });
+
+  it("skips Deepgram and runs pause-gap fallback when DIARIZATION_PROVIDER is unset", async () => {
+    process.env.OPENAI_API_KEY = "sk-shared";
+    mockTranscribe.mockResolvedValue(TWO_GAP_TRANSCRIPTION);
+
+    const response = await POST(jsonRequest());
+
+    expect(response.status).toBe(200);
+    expect(mockDiarize).not.toHaveBeenCalled();
+    const createArgs = mockPrismaCallCreate.mock.calls[0][0];
+    expect(createArgs.data.speakers.create).toHaveLength(2);
+    expect(createArgs.data.speakers.create.map((s: { label: string }) => s.label)).toEqual([
+      "SPEAKER_00",
+      "SPEAKER_01",
+    ]);
+  });
+
+  it("skips Deepgram when DIARIZATION_PROVIDER=deepgram but DEEPGRAM_API_KEY is missing", async () => {
+    process.env.OPENAI_API_KEY = "sk-shared";
+    process.env.DIARIZATION_PROVIDER = "deepgram";
+    mockTranscribe.mockResolvedValue(TWO_GAP_TRANSCRIPTION);
+
+    const response = await POST(jsonRequest());
+
+    expect(response.status).toBe(200);
+    expect(mockDiarize).not.toHaveBeenCalled();
+    const createArgs = mockPrismaCallCreate.mock.calls[0][0];
+    expect(createArgs.data.speakers.create).toHaveLength(2);
+  });
+
+  it("calls Deepgram diarization when provider=deepgram and DEEPGRAM_API_KEY is set", async () => {
+    process.env.OPENAI_API_KEY = "sk-shared";
+    process.env.DIARIZATION_PROVIDER = "deepgram";
+    process.env.DEEPGRAM_API_KEY = "test-key";
+    mockDiarize.mockResolvedValue({
+      speakers: [
+        { label: "Speaker A", segments: [{ speaker: "Speaker A", start: 0, end: 2.5 }], duration: 2.5 },
+      ],
+      transcript: "hello world",
+    });
+
+    const response = await POST(jsonRequest());
+
+    expect(response.status).toBe(200);
+    expect(mockDiarize).toHaveBeenCalledTimes(1);
+    const createArgs = mockPrismaCallCreate.mock.calls[0][0];
+    expect(createArgs.data.speakers.create).toEqual([
+      expect.objectContaining({ label: "Speaker A", duration: 3 }),
+    ]);
+  });
+
+  it("populates CallInsight with sentimentScore, talkRatio, objections, topics", async () => {
+    process.env.OPENAI_API_KEY = "sk-shared";
+    mockAnalyze.mockResolvedValue({
+      ...ANALYSIS,
+      salesScorecard: { overallScore: 85 },
+      topics: ["pricing", "timeline"],
+    });
+    mockAnalyzeCall.mockResolvedValue({
+      sentiment: "positive",
+      talkRatio: { "Speaker A": 0.6, "Speaker B": 0.4 },
+      objections: ["price_too_high"],
+    });
+
+    const response = await POST(jsonRequest());
+
+    expect(response.status).toBe(200);
+    expect(mockPrismaCallInsightUpsert).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: { callId: "call-1" },
+        create: expect.objectContaining({
+          callId: "call-1",
+          sentimentScore: 0.85,
+          talkRatio: { "Speaker A": 0.6, "Speaker B": 0.4 },
+          objections: [{ type: "price_too_high" }],
+          topics: ["pricing", "timeline"],
+        }),
+      })
+    );
+  });
+
+  it("populates knowledge entities when transcript is present", async () => {
+    process.env.OPENAI_API_KEY = "sk-shared";
+    mockPostProcess.mockResolvedValue({
+      correctedText: "Sarah Chen, CEO of Beta Inc, bought $50k of ProTool.",
+      corrections: [],
+    });
+    mockRedact.mockImplementation(async (text: string) => ({ redactedText: text }));
+
+    const response = await POST(jsonRequest());
+
+    expect(response.status).toBe(200);
+    expect(mockPrismaKnowledgeEntityUpsert).toHaveBeenCalled();
   });
 });

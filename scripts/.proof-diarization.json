@@ -1,0 +1,30 @@
+{
+  "ok": true,
+  "fixture": "/Users/kushagarhsingh/Desktop/com analayze/sales-call-notes/scripts/.fixtures/two-speaker.wav",
+  "fixtureSeconds": 23.5435,
+  "callParams": {
+    "model": "nova-2",
+    "diarize": true,
+    "smart_format": true,
+    "detect_language": true
+  },
+  "speakerCount": 2,
+  "labels": [
+    "Speaker A",
+    "Speaker B"
+  ],
+  "speakers": [
+    {
+      "label": "Speaker A",
+      "segmentCount": 31,
+      "duration": 10
+    },
+    {
+      "label": "Speaker B",
+      "segmentCount": 38,
+      "duration": 11
+    }
+  ],
+  "transcriptLength": 385,
+  "timestamp": "2026-08-12T10:25:37.372Z"
+}

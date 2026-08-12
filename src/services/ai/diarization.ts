@@ -35,7 +35,7 @@ export class DiarizationService {
 
     const response = await deepgram.listen.v1.media.transcribeFile(
       audio,
-      { model: "nova-2", diarize: true, smart_format: true },
+      { model: "nova-2", diarize: true, smart_format: true, detect_language: true },
     );
 
     if (!("results" in response) || !response.results) {

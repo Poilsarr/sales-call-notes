@@ -44,12 +44,13 @@ describe("Deepgram diarization", () => {
     expect(mocks.getSecret).toHaveBeenCalledWith("DEEPGRAM_API_KEY");
   });
 
-  it("calls Deepgram with nova-2 + diarize", async () => {
+  it("calls Deepgram with nova-2 + diarize + detect_language", async () => {
     await new DiarizationService().diarize("/tmp/x.wav");
     expect(mocks.transcribeFile).toHaveBeenCalledTimes(1);
     const opts = mocks.transcribeFile.mock.calls[0][1];
     expect(opts.model).toBe("nova-2");
     expect(opts.diarize).toBe(true);
+    expect(opts.detect_language).toBe(true);
   });
 
   it("maps speaker_id 0/1 to Speaker A/B", async () => {

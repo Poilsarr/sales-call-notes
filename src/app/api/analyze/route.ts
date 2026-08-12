@@ -16,6 +16,7 @@ import { getByokKeys } from '@/lib/byok-resolver';
 import { AnalyticsService } from '@/services/ai/analytics';
 import { PIIRedactorService } from '@/services/ai/pii-redactor';
 import { KnowledgeGraphService } from '@/services/ai/knowledge-graph';
+import { buildGraphFromText } from '@/services/ai/knowledge-extract';
 import { PersonalizationService } from '@/services/ai/personalization';
 import { enforceCallRetention } from '@/services/call-retention';
 import { FileValidationService } from '@/services/validation/file-validation';
@@ -202,7 +203,9 @@ export async function POST(req: Request) {
     // 2.5 Diarization (Identify Speakers)
     let speakerLabels: Array<{ label: string; segments: Array<{ speaker: string; start: number; end: number }> }> = [];
     try {
-      if (process.env.VERCEL) throw new Error('Python diarization not available on Vercel');
+      if (getSecret("DIARIZATION_PROVIDER") !== "deepgram" || !getSecret("DEEPGRAM_API_KEY")) {
+        throw new Error('Diarization not configured (set DIARIZATION_PROVIDER=deepgram and DEEPGRAM_API_KEY)');
+      }
       const tempPath = path.join(os.tmpdir(), `diarize_${Date.now()}.wav`);
       await fs.writeFile(tempPath, buffer);
       
@@ -423,13 +426,50 @@ export async function POST(req: Request) {
       }
     });
 
-    // Index for semantic search
+    // Index for semantic search & extract knowledge entities
     try {
       const kgService = new KnowledgeGraphService();
       await kgService.indexCall(call.id, byok.openaiKey);
       console.log(`Call ${call.id} indexed in knowledge graph`);
     } catch (e) {
       console.log('Knowledge graph indexing failed:', e);
+    }
+
+    // Populate Knowledge Graph Entities & Relations from analysis keyEntities / text
+    if (userId && (finalTranscriptWithSpeakers || correctedText)) {
+      try {
+        const textForKg = finalTranscriptWithSpeakers || correctedText;
+        const graph = buildGraphFromText({ text: textForKg, callId: call.id, userId });
+        if (graph.entities.length > 0) {
+          for (const e of graph.entities) {
+            const key = { userId_type_value: { userId, type: e.type, value: e.value } };
+            await prisma.knowledgeEntity.upsert({
+              where: key,
+              update: { calls: { push: call.id } },
+              create: { userId, type: e.type, value: e.value, calls: [call.id] },
+            });
+          }
+        }
+        if (graph.relations.length > 0) {
+          for (const r of graph.relations) {
+            const [fromEnt, toEnt] = await Promise.all([
+              prisma.knowledgeEntity.findUnique({
+                where: { userId_type_value: { userId, type: r.fromType, value: r.from } },
+              }),
+              prisma.knowledgeEntity.findUnique({
+                where: { userId_type_value: { userId, type: r.toType, value: r.to } },
+              }),
+            ]);
+            if (fromEnt && toEnt) {
+              await prisma.knowledgeRelation.create({
+                data: { userId, fromEntityId: fromEnt.id, toEntityId: toEnt.id, relation: r.relation, calls: [call.id] },
+              });
+            }
+          }
+        }
+      } catch (e) {
+        console.log('Knowledge graph entity extraction failed (non-fatal):', e);
+      }
     }
 
     // Generate personalized hooks
@@ -442,20 +482,25 @@ export async function POST(req: Request) {
       console.log('Personalization failed:', e);
     }
 
+    const insightData = {
+      salesScorecard: analysisResult.salesScorecard,
+      closeProbability: analysisResult.closeProbability,
+      coachingNotes: analysisResult.coachingNotes,
+      personalization: personalization,
+      sentimentScore: Number.isFinite(analysisResult.salesScorecard?.overallScore)
+        ? analysisResult.salesScorecard.overallScore / 100
+        : (callAnalytics.sentiment === "positive" ? 0.8 : callAnalytics.sentiment === "negative" ? 0.2 : 0.5),
+      talkRatio: callAnalytics.talkRatio ?? null,
+      objections: callAnalytics.objections?.map((o: string) => ({ type: o })) ?? null,
+      topics: (analysisResult as any).topics ?? null,
+    };
+
     await prisma.callInsight.upsert({
       where: { callId: call.id },
-      update: {
-        salesScorecard: analysisResult.salesScorecard,
-        closeProbability: analysisResult.closeProbability,
-        coachingNotes: analysisResult.coachingNotes,
-        personalization: personalization,
-      },
+      update: insightData,
       create: {
         callId: call.id,
-        salesScorecard: analysisResult.salesScorecard,
-        closeProbability: analysisResult.closeProbability,
-        coachingNotes: analysisResult.coachingNotes,
-        personalization: personalization,
+        ...insightData,
       }
     });
 
