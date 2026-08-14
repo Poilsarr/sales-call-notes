@@ -2,15 +2,34 @@ name: Lighthouse CI
 on:
   pull_request:
     branches: [main]
+  workflow_dispatch: # verify on main after merge without opening a PR
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
+permissions:
+  contents: read
+
 jobs:
   lighthouse:
     name: Lighthouse audit
     runs-on: ubuntu-latest
+    timeout-minutes: 25
+    env:
+      # Mirror the proven-green Build job in ci.yml so `next build` can
+      # prerender with dummy keys, plus the repo's Redis-off convention
+      # (queue.ts builds BullMQ queues at module scope -> ECONNREFUSED :6379
+      # without REDIS_HOST=disabled; see LIGHTHOUSE-CI-PRD R1/R2).
+      REDIS_HOST: disabled
+      REDIS_PORT: 0
+      NEXT_PUBLIC_APP_URL: ${{ vars.NEXT_PUBLIC_APP_URL || 'http://localhost:3000' }}
+      OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY || 'sk-dummy' }}
+      GROQ_API_KEY: ${{ secrets.GROQ_API_KEY || 'gsk_dummy' }}
+      NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: ${{ secrets.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY || 'pk_test_dummy' }}
+      CLERK_SECRET_KEY: ${{ secrets.CLERK_SECRET_KEY || 'sk_test_dummy' }}
+      UPSTASH_REDIS_REST_URL: ${{ secrets.UPSTASH_REDIS_REST_URL || 'https://dummy.upstash.io' }}
+      UPSTASH_REDIS_REST_TOKEN: ${{ secrets.UPSTASH_REDIS_REST_TOKEN || 'dummy' }}
     steps:
       - uses: actions/checkout@v5
 
@@ -19,12 +38,18 @@ jobs:
           node-version: 24
           cache: npm
 
+      - name: Write CI .env (test-only, never prod secrets)
+        run: |
+          cat > .env <<'EOF'
+          DATABASE_URL=postgresql://testuser:testpass@localhost:5432/testdb
+          NEXT_PUBLIC_APP_URL=http://localhost:3000
+          EOF
+
       - run: npm ci
 
-      - run: npx next build
+      - run: npx prisma generate
 
-      - name: Install Lighthouse CI
-        run: npm install --save-dev @lhci/cli
+      - run: npx next build
 
       - name: Run Lighthouse CI
         run: npx lhci autorun
