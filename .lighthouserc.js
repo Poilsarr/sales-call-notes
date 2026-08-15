@@ -51,7 +51,14 @@ module.exports = {
         "largest-contentful-paint": ["error", { maxNumericValue: 2500 }],
         "cumulative-layout-shift": ["error", { maxNumericValue: 0.15 }],
         "total-blocking-time": ["warn", { maxNumericValue: 200 }],
-        "total-byte-weight": ["error", { maxNumericValue: 900_000 }],
+        // Static rendering (CLERK-STATIC arc, 2026-08-15) changed Link
+        // prefetch behavior: static routes download the full RSC payload +
+        // page chunks of in-viewport links, where dynamic routes fetched only
+        // the shell. Post-migration local proof: 795-922KB (5 URLs, desktop
+        // preset; /api-docs 922KB, /vs/gong 905KB). Re-grounded from 900KB
+        // (pre-migration 784-807KB) to 1MB with ~78KB headroom over the worst
+        // measured URL; keep it as a hard gate, not a warn.
+        "total-byte-weight": ["error", { maxNumericValue: 1_000_000 }],
         "unused-javascript": ["warn", { maxNumericValue: 50_000 }],
         "uses-responsive-images": ["warn"],
         "offscreen-images": ["warn"],
