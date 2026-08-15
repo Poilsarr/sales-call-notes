@@ -67,8 +67,8 @@ try {
   // Exit code 0 = no diff. Exit code 1 = drift.
   diffOutput = execSync(
     `npx prisma migrate diff ` +
-      `--from-migrations ${prismaDir}/migrations ` +
-      `--to-schema-datamodel ${prismaDir}/schema.prisma ` +
+      `--from-migrations "${prismaDir}/migrations" ` +
+      `--to-schema-datamodel "${prismaDir}/schema.prisma" ` +
       `--shadow-database-url "${shadowUrl}"`,
     { cwd: repoRoot, encoding: "utf-8", stdio: ["ignore", "pipe", "pipe"] }
   );
@@ -92,7 +92,16 @@ try {
 }
 
 const trimmed = diffOutput.trim();
-if (trimmed.length === 0) {
+
+// Prisma prints "No difference detected." (non-empty) to stdout when the
+// migrations reproduce schema.prisma exactly. Treat that as no drift, not as
+// SQL that is missing a migration. Also tolerate the "empty migration"
+// variant some Prisma versions emit for a clean diff.
+const NO_DIFF_SIGNALS = [
+  "No difference detected.",
+  "-- This is an empty migration.",
+];
+if (trimmed.length === 0 || NO_DIFF_SIGNALS.includes(trimmed)) {
   console.log("\n✓ No drift. schema.prisma matches all migrations.\n");
   process.exit(0);
 }
