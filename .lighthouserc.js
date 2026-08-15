@@ -19,12 +19,13 @@ module.exports = {
     },
     assert: {
       assertions: {
-        // Thresholds grounded in real local runs (2026-08-14, next 15.5.23,
-        // evidence in .lighthouseci/lhr-*.json): perf 96-100, a11y 91-96,
-        // best-practices 74, seo 92, LCP 745-808ms, CLS 0.000-0.113, TBT 0,
-        // byte-weight 784-807KB (5 URLs, desktop preset). Headroom on every
-        // hard threshold; warn for everything that is environment-sensitive
-        // (clerk-js CDN, /features canvas).
+        // Thresholds grounded in real local runs (2026-08-14 baseline, next
+        // 15.5.23; 2026-08-15 post-CLERK-STATIC refresh, evidence in
+        // .lighthouseci/lhr-*.json): perf 96-100, a11y 91-96, best-practices
+        // 74, seo 92 -> 100, LCP 745-808ms, CLS 0.000-0.113, TBT 0,
+        // byte-weight 784-807KB -> 795-922KB (5 URLs, desktop preset). Headroom
+        // on every hard threshold; warn for everything that is environment-
+        // sensitive (clerk-js CDN, /features canvas).
         "categories:performance": ["error", { minScore: 0.85 }],
         "categories:accessibility": ["error", { minScore: 0.85 }],
         "categories:best-practices": [
@@ -37,15 +38,15 @@ module.exports = {
           },
         ],
         "categories:seo": [
-          "warn",
+          "error",
           {
-            minScore: 0.9,
-            // 92 locally. Hard-gating SEO is blocked by a tracked product
-            // bug: @clerk/nextjs 5.7.6 ClerkProvider calls headers() ->
-            // whole app renders dynamic -> root loading.tsx streams a
-            // fallback -> Next inserts all metadata at the TOP OF BODY ->
-            // Lighthouse's head-meta gatherer finds no description. Tracked
-            // in DEVELOPMENT_FRONTIER.md "Tracked items" (meta-in-body, P1).
+            minScore: 0.95,
+            // 100 locally on all 5 audited URLs post-CLERK-STATIC (meta-in-body
+            // P1 fixed, #139). minScore = max(0.9, proof - 0.05) per
+            // LIGHTHOUSE-CI-PRD R6/T2: error thresholds get proof-grounded
+            // headroom, never warn-for-env-sensitive categories. 0.95 leaves
+            // headroom below the 1.00 proof while still blocking any real SEO
+            // regression (a 0.92 pre-fix build would fail this gate).
           },
         ],
         "largest-contentful-paint": ["error", { maxNumericValue: 2500 }],
