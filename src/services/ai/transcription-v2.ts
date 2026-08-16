@@ -4,6 +4,8 @@ import { buildTranscriptionPrompt } from '@/lib/transcription-options';
 import { createOpenAIClient } from '@/lib/openai-client';
 import { getSecret } from '@/lib/secrets';
 
+const MAX_AUDIO_BYTES = 25 * 1024 * 1024;
+
 export interface TranscriptionServiceOptions {
   openaiKey?: string;
   groqKey?: string;
@@ -46,7 +48,7 @@ export class TranscriptionServiceV2 {
     // below remains — when this call is 'whisper-1' and OpenAI fails, we escalate.
     model: 'whisper-1' | 'whisper-large-v3' = 'whisper-large-v3',
     language?: string,
-    options: { removeFillers?: boolean } = {},
+    options: { removeFillers?: boolean; filename?: string } = {},
     attempted: string[] = [],
   ): Promise<TranscriptionResult> {
     // Fail fast with actionable message instead of generic 500
@@ -64,10 +66,16 @@ export class TranscriptionServiceV2 {
         'whisper-1 transcription requires an OpenAI API key (OPENAI_API_KEY env or a user BYOK key).'
       );
     }
+    // Both providers cap uploads at 25MB — fail fast instead of a doomed call.
+    if (audioBuffer.length > MAX_AUDIO_BYTES) {
+      throw new Error(
+        'Audio file is too large for the transcription provider (max 25MB per file). Please upload a shorter recording.'
+      );
+    }
     const client = model === 'whisper-1' ? this.openai! : this.groqOpenai!;
 
     try {
-      const file = await toFile(audioBuffer, 'audio.wav', { type: 'audio/wav' });
+      const file = await toFile(audioBuffer, options.filename ?? 'audio.wav', { type: 'audio/wav' });
 
       const response = await client.audio.transcriptions.create({
         file,
@@ -80,7 +88,22 @@ export class TranscriptionServiceV2 {
 
       return this.parseVerboseJson(response);
     } catch (error) {
+      const err = error as any;
       const other = model === 'whisper-1' ? 'whisper-large-v3' : 'whisper-1';
+      console.error(
+        `Transcription failed on ${model}:`,
+        err?.status,
+        err?.message,
+        err?.cause?.message ?? err?.cause
+      );
+      // Size-class errors are provider caps — retrying the other provider is
+      // doomed and slow, so rethrow the original error.
+      if (
+        err?.status === 413 ||
+        /\btoo large\b|entity too large|exceeds .* limit|payload/i.test(err?.message ?? '')
+      ) {
+        throw error;
+      }
       // whisper-large-v3 is a Groq-only model — retrying it on the OpenAI
       // client when no Groq key exists is a doomed 401. Throw the original
       // error instead of burning a call against the wrong provider.

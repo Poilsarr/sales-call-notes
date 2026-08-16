@@ -169,6 +169,7 @@ export async function POST(req: Request) {
     try {
       transcription = await transcriptionService.transcribe(buffer, model, requestedLanguage, {
         removeFillers,
+        filename: fileName,
       });
     } catch (error: any) {
       console.error('Transcription failed:', error?.message || error);
