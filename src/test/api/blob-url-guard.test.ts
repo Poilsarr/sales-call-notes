@@ -14,6 +14,18 @@ describe("isTrustedBlobUrl (SSRF / BLOB-token exfiltration guard)", () => {
     expect(isTrustedBlobUrl("https://store_abc.blob.vercel-storage.com/uploads/u1/a.webm")).toBe(true);
   });
 
+  it("accepts the canonical prefix-less store id in hostnames", async () => {
+    process.env.BLOB_STORE_ID = "store_abc";
+    const { isTrustedBlobUrl } = await import("@/lib/blob-url");
+    expect(isTrustedBlobUrl("https://abc.blob.vercel-storage.com/uploads/u1/a.webm")).toBe(true);
+  });
+
+  it("accepts prefix-less access-qualified (private) hostnames — the SDK's canonical form", async () => {
+    process.env.BLOB_STORE_ID = "store_abc";
+    const { isTrustedBlobUrl } = await import("@/lib/blob-url");
+    expect(isTrustedBlobUrl("https://abc.private.blob.vercel-storage.com/uploads/u1/a.webm")).toBe(true);
+  });
+
   it("accepts access-qualified (private) blob store hostnames", async () => {
     process.env.BLOB_STORE_ID = "store_abc";
     const { isTrustedBlobUrl } = await import("@/lib/blob-url");
@@ -26,6 +38,13 @@ describe("isTrustedBlobUrl (SSRF / BLOB-token exfiltration guard)", () => {
     expect(isTrustedBlobUrl("https://store_abc.public.blob.vercel-storage.com/uploads/u1/a.webm")).toBe(true);
   });
 
+  it("works when BLOB_STORE_ID is already prefix-less", async () => {
+    process.env.BLOB_STORE_ID = "abc";
+    const { isTrustedBlobUrl } = await import("@/lib/blob-url");
+    expect(isTrustedBlobUrl("https://abc.private.blob.vercel-storage.com/uploads/u1/a.webm")).toBe(true);
+    expect(isTrustedBlobUrl("https://store_abc.private.blob.vercel-storage.com/uploads/u1/a.webm")).toBe(true);
+  });
+
   it("rejects arbitrary hosts (token exfiltration target)", async () => {
     process.env.BLOB_STORE_ID = "store_abc";
     const { isTrustedBlobUrl } = await import("@/lib/blob-url");
@@ -36,6 +55,28 @@ describe("isTrustedBlobUrl (SSRF / BLOB-token exfiltration guard)", () => {
     process.env.BLOB_STORE_ID = "store_abc";
     const { isTrustedBlobUrl } = await import("@/lib/blob-url");
     expect(isTrustedBlobUrl("https://store_other.private.blob.vercel-storage.com/call.wav")).toBe(false);
+    expect(isTrustedBlobUrl("https://other.private.blob.vercel-storage.com/call.wav")).toBe(false);
+  });
+
+  it("rejects hostname suffix tricks", async () => {
+    process.env.BLOB_STORE_ID = "store_abc";
+    const { isTrustedBlobUrl } = await import("@/lib/blob-url");
+    expect(isTrustedBlobUrl("https://store_abc.blob.vercel-storage.com.evil.example.com/x")).toBe(false);
+    expect(isTrustedBlobUrl("https://abc.private.blob.vercel-storage.com.evil.example.com/x")).toBe(false);
+  });
+
+  it("accepts mixed-case store ids, matching the SDK's canonical URLs", async () => {
+    process.env.BLOB_STORE_ID = "store_4SiryHapG57GVkfq";
+    const { isTrustedBlobUrl } = await import("@/lib/blob-url");
+    expect(isTrustedBlobUrl("https://4SiryHapG57GVkfq.private.blob.vercel-storage.com/uploads/u1/a.webm")).toBe(true);
+    expect(isTrustedBlobUrl("https://4siryhapg57gvkfq.private.blob.vercel-storage.com/uploads/u1/a.webm")).toBe(true);
+  });
+
+  it("rejects non-443 ports on otherwise-valid store hostnames", async () => {
+    process.env.BLOB_STORE_ID = "store_abc";
+    const { isTrustedBlobUrl } = await import("@/lib/blob-url");
+    expect(isTrustedBlobUrl("https://abc.private.blob.vercel-storage.com:8443/x")).toBe(false);
+    expect(isTrustedBlobUrl("https://store_abc.blob.vercel-storage.com:9999/x")).toBe(false);
   });
 
   it("rejects non-HTTPS and malformed URLs", async () => {

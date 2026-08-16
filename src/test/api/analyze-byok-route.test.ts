@@ -190,7 +190,7 @@ function jsonRequest(overrides: Record<string, unknown> = {}): Request {
     method: "POST",
     headers: { "content-type": "application/json" },
     body: JSON.stringify({
-      blobUrl: "https://store.blob.vercel-storage.com/call.wav",
+      blobUrl: "https://test.private.blob.vercel-storage.com/call.wav",
       filename: "call.wav",
       removeFillers: true,
       ...overrides,
@@ -243,6 +243,7 @@ describe("POST /api/analyze — BYOK branches", () => {
     delete process.env.DIARIZATION_PROVIDER;
     delete process.env.DEEPGRAM_API_KEY;
     process.env.BLOB_READ_WRITE_TOKEN = "test-token";
+    process.env.BLOB_STORE_ID = "store_test";
     mockAuth.mockResolvedValue({ userId: "clerk-1" });
     mockGetUserByClerkId.mockResolvedValue({ id: "user-1", plan: "PRO" });
     mockGetByokKeys.mockResolvedValue({});
@@ -273,6 +274,19 @@ describe("POST /api/analyze — BYOK branches", () => {
     const response = await POST(jsonRequest());
 
     expect(response.status).toBe(401);
+  });
+
+  it("rejects a blobUrl that does not point to our blob store (token-exfiltration guard)", async () => {
+    const fetchMock = vi.fn().mockResolvedValue(
+      new Response(new Uint8Array(4096).buffer, { status: 200 })
+    );
+    global.fetch = fetchMock;
+
+    const response = await POST(jsonRequest({ blobUrl: "https://evil.example.com/capture?token=hijack" }));
+
+    expect(response.status).toBe(400);
+    await expect(response.json()).resolves.toEqual({ error: "Invalid blobUrl: must point to this store" });
+    expect(fetchMock).not.toHaveBeenCalled();
   });
 
   it("rejects invalid files before touching BYOK resolution", async () => {

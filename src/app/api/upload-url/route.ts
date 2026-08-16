@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextResponse } from 'next/server';
 import { auth } from '@clerk/nextjs/server';
 import crypto from 'crypto';
 import { issueSignedToken, presignUrl } from '@vercel/blob';
@@ -19,7 +19,7 @@ const MAX_FILE_SIZE_MB: Record<string, number> = {
 // "Cannot find module '@vercel/blob'" OUTSIDE this handler's try/catch — an
 // empty-body 500 that surfaced to the client as
 // "Failed to execute 'json' on 'Response': Unexpected end of JSON input".
-export async function POST(req: NextRequest) {
+export async function POST(req: Request) {
   let pathname = '';
   const storeId = process.env.BLOB_STORE_ID;
 
@@ -86,7 +86,8 @@ export async function POST(req: NextRequest) {
       access: 'private',
     });
 
-    const blobUrl = `https://${storeId}.private.blob.vercel-storage.com/${pathname}`;
+    const canonicalStoreId = (storeId || '').startsWith('store_') ? storeId.slice('store_'.length) : storeId;
+    const blobUrl = `https://${canonicalStoreId}.private.blob.vercel-storage.com/${pathname}`;
 
     return NextResponse.json({ presignedUrl, blobUrl, pathname, contentType });
   } catch (err: any) {
