@@ -5,6 +5,8 @@ node_modules/
 .env
 .env.local
 .env*.local
+.env*.vercel*
+.env.vercel-prod
 .vercel
 *.tsbuildinfo
 next-env.d.ts
