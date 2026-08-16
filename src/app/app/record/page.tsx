@@ -93,7 +93,7 @@ function RecordContent() {
       setLiveSessionId(sessionId);
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
       streamRef.current = stream;
-      const mediaRecorder = new MediaRecorder(stream);
+      const mediaRecorder = new MediaRecorder(stream, { audioBitsPerSecond: 32000 });
       mediaRecorderRef.current = mediaRecorder;
       chunksRef.current = [];
 
