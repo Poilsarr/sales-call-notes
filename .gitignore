@@ -17,3 +17,7 @@ WhatsApp Image 2026-07-19 at 15.13.36.png
 playwright-report/
 test-results/
 .lighthouseci/
+
+# Large generated test audio (not part of the app)
+scripts/test-calls/audio/
+scripts/test-calls/results/
