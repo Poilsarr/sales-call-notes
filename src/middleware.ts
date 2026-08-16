@@ -65,13 +65,14 @@ export default clerkMiddleware(async (auth, req: NextRequest) => {
       "base-uri 'self'",
       "script-src 'self' 'unsafe-inline'" +
         (process.env.NODE_ENV === "development" ? " 'unsafe-eval'" : "") +
-        " *.clerk.com *.clerk.accounts.dev",
+        " *.clerk.com *.clerk.accounts.dev https://challenges.cloudflare.com https://*.protect.clerk.com",
       "style-src 'self' 'unsafe-inline'",
-      "img-src 'self' data: *.clerk.com *.clerk.accounts.dev *.paddle.com *.hubspot.com *.salesforce.com",
+      "img-src 'self' data: *.clerk.com *.clerk.accounts.dev https://img.clerk.com *.paddle.com *.hubspot.com *.salesforce.com",
       "media-src 'self' *.cloudfront.net",
-      "connect-src 'self' *.clerk.com *.clerk.accounts.dev *.openai.com *.groq.com *.paddle.com *.vercel.com vercel.com vitals.vercel-insights.com *.hubapi.com *.hubspot.com *.salesforce.com *.microsoftonline.com *.microsoft.com *.deepgram.com wss://*.deepgram.com",
+      "connect-src 'self' *.clerk.com *.clerk.accounts.dev https://*.protect.clerk.com *.openai.com *.groq.com *.paddle.com *.vercel.com vercel.com vitals.vercel-insights.com *.hubapi.com *.hubspot.com *.salesforce.com *.microsoftonline.com *.microsoft.com *.deepgram.com wss://*.deepgram.com",
       "frame-ancestors 'none'",
-      "frame-src *.clerk.com *.clerk.accounts.dev",
+      "frame-src *.clerk.com *.clerk.accounts.dev https://challenges.cloudflare.com https://*.protect.clerk.com",
+      "worker-src 'self' blob:",
       "object-src 'none'",
       "manifest-src 'self'",
       "form-action 'self'",
