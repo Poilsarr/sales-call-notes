@@ -3,8 +3,11 @@ import { TranscriptionResult, TranscriptionSegment, WordTimestamp } from '@/type
 import { buildTranscriptionPrompt } from '@/lib/transcription-options';
 import { createOpenAIClient } from '@/lib/openai-client';
 import { getSecret } from '@/lib/secrets';
+import { isWavBuffer, splitWavIntoChunks, mergeChunkResults } from './wav-split';
 
 const MAX_AUDIO_BYTES = 25 * 1024 * 1024;
+const MAX_CHUNK_BYTES = 20 * 1024 * 1024;
+const CHUNK_OVERLAP_SECONDS = 10;
 
 export interface TranscriptionServiceOptions {
   openaiKey?: string;
@@ -66,8 +69,18 @@ export class TranscriptionServiceV2 {
         'whisper-1 transcription requires an OpenAI API key (OPENAI_API_KEY env or a user BYOK key).'
       );
     }
-    // Both providers cap uploads at 25MB — fail fast instead of a doomed call.
+    // Both providers cap uploads at 25MB. WAV (PCM) can be split into chunks
+    // and re-merged; any other format is a doomed call — fail fast.
     if (audioBuffer.length > MAX_AUDIO_BYTES) {
+      if (isWavBuffer(audioBuffer)) {
+        const chunks = splitWavIntoChunks(audioBuffer, MAX_CHUNK_BYTES, CHUNK_OVERLAP_SECONDS);
+        const results: Array<{ result: TranscriptionResult; startSeconds: number }> = [];
+        for (const c of chunks) {
+          const r = await this.transcribe(c.buffer, model, language, options, attempted);
+          results.push({ result: r, startSeconds: c.startSeconds });
+        }
+        return mergeChunkResults(results, CHUNK_OVERLAP_SECONDS);
+      }
       throw new Error(
         'Audio file is too large for the transcription provider (max 25MB per file). Please upload a shorter recording.'
       );

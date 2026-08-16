@@ -1,6 +1,15 @@
 import ffmpeg from 'fluent-ffmpeg';
 import { Readable } from 'stream';
 
+let ffmpegPath: string | undefined;
+try {
+  const p = require('ffmpeg-static');
+  if (typeof p === 'string') ffmpegPath = p;
+} catch {
+  /* ffmpeg-static not installed — fall back to system PATH */
+}
+if (ffmpegPath) ffmpeg.setFfmpegPath(ffmpegPath);
+
 export interface AudioInfo {
   buffer: Buffer;
   format: string;

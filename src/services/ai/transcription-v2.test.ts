@@ -24,6 +24,24 @@ vi.mock('openai', () => ({
   toFile: mocks.toFile,
 }));
 
+function makeWavBuffer(sizeBytes: number): Buffer {
+  const buf = Buffer.alloc(sizeBytes);
+  buf.write('RIFF', 0, 'ascii');
+  buf.writeUInt32LE(sizeBytes - 8, 4);
+  buf.write('WAVE', 8, 'ascii');
+  buf.write('fmt ', 12, 'ascii');
+  buf.writeUInt32LE(16, 16);
+  buf.writeUInt16LE(1, 20);
+  buf.writeUInt16LE(1, 22);
+  buf.writeUInt32LE(16000, 24);
+  buf.writeUInt32LE(32000, 28);
+  buf.writeUInt16LE(2, 32);
+  buf.writeUInt16LE(16, 34);
+  buf.write('data', 36, 'ascii');
+  buf.writeUInt32LE(sizeBytes - 44, 40);
+  return buf;
+}
+
 describe('TranscriptionServiceV2', () => {
   const GROQ_BASE_URL = 'https://api.groq.com/openai/v1';
   const openaiClient = () =>
@@ -123,5 +141,44 @@ describe('TranscriptionServiceV2', () => {
 
     const fileArg = openaiCreate.mock.calls[0][0] as any;
     expect(fileArg.file.name).toContain('call-recording.mp3');
+  });
+
+  it('chunks a WAV over 25MB and merges per-chunk transcriptions', async () => {
+    vi.stubEnv('OPENAI_API_KEY', 'openai-key');
+    vi.stubEnv('GROQ_API_KEY', 'groq-key');
+
+    const { TranscriptionServiceV2 } = await import('./transcription-v2');
+    const { splitWavIntoChunks } = await import('./wav-split');
+    const service = new TranscriptionServiceV2();
+    const groqCreate = groqClient()?.audio.transcriptions.create;
+    const openaiCreate = openaiClient()?.audio.transcriptions.create;
+
+    const wavBuffer = makeWavBuffer(26 * 1024 * 1024);
+    const chunks = splitWavIntoChunks(wavBuffer, 20 * 1024 * 1024, 10);
+    expect(chunks.length).toBeGreaterThan(1);
+
+    groqCreate.mockResolvedValueOnce({
+      text: 'one',
+      segments: [{ text: 'one', start: 0, end: 1, words: [] }],
+      language: 'en',
+      duration: 1,
+      model: 'whisper-large-v3',
+    });
+    groqCreate.mockResolvedValueOnce({
+      text: 'two',
+      segments: [{ text: 'two', start: 0, end: 1, words: [] }],
+      language: 'en',
+      duration: 1,
+      model: 'whisper-large-v3',
+    });
+
+    const result = await service.transcribe(wavBuffer);
+
+    expect(groqCreate).toHaveBeenCalledTimes(2);
+    expect(openaiCreate).not.toHaveBeenCalled();
+    expect(result.text).toContain('one');
+    expect(result.text).toContain('two');
+    expect(result.segments).toHaveLength(2);
+    expect(result.segments[1].start).toBe(chunks[1].startSeconds);
   });
 });
