@@ -15,7 +15,16 @@ export function isTrustedBlobUrl(rawUrl: string): boolean {
   if (parsed.protocol !== 'https:') return false;
   const storeId = process.env.BLOB_STORE_ID;
   if (storeId) {
-    return parsed.hostname === `${storeId}.blob.vercel-storage.com`;
+    // Vercel Blob's canonical URL is `${storeId}.${access}.blob.vercel-storage.com`
+    // (the presigned PUT response returns the access-qualified hostname, e.g.
+    // store_x.private.blob.vercel-storage.com). Accept the bare form too so
+    // server-constructed URLs keep working.
+    const bare = `${storeId}.blob.vercel-storage.com`;
+    return (
+      parsed.hostname === bare ||
+      parsed.hostname === `${storeId}.private.blob.vercel-storage.com` ||
+      parsed.hostname === `${storeId}.public.blob.vercel-storage.com`
+    );
   }
   return parsed.hostname.endsWith('.blob.vercel-storage.com');
 }

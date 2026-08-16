@@ -86,7 +86,7 @@ export async function POST(req: NextRequest) {
       access: 'private',
     });
 
-    const blobUrl = `https://${storeId}.blob.vercel-storage.com/${pathname}`;
+    const blobUrl = `https://${storeId}.private.blob.vercel-storage.com/${pathname}`;
 
     return NextResponse.json({ presignedUrl, blobUrl, pathname, contentType });
   } catch (err: any) {

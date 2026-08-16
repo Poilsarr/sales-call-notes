@@ -14,10 +14,28 @@ describe("isTrustedBlobUrl (SSRF / BLOB-token exfiltration guard)", () => {
     expect(isTrustedBlobUrl("https://store_abc.blob.vercel-storage.com/uploads/u1/a.webm")).toBe(true);
   });
 
+  it("accepts access-qualified (private) blob store hostnames", async () => {
+    process.env.BLOB_STORE_ID = "store_abc";
+    const { isTrustedBlobUrl } = await import("@/lib/blob-url");
+    expect(isTrustedBlobUrl("https://store_abc.private.blob.vercel-storage.com/uploads/u1/a.webm")).toBe(true);
+  });
+
+  it("accepts access-qualified (public) blob store hostnames", async () => {
+    process.env.BLOB_STORE_ID = "store_abc";
+    const { isTrustedBlobUrl } = await import("@/lib/blob-url");
+    expect(isTrustedBlobUrl("https://store_abc.public.blob.vercel-storage.com/uploads/u1/a.webm")).toBe(true);
+  });
+
   it("rejects arbitrary hosts (token exfiltration target)", async () => {
     process.env.BLOB_STORE_ID = "store_abc";
     const { isTrustedBlobUrl } = await import("@/lib/blob-url");
     expect(isTrustedBlobUrl("https://evil.example.com/capture?token=hijack")).toBe(false);
+  });
+
+  it("rejects access-qualified hostnames of a different store", async () => {
+    process.env.BLOB_STORE_ID = "store_abc";
+    const { isTrustedBlobUrl } = await import("@/lib/blob-url");
+    expect(isTrustedBlobUrl("https://store_other.private.blob.vercel-storage.com/call.wav")).toBe(false);
   });
 
   it("rejects non-HTTPS and malformed URLs", async () => {
