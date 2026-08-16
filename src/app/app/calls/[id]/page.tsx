@@ -66,6 +66,8 @@ export default function CallDetailPage({ params }: { params: Promise<{ id: strin
   const [playing, setPlaying] = useState(false);
   const transcriptViewerRef = useRef<TranscriptViewerHandle>(null);
 
+  const audioSrc = useMemo(() => (data?.audioUrl ? `/api/calls/${data.id}/audio` : null), [data]);
+
   useEffect(() => {
     async function fetchCall() {
       try {
@@ -328,7 +330,7 @@ export default function CallDetailPage({ params }: { params: Promise<{ id: strin
         <div className="doppel-inner-dark p-6 lg:h-full overflow-hidden flex flex-col">
           <div className="flex items-center justify-between gap-3 mb-4">
             <h2 className="text-lg font-medium text-white">Transcript</h2>
-            {data.audioUrl && (
+            {data.audioUrl && audioSrc && (
               <div className="flex items-center gap-2">
                 <button
                   onClick={() => setPlaying(!playing)}
@@ -338,7 +340,7 @@ export default function CallDetailPage({ params }: { params: Promise<{ id: strin
                   {playing ? 'Pause' : 'Play audio'}
                 </button>
                 <a
-                  href={data.audioUrl}
+                  href={audioSrc}
                   download
                   rel="noopener noreferrer"
                   className="inline-flex items-center gap-2 rounded-full bg-zinc-900/70 px-3 py-1.5 text-sm text-zinc-200 hover:bg-zinc-800 transition-colors"
@@ -349,9 +351,9 @@ export default function CallDetailPage({ params }: { params: Promise<{ id: strin
               </div>
             )}
           </div>
-          {data.audioUrl && playing && (
+          {data.audioUrl && audioSrc && playing && (
             <audio
-              src={data.audioUrl}
+              src={audioSrc}
               controls
               autoPlay
               className="w-full mb-4 rounded-lg"
