@@ -1,28 +1,38 @@
 {
   "ok": true,
-  "provider": "omniroute",
-  "latencyMs": 5513,
+  "provider": "groq",
+  "latencyMs": 268,
   "status": 200,
-  "reply": "Okay.",
+  "reply": "pong",
   "results": [
     {
-      "provider": "omniroute",
+      "provider": "openai",
+      "ok": false,
+      "status": 429,
+      "latencyMs": 1792,
+      "model": "gpt-4o-mini",
+      "usage": null,
+      "reply": null,
+      "error": "You have no credits remaining. Add credits to continue using the API at https://platform.openai.com/settings/organization/billing/."
+    },
+    {
+      "provider": "groq",
       "ok": true,
       "status": 200,
-      "latencyMs": 5513,
-      "model": "auto",
+      "latencyMs": 268,
+      "model": "llama-3.1-8b-instant",
       "usage": {
-        "prompt_tokens": 67,
-        "completion_tokens": 17,
-        "total_tokens": 84,
-        "completion_tokens_details": {
-          "reasoning_tokens": 19
-        },
-        "estimated": true
+        "queue_time": 0.052192,
+        "prompt_tokens": 43,
+        "prompt_time": 0.002074435,
+        "completion_tokens": 2,
+        "completion_time": 0.007949687,
+        "total_tokens": 45,
+        "total_time": 0.010024122
       },
-      "reply": "Okay.",
+      "reply": "pong",
       "error": null
     }
   ],
-  "timestamp": "2026-08-08T20:49:53.532Z"
+  "timestamp": "2026-08-16T04:34:50.046Z"
 }
