@@ -16,7 +16,7 @@ piece is **persistent audio storage**, not the audio pipeline itself.
 
 | # | glm5.1 claim | verified? | actual state |
 |---|---|---|---|
-| 1 | "ffmpeg EXTERNAL-BLOCKED on Vercel" | partial | Vercel still can't run ffmpeg. Code has try/catch with no-op fallback (audio-preprocessing.ts) + size-based duration estimate. **Degrades silently**, doesn't block. |
+| 1 | "ffmpeg EXTERNAL-BLOCKED on Vercel" | partial | **STALE since 08-16:** ffmpeg-static shipped in c8606cf — preprocess now runs on Vercel. (Originally: Vercel can't run ffmpeg — code had try/catch with no-op fallback (audio-preprocessing.ts) + size-based duration estimate; **degraded silently**, didn't block.) |
 | 2 | "Python EXTERNAL-BLOCKED" | partial | Diarization is **explicitly guarded** with `if (process.env.VERCEL) throw` (analyze/route.ts:116) + Whisper-pause fallback. ML PII redactor has try/catch with **regex fallback** (pii-redactor.ts:42-48). Both work on Vercel. |
 | 3 | "No persistent storage (S3)" | TRUE | Audio bytes live in `fileBuffer` for request lifetime only. `os.tmpdir()` used for diarize temp file, deleted after. Audio is **gone** after request ends. Real ship-blocker. |
 | 4 | "PII redaction disconnected" | FALSE | Wired in analyze/route.ts:185-186. Service at `src/services/ai/pii-redactor.ts` spawns `redact_pii.py` with try/catch + regex fallback. Production-safe. |

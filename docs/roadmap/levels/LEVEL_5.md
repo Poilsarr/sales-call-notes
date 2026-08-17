@@ -8,7 +8,7 @@
 
 ---
 
-## Task 5.1 — Team Branding
+## Task 5.1 — Team Branding ✅
 
 **Files:**
 - Modify: `prisma/schema.prisma` (add `Team.brandColor`, `Team.logoUrl`)
@@ -39,7 +39,7 @@
 
 ---
 
-## Task 5.3 — Public API + API Keys
+## Task 5.3 — Public API + API Keys ✅
 
 **Files:**
 - Create: `src/app/api/v1/` directory (mirror protected routes)
@@ -56,7 +56,7 @@
 
 ---
 
-## Task 5.4 — Marketing Site Polish
+## Task 5.4 — Marketing Site Polish ✅
 
 **Files:**
 - Modify: `src/app/page.tsx`
@@ -72,7 +72,7 @@
 
 ---
 
-## Task 5.5 — Onboarding Flow
+## Task 5.5 — Onboarding Flow ✅
 
 **Files:**
 - Create: `src/app/onboarding/page.tsx`
@@ -103,7 +103,7 @@
 
 ---
 
-## Task 5.7 — Documentation Site
+## Task 5.7 — Documentation Site ✅
 
 **Files:**
 - Create: `docs/API.md` (auto-generated)
@@ -149,6 +149,6 @@ When all 6 pass, **GATE 5 is closed**. Move to LEVEL 6.
 
 ## Status (post PRs #42–#64)
 
-**PARTIAL** — 5 of 7 tasks shipped (branding, public API, marketing, onboarding, docs). SSO blocked on Clerk Enterprise; pricing live blocked on Paddle IDs.
+**PARTIAL** — all shipped except 5.2 SSO (Clerk Enterprise — external) and 5.6 live checkout (env vars set 31d; upgrade-prompt price-ID bug + webhook test coverage fixed 08-17 in LIVE-AUDIO-HYGIENE arc; live/sandbox credential confirm blocked on user's Paddle account).
 
-Last verified: 2026-06-21. See `docs/roadmap/DEVELOPMENT_FRONTIER.md` for the master list of shipped PRs.
+Last verified: 2026-08-17. See `docs/roadmap/DEVELOPMENT_FRONTIER.md` for the master list of shipped PRs.

@@ -14,7 +14,7 @@
 - Prisma + Neon Postgres
 - Vercel (Hobby plan)
 - Tailwind + custom design tokens (`doppel-outer`, `doppel-inner`)
-- Vitest (531 tests across 64 files)
+- Vitest (1040 tests across 127 files)
 - Playwright (3 e2e specs, all auth-gate checks; +1 signed-in
   smoke spec that requires Clerk test creds to run)
 
@@ -82,22 +82,20 @@
 ## External-blocked (user's keys/accounts needed)
 
 - OpenAI quota $$ → end-to-end real AI transcripts
-- pyannote / Deepgram key → real diarization
+- Deepgram diarization — LIVE (DIARIZATION_PROVIDER=deepgram, DEEPGRAM_API_KEY in prod; 08-17)
+- OpenAI credits $$ → full pipeline (RAG embeddings, analysis) — Groq covers transcription
 - Zoom / Meet / Teams dev accounts → meeting bot
 - HubSpot / Salesforce sandbox → live OAuth test
 - Clerk Enterprise → SSO (5.2)
 - Paddle price IDs → live checkout (5.6)
 - Neon paid plan → automated backups (6.1)
 
-## Recent arc (PRs #62-#80)
-
-All UI/marketing polish + the public /status page. See
-`docs/roadmap/DEVELOPMENT_FRONTIER.md` for the full session log.
+## Recent arcs: PRs #62-#80 (marketing), NEXT15, INTELLIGENCE-CUTOVER (Level 2 gate), CLERK-STATIC, NEON-DEPLOY (#141), transcription arc (ECONNRESET fix + chunking + 32kbps, 08-16), LIVE-AUDIO-HYGIENE (diarization live + docs + Paddle fixes, 08-17). Full session log in docs/roadmap/DEVELOPMENT_FRONTIER.md
 
 ## Test running
 
 ```bash
-# Vitest (unit + integration, 64 files, 531 tests)
+# Vitest (unit + integration, 127 files, 1040 tests)
 npx vitest run
 
 # Playwright (e2e, requires running dev server)

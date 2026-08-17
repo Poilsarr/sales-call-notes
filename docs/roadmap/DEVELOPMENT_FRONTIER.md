@@ -35,7 +35,7 @@ The principle: **never advance a level with a known break, mock-leak, or uncommi
 
 ---
 
-## Recently Shipped (PRs #42–#80)
+## Recently Shipped (Session Log — main)
 
 > Session log. Updated as PRs merge. Honest: only lists PRs verified
 > merged on `main` with green CI. Run `git log --oneline -25 main` to
@@ -43,6 +43,9 @@ The principle: **never advance a level with a known break, mock-leak, or uncommi
 
 | PR  | Date       | Title                                                              | What it closed                          |
 | --- | ---------- | ------------------------------------------------------------------ | --------------------------------------- |
+| —   | 2026-08-16 | fix(transcription): 25MB size guard, no doomed 413 fallback, log provider errors, real filename | Root cause: both provider keys appeared invalid (false 401 — env-pull parsing artifact), real issue = oversized uploads: Groq 413 swallowed by silent fallback, then OpenAI connection-reset mid-upload → confusing ECONNRESET. Service now guards >25MB with actionable error, rethrows size-class (413) errors instead of a doomed cross-provider retry, logs failed provider attempts, threads the real filename to toFile. New transcription-v2.test.ts (5 tests). Plan docs/roadmap/execution/plans/TRANSCRIBE-ECONNRESET-FIX-PLAN.md, commit 83332e4, 1029 tests |
+| —   | 2026-08-16 | feat(transcription): chunk long audio — ffmpeg-static on Vercel, 20MB WAV chunks w/ 10s overlap, merged results | 30-60min calls exceed the 25MB provider cap and no ffmpeg existed on Vercel. Added ffmpeg-static (preprocess now runs on lambdas: any format → 16kHz mono WAV), pure split/merge module wav-split.ts (PCM-aware, sample-aligned, overlap dedupe), TranscriptionServiceV2 auto-chunks WAV >25MB into ≤20MB chunks and merges with offsets. 11 new tests. Plan docs/roadmap/execution/plans/TRANSCRIBE-CHUNKING-PLAN.md, commit c8606cf, 1040 tests |
+| —   | 2026-08-16 | perf(record): record calls at 32kbps opus — ~4x smaller uploads | MediaRecorder audioBitsPerSecond 32000 (was Chrome-default 128kbps): 30-min call ≈7MB vs 28MB → faster uploads, most calls skip chunking, free tier (30MB cap) covers ~2h. Commit 107f1cc |
 | #42 | 2026-06-19 | ui rewrite: landing, $9 price, kill ghost + lies                   | Ghost route + fake "500+ SDR teams" lie |
 | #43 | 2026-06-19 | /demo money page                                                   | Marketing proof + 5 sample calls        |
 | #44 | 2026-06-19 | level-1 GDPR close                                                 | Download route + token + settings UI    |
@@ -98,7 +101,7 @@ The principle: **never advance a level with a known break, mock-leak, or uncommi
 
 **Tracked items (next arcs, from S6 orchestrator ruling):**
 - **Skip link (SEV-3, WCAG 2.4.1)** — *RESOLVED* in the S6 security-extension arc: anchor first in body (commit 8ee8973) + `<Nav />` moved out of `<main id="main">` on all 19 co-rendering pages (commit 4d2689b); smoke-verified nav renders before main.
-- **Skip-link no-op pages (P2, orchestrator)** — `/pricing`, `/changelog`, `/roadmap`, `/no-bot`, `/features` render `<Nav />` but have no `<main>` element, so the global skip link is a silent no-op there. Follow-up: give each a `<main id="main">` wrapper or omit Nav.
+- **Skip-link no-op pages (P2)** — *RESOLVED* in the POLISH arc (2026-08-08): all 5 pages (/pricing /features /changelog /roadmap /no-bot) now have `<main id="main">` with Nav outside it (commit 0c1380f).
 - **CTA orange token site-wide** — in-component #C94F17 stays; global brand token change (white-on-#F26522 fails AA) needs design sign-off + own arc.
 - **Next.js 14.2.3 → 15** — *SHIPPED* 2026-08-09 (NEXT15 arc) — the soft-404 (notFound-with-streamed-metadata = 200) now: Next 15.2+ documented streaming behavior; noindex keeps it out of search. True 404 would require a proxy/middleware resource check (backlog).
 - **Meta-in-body (P1, from LIGHTHOUSE-CI arc, 2026-08-14)** — *FIXED* 2026-08-15 (CLERK-STATIC arc). Root cause was `@clerk/nextjs@5.7.6` server `ClerkProvider` calling `headers()` unconditionally (`dist/esm/app-router/server/ClerkProvider.js:11`) → every route dynamic → root loading.tsx fallback-first streaming → metadata injected into the streamed body. Fix: bump to `@clerk/nextjs@^6.39.6` (dist-tag `latest-v5`; both v6.39.6 and v7.7.6 gate every `headers()` call behind an opt-in `dynamic` prop, default off → static-by-default). Only breaking change for this repo: `auth()` became async — single sync call site at `src/middleware.ts:52` now `await auth()`; new text-level regression pin `src/test/middleware-auth-async.test.ts` (32 mocked test files can't catch a forgotten await). Verified: 993 tests pass, tsc clean, lint 0, build shows the 5 audited URLs `○` Static, `/pricing` stays `ƒ`, curl meta head=1 body=0 on all five, Playwright confirms fallback resolves + real content renders + meta in head, gated redirects 307/401 unchanged. Note: `<!--$?-->`/`S:0`/`$RC` markers on 4/5 URLs are standard Next 15 output for client-component page trees (pre-existing — `/pricing` dynamic shows the same; `/blog`/`/api-docs` with same v6 provider have none). Plan `CLERK-STATIC-PLAN.md`, commit 22290d3. Follow-up shipped same day: #140 promotes Lighthouse CI SEO warn→error at 0.95 (`max(0.9, proof−0.05)`).
@@ -129,7 +132,7 @@ The principle: **never advance a level with a known break, mock-leak, or uncommi
 > forgotten.
 
 - **OpenAI quota $$** → unblocks end-to-end real AI transcripts (level 0)
-- **Deepgram API key** → activates REAL diarization (`DIARIZATION_PROVIDER=deepgram`); without it the fail-soft fallback runs (level 2)
+- ~~Deepgram API key~~ — *DONE*: diarization LIVE 2026-08-17 (DIARIZATION_PROVIDER=deepgram set; DEEPGRAM_API_KEY in prod)
 - **Zoom / Meet / Teams dev accounts** → unblocks meeting bot (level 3)
 - **HubSpot / Salesforce sandbox** → unblocks live OAuth test (level 3)
 - **Clerk Enterprise subscription** → unblocks SSO (5.2)
@@ -144,7 +147,7 @@ The principle: **never advance a level with a known break, mock-leak, or uncommi
 |---|---|---|
 | ~~Lighthouse CI workflow (currently runs as soft-warn only)~~ — *SHIPPED* 2026-08-14: hard gate live on PRs (commit 91e44c2); seo stays warn pending the meta-in-body P1 | — | — |
 | `/features` deep server-component refactor | HIGH | Diminishing returns — not on k6 hot path |
-| Update per-level `LEVEL_*.md` task checklists to reflect shipped work | LOW | Hygiene |
+| Update per-level `LEVEL_*.md` task checklists to reflect shipped work | LOW | Hygiene (partially — LEVEL_3/5 refreshed 08-17) |
 | Playwright signed-in visual verification of /integrations, /team, /app | MED | Replaces manual screenshot-based audit |
 | Audit gated pages for any UI inconsistencies surfaced in 2026-06-22 screenshots | LOW | Closes last visual feedback loop |
 

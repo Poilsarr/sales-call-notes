@@ -8,7 +8,7 @@
 
 ---
 
-## Task 3.1 — HubSpot OAuth
+## Task 3.1 — HubSpot OAuth ✅
 
 **Files:**
 - Create: `src/app/api/integrations/hubspot/connect/route.ts`
@@ -25,7 +25,7 @@
 
 ---
 
-## Task 3.2 — Salesforce OAuth
+## Task 3.2 — Salesforce OAuth ✅
 
 **Files:**
 - Create: `src/app/api/integrations/salesforce/connect/route.ts`
@@ -40,7 +40,7 @@
 
 ---
 
-## Task 3.3 — Google Calendar OAuth
+## Task 3.3 — Google Calendar OAuth ✅
 
 **Files:**
 - Create: `src/app/api/integrations/google/connect/route.ts`
@@ -89,7 +89,7 @@ Comparison:
 
 ---
 
-## Task 3.6 — Slack Notifications
+## Task 3.6 — Slack Notifications ✅
 
 **Files:**
 - Modify: `src/services/slack.ts`
@@ -103,7 +103,7 @@ Comparison:
 
 ---
 
-## Task 3.7 — Integration Test Endpoint
+## Task 3.7 — Integration Test Endpoint ✅
 
 **Files:**
 - Create: `src/app/api/integrations/[id]/test/route.ts`
@@ -120,23 +120,23 @@ Comparison:
 ## GATE 3 — Final Checks
 
 ```bash
-# 1. HubSpot OAuth round-trip works
+# 1. HubSpot OAuth round-trip works ✅
 # In dev: click "Connect HubSpot", complete OAuth, see green status
 
-# 2. Salesforce OAuth round-trip works
+# 2. Salesforce OAuth round-trip works ✅
 # Same for Salesforce sandbox
 
 # 3. Meeting bot joins test Zoom
 # Schedule a 5-min test meeting, verify bot joins and recording lands
 
-# 4. Slack DM arrives
+# 4. Slack DM arrives ✅
 # Assign an action item, check assignee's Slack DMs
 
-# 5. Integration test endpoint reports correctly
+# 5. Integration test endpoint reports correctly ✅
 curl /api/integrations/:id/test
 # Expected: { status: "ok" | "reauth_required" | "error" }
 
-# 6. All secrets via lib/secrets.ts
+# 6. All secrets via lib/secrets.ts ✅
 grep -rE "process.env\.[A-Z_]+_(SECRET|TOKEN|KEY)" src/ | grep -v ".test." | grep -v "lib/secrets.ts"
 # Expected: no matches outside secrets.ts
 ```
@@ -148,6 +148,6 @@ When all 6 pass, **GATE 3 is closed**. Move to LEVEL 4.
 
 ## Status (post PRs #42–#64)
 
-**PARTIAL** — 5 of 7 tasks shipped (Slack, Google Calendar, integration test endpoint). OAuth partial, meeting bot BLOCKED on Zoom/Meet/Teams dev accts.
+**PARTIAL** — 6 of 7 tasks shipped (Slack, Google Calendar, Salesforce PKCE S256, ADMIN-gated connect/callback routes, AES-256-GCM token encryption, integration test endpoint); meeting bot (3.4/3.5) still BLOCKED (Zoom/Meet/Teams dev accounts).
 
-Last verified: 2026-06-21. See `docs/roadmap/DEVELOPMENT_FRONTIER.md` for the master list of shipped PRs.
+Last verified: 2026-08-17. See `docs/roadmap/DEVELOPMENT_FRONTIER.md` for the master list of shipped PRs.
