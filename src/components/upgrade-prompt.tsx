@@ -5,7 +5,17 @@ import Link from "next/link";
 import { useUser } from "@clerk/nextjs";
 import { initializePaddle } from "@paddle/paddle-js";
 import { Zap, Crown, Sparkles, X, Loader2, CheckCircle } from "lucide-react";
-import { FeatureId, PLANS, PlanTier } from "@/lib/plans";
+import type { FeatureId, PlanTier } from "@/lib/plans";
+import {
+  priceIdForCycle,
+  tierForFeature,
+  tierHasFeature,
+  planCoversFeature,
+  UPGRADE_PLAN_META,
+  type BillingCycle,
+  type UpgradePlanTier,
+  type UpgradePriceIds,
+} from "@/lib/pricing-tiers";
 
 interface UpgradePromptProps {
   feature: FeatureId;
@@ -14,9 +24,19 @@ interface UpgradePromptProps {
   minimal?: boolean;
   /** ponytail: SSR-resolved plan from server component, avoids the ~100ms flash where the banner shows before the client-side /api/billing fetch lands. Used by parent to pass user.plan straight from DB. */
   serverPlan?: PlanTier;
+  /**
+   * Real Paddle price IDs resolved server-side. This client component must
+   * NEVER read process.env.PADDLE_* (undefined in the browser bundle) or
+   * import lib/plans.ts (its requirePriceId() falls back to placeholder IDs
+   * like `pri_pro_monthly` that don't exist in Paddle). Server-component
+   * consumers inject the real IDs here; when absent, the component resolves
+   * them from the server (GET /api/billing/debug → mappedPriceIds) at
+   * checkout time so a placeholder ID can never reach Paddle.
+   */
+  priceIds?: UpgradePriceIds;
 }
 
-export default function UpgradePrompt({ feature, featureName, onClose, minimal, serverPlan }: UpgradePromptProps) {
+export default function UpgradePrompt({ feature, featureName, onClose, minimal, serverPlan, priceIds }: UpgradePromptProps) {
   const { user } = useUser();
   // ponytail: prefer serverPlan (no flash) over the client-fetched plan when available.
   const [currentPlan, setCurrentPlan] = useState<PlanTier>(serverPlan ?? "free");
@@ -25,6 +45,7 @@ export default function UpgradePrompt({ feature, featureName, onClose, minimal, 
   const [paddle, setPaddle] = useState<any>(null);
   const [paddleError, setPaddleError] = useState(false);
   const isProcessing = useRef(false);
+  const serverPriceIds = useRef<UpgradePriceIds | null>(null);
 
   useEffect(() => {
     const clientToken = process.env.NEXT_PUBLIC_PADDLE_CLIENT_KEY || "";
@@ -46,13 +67,58 @@ export default function UpgradePrompt({ feature, featureName, onClose, minimal, 
     }
   }, [user?.id]);
 
-  const openCheckout = useCallback((targetPlan: PlanTier) => {
+  // ponytail: real Paddle price IDs are server-only env vars — undefined in
+  // the browser bundle, and lib/plans.ts falls back to placeholder IDs that
+  // don't exist in Paddle. Resolve the real IDs from the server instead,
+  // preferring a server-injected priceIds prop (for server-component
+  // consumers) and falling back to a lazy, cached fetch of
+  // /api/billing/debug's mappedPriceIds at checkout time.
+  const resolvePriceId = useCallback(
+    async (tier: UpgradePlanTier, cycle: BillingCycle): Promise<string | null> => {
+      if (priceIds) return priceIdForCycle(priceIds, tier, cycle);
+      if (!serverPriceIds.current) {
+        try {
+          const res = await fetch("/api/billing/debug", { cache: "no-store" });
+          if (!res.ok) return null;
+          const data = await res.json();
+          const mapped = data?.mappedPriceIds;
+          if (
+            mapped &&
+            mapped.pro?.length === 2 &&
+            mapped.business?.length === 2
+          ) {
+            serverPriceIds.current = {
+              proMonth: mapped.pro[0],
+              proYear: mapped.pro[1],
+              businessMonth: mapped.business[0],
+              businessYear: mapped.business[1],
+            };
+          } else {
+            return null;
+          }
+        } catch {
+          return null;
+        }
+      }
+      return priceIdForCycle(serverPriceIds.current, tier, cycle);
+    },
+    [priceIds]
+  );
+
+  const openCheckout = useCallback(async (targetPlan: UpgradePlanTier) => {
     if (!paddle || paddleError || !user?.id || isProcessing.current) return;
-    const priceId = PLANS[targetPlan].paddlePriceId;
-    if (!priceId) return;
 
     isProcessing.current = true;
     setUpgrading(targetPlan);
+
+    // Month/year per billing cycle — mirrors pricing-client's priceIdForCycle.
+    const priceId = await resolvePriceId(targetPlan, "monthly");
+    if (!priceId) {
+      isProcessing.current = false;
+      setUpgrading(null);
+      setPaddleError(true);
+      return;
+    }
     
     const redirectToWelcome = () => {
       isProcessing.current = false;
@@ -74,17 +140,12 @@ export default function UpgradePrompt({ feature, featureName, onClose, minimal, 
         setUpgrading(null);
       },
     });
-  }, [paddle, user?.id, feature, paddleError]);
+  }, [paddle, user?.id, feature, paddleError, resolvePriceId]);
 
-  const neededPlan = (() => {
-    for (const [tier, plan] of Object.entries(PLANS)) {
-      if (plan.features[feature] === true) return tier as PlanTier;
-    }
-    return "pro" as PlanTier;
-  })();
+  const neededPlan = tierForFeature(feature);
 
   // ponytail: if the user's current plan already includes this feature, render nothing — the prompt is a "this needs plan X" banner, not a "you're amazing" widget. Skipping the render keeps paid users out of the funnel.
-  if (currentPlan && PLANS[currentPlan]?.features[feature] === true) {
+  if (currentPlan && planCoversFeature(currentPlan, feature)) {
     return null;
   }
 
@@ -125,7 +186,7 @@ export default function UpgradePrompt({ feature, featureName, onClose, minimal, 
             disabled={upgrading !== null}
             className="px-3 py-1 bg-yellow-500 text-black rounded-full text-[10px] font-bold hover:bg-yellow-400 transition disabled:opacity-50"
           >
-            {upgrading ? <Loader2 className="w-3 h-3 animate-spin" /> : `Upgrade - $${PLANS[neededPlan].price / 100}/mo`}
+            {upgrading ? <Loader2 className="w-3 h-3 animate-spin" /> : `Upgrade - $${UPGRADE_PLAN_META[neededPlan].priceCents / 100}/mo`}
           </button>
         )}
       </div>
@@ -150,16 +211,17 @@ export default function UpgradePrompt({ feature, featureName, onClose, minimal, 
         </div>
 
         <div className="space-y-3 mb-8">
-          {(["pro", "business"] as PlanTier[]).map(tier => {
-            const plan = PLANS[tier];
+          {(["pro", "business"] as UpgradePlanTier[]).map(tier => {
+            const plan = UPGRADE_PLAN_META[tier];
+            const hasFeature = tierHasFeature(tier, feature);
             return (
               <div key={tier}
                 className={`p-4 rounded-xl border transition-all cursor-pointer ${
                   tier === neededPlan || currentPlan === "free"
                     ? "border-linear-indigo/30 bg-linear-indigo/5"
                     : "border-white/10 bg-white/5 hover:border-white/20"
-                } ${plan.features[feature] ? "opacity-100" : "opacity-40"}`}
-                onClick={() => plan.features[feature] && openCheckout(tier)}>
+                } ${hasFeature ? "opacity-100" : "opacity-40"}`}
+                onClick={() => hasFeature && openCheckout(tier)}>
                 <div className="flex items-center justify-between mb-2">
                   <div className="flex items-center gap-2">
                     <Crown className={`w-4 h-4 ${tier === "business" ? "text-yellow-400" : "text-linear-indigo"}`} />
@@ -170,10 +232,10 @@ export default function UpgradePrompt({ feature, featureName, onClose, minimal, 
                   </span>
                 </div>
                 <div className="flex items-center gap-2 text-[11px] text-white/40">
-                  {plan.features[feature] ? <CheckCircle className="w-3 h-3 text-green-400" /> : <X className="w-3 h-3 text-red-400/50" />}
-                  <span>{plan.features[feature] ? `Includes ${featureName}` : "Not included"}</span>
+                  {hasFeature ? <CheckCircle className="w-3 h-3 text-green-400" /> : <X className="w-3 h-3 text-red-400/50" />}
+                  <span>{hasFeature ? `Includes ${featureName}` : "Not included"}</span>
                 </div>
-                {plan.features[feature] && (
+                {hasFeature && (
                   paddleError ? (
                     <Link
                       href="/pricing"

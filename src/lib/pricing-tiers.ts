@@ -109,3 +109,123 @@ export function buildTiers(priceIds: {
     return { ...def, priceId: { month: "", year: "" } };
   });
 }
+
+// ---------------------------------------------------------------------------
+// Upgrade prompt helpers (env-free; safe for client bundles).
+//
+// The in-app upgrade modal (src/components/upgrade-prompt.tsx) is a client
+// component, so it must never read PADDLE_* env vars (undefined in the
+// browser) or import lib/plans.ts (its requirePriceId() falls back to
+// placeholder IDs like `pri_pro_monthly`). Real price IDs are resolved
+// server-side and injected as the `priceIds` prop. The static plan metadata
+// below mirrors lib/plans.ts's feature maps — keep the two in sync.
+// ---------------------------------------------------------------------------
+
+/** Paid tiers the upgrade modal can sell. */
+export type UpgradePlanTier = "pro" | "business";
+
+/** Real Paddle price IDs injected by the server (empty = not configured). */
+export interface UpgradePriceIds {
+  proMonth: string;
+  proYear: string;
+  businessMonth: string;
+  businessYear: string;
+}
+
+/** Billing-cycle selector, mirroring pricing-client's priceIdForCycle. */
+export type BillingCycle = "monthly" | "annual";
+
+export function priceIdForCycle(
+  priceIds: UpgradePriceIds,
+  tier: UpgradePlanTier,
+  cycle: BillingCycle
+): string {
+  if (tier === "business") {
+    return cycle === "annual" ? priceIds.businessYear : priceIds.businessMonth;
+  }
+  return cycle === "annual" ? priceIds.proYear : priceIds.proMonth;
+}
+
+/** Display metadata for the upgrade modal's paid-tier cards. */
+export const UPGRADE_PLAN_META: Record<
+  UpgradePlanTier,
+  { name: string; priceLabel: string; priceCents: number }
+> = {
+  pro: { name: "Pro", priceLabel: "$9", priceCents: 900 },
+  business: { name: "Business", priceLabel: "$29", priceCents: 2900 },
+};
+
+/** Features Pro includes (from lib/plans.ts pro.features === true). */
+const PRO_FEATURES: ReadonlySet<FeatureId> = new Set<FeatureId>([
+  "upload_audio",
+  "ai_summary",
+  "action_items",
+  "speaker_diarization",
+  "export_json",
+  "analytics_dashboard",
+  "competitive_intelligence",
+  "competitive_alerts",
+  "browser_recording",
+  "live_transcription",
+  "crm_sync",
+  "crm_sync_hubspot",
+  "crm_sync_salesforce",
+  "crm_sync_teams",
+  "slack_integration",
+  "ai_chat",
+  "team_workspace",
+  "team_members_5",
+  "api_access",
+  "priority_support",
+  "byok",
+]);
+
+/** Features only Business includes (from lib/plans.ts business.features). */
+const BUSINESS_ONLY_FEATURES: ReadonlySet<FeatureId> = new Set<FeatureId>([
+  "analytics_deep",
+  "team_members_unlimited",
+  "webhooks",
+  "zapier",
+  "multi_language",
+  "unlimited_uploads",
+  "unlimited_minutes",
+  "video_recording",
+]);
+
+/** Features the Free tier includes (from lib/plans.ts free.features). */
+const FREE_FEATURES: ReadonlySet<FeatureId> = new Set<FeatureId>([
+  "upload_audio",
+  "ai_summary",
+  "action_items",
+  "speaker_diarization",
+  "export_json",
+  "analytics_dashboard",
+]);
+
+/** Minimum paid tier whose feature set includes the feature. */
+export function tierForFeature(feature: FeatureId): UpgradePlanTier {
+  if (!PRO_FEATURES.has(feature) && BUSINESS_ONLY_FEATURES.has(feature)) {
+    return "business";
+  }
+  return "pro";
+}
+
+/** Whether a paid tier's feature set includes the feature. */
+export function tierHasFeature(tier: UpgradePlanTier, feature: FeatureId): boolean {
+  if (tier === "business") {
+    return PRO_FEATURES.has(feature) || BUSINESS_ONLY_FEATURES.has(feature);
+  }
+  return PRO_FEATURES.has(feature);
+}
+
+/** Whether a user's plan (DB string like "FREE"/"PRO"/"business") covers the feature. */
+export function planCoversFeature(plan: string, feature: FeatureId): boolean {
+  const normalized = plan.toLowerCase();
+  if (normalized === "free") return FREE_FEATURES.has(feature);
+  if (normalized === "pro") return PRO_FEATURES.has(feature);
+  if (normalized === "business") {
+    return PRO_FEATURES.has(feature) || BUSINESS_ONLY_FEATURES.has(feature);
+  }
+  if (normalized === "enterprise") return true;
+  return false;
+}
