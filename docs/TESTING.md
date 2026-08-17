@@ -2,15 +2,17 @@
 
 ## Current State
 
-No automated tests exist yet. This document outlines the testing strategy.
+The repository has an automated Vitest suite covering services, API routes,
+components, integrations, and security helpers. Run `npm test` for the full
+suite; run `npx playwright test` for the local browser smoke suite. Authenticated
+browser tests are skipped unless Clerk E2E credentials are provided.
 
 ## Recommended Test Setup
 
 ### Unit Tests
 
 ```bash
-# Install testing library
-npm install -D @testing-library/react @testing-library/jest-dom jest-environment-jsdom
+npm test
 ```
 
 ### Test Structure

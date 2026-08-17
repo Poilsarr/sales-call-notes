@@ -31,7 +31,7 @@ const features = [
   { icon: BarChart3, title: "Call Analytics", desc: "Track health scores, sentiment, talk ratios, budget signals, and decision-maker presence.", color: "#dc2626", size: "lg", direction: "c" as const },
   { icon: Users, title: "Speaker Diarization", desc: "Automatic speaker labeling so you know exactly who said what during the conversation.", color: "#0891b2", size: "sm", direction: "c" as const },
   { icon: Search, title: "Searchable History", desc: "Full call archive with search and filter by date, customer, or keywords.", color: "#4f46e5", size: "sm", direction: "a" as const },
-  { icon: Shield, title: "Local Processing", desc: "AI runs locally by default. Your call data never leaves your machine.", color: "#059669", size: "md", direction: "a" as const },
+  { icon: Shield, title: "Privacy controls", desc: "Your calls are processed by disclosed cloud providers, never used to train our models, and covered by export and deletion controls.", color: "#059669", size: "md", direction: "a" as const },
   { icon: Globe, title: "Multi-Language", desc: "Transcribe and analyze calls in English, Spanish, French, German, and more.", color: "#ea580c", size: "sm", direction: "b" as const },
   { icon: Download, title: "JSON Export", desc: "Export structured data for API integrations and custom workflows.", color: "#9333ea", size: "sm", direction: "c" as const },
   { icon: Layers, title: "Team Dashboard", desc: "Manager view of all team calls with aggregated analytics and performance metrics.", color: "#0891b2", size: "md", direction: "c" as const },
@@ -717,7 +717,7 @@ export default function FeaturesPageClient() {
             <span className="text-gray-200">|</span>
             <span className="flex items-center gap-1.5">
               <Lock size={14} className="text-[#2563eb]" />
-              <span>SOC 2 compliant</span>
+              <span>SOC 2 roadmap</span>
             </span>
             <span className="text-gray-200">|</span>
             <span className="flex items-center gap-1.5">

@@ -18,6 +18,7 @@ const {
   mockSelectModel,
   mockEnforceRetention,
   mockTrack,
+  mockWebhookTrigger,
   mockDiarize,
   mockPrismaCallInsightUpsert,
   mockPrismaKnowledgeEntityUpsert,
@@ -39,6 +40,7 @@ const {
   mockSelectModel: vi.fn(),
   mockEnforceRetention: vi.fn(),
   mockTrack: vi.fn(),
+  mockWebhookTrigger: vi.fn(),
   mockDiarize: vi.fn(),
   mockPrismaCallInsightUpsert: vi.fn(),
   mockPrismaKnowledgeEntityUpsert: vi.fn(),
@@ -152,7 +154,11 @@ vi.mock("@/services/call-retention", () => ({
 }));
 
 vi.mock("@/services/slack", () => ({ SlackService: class {} }));
-vi.mock("@/services/webhooks", () => ({ WebhookService: class {} }));
+vi.mock("@/services/webhooks", () => ({
+  WebhookService: class {
+    trigger = mockWebhookTrigger;
+  },
+}));
 vi.mock("@/services/email", () => ({ sendTranscriptReadyEmail: vi.fn() }));
 vi.mock("@/services/crm/hubspot", () => ({ HubSpotService: class {} }));
 vi.mock("@/services/crm/salesforce", () => ({ SalesforceService: class {} }));

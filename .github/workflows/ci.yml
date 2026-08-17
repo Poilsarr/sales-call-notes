@@ -93,6 +93,8 @@ jobs:
       - run: npx prisma generate
       - run: npm run build
         env:
+          REDIS_HOST: disabled
+          REDIS_PORT: 0
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY || 'sk-dummy' }}
           GROQ_API_KEY: ${{ secrets.GROQ_API_KEY || 'gsk_dummy' }}
           NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: ${{ secrets.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY || 'pk_test_dummy' }}

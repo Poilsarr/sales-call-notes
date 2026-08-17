@@ -9,13 +9,30 @@ const connection = {
   maxRetriesPerRequest: null,
 };
 
-export const transcriptionQueue = new Queue("transcription", { connection });
-export const analysisQueue = new Queue("analysis", { connection });
-export const analysisScoreQueue = new Queue("analysis-score", { connection });
-export const analysisEnrichQueue = new Queue("analysis-enrich", { connection });
-export const crmSyncQueue = new Queue("crm-sync", { connection });
-export const exportQueue = new Queue("data-export", { connection });
-export const deleteQueue = new Queue("user-delete", { connection });
+const redisDisabled =
+  getSecret("REDIS_HOST")?.toLowerCase() === "disabled" ||
+  getSecret("REDIS_PORT") === "0";
+
+// Build and local smoke-test paths intentionally run without Redis. Creating
+// BullMQ clients at module load would otherwise emit connection errors for
+// every imported API route, even though no queue operation is being used.
+const disabledQueue = {
+  add: async () => {
+    throw new Error("Redis is disabled; queue operations are unavailable");
+  },
+} as unknown as Queue;
+
+function makeQueue(name: string): Queue {
+  return redisDisabled ? disabledQueue : new Queue(name, { connection });
+}
+
+export const transcriptionQueue = makeQueue("transcription");
+export const analysisQueue = makeQueue("analysis");
+export const analysisScoreQueue = makeQueue("analysis-score");
+export const analysisEnrichQueue = makeQueue("analysis-enrich");
+export const crmSyncQueue = makeQueue("crm-sync");
+export const exportQueue = makeQueue("data-export");
+export const deleteQueue = makeQueue("user-delete");
 
 export async function enqueueTranscription(filePath: string, userId: string) {
   return transcriptionQueue.add("transcribe", { filePath, userId }, {

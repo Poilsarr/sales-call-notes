@@ -24,7 +24,7 @@ const COLUMNS = [
     links: [
       { href: "/features#core-platform", label: "Sales call transcription" },
       { href: "/features#analytics-intelligence", label: "Competitive intelligence" },
-      { href: "/features#enterprise-security", label: "Local processing" },
+      { href: "/features#enterprise-security", label: "Privacy controls" },
       { href: "/integrations", label: "HubSpot + Salesforce sync" },
     ],
   },

@@ -20,7 +20,7 @@ const capabilities = [
   { icon: Upload, title: "Upload or record", desc: "Drop an MP3, record in browser, or pipe from our Chrome extension. Whisper handles the rest." },
   { icon: Crosshair, title: "Track competitors", desc: "Every call is scanned for competitor names. You get a Slack ping the second Gong, Otter, or Chorus shows up in a deal." },
   { icon: BarChart3, title: "CRM-ready notes", desc: "Summary, action items, MEDDIC fields, next steps — formatted for HubSpot and Salesforce. One click to push." },
-  { icon: Shield, title: "Local-first privacy", desc: "Audio never trains a third-party model. Your calls, your data, your IP. SOC2-ready by Q3." },
+  { icon: Shield, title: "Transparent privacy", desc: "Your calls are processed by disclosed cloud providers, never used to train our models, and covered by export and deletion controls." },
 ];
 
 export default function Home() {
