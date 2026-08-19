@@ -5,6 +5,7 @@ import { getUserByClerkId } from "@/lib/get-user";
 import { generateApiKey } from "@/lib/api-key";
 import { logAuditAction } from "@/lib/audit-logger";
 import { getPlan, hasFeature } from "@/lib/plans";
+import { checkRateLimit } from "@/lib/rate-limit";
 
 /**
  * GET  /api/v1/keys        — list current user's API keys (no raw secrets)
@@ -40,6 +41,13 @@ export async function POST(req: Request) {
   try {
     const { userId } = await auth();
     if (!userId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
+    // Per-user key-creation cap (5/hr) — otherwise rotation evades the
+    // per-key buckets by minting fresh keys. Fail-open on Redis outage.
+    const { success } = await checkRateLimit(`v1keys:${userId}`, "v1keys");
+    if (!success) {
+      return NextResponse.json({ error: "Rate limit exceeded" }, { status: 429 });
+    }
 
     let body: any = {};
     try {

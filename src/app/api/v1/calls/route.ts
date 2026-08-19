@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { resolveApiKey } from "@/lib/resolve-api-key";
 import { scopeAllowsMethod } from "@/lib/api-key";
+import { checkRateLimit } from "@/lib/rate-limit";
 import prisma from "@/lib/prisma";
 
 /**
@@ -52,6 +53,12 @@ export async function GET(req: Request) {
     userId = session.userId;
     if (!userId) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+    // Per-user bucket for the session path (60/min) — the API-key path
+    // already enforces its own per-key limit upstream. Fail-open on outage.
+    const { success } = await checkRateLimit(`v1session:${userId}`, "v1session");
+    if (!success) {
+      return NextResponse.json({ error: "Rate limit exceeded" }, { status: 429 });
     }
   }
 

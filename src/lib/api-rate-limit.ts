@@ -46,7 +46,10 @@ export async function checkApiKeyRateLimit(opts: {
   const windowMs = 60_000;
 
   try {
-    const { success, remaining, reset } = await checkRateLimit(redisKey, "api");
+    // Pass the per-scope type ("read" 60/min, "read_write" 600/min) so the
+    // underlying LIMITS buckets in src/lib/rate-limit.ts are honored instead
+    // of the flat "api" bucket. Same fail-open + resetAt semantics.
+    const { success, remaining, reset } = await checkRateLimit(redisKey, opts.scope);
     // `reset` from Upstash is a unix-seconds timestamp.
     const resetAt =
       typeof reset === "number" && reset > 0 ? reset * 1000 : Date.now() + windowMs;

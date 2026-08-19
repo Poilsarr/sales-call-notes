@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@clerk/nextjs/server";
 
+import { checkRateLimit } from "@/lib/rate-limit";
 import {
   publishLiveTranscriptionEvent,
   subscribeToLiveTranscriptionSession,
@@ -59,6 +60,15 @@ export async function POST(req: NextRequest) {
     const { userId } = await auth();
     if (!userId) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    // Middleware skips this route (SSE publish sink fires per speech event),
+    // so enforce a per-user bucket here: 120 POSTs/min. Fail-open on Redis
+    // outage (checkRateLimit returns success), so live transcription never
+    // hard-blocks the call.
+    const { success } = await checkRateLimit(`live:${userId}`, "live");
+    if (!success) {
+      return NextResponse.json({ error: "Rate limit exceeded" }, { status: 429 });
     }
 
     const { text, sessionId, isFinal } = await req.json();

@@ -17,7 +17,9 @@ export async function rateLimitMiddleware(req: NextRequest) {
   }
 
   // Next 15 removed the NextRequest.ip getter — read the proxied headers instead.
-  const ip = req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || req.headers.get("x-real-ip") || "anonymous";
+  // Key on the LAST x-forwarded-for entry: Vercel appends the real client IP
+  // at the end, while the first hop is client-controlled and spoofable.
+  const ip = req.headers.get("x-forwarded-for")?.split(",").at(-1)?.trim() || req.headers.get("x-real-ip") || "anonymous";
 
   // ponytail: /api/transcribe/live is the SSE publish sink for the live
   // transcription feature. The browser fires a POST on every speech

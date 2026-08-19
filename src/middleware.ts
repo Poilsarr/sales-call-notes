@@ -11,9 +11,7 @@ const isPublicApi = createRouteMatcher([
   "/api/cron/(.*)",
   "/api/health",
   "/api/pricing-preview",
-  "/api/v1/competitive-intelligence",
   "/api/v1/calls",
-  "/api/v1/transcribe",
 ]);
 const isProtectedRoute = createRouteMatcher(["/api/(.*)", "/dashboard(.*)", "/app(.*)", "/team(.*)", "/integrations(.*)", "/settings(.*)", "/billing(.*)", "/live(.*)"]);
 

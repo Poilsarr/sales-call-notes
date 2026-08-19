@@ -89,7 +89,7 @@ describe("checkApiKeyRateLimit", () => {
     expect([before, after]).toContain(minute);
   });
 
-  it("uses 'api' rate-limit type so the right bucket is hit", async () => {
+  it("passes the per-scope rate-limit type (read) so the 60/min bucket is honored", async () => {
     checkRateLimitMock.mockResolvedValueOnce({
       success: true,
       remaining: 60,
@@ -98,7 +98,20 @@ describe("checkApiKeyRateLimit", () => {
     await checkApiKeyRateLimit({ keyId: "k4", scope: "read" });
     expect(checkRateLimitMock).toHaveBeenCalledWith(
       expect.stringContaining("api:ratelimit:k4:"),
-      "api",
+      "read",
+    );
+  });
+
+  it("passes read_write as the rate-limit type so the 600/min bucket is honored", async () => {
+    checkRateLimitMock.mockResolvedValueOnce({
+      success: true,
+      remaining: 599,
+      reset: 1_700_000_060,
+    });
+    await checkApiKeyRateLimit({ keyId: "k9", scope: "read_write" });
+    expect(checkRateLimitMock).toHaveBeenCalledWith(
+      expect.stringContaining("api:ratelimit:k9:"),
+      "read_write",
     );
   });
 

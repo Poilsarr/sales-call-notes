@@ -93,7 +93,7 @@ export const ENV_GROUPS: readonly EnvGroup[] = [
     name: "Integrations Security",
     description: "At-rest encryption of OAuth tokens",
     vars: [
-      { key: "ENCRYPTION_KEY", level: "optional", description: "32-byte base64 key (openssl rand -base64 32); absent = plaintext tokens" },
+      { key: "ENCRYPTION_KEY", level: "optional", description: "32-byte key: base64 (openssl rand -base64 32) or 64-char hex; absent = plaintext tokens" },
     ],
   },
   {
