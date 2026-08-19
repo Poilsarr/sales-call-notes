@@ -6,6 +6,7 @@ import { getUserByClerkId } from '@/lib/get-user';
 import { logAuditAction } from '@/lib/audit-logger';
 import { validateTitle } from '@/lib/call-title';
 import { cacheDel, makeCacheKey } from '@/lib/cache';
+import { del as blobDel } from '@vercel/blob';
 
 export async function GET(req: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
@@ -187,11 +188,21 @@ export async function DELETE(req: Request, { params }: { params: Promise<{ id: s
 
     const call = await prisma.call.findUnique({
       where: { id },
-      select: { id: true, userId: true, teamId: true, sharedWithTeam: true },
+      select: { id: true, userId: true, teamId: true, sharedWithTeam: true, audioUrl: true },
     });
     if (!call) return NextResponse.json({ error: 'Call not found' }, { status: 404 });
     if (!canManageCall(viewer, call)) {
       return NextResponse.json({ error: 'Access denied' }, { status: 403 });
+    }
+
+    // Purge the audio blob too. Best-effort: a blob outage must never block
+    // the row deletion, so log and continue (same pattern as analyze/route.ts:604).
+    if (call.audioUrl) {
+      try {
+        await blobDel(call.audioUrl);
+      } catch (e: any) {
+        console.warn(`Blob delete failed (non-fatal): ${e?.message}`);
+      }
     }
 
     await prisma.callComment.deleteMany({ where: { callId: id } });

@@ -32,7 +32,6 @@ export const analysisScoreQueue = makeQueue("analysis-score");
 export const analysisEnrichQueue = makeQueue("analysis-enrich");
 export const crmSyncQueue = makeQueue("crm-sync");
 export const exportQueue = makeQueue("data-export");
-export const deleteQueue = makeQueue("user-delete");
 
 export async function enqueueTranscription(filePath: string, userId: string) {
   return transcriptionQueue.add("transcribe", { filePath, userId }, {
@@ -73,11 +72,5 @@ export async function enqueueDataExport(userId: string) {
   return exportQueue.add("export", { userId }, {
     attempts: 2,
     backoff: { type: "fixed", delay: 5000 },
-  });
-}
-
-export async function enqueueUserDelete(userId: string) {
-  return deleteQueue.add("delete", { userId, requestedAt: new Date().toISOString() }, {
-    attempts: 1, // No retries for destructive ops
   });
 }
