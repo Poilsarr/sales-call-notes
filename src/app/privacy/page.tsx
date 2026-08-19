@@ -1,103 +1,173 @@
-
+import Link from "next/link";
 import Nav from "@/components/nav";
 
 export const metadata = {
-  title: "Privacy Notice — Gauge",
-  description: "How Gauge collects, uses, and protects your data.",
+  title: "Data Processing & Privacy — Gauge",
+  description:
+    "How Gauge processes, stores, and protects your call audio and transcripts — cloud providers by name, retention controls, and export.",
 };
 
+/**
+ * Public data-processing page. States exactly how audio and transcripts
+ * are handled: cloud processing by named providers, nothing processed on
+ * the user's device, no certification claims of any kind (see 4e38488).
+ *
+ * Server component — no JS shipped. Footer comes from the root layout.
+ */
 export default function PrivacyPage() {
   return (
     <>
       <Nav />
-    <main id="main" className="min-h-screen bg-white text-gray-900">
+      <main id="main" className="min-h-screen bg-[#0a0a0b] text-white">
+        <section className="pt-20 pb-24 px-5 sm:px-8 lg:px-12">
+          <div className="max-w-3xl mx-auto">
+            <div className="mb-12">
+              <div className="inline-flex items-center gap-2 text-[11px] uppercase tracking-[0.18em] text-[#F26522] mb-4">
+                <span className="w-2 h-2 rounded-full bg-[#F26522]" />
+                Data processing
+              </div>
+              <h1 className="text-[clamp(2rem,5vw,3.5rem)] font-medium leading-[1.08] tracking-[-0.03em] mb-3">
+                Data processing &amp; privacy
+              </h1>
+              <p className="text-white/50 text-[14px] max-w-xl">
+                A plain-language description of how Gauge processes, stores,
+                and protects your call audio and transcripts — including every
+                cloud provider involved, by name.
+              </p>
+            </div>
 
-      <div className="max-w-3xl mx-auto px-5 sm:px-8 lg:px-12 pt-36 pb-20">
-        <h1 className="text-[clamp(1.5rem,3vw,2.5rem)] font-medium tracking-tight mb-2">Privacy Policy</h1>
-        <p className="text-gray-400 text-[13px] mb-10">Last updated: May 2026</p>
+            <div className="space-y-12">
+              <section>
+                <h2 className="text-[clamp(1.4rem,3.5vw,2rem)] font-medium leading-[1.1] tracking-[-0.02em] mb-3">
+                  Where your calls are processed
+                </h2>
+                <p className="text-white/70 text-[14px] leading-relaxed mb-4">
+                  When you record or upload a call, the audio and the derived
+                  transcript are processed in the cloud by the providers below.
+                  Nothing is processed locally on your device — the audio is
+                  sent to our infrastructure for transcription and analysis.
+                </p>
+                <ul className="space-y-2.5 text-white/70 text-[14px] leading-relaxed">
+                  <li>
+                    <span className="text-white font-medium">Groq</span> —
+                    transcription of call audio (whisper-large-v3).
+                  </li>
+                  <li>
+                    <span className="text-white font-medium">OpenAI</span> —
+                    whisper-1 used as the transcription fallback, plus
+                    analysis (summaries, action items, decisions) and
+                    embeddings when those features are enabled.
+                  </li>
+                  <li>
+                    <span className="text-white font-medium">Deepgram</span> —
+                    speaker diarization, so we can label who said what.
+                  </li>
+                  <li>
+                    <span className="text-white font-medium">Vercel Blob</span> —
+                    storage of uploaded audio files.
+                  </li>
+                  <li>
+                    <span className="text-white font-medium">Upstash Redis</span> —
+                    background queues and rate limiting.
+                  </li>
+                  <li>
+                    <span className="text-white font-medium">Neon (Postgres)</span> —
+                    the database that stores your account, call records, and
+                    transcripts.
+                  </li>
+                </ul>
+              </section>
 
-        <div className="space-y-8 text-[14px] text-gray-600 leading-relaxed">
-          <section>
-            <h2 className="text-[15px] font-semibold text-gray-900 mb-3">1. What We Collect</h2>
-            <p>We collect: account information (email, name), uploaded audio files, transcriptions and analysis results, and basic usage analytics (page views, feature usage).</p>
-          </section>
-          <section>
-            <h2 className="text-[15px] font-semibold text-gray-900 mb-3">2. How We Use Data</h2>
-            <p>Audio files are processed to generate transcriptions, summaries, and insights. We do not use your call data to train or improve AI models. Transcripts are stored for your account history.</p>
-          </section>
-          <section>
-            <h2 className="text-[15px] font-semibold text-gray-900 mb-3">3. Data Storage</h2>
-            <p>Data is stored securely on Neon PostgreSQL (US East) and OpenAI for processing. We retain transcripts and analysis for the duration of your account. Audio files are deleted after processing.</p>
-          </section>
-          <section>
-            <h2 className="text-[15px] font-semibold text-gray-900 mb-3">4. Third-Party Services</h2>
-            <p>We use: OpenAI (transcription), Neon (database), Vercel (hosting), Upstash (rate limiting), Paddle (payment processing), Clerk (authentication). Each service has its own privacy policy.</p>
-          </section>
-          <section>
-            <h2 className="text-[15px] font-semibold text-gray-900 mb-3">5. Chrome Extension</h2>
-            <p>
-              Our Chrome extension (Manifest v3, available on the Chrome Web Store as
-              &ldquo;Gauge — Meeting Notes&rdquo;) runs only on
-              <code className="px-1 py-0.5 mx-1 rounded bg-gray-100 text-[12px]">meet.google.com</code>
-              and on our own dashboard page
-              (<code className="px-1 py-0.5 mx-1 rounded bg-gray-100 text-[12px]">usegauge.vercel.app</code>).
-            </p>
-            <p className="mt-3">
-              <strong>What the extension accesses:</strong> on Google Meet pages,
-              it reads meeting captions (the live transcript text) so it can save
-              your call when you end the meeting. It does not record audio, video,
-              or your screen. It does not access any other Google account data,
-              cookies, or files.
-            </p>
-            <p className="mt-3">
-              <strong>What the extension sends to our servers:</strong> the
-              captured caption text, the meeting title, and your auth session
-              (to attribute the call to your account). The data flow is:
-              your Google Meet tab → extension →
-              <code className="px-1 py-0.5 mx-1 rounded bg-gray-100 text-[12px]">https://api.usegauge.com</code>
-              → your dashboard.
-            </p>
-            <p className="mt-3">
-              <strong>Permissions explained:</strong>
-            </p>
-            <ul className="list-disc pl-6 mt-2 space-y-1">
-              <li><code className="px-1 py-0.5 rounded bg-gray-100 text-[12px]">storage</code> — saves your auth session and the in-progress transcript locally so we can recover if the browser crashes.</li>
-              <li><code className="px-1 py-0.5 rounded bg-gray-100 text-[12px]">activeTab</code> — only runs on the Meet tab you currently have open; no background tab access.</li>
-              <li><code className="px-1 py-0.5 rounded bg-gray-100 text-[12px]">alarms</code> — used to retry failed uploads if your connection drops.</li>
-              <li><code className="px-1 py-0.5 rounded bg-gray-100 text-[12px]">identity</code> — Google sign-in for users who link Meet account (optional).</li>
-            </ul>
-            <p className="mt-3">
-              <strong>Data ownership:</strong> Google Meet captions are
-              Google&rsquo;s data and remain governed by the
-              <a href="https://policies.google.com/privacy" target="_blank" rel="noopener noreferrer" className="text-[#F26522] hover:underline ml-1">Google Privacy Policy</a>.
-              The extension stores them only long enough to deliver the
-              transcription to your account; nothing is shared with third
-              parties beyond the services listed in section 4.
-            </p>
-            <p className="mt-3">
-              You can revoke the extension at any time in
-              <code className="px-1 py-0.5 mx-1 rounded bg-gray-100 text-[12px]">chrome://extensions/</code>.
-            </p>
-          </section>
-          <section>
-            <h2 className="text-[15px] font-semibold text-gray-900 mb-3">6. Data Sharing</h2>
-            <p>We do not sell your data. We may share data with third-party services only as necessary to provide the Service (e.g., processing audio with OpenAI). We may disclose data if required by law.</p>
-          </section>
-          <section>
-            <h2 className="text-[15px] font-semibold text-gray-900 mb-3">7. Your Rights</h2>
-            <p>You may export, delete, or request a copy of your data anytime. Contact us at <a href="mailto:privacy@usegauge.com" className="text-[#F26522] hover:underline">privacy@usegauge.com</a>.</p>
-          </section>
-          <section>
-            <h2 className="text-[15px] font-semibold text-gray-900 mb-3">8. Security</h2>
-            <p>We use encryption in transit (TLS) and at rest. Access to production data is restricted. We run regular security audits.</p>
-          </section>
-          <section>
-            <h2 className="text-[15px] font-semibold text-gray-900 mb-3">9. Contact</h2>
-            <p>Privacy concerns: <a href="mailto:privacy@usegauge.com" className="text-[#F26522] hover:underline">privacy@usegauge.com</a></p>
-          </section>
-        </div>
-      </div>
-    </main>
+              <section>
+                <h2 className="text-[clamp(1.4rem,3.5vw,2rem)] font-medium leading-[1.1] tracking-[-0.02em] mb-3">
+                  What we don&apos;t do
+                </h2>
+                <ul className="space-y-2.5 text-white/70 text-[14px] leading-relaxed list-disc list-inside">
+                  <li>
+                    We don&apos;t process calls locally on your device. All audio
+                    and transcripts are processed in the cloud by the
+                    providers listed above.
+                  </li>
+                  <li>
+                    We do not use your call data to train or fine-tune any model.
+                  </li>
+                </ul>
+              </section>
+
+              <section>
+                <h2 className="text-[clamp(1.4rem,3.5vw,2rem)] font-medium leading-[1.1] tracking-[-0.02em] mb-3">
+                  Retention &amp; your controls
+                </h2>
+                <ul className="space-y-2.5 text-white/70 text-[14px] leading-relaxed list-disc list-inside">
+                  <li>
+                    <span className="text-white font-medium">Delete a call</span> —
+                    delete any call from your history at any time. Deleting a
+                    call removes the call record and its stored audio.
+                  </li>
+                  <li>
+                    <span className="text-white font-medium">Delete your account</span> —
+                    permanently delete your account and all associated data
+                    from{" "}
+                    <Link
+                      href="/settings"
+                      className="text-[#F26522] hover:text-[#ff8a4a] underline-offset-4 hover:underline"
+                    >
+                      Settings
+                    </Link>{" "}
+                    at any time.
+                  </li>
+                  <li>
+                    <span className="text-white font-medium">Export your data</span> —
+                    request a full JSON export of your data (GDPR) from{" "}
+                    <Link
+                      href="/settings"
+                      className="text-[#F26522] hover:text-[#ff8a4a] underline-offset-4 hover:underline"
+                    >
+                      Settings → Data &amp; privacy → Request export
+                    </Link>
+                    . A time-limited download link is emailed to you, and the
+                    export is rebuilt on demand when you open it.
+                  </li>
+                </ul>
+              </section>
+
+              <section>
+                <h2 className="text-[clamp(1.4rem,3.5vw,2rem)] font-medium leading-[1.1] tracking-[-0.02em] mb-3">
+                  Security
+                </h2>
+                <ul className="space-y-2.5 text-white/70 text-[14px] leading-relaxed list-disc list-inside">
+                  <li>
+                    Audio files are stored in private cloud storage, not on
+                    any public URL. Playback goes through an authenticated
+                    proxy that checks access before serving a file.
+                  </li>
+                  <li>
+                    API and upload endpoints are rate limited to protect your
+                    account and our infrastructure.
+                  </li>
+                  <li>
+                    Integration credentials (for example HubSpot or Salesforce
+                    tokens) are encrypted at rest with AES-256-GCM envelope
+                    encryption before they are stored.
+                  </li>
+                </ul>
+              </section>
+
+              <div className="pt-8 border-t border-white/10 text-center">
+                <p className="text-[12px] text-white/40 mb-2">
+                  Questions about how we process your data?
+                </p>
+                <Link
+                  href="mailto:support@usegauge.com"
+                  className="text-[13px] text-[#F26522] hover:text-[#ff8a4a] underline-offset-4 hover:underline"
+                >
+                  support@usegauge.com
+                </Link>
+              </div>
+            </div>
+          </div>
+        </section>
+      </main>
     </>
   );
 }
