@@ -31,6 +31,9 @@ function isOurStoreHostname(hostname: string): boolean {
     if (
       hostname === `${id}.blob.vercel-storage.com` ||
       hostname === `${id}.private.blob.vercel-storage.com` ||
+      // `.public` acceptance is LEGACY compat only: blobs written before
+      // 2026-08-19 (the public `blobPut` in analyze/route.ts) must keep
+      // playing for existing calls. All new writes are private.
       hostname === `${id}.public.blob.vercel-storage.com`
     ) {
       return true;

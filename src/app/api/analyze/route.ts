@@ -44,7 +44,46 @@ function normalizeLanguage(rawLanguage: FormDataEntryValue | null) {
   return value;
 }
 
+// Per-tier file size limits (MB) — mirror of the presigned path's table at
+// src/app/api/upload-url/route.ts:9-14 (free 30 / pro 200 / business 500 /
+// enterprise 500). The legacy multipart branch enforces it server-side on the
+// real byte count; the presigned path caps on the client-claimed fileSize.
+const MAX_FILE_SIZE_MB: Record<string, number> = {
+  free: 30,
+  pro: 200,
+  business: 500,
+  enterprise: 500,
+};
+
+/**
+ * Best-effort deletion of a blob this request wrote, used on failure paths
+ * AFTER the multipart blob write: a failed request must not leave an
+ * orphaned blob behind. Plan-agnostic — the free-plan retention block below
+ * only runs on success. Non-fatal by design (blob outage must never mask
+ * the real error).
+ */
+async function deleteUploadedBlob(audioUrl: string | null): Promise<void> {
+  if (!audioUrl) return;
+  try {
+    await blobDel(audioUrl);
+    console.log(`Blob deleted after failed analysis: ${audioUrl}`);
+  } catch (e: any) {
+    console.warn(`Blob cleanup after failure failed (non-fatal): ${e?.message}`);
+  }
+}
+
 export async function POST(req: Request) {
+  // Function-scoped so the outer catch (below) can decide failure-path blob
+  // cleanup. uploadedOwnBlob is true only when THIS request wrote the blob
+  // (legacy multipart branch) — the JSON branch analyzes a blob the client
+  // uploaded via /api/upload-url, and deleting it on failure would break
+  // retries of a transient AI error. persistedCallId is set once
+  // prisma.call.create succeeds, distinguishing an orphaned blob (nothing
+  // persisted) from one owned by a call row.
+  let audioUrl: string | null = null;
+  let uploadedOwnBlob = false;
+  let persistedCallId: string | null = null;
+
   try {
     const { userId: clerkUserId } = await auth();
     if (!clerkUserId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
@@ -60,8 +99,11 @@ export async function POST(req: Request) {
     let requestedLanguage: string | undefined;
     let removeFillers: boolean;
     let requestedTemplate: string | null;
-    let audioUrl: string | null = null;
     let isBlobUpload = false;
+
+    // Resolved once, before the branches: the multipart branch needs the
+    // plan tier to enforce the server-side size cap BEFORE writing the blob.
+    const user = await getUserByClerkId(clerkUserId);
 
     if (isJson) {
       const body = await req.json();
@@ -93,6 +135,12 @@ export async function POST(req: Request) {
       requestedTemplate = (body.template as string) || null;
       audioUrl = blobUrl;
       isBlobUpload = true;
+
+      const validator = new FileValidationService();
+      const validation = await validator.validate(fileBuffer, fileName);
+      if (!validation.isValid) {
+        return NextResponse.json({ error: validation.error }, { status: 400 });
+      }
     } else {
       const formData = await req.formData();
       const file = formData.get('file') as File;
@@ -104,23 +152,41 @@ export async function POST(req: Request) {
       removeFillers = parseRemoveFillers(formData.get('removeFillers'));
       requestedTemplate = formData.get('template') as string | null;
 
-      // Legacy upload to Vercel Blob (non-fatal if it fails)
+      // Validate BEFORE the blob write (audit blocker 1): the legacy branch
+      // used to store first and validate later, so junk/oversized files were
+      // written (previously public) to blob storage and orphaned when
+      // validation or transcription failed.
+      const validator = new FileValidationService();
+      const validation = await validator.validate(fileBuffer, fileName);
+      if (!validation.isValid) {
+        return NextResponse.json({ error: validation.error }, { status: 400 });
+      }
+
+      // Server-side plan size cap (see MAX_FILE_SIZE_MB above), enforced on
+      // the real byte count before any storage.
+      const planTier = (user.plan?.toLowerCase() as string) || "free";
+      const maxFileSizeMB = MAX_FILE_SIZE_MB[planTier] || 500;
+      if (fileBuffer.length > maxFileSizeMB * 1024 * 1024) {
+        return NextResponse.json(
+          { error: `File too large. Your plan upload limit is ${maxFileSizeMB}MB.` },
+          { status: 413 },
+        );
+      }
+
+      // Legacy upload to Vercel Blob — PRIVATE now, so the raw URL is
+      // unreadable without a bearer token (the audio proxy sends one).
       try {
         const blobResult = await blobPut(fileName, fileBuffer, {
-          access: 'public',
+          access: 'private',
           addRandomSuffix: true,
         });
         audioUrl = blobResult.url;
+        uploadedOwnBlob = true;
+        isBlobUpload = true;
         console.log(`Audio uploaded to Blob: ${audioUrl}`);
       } catch (e: any) {
         console.error(`Audio upload failed (non-fatal): ${e?.message}`);
       }
-    }
-
-    const validator = new FileValidationService();
-    const validation = await validator.validate(fileBuffer, fileName);
-    if (!validation.isValid) {
-      return NextResponse.json({ error: validation.error }, { status: 400 });
     }
 
     // BYOK: Pro+ users can supply their own AI keys — their call bills
@@ -128,7 +194,6 @@ export async function POST(req: Request) {
     // validation (junk uploads never pay an extra DB query), once, and used
     // for every AI step below (transcription, post-processing, analysis,
     // embeddings). Falls back to shared keys when unset.
-    const user = await getUserByClerkId(clerkUserId);
     const userId = user.id;
     const byok = await getByokKeys(userId);
 
@@ -138,6 +203,7 @@ export async function POST(req: Request) {
 
     // Guard: transcription requires at least one AI provider key.
     if (!getSecret("OPENAI_API_KEY") && !getSecret("GROQ_API_KEY") && !byok.openaiKey && !byok.groqKey) {
+      if (uploadedOwnBlob) await deleteUploadedBlob(audioUrl);
       return NextResponse.json(
         { error: "Transcription requires an AI API key. Set OPENAI_API_KEY or GROQ_API_KEY in Vercel env vars." },
         { status: 500 },
@@ -175,6 +241,9 @@ export async function POST(req: Request) {
       console.error('Transcription failed:', error?.message || error);
       console.error('Transcription error cause:', error?.cause);
       console.error('Transcription error stack:', error?.stack);
+      // Failure path after the blob write: the request is about to return an
+      // error, so the legacy blob written above would be orphaned forever.
+      if (uploadedOwnBlob) await deleteUploadedBlob(audioUrl);
       const msg = error?.message || '';
       const causeMsg = error?.cause?.message || '';
       const fullError = causeMsg ? `${msg} | Cause: ${causeMsg}` : msg;
@@ -426,6 +495,7 @@ export async function POST(req: Request) {
         competitorMentions: competitors.length > 0 ? { create: competitors } : undefined,
       }
     });
+    persistedCallId = call.id;
 
     // Index for semantic search & extract knowledge entities
     try {
@@ -603,6 +673,13 @@ export async function POST(req: Request) {
         try {
           await blobDel(audioUrl);
           console.log(`Blob deleted for free user: ${audioUrl}`);
+          // Kill the dangling pointer: the blob is gone, so a retained
+          // audioUrl would 502 in the audio proxy forever. Only null it once
+          // the delete actually succeeded.
+          await prisma.call.update({
+            where: { id: call.id },
+            data: { audioUrl: null },
+          });
         } catch (e: any) {
           console.warn(`Blob cleanup failed (non-fatal): ${e?.message}`);
         }
@@ -642,6 +719,13 @@ export async function POST(req: Request) {
         : {}),
     });
   } catch (error: any) {
+    // Failure path: a legacy blob written by this request must not survive
+    // as an orphan. If the call row was already persisted, keep the blob —
+    // the row owns it, and only the success-path free-plan cleanup deletes
+    // it (paid users keep audio by design).
+    if (uploadedOwnBlob && !persistedCallId) {
+      await deleteUploadedBlob(audioUrl);
+    }
     if (isQuotaError(error)) {
       captureQuotaEvent(error, "analyze");
       return quotaErrorResponse();

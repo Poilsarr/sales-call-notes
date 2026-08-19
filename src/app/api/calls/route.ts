@@ -62,6 +62,35 @@ export async function GET(req: NextRequest) {
         orderBy: { createdAt: 'desc' },
         take: limit,
         skip: offset,
+        // Explicit select: the raw audioUrl must not leak into the list
+        // payload — private blobs are only readable through the auth-gated
+        // proxy /api/calls/[id]/audio. Everything else is preserved.
+        // NOTE: this route caches 60s (cacheSet below) — a stale cache
+        // entry may still carry audioUrl until it expires (accepted).
+        select: {
+          id: true,
+          userId: true,
+          teamId: true,
+          sharedWithTeam: true,
+          isPublic: true,
+          archived: true,
+          assigneeId: true,
+          filename: true,
+          title: true,
+          duration: true,
+          transcript: true,
+          language: true,
+          summary: true,
+          healthScore: true,
+          sentiment: true,
+          crmSynced: true,
+          crmProvider: true,
+          crmRecordId: true,
+          source: true,
+          tags: true,
+          createdAt: true,
+          updatedAt: true,
+        },
       }),
       prisma.call.count({ where }),
     ]);
