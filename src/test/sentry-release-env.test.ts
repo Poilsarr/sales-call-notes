@@ -12,7 +12,6 @@ import { join } from "node:path";
 const CONFIGS = [
   "sentry.server.config.ts",
   "sentry.edge.config.ts",
-  "sentry.client.config.ts",
 ];
 
 describe("GATE 6.2 — Sentry release + environment tagged", () => {
@@ -30,4 +29,18 @@ describe("GATE 6.2 — Sentry release + environment tagged", () => {
       expect(c).toMatch(/NODE_ENV/);
     });
   }
+
+  it("client config keeps release/env + PII scrubber in lazy initSentryOnError", () => {
+    const c = readFileSync(join(process.cwd(), "sentry.client.config.ts"), "utf8");
+    expect(c).toMatch(/release:\s*process\.env\.VERCEL_GIT_COMMIT_SHA/);
+    expect(c).toMatch(/SENTRY_RELEASE/);
+    expect(c).toMatch(/environment:\s*process\.env\.VERCEL_ENV/);
+    expect(c).toMatch(/SENTRY_ENV/);
+    expect(c).toMatch(/NODE_ENV/);
+    const initBlock = c.slice(c.indexOf("export async function initSentryOnError"));
+    expect(initBlock).toMatch(/release:/);
+    expect(initBlock).toMatch(/environment:/);
+    expect(initBlock).toMatch(/beforeSend/);
+    expect(initBlock).toMatch(/redacted/);
+  });
 });

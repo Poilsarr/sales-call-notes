@@ -1,4 +1,8 @@
-import * as Sentry from "@sentry/nextjs";
+// NOTE (perf): lazy client init. The browser SDK is imported eagerly nowhere;
+// it is loaded via dynamic import only when a global error fires, splitting
+// @sentry/nextjs out of the shared first-load chunk.
+// DOCUMENTED TRADEOFF: lazy init drops non-global-error client capture
+// (unhandledrejection/onerror) — accepted at beta scale.
 
 const SENTRY_DSN = process.env.NEXT_PUBLIC_SENTRY_DSN;
 const TRACES_SAMPLE_RATE = 0.1;
@@ -26,7 +30,11 @@ const scrubValue = (value: unknown): unknown => {
   return value;
 };
 
-if (SENTRY_DSN) {
+let sentryLoaded = false;
+
+export async function initSentryOnError(): Promise<void> {
+  if (sentryLoaded || !SENTRY_DSN) return;
+  const Sentry = await import("@sentry/nextjs");
   Sentry.init({
     dsn: SENTRY_DSN,
     release: process.env.VERCEL_GIT_COMMIT_SHA || process.env.SENTRY_RELEASE || "dev",
@@ -51,4 +59,5 @@ if (SENTRY_DSN) {
       return event;
     },
   });
+  sentryLoaded = true;
 }
