@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { useUser } from "@clerk/nextjs";
 import { toast } from "sonner";
+import dynamic from "next/dynamic";
 import Link from "next/link";
 import Nav from "@/components/nav";
 import UsageDisplay from "@/components/usage-display";
@@ -10,6 +11,8 @@ import {
   Crown, CheckCircle, Sparkles, Loader2, AlertTriangle, Ban, Info, RefreshCw,
 } from "lucide-react";
 import { PLANS, PlanTier } from "@/lib/plans";
+
+const ToasterHost = dynamic(() => import("@/components/toaster-host"), { ssr: false });
 
 export default function BillingPage() {
   const { user } = useUser();
@@ -109,6 +112,7 @@ export default function BillingPage() {
       <Nav />
     <main id="main" className="min-h-screen bg-linear-black text-white">
 
+      <ToasterHost />
       <div className="max-w-5xl mx-auto px-6 pt-32 pb-20">
         <div className="flex items-center justify-between mb-10">
           <div>

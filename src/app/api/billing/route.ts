@@ -40,6 +40,7 @@ export async function GET(req: NextRequest) {
 
     return NextResponse.json({
       plan,
+      planName: (PLANS[plan] || PLANS.free).name,
       usage,
       minuteUsage,
       limit: PLANS[plan].uploadLimit,

@@ -18,7 +18,7 @@ import { NavTabs } from "@/components/ui/nav-tabs";
 import { Avatar } from "@/components/ui/avatar";
 import { getPlan, hasFeature, type FeatureId, type PlanTier } from "@/lib/plans";
 import { toast } from "sonner";
-import { Toaster } from "sonner";
+import dynamic from "next/dynamic";
 import {
   User,
   CreditCard,
@@ -43,6 +43,8 @@ import {
   ExternalLink,
   AlertCircle,
 } from "lucide-react";
+
+const ToasterHost = dynamic(() => import("@/components/toaster-host"), { ssr: false });
 
 interface BillingInfo {
   plan: PlanTier;
@@ -186,7 +188,7 @@ function SettingsContent({ user }: { user: ReturnType<typeof useUser>["user"] })
         toast.error(data.error || "Delete request failed");
         return;
       }
-      toast.success("Account scheduled for deletion. Sign in within 7 days to cancel.");
+      toast.success("Your account data is being permanently deleted.");
       setTimeout(() => {
         window.location.href = "/sign-out";
       }, 1500);
@@ -202,17 +204,7 @@ function SettingsContent({ user }: { user: ReturnType<typeof useUser>["user"] })
       <Nav />
     <main id="main" className="min-h-screen bg-linear-black text-white">
 
-      <Toaster
-        position="top-right"
-        theme="dark"
-        toastOptions={{
-          style: {
-            background: '#141416',
-            color: '#ffffff',
-            border: '1px solid #1c1c20',
-          },
-        }}
-      />
+      <ToasterHost />
       <div className="max-w-7xl mx-auto px-6 pt-28 pb-24">
         <div className="flex flex-col lg:flex-row gap-8">
           {/* Sidebar */}
@@ -301,8 +293,8 @@ function SettingsContent({ user }: { user: ReturnType<typeof useUser>["user"] })
                       </CardHeader>
                       <CardContent>
                         <p className="text-sm text-white/50 mb-4">
-                          Your PII is anonymized immediately. After a 7-day grace period, all calls, comments, and team
-                          memberships are permanently deleted.
+                          Your PII is anonymized immediately and all calls, comments, and team
+                          memberships are permanently deleted right now. This cannot be undone.
                         </p>
                         <button
                           onClick={requestDelete}
@@ -320,7 +312,7 @@ function SettingsContent({ user }: { user: ReturnType<typeof useUser>["user"] })
                           ) : (
                             <Trash2 className="w-3.5 h-3.5" />
                           )}
-                          {deleting ? "Scheduling..." : confirmDelete ? "Click again to confirm" : "Request deletion"}
+                          {deleting ? "Deleting..." : confirmDelete ? "Click again to confirm" : "Request deletion"}
                         </button>
                       </CardContent>
                     </Card>

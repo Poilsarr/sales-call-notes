@@ -12,7 +12,7 @@ import { AreaChart } from "@/components/ui/area-chart";
 import { DonutChart } from "@/components/ui/donut-chart";
 import { Badge } from "@/components/ui/badge";
 import CallSearch from "@/components/call-search";
-import { getPlan, type PlanTier } from "@/lib/plans";
+import type { PlanTier } from "@/lib/plans";
 import {
   BarChart3,
   TrendingUp,
@@ -74,6 +74,7 @@ type AnalyticsData = {
 
 type BillingInfo = {
   plan: PlanTier;
+  planName: string;
   usage: number;
   minuteUsage: number;
   limit: number | "unlimited";
@@ -193,7 +194,6 @@ export default function DashboardPage() {
     return sorted.map((day) => ({ label: formatDateLabel(day), value: data.scoresByDay[day] || 0 }));
   }, [data]);
 
-  const plan = billing ? getPlan(billing.plan) : getPlan("free");
   const usagePct =
     billing && typeof billing.limit === "number" && billing.limit > 0
       ? Math.min(100, (billing.usage / billing.limit) * 100)
@@ -496,7 +496,7 @@ export default function DashboardPage() {
                   <div className="pt-3 border-t border-white/5">
                     <div className="flex items-center justify-between text-sm">
                       <span className="text-white/50">Plan</span>
-                      <span className="text-white font-medium">{plan.name}</span>
+                      <span className="text-white font-medium">{billing.planName}</span>
                     </div>
                   </div>
                 </>
