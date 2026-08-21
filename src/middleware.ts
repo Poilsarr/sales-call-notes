@@ -4,6 +4,17 @@ import type { NextRequest } from "next/server";
 import { rateLimitMiddleware } from "./middleware-rate-limit";
 import * as Sentry from "@sentry/nextjs";
 
+// SECURITY / OPS — Vercel prod must have a MATCHING Clerk key pair:
+// NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY and CLERK_SECRET_KEY must belong to the
+// SAME Clerk instance / frontendApi domain (e.g. proper-marten-70.clerk.accounts.dev
+// vs live production domain). clerkMiddleware implicitly uses CLERK_SECRET_KEY to
+// verify the __session cookie issued for NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY's
+// domain; a mismatch silently fails auth() → user stays signed-out or account-
+// switch appears to "not login" with no error. Safari ITP / partitioned cookies
+// makes this most visible on Safari and cross-device Chrome-synced Google SSO.
+// Verify in Vercel Dashboard → Settings → Environment Variables and Clerk
+// Dashboard → API Keys that both keys share the same instance. Rotate as a pair.
+
 const isPublicApi = createRouteMatcher([
   "/api/webhooks/hubspot",
   "/api/webhooks/salesforce",
@@ -80,7 +91,7 @@ export default clerkMiddleware(async (auth, req: NextRequest) => {
 
     return response;
   } catch (err) {
-    if (process.env.NEXT_PUBLIC_SENTRY_DSN) {
+    if (process.env.NEXT_PUBLIC_SENTRY_DSN || process.env.SENTRY_DSN) {
       Sentry.captureException(err, {
         tags: { source: "middleware" },
         extra: { pathname: req.nextUrl.pathname },
