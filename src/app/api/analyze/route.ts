@@ -129,6 +129,22 @@ export async function POST(req: Request) {
       }
 
       fileBuffer = Buffer.from(await response.arrayBuffer());
+      // Presigned plan-size gate (real gate): /api/upload-url trusts the
+      // client-claimed fileSize and can be bypassed with fileSize:1 + 200MB
+      // PUT. Enforce on the real byte count here, BEFORE any further
+      // processing, and delete the orphaned presigned blob on failure to
+      // avoid OOM (200MB buffered ×2 on 128MB Vercel function) and leaks.
+      {
+        const planTier = (user?.plan?.toLowerCase() as string) || "free";
+        const maxFileSizeMB = MAX_FILE_SIZE_MB[planTier] ?? MAX_FILE_SIZE_MB.free;
+        if (fileBuffer.length > maxFileSizeMB * 1024 * 1024) {
+          try { await blobDel(blobUrl); } catch {}
+          return NextResponse.json(
+            { error: `File too large. Your plan upload limit is ${maxFileSizeMB}MB.` },
+            { status: 413 },
+          );
+        }
+      }
       fileName = body.filename || blobUrl.split('/').pop() || 'recording.webm';
       requestedLanguage = normalizeLanguage(body.language ?? null);
       removeFillers = typeof body.removeFillers === 'boolean' ? body.removeFillers : parseRemoveFillers(body.removeFillers ?? null);
@@ -139,6 +155,7 @@ export async function POST(req: Request) {
       const validator = new FileValidationService();
       const validation = await validator.validate(fileBuffer, fileName);
       if (!validation.isValid) {
+        try { await blobDel(blobUrl); } catch {}
         return NextResponse.json({ error: validation.error }, { status: 400 });
       }
     } else {

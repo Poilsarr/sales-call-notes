@@ -464,3 +464,158 @@ describe("GET /api/calls — list payload strips audioUrl (W-A)", () => {
     expect(mockPrismaCallFindMany).not.toHaveBeenCalled();
   });
 });
+
+describe("POST /api/analyze — JSON blobUrl branch privacy (presigned orphan + size gate)", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    process.env.OPENAI_API_KEY = "sk-shared";
+    process.env.BLOB_READ_WRITE_TOKEN = "test-token";
+    process.env.BLOB_STORE_ID = "store_acme123";
+    mockAuth.mockResolvedValue({ userId: "clerk-1" });
+    mockGetUserByClerkId.mockResolvedValue({ id: "user-1", plan: "PRO" });
+    mockGetByokKeys.mockResolvedValue({});
+    mockValidate.mockResolvedValue({ isValid: true, error: null });
+    mockPreprocess.mockResolvedValue({ buffer: new ArrayBuffer(4), duration: 60 });
+    mockSelectModel.mockImplementation((groqAvailable: boolean) =>
+      groqAvailable ? "whisper-large-v3" : "whisper-1"
+    );
+    mockTranscribe.mockResolvedValue(TRANSCRIPTION);
+    mockPostProcess.mockResolvedValue({ correctedText: "hello world", corrections: [] });
+    mockAnalyze.mockResolvedValue(ANALYSIS);
+    mockRedact.mockResolvedValue({ redactedText: "hello world" });
+    mockAnalyzeCall.mockResolvedValue({ speakerMetrics: {}, interruptions: [], questionsAsked: [] });
+    mockIndexCall.mockResolvedValue(undefined);
+    mockEnforceRetention.mockResolvedValue(0);
+    mockPrismaCallCreate.mockResolvedValue({ id: "call-1" });
+    mockPrismaCallInsightUpsert.mockResolvedValue({});
+    mockPrismaKnowledgeEntityUpsert.mockResolvedValue({ id: "ent-1" });
+    mockDiarize.mockRejectedValue(new Error("deepgram unavailable"));
+    mockBlobPut.mockResolvedValue({ url: BLOB_URL });
+    mockBlobDel.mockResolvedValue(undefined);
+    mockCacheGet.mockResolvedValue(null);
+    mockCacheSet.mockResolvedValue(undefined);
+    global.fetch = vi.fn().mockResolvedValue(
+      new Response(new Uint8Array(4096).buffer, { status: 200 })
+    );
+  });
+
+  function jsonRequest(blobUrl = BLOB_URL, overrides: Record<string, unknown> = {}): Request {
+    return new Request("https://usegauge.com/api/analyze", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({
+        blobUrl,
+        filename: "call.wav",
+        ...overrides,
+      }),
+    });
+  }
+
+  it("deletes the presigned blob when JSON validation fails (orphan leak fix) — 400 with del", async () => {
+    mockValidate.mockResolvedValue({ isValid: false, error: "Invalid audio file format. Please upload a valid audio file." });
+    global.fetch = vi.fn().mockResolvedValue(
+      new Response(new Uint8Array(1024).buffer, { status: 200 })
+    );
+
+    const response = await AnalyzePOST(jsonRequest());
+
+    expect(response.status).toBe(400);
+    const body = await response.json();
+    expect(body.error).toContain("Invalid audio file");
+    expect(mockBlobDel).toHaveBeenCalledWith(BLOB_URL);
+    expect(mockBlobDel).toHaveBeenCalledTimes(1);
+    expect(mockPrismaCallCreate).not.toHaveBeenCalled();
+    expect(mockTranscribe).not.toHaveBeenCalled();
+  });
+
+  it("JSON validation-fail does not leave orphan — deletes even though isBlobUpload true but uploadedOwnBlob false", async () => {
+    mockValidate.mockResolvedValue({ isValid: false, error: "bad file" });
+    global.fetch = vi.fn().mockResolvedValue(
+      new Response(new Uint8Array(2048).buffer, { status: 200 })
+    );
+
+    const response = await AnalyzePOST(jsonRequest());
+
+    expect(response.status).toBe(400);
+    expect(mockBlobDel).toHaveBeenCalledWith(BLOB_URL);
+    expect(mockBlobDel).toHaveBeenCalledTimes(1);
+  });
+
+  it("rejects JSON blob over free-plan cap (30MB) with 413 and deletes orphan — presigned bypass gate", async () => {
+    mockGetUserByClerkId.mockResolvedValue({ id: "user-1", plan: "free" });
+    const oversized = new Uint8Array(30 * 1024 * 1024 + 1);
+    global.fetch = vi.fn().mockResolvedValue(
+      new Response(oversized.buffer, { status: 200 })
+    );
+
+    const response = await AnalyzePOST(jsonRequest());
+
+    expect(response.status).toBe(413);
+    const body = await response.json();
+    expect(body.error).toContain("30MB");
+    expect(mockBlobDel).toHaveBeenCalledWith(BLOB_URL);
+    expect(mockPrismaCallCreate).not.toHaveBeenCalled();
+    expect(mockTranscribe).not.toHaveBeenCalled();
+    expect(mockValidate).not.toHaveBeenCalled();
+  });
+
+  it("accepts JSON blob exactly at free-plan cap (30MB) — 200 with free-plan cleanup", async () => {
+    mockGetUserByClerkId.mockResolvedValue({ id: "user-1", plan: "free" });
+    const exactly = new Uint8Array(30 * 1024 * 1024);
+    global.fetch = vi.fn().mockResolvedValue(
+      new Response(exactly.buffer, { status: 200 })
+    );
+    mockValidate.mockResolvedValue({ isValid: true, error: null });
+
+    const response = await AnalyzePOST(jsonRequest());
+
+    expect(response.status).toBe(200);
+    // free-plan success triggers blob cleanup + nulls audioUrl (W-A retention)
+    expect(mockBlobDel).toHaveBeenCalledWith(BLOB_URL);
+    expect(mockPrismaCallUpdate).toHaveBeenCalledWith({
+      where: { id: "call-1" },
+      data: { audioUrl: null },
+    });
+    expect(mockPrismaCallCreate).toHaveBeenCalledTimes(1);
+  });
+
+  it("enforces pro plan cap (200MB) in JSON branch — free rejects 31MB but pro allows", async () => {
+    mockGetUserByClerkId.mockResolvedValue({ id: "user-1", plan: "pro" });
+    const thirtyOneMB = new Uint8Array(31 * 1024 * 1024);
+    global.fetch = vi.fn().mockResolvedValue(
+      new Response(thirtyOneMB.buffer, { status: 200 })
+    );
+
+    const response = await AnalyzePOST(jsonRequest());
+
+    expect(response.status).toBe(200);
+    expect(mockBlobDel).not.toHaveBeenCalled();
+    expect(mockPrismaCallCreate).toHaveBeenCalledTimes(1);
+  });
+
+  it("rejects JSON blob over pro cap (200MB) with 413 and deletes orphan", async () => {
+    mockGetUserByClerkId.mockResolvedValue({ id: "user-1", plan: "pro" });
+    const oversized = new Uint8Array(200 * 1024 * 1024 + 1);
+    global.fetch = vi.fn().mockResolvedValue(
+      new Response(oversized.buffer, { status: 200 })
+    );
+
+    const response = await AnalyzePOST(jsonRequest());
+
+    expect(response.status).toBe(413);
+    expect(mockBlobDel).toHaveBeenCalledWith(BLOB_URL);
+    expect(mockPrismaCallCreate).not.toHaveBeenCalled();
+  });
+
+  it("does not call blobDel on successful JSON upload for pro (paid keeps audio)", async () => {
+    mockGetUserByClerkId.mockResolvedValue({ id: "user-1", plan: "pro" });
+    global.fetch = vi.fn().mockResolvedValue(
+      new Response(new Uint8Array(4096).buffer, { status: 200 })
+    );
+
+    const response = await AnalyzePOST(jsonRequest());
+
+    expect(response.status).toBe(200);
+    expect(mockBlobDel).not.toHaveBeenCalled();
+  });
+});

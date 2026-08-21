@@ -169,3 +169,122 @@ describe("settings delete copy is honest about the inline immediate purge", () =
     expect(src).toContain("valid 7 days");
   });
 });
+
+describe("GET /api/billing — unknown plan falls back to free (adversarial audit HIGH)", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    mocks.auth.mockResolvedValue({ userId: "clerk-1" });
+    mocks.prisma.call.count.mockResolvedValue(3);
+    mocks.prisma.call.aggregate.mockResolvedValue({ _sum: { duration: 1800 } });
+  });
+
+  function assertFreeTier(body: any) {
+    expect(body.plan).toBe("free");
+    expect(body.planName).toBe("Free");
+    expect(body.limit).toBe(5);
+    expect(body.minuteLimit).toBe(300);
+    expect(body.teamMemberLimit).toBe(1);
+    expect(body.features).toBeDefined();
+  }
+
+  it('falls back to Free when plan is unknown string "GARBAGE" — no throw, no 500', async () => {
+    mocks.getUserByClerkId.mockResolvedValue({
+      id: "u1",
+      plan: "GARBAGE",
+      teamId: null,
+      subscriptionStatus: "active",
+      subscriptionPlan: "PRO",
+      paddleSubscriptionId: null,
+      paddleCustomerId: null,
+      trialEndsAt: null,
+      cancellationEffectiveDate: null,
+    });
+    const res = await GET({} as any);
+    expect(res.status).toBe(200);
+    const body = await res.json();
+    assertFreeTier(body);
+  });
+
+  it("falls back to Free when plan is null — no throw, no 500", async () => {
+    mocks.getUserByClerkId.mockResolvedValue({
+      id: "u1",
+      plan: null,
+      teamId: null,
+      subscriptionStatus: null,
+      subscriptionPlan: null,
+      paddleSubscriptionId: null,
+      paddleCustomerId: null,
+      trialEndsAt: null,
+      cancellationEffectiveDate: null,
+    });
+    const res = await GET({} as any);
+    expect(res.status).toBe(200);
+    const body = await res.json();
+    assertFreeTier(body);
+  });
+
+  it("falls back to Free when plan is undefined — no throw, no 500", async () => {
+    mocks.getUserByClerkId.mockResolvedValue({
+      id: "u1",
+      plan: undefined,
+      teamId: null,
+      subscriptionStatus: null,
+      subscriptionPlan: null,
+      paddleSubscriptionId: null,
+      paddleCustomerId: null,
+      trialEndsAt: null,
+      cancellationEffectiveDate: null,
+    });
+    const res = await GET({} as any);
+    expect(res.status).toBe(200);
+    const body = await res.json();
+    assertFreeTier(body);
+  });
+
+  it("falls back to Free when user is null (no DB row) — no throw", async () => {
+    mocks.getUserByClerkId.mockResolvedValue(null);
+    const res = await GET({} as any);
+    expect(res.status).toBe(200);
+    const body = await res.json();
+    assertFreeTier(body);
+  });
+
+  it("does not throw for unknown plan 'foobar' — guards all PLANS accesses", async () => {
+    mocks.getUserByClerkId.mockResolvedValue({
+      id: "u1",
+      plan: "foobar",
+      teamId: null,
+      subscriptionStatus: null,
+      subscriptionPlan: null,
+      paddleSubscriptionId: null,
+      paddleCustomerId: null,
+      trialEndsAt: null,
+      cancellationEffectiveDate: null,
+    });
+    await expect(GET({} as any)).resolves.toBeDefined();
+    const res2 = await GET({} as any);
+    expect(res2.status).toBe(200);
+    const body = await res2.json();
+    expect(body.limit).toBe(5);
+    expect(body.minuteLimit).toBe(300);
+  });
+
+  it("lowercases plan correctly (PRO -> pro) but still guards unknown", async () => {
+    mocks.getUserByClerkId.mockResolvedValue({
+      id: "u1",
+      plan: "GARBAGE",
+      teamId: null,
+      subscriptionStatus: null,
+      subscriptionPlan: null,
+      paddleSubscriptionId: null,
+      paddleCustomerId: null,
+      trialEndsAt: null,
+      cancellationEffectiveDate: null,
+    });
+    const res = await GET({} as any);
+    const body = await res.json();
+    // Unknown should not leak as "garbage" plan — must be "free"
+    expect(body.plan).toBe("free");
+    expect(body.planName).toBe("Free");
+  });
+});

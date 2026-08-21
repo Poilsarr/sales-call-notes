@@ -22,7 +22,7 @@ export class FileValidationService {
     'audio/aac',
     'audio/webm',
   ];
-  private static readonly MAX_SIZE = 100 * 1024 * 1024; // 100MB
+  private static readonly MAX_SIZE = 500 * 1024 * 1024; // 500MB — enterprise max; plan caps (free 30/pro 200/business 500) enforced before validate() in /api/analyze + /api/upload-url, so this is the absolute ceiling not the plan limit
   private static readonly MIN_DURATION = 0.5; // seconds
 
   async validate(fileBuffer: Buffer, fileName: string): Promise<{ isValid: boolean; error?: string }> {

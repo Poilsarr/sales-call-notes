@@ -12,7 +12,9 @@ export async function GET(req: NextRequest) {
     if (!userId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
     const user = await getUserByClerkId(userId);
-    const plan: PlanTier = (user?.plan?.toLowerCase() as PlanTier) || "free";
+    const raw = user?.plan?.toLowerCase();
+    const plan = (raw && raw in PLANS ? raw : "free") as PlanTier;
+    const cfg = PLANS[plan as PlanTier] ?? PLANS.free;
 
     const startOfMonth = new Date();
     startOfMonth.setDate(1);
@@ -40,14 +42,14 @@ export async function GET(req: NextRequest) {
 
     return NextResponse.json({
       plan,
-      planName: (PLANS[plan] || PLANS.free).name,
+      planName: cfg.name,
       usage,
       minuteUsage,
-      limit: PLANS[plan].uploadLimit,
-      minuteLimit: PLANS[plan].minuteLimit,
+      limit: cfg.uploadLimit,
+      minuteLimit: cfg.minuteLimit,
       teamMemberCount,
-      teamMemberLimit: PLANS[plan].teamMemberLimit,
-      features: PLANS[plan].features,
+      teamMemberLimit: cfg.teamMemberLimit,
+      features: cfg.features,
       subscriptionStatus: user?.subscriptionStatus || null,
       subscriptionPlan: user?.subscriptionPlan || null,
       paddleSubscriptionId: user?.paddleSubscriptionId || null,

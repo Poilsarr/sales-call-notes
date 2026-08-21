@@ -46,6 +46,10 @@ export async function POST(req: Request) {
       // error instead of an unhandled crash (empty 500).
     }
 
+    // Defense-in-depth only: fileSize is client-claimed and trivially bypassed
+    // (attacker sends fileSize:1 and PUTs 200MB via presignedUrl). The real
+    // plan cap is enforced server-side in /api/analyze on the actual byte
+    // count after fetching the blob, with OOM protection and orphan cleanup.
     if (typeof fileSize === 'number' && fileSize > maxFileSizeMB * 1024 * 1024) {
       return NextResponse.json({ error: `File too large. ${plan.name} plan limit is ${maxFileSizeMB}MB.` }, { status: 400 });
     }
