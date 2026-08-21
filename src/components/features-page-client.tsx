@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef } from "react";
+import type { RefObject } from "react";
 import dynamic from "next/dynamic";
 import Link from "next/link";
 import Nav from "@/components/nav";
@@ -8,8 +9,22 @@ import { useUser, SignInButton } from "@clerk/nextjs";
 import { Sparkles, ArrowRight, Zap, Cpu, Lock, BarChart3 } from "lucide-react";
 import StickyMarketingCta from "@/components/sticky-marketing-cta";
 
-const FeaturesAnimations = dynamic(() => import("./features-animations"), { ssr: false });
-const HeroAnimations = dynamic(() => import("./features-animations").then((m) => m.HeroAnimations), { ssr: false });
+// Single async boundary for all GSAP/ScrollTrigger animations — avoids duplicate gsap
+// runtime and second waterfall for the same module (previous code had two
+// `dynamic(() => import("./features-animations"))` boundaries).
+const FeaturesBundle = dynamic(
+  () =>
+    import("./features-animations").then((mod) => ({
+      default: (props: {
+        heroRef?: RefObject<HTMLDivElement | null>;
+        variant?: "hero" | "features";
+      }) => {
+        if (props.variant === "hero") return <mod.HeroAnimations heroRef={props.heroRef!} />;
+        return <mod.default />;
+      },
+    })),
+  { ssr: false }
+);
 
 function ParticleCanvas() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -228,7 +243,7 @@ export default function FeaturesPageClient() {
               <span>Under 60s processing</span>
             </span>
           </div>
-          <HeroAnimations heroRef={heroRef} />
+          <FeaturesBundle variant="hero" heroRef={heroRef} />
         </div>
 
         <div className="absolute bottom-6 left-1/2 -translate-x-1/2 animate-float">
@@ -238,7 +253,7 @@ export default function FeaturesPageClient() {
         </div>
       </section>
 
-      <FeaturesAnimations />
+      <FeaturesBundle variant="features" />
 
       <ComparisonSection />
 

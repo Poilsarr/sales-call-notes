@@ -99,10 +99,16 @@ function HeroMockup() {
 
   useGSAP(() => {
     if (!mockupRef.current) return;
-    gsap.fromTo(mockupRef.current,
-      { y: 60, opacity: 0, scale: 0.95 },
-      { y: 0, opacity: 1, scale: 1, duration: 1.2, delay: 1, ease: "power3.out" }
-    );
+    // Visible by default (no opacity-0) to avoid missing-hero flash when
+    // chunk loads late on 3G; gsap.from animates from hidden to visible.
+    gsap.from(mockupRef.current, {
+      y: 60,
+      opacity: 0,
+      scale: 0.95,
+      duration: 1.2,
+      delay: 1,
+      ease: "power3.out",
+    });
     // ponytail: yoyo float is desktop-only. matches GSAP's own matchMedia
     // pattern. mobile gets the static mockup, no infinite paint.
     const mm = gsap.matchMedia();
@@ -115,7 +121,7 @@ function HeroMockup() {
   }, { scope: mockupRef });
 
   return (
-    <div ref={mockupRef} className="w-full max-w-lg mx-auto mt-10 md:mt-14 opacity-0">
+    <div ref={mockupRef} className="w-full max-w-lg mx-auto mt-10 md:mt-14">
       <div className="doppel-outer shadow-xl shadow-black/5">
         <div className="doppel-inner p-5 sm:p-6">
           <div className="flex items-center gap-2 mb-4">

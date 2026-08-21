@@ -501,7 +501,16 @@ export default function DashboardPage() {
                   </div>
                 </>
               ) : (
-                <p className="text-sm text-white/40">Unable to load usage.</p>
+                <>
+                  <ProgressBar label="Call uploads" sublabel="0 / 5" value={0} max={5} color="indigo" />
+                  <ProgressBar label="Minutes" sublabel="0 / 300" value={0} max={300} color="indigo" />
+                  <div className="pt-3 border-t border-white/5">
+                    <div className="flex items-center justify-between text-sm">
+                      <span className="text-white/50">Plan</span>
+                      <span className="text-white font-medium">Free</span>
+                    </div>
+                  </div>
+                </>
               )}
             </CardContent>
           </Card>

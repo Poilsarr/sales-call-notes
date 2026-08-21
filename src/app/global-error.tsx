@@ -13,14 +13,19 @@ export default function GlobalError({
     if (process.env.NEXT_PUBLIC_SENTRY_DSN) {
       let cancelled = false;
       void (async () => {
-        const { initSentryOnError } = await import("../../sentry.client.config");
-        if (cancelled) return;
-        await initSentryOnError();
-        const Sentry = await import("@sentry/nextjs");
-        Sentry.captureException(error, {
-          tags: { errorBoundary: "global" },
-          extra: { digest: error.digest },
-        });
+        try {
+          const { initSentryOnError } = await import("../../sentry.client.config");
+          if (cancelled) return;
+          await initSentryOnError();
+          if (cancelled) return;
+          const Sentry = await import("@sentry/nextjs");
+          Sentry.captureException(error, {
+            tags: { errorBoundary: "global" },
+            extra: { digest: error.digest },
+          });
+        } catch (err) {
+          console.error("[global-error] Failed to report to Sentry:", err);
+        }
       })();
       return () => {
         cancelled = true;
