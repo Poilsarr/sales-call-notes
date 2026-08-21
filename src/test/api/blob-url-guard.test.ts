@@ -92,10 +92,11 @@ describe("isTrustedBlobUrl (SSRF / BLOB-token exfiltration guard)", () => {
     expect(isTrustedBlobUrl("https://169.254.169.254/latest/meta-data/")).toBe(false);
   });
 
-  it("falls back to suffix check when BLOB_STORE_ID is unset", async () => {
+  it("fails closed when BLOB_STORE_ID is unset (no suffix fallback)", async () => {
     delete process.env.BLOB_STORE_ID;
     const { isTrustedBlobUrl } = await import("@/lib/blob-url");
-    expect(isTrustedBlobUrl("https://other.blob.vercel-storage.com/x")).toBe(true);
+    expect(isTrustedBlobUrl("https://other.blob.vercel-storage.com/x")).toBe(false);
+    expect(isTrustedBlobUrl("https://attacker.blob.vercel-storage.com/x")).toBe(false);
     expect(isTrustedBlobUrl("https://evil.example.com/x")).toBe(false);
   });
 });

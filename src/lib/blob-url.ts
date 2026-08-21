@@ -54,8 +54,6 @@ export function isTrustedBlobUrl(rawUrl: string): boolean {
   // drive our serverless function at arbitrary ports on Vercel's shared blob
   // edge IPs (port probing / non-standard egress).
   if (parsed.port && parsed.port !== '443') return false;
-  if (process.env.BLOB_STORE_ID) {
-    return isOurStoreHostname(parsed.hostname);
-  }
-  return parsed.hostname.endsWith(BLOB_HOST_SUFFIX);
+  if (!process.env.BLOB_STORE_ID) return false;
+  return isOurStoreHostname(parsed.hostname);
 }
