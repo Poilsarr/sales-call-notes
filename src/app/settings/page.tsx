@@ -7,6 +7,7 @@ import Nav from "@/components/nav";
 import TeamBrandingForm from "@/components/team-branding-form";
 import TeamVocabularySettings from "@/components/team-vocabulary-settings";
 import CompanyCompetitorSettings from "@/components/company-competitor-settings";
+import { ErrorBoundary } from "@/components/error-boundary";
 import APIKeysSettings from "@/components/api-keys-settings";
 import ByokSettings from "@/components/byok-settings";
 import IntegrationsPanel from "@/components/settings/integrations-panel";
@@ -224,7 +225,15 @@ function SettingsContent({ user }: { user: ReturnType<typeof useUser>["user"] })
                   <TeamBrandingForm />
                 </Section>
                 <Section title="Company & Competitors" description="Your company and watchlist — powers competitive intelligence.">
-                  <CompanyCompetitorSettings />
+                  <ErrorBoundary
+                    fallback={
+                      <div className="rounded-xl border border-white/10 bg-white/[0.03] p-4 text-sm text-white/50">
+                        Company & competitors failed to load. Please refresh or try again.
+                      </div>
+                    }
+                  >
+                    <CompanyCompetitorSettings />
+                  </ErrorBoundary>
                 </Section>
                 <Section title="Team vocabulary" description="Teach Gauge your internal terms — applied to every new call analysis.">
                   <TeamVocabularySettings />
