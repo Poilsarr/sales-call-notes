@@ -26,7 +26,7 @@ import * as Sentry from "@sentry/nextjs";
  */
 export function logServerError(scope: string, error: unknown): void {
   const err = error instanceof Error ? error : new Error(String(error));
-  if (process.env.SENTRY_DSN) {
+  if (process.env.NEXT_PUBLIC_SENTRY_DSN || process.env.SENTRY_DSN) {
     Sentry.captureException(err, { tags: { scope } });
   }
   // console.error with a structured prefix so server logs are greppable.

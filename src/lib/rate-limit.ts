@@ -87,7 +87,7 @@ export async function checkRateLimit(identifier: string, type: string = 'default
     console.warn(`Rate limiter unavailable for ${type} (Redis down?), failing open`, (e as Error)?.message || e);
     // Fail-open is deliberate (never lock customers out of their own data),
     // but it must be observable — surface the outage to Sentry.
-    if (process.env.NEXT_PUBLIC_SENTRY_DSN) {
+    if (process.env.NEXT_PUBLIC_SENTRY_DSN || process.env.SENTRY_DSN) {
       Sentry.captureException(e, {
         tags: { source: "rate-limit", type },
         level: "warning",

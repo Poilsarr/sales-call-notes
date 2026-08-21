@@ -75,7 +75,7 @@ ${JSON.stringify(callContext, null, 2)}
 Respond concisely in plain text.`;
 
     const completion = await openai.chat.completions.create({
-      model: "gpt-4o",
+      model: "gpt-4o-mini",
       messages: [
         { role: "system", content: "You analyze sales call transcripts and answer questions about meeting content. Be specific and reference actual calls." },
         { role: "user", content: prompt },

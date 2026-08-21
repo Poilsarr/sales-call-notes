@@ -21,3 +21,7 @@ test-results/
 # Large generated test audio (not part of the app)
 scripts/test-calls/audio/
 scripts/test-calls/results/
+
+graphify-out/
+scripts/.fixtures/
+scripts/test-calls/

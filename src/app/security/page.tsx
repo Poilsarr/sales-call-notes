@@ -47,7 +47,8 @@ const checklist: ChecklistItem[] = [
   {
     item: "Configurable data retention",
     status: "Roadmap",
-    detail: "Account deletion is available today (7-day soft-delete with confirmation); retention controls are planned.",
+    detail:
+      "Account deletion is available today (two-step confirm, immediate anonymization and hard purge — irreversible); retention controls are planned.",
   },
   {
     item: "SSO via SAML 2.0",
@@ -250,7 +251,8 @@ export default function SecurityPage() {
               every call, transcript, action item, decision, next step, and comment. Exports
               are protected by a token that expires 7 days after it is issued, and the download
               link is sent only to the requesting account. Account deletion is a two-step
-              confirm, followed by a 7-day grace period and hard delete.
+              confirm, followed by immediate anonymization and hard purge of your data (calls,
+              blobs, integrations, API keys). This is irreversible.
             </p>
           </section>
 

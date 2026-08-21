@@ -75,6 +75,14 @@ export default function PrivacyPage() {
                     the database that stores your account, call records, and
                     transcripts.
                   </li>
+                  <li>
+                    <span className="text-white font-medium">Clerk</span> — Authentication
+                    (SSO, session, user identity).
+                  </li>
+                  <li>
+                    <span className="text-white font-medium">Paddle</span> — Payments &amp;
+                    billing (subscriptions, checkout).
+                  </li>
                 </ul>
               </section>
 
