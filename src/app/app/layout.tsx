@@ -11,7 +11,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
   if (!userId) redirect('/sign-in');
 
   const clerkUser = await currentUser();
-  const dbUser = await prisma.user.findUnique({ where: { id: userId }, select: { hasOnboarded: true } });
+  const dbUser = await prisma.user.findUnique({ where: { clerkId: userId }, select: { hasOnboarded: true } });
   if (dbUser?.hasOnboarded === false) redirect('/onboarding');
 
   const userData = clerkUser

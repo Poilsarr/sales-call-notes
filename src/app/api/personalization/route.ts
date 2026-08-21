@@ -40,7 +40,7 @@ export async function GET() {
   const personalization = buildPersonalization(recentInsights);
 
   const userPref = await prisma.user.findUnique({
-    where: { id: userId },
+    where: { clerkId: userId },
     select: { preferredTone: true, rubricEmphasis: true },
   });
 
@@ -72,7 +72,7 @@ export async function PUT(req: Request) {
   if (parsed.data.rubricEmphasis) updateData.rubricEmphasis = parsed.data.rubricEmphasis;
 
   if (Object.keys(updateData).length > 0) {
-    await prisma.user.update({ where: { id: userId }, data: updateData });
+    await prisma.user.update({ where: { clerkId: userId }, data: updateData });
   }
 
   return NextResponse.json({ ok: true });
