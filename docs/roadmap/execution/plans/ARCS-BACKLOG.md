@@ -17,20 +17,12 @@ Audit blockers 1–3 + trust copy (ship-order item 1).
 
 Follow-ups (frontier rows): settings toast copy stale; KG calls[] scrub; presigned path still broken; deploy verified Ready (gauge-knfr7qkm7).
 
-## B. BUNDLE RE-BASELINE + OPTIMIZATION
+## B. BUNDLE RE-BASELINE + OPTIMIZATION — plan: BUNDLE-PLAN.md — **SHIPPED 2026-08-20**
 
-Found in this session: 8 routes 7–15% over June budgets (`/features` 279 kB
-vs 260, `/dashboard` 237 vs 210, `/settings` 250 vs 215, `/billing` 234 vs
-220, `/pricing` 229 vs 210, `/` 222 vs 220, `/demo` 191 vs 180, `/onboarding`
-190 vs 175). Proof `scripts/.proof-bundle.txt` last refreshed `ed323a3` (June);
-gate only guards the committed snapshot → CI green on stale numbers.
+- B1. Proof regenerated (72→114 lines) + honest budgets re-baselined (old+32 kB floor delta) — **DONE** (4c64e47: / 252 /demo 212 /pricing 242 /features 292 /settings 247 /onboarding 207 /dashboard 242 /billing 252; header documents React 19/Next 15/Clerk 6 inflation).
+- B2. Optimization — **DONE** (0f0b421 Sentry lazy 184→105 shared, 43a9833 GSAP lazy /features 279→224, b54ec40 PLANS off dashboard + lazy Toaster + honest delete copy; all 8 routes 73–145 kB under new budgets; 1112 tests; guardian CLEAR).
 
-- B1. Commit a fresh proof + honest budget re-baseline, frontier debt row.
-- B2. Optimization arc: clerk chunk splitting, route-level code splitting,
-      remove client `PLANS` imports from `/billing` `/dashboard` `/settings`
-      (placeholder chunk still loaded there per executor C's finding).
-
-Status: NOT STARTED. Effort: M. Deps: none. Ship order: after A or parallel.
+Status: SHIPPED. Deps: none.
 
 ## C. DEPENDENCY UPGRADE (19 high-severity vulns)
 
