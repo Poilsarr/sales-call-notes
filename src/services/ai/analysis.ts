@@ -5,6 +5,7 @@ import { getSecret } from '@/lib/secrets';
 import { loadPromptTemplate, isValidTemplate, PromptTemplateId } from '@/lib/prompts-registry';
 import { normalizeScorecard } from '@/lib/scorecard';
 import { buildVocabularyPrompt, VocabularyEntry } from '@/lib/team-vocabulary';
+import { buildCompetitorPrompt } from '@/lib/competitor-watchlist';
 
 // ponytail: char-cap on transcript sent to the LLM. ~4 chars/token →
 // 16000 chars ≈ 4k tokens, enough headroom for 60-min calls.
@@ -44,11 +45,12 @@ export class AnalysisService {
     segments?: TranscriptionSegment[],
     templateId?: string,
     vocabulary?: VocabularyEntry[],
+    competitorOptions?: { companyName?: string | null; watchlist?: string[] },
   ): Promise<CallAnalysis> {
     // ponytail: default to b2b-sales — this product is "sales-call-notes",
     // not enrollment/insurance. enrollment-calls asked for utility/insurance
     // entities (accountNumber, utilityCompany) that don't fit sales calls.
-    const prompt = await this.loadPrompt(templateId || 'b2b-sales', vocabulary);
+    const prompt = await this.loadPrompt(templateId || 'b2b-sales', vocabulary, competitorOptions);
 
     if (!this.openai) {
       // No OpenAI key configured — skip straight to the Groq path instead
@@ -142,7 +144,7 @@ export class AnalysisService {
     return this.normalizeAnalysis(analysis);
   }
 
-  private async loadPrompt(domain: string, vocabulary?: VocabularyEntry[]): Promise<string> {
+  private async loadPrompt(domain: string, vocabulary?: VocabularyEntry[], competitorOptions?: { companyName?: string | null; watchlist?: string[] }): Promise<string> {
     let template: string;
     if (isValidTemplate(domain)) {
       template = await loadPromptTemplate(domain);
@@ -150,7 +152,14 @@ export class AnalysisService {
       template = await loadPromptTemplate('b2b-sales');
     }
     const vocabBlock = buildVocabularyPrompt(vocabulary || []);
-    return vocabBlock ? `${template}\n\n${vocabBlock}` : template;
+    let prompt = vocabBlock ? `${template}\n\n${vocabBlock}` : template;
+    const watchlist = competitorOptions?.watchlist?.filter(Boolean).slice(0, 20) ?? [];
+    if (watchlist.length > 0) {
+      const company = (competitorOptions?.companyName || "").trim().slice(0, 120);
+      const competitorBlock = buildCompetitorPrompt(company || "your company", watchlist);
+      prompt = `${prompt}\n\n${competitorBlock}`;
+    }
+    return prompt;
   }
 
   private analyzeSentiment(segments: TranscriptionSegment[]): { timestamp: number; sentiment: string }[] {

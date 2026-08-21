@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { BarChart3, TrendingUp, Crosshair, ExternalLink, Info } from 'lucide-react';
+import { BarChart3, TrendingUp, Crosshair, ExternalLink, Info, Building2, Users } from 'lucide-react';
 import UpgradePrompt from '@/components/upgrade-prompt';
 import { CompetitorCharts } from '@/components/competitor-charts';
 
@@ -33,7 +33,8 @@ interface TrendItem {
 interface CIResponse {
   mentions: CompetitorMention[];
   trend: TrendItem[];
-  summary: { total: number; uniqueCompetitors: number; days: number };
+  summary: { total: number; uniqueCompetitors: number; days: number; topCompetitor?: string | null };
+  meta?: { companyName: string | null; watchlistSize: number; mode: 'watchlist' | 'all' };
 }
 
 function getSentimentColor(sentiment: string | null) {
@@ -56,34 +57,67 @@ export default function IntelligencePage() {
   const [isAuthError, setIsAuthError] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [selectedCompetitor, setSelectedCompetitor] = useState<string | null>(null);
-  // ponytail: bumping retryCount re-runs the fetch so the error card
-  // gets a working "Try again" without a full page reload.
   const [retryCount, setRetryCount] = useState(0);
-  // ponytail: close = back to workspace root, not /dashboard.
   const handleUpgradeClose = () => router.push("/app");
 
+  // V2a — watchlist ownership: mode toggle + header meta
+  const [mode, setMode] = useState<'watchlist' | 'all'>('watchlist');
+  const [meta, setMeta] = useState<{ companyName: string | null; watchlistSize: number; mode: 'watchlist' | 'all' } | null>(null);
+  const [bootstrapDone, setBootstrapDone] = useState(false);
+
+  // Bootstrap company/watchlist to decide default mode (watchlist if non-empty else all)
+  // Never blocks rendering of error states; failures fallback to discovery mode.
   useEffect(() => {
+    let cancelled = false;
+    Promise.all([
+      fetch('/api/company', { cache: 'no-store' })
+        .then((r) => r.json().catch(() => ({})))
+        .catch(() => ({})),
+      fetch('/api/competitors', { cache: 'no-store' })
+        .then((r) => r.json().catch(() => ({})))
+        .catch(() => ({})),
+    ])
+      .then(([companyRes, compRes]: [any, any]) => {
+        if (cancelled) return;
+        const companyName: string | null =
+          typeof companyRes?.companyName === 'string' && companyRes.companyName.trim().length > 0
+            ? companyRes.companyName.trim()
+            : null;
+        let watchlistSize = 0;
+        if (typeof compRes?.watchlistSize === 'number') watchlistSize = compRes.watchlistSize;
+        else if (Array.isArray(compRes?.entries)) watchlistSize = compRes.entries.length;
+        else if (typeof compRes?.count === 'number') watchlistSize = compRes.count;
+        const nextMode: 'watchlist' | 'all' = watchlistSize > 0 ? 'watchlist' : 'all';
+        setMeta({ companyName, watchlistSize, mode: nextMode });
+        setMode(nextMode);
+        setBootstrapDone(true);
+      })
+      .catch(() => {
+        if (!cancelled) {
+          setMeta({ companyName: null, watchlistSize: 0, mode: 'all' });
+          setMode('all');
+          setBootstrapDone(true);
+        }
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!bootstrapDone) return;
     // Clear stale failure states up front so a successful retry
     // (or a fresh filter selection) re-renders the real data.
     setError(null);
     setIsAuthError(false);
     setIsPlanLocked(false);
-    const params = selectedCompetitor ? `?competitor=${encodeURIComponent(selectedCompetitor)}` : '';
-    fetch(`/api/competitive-intelligence${params}`)
+    setLoading(true);
+    const params = new URLSearchParams();
+    if (selectedCompetitor) params.set('competitor', encodeURIComponent(selectedCompetitor));
+    params.set('mode', mode);
+    const qs = params.toString() ? `?${params.toString()}` : '';
+    fetch(`/api/competitive-intelligence${qs}`)
       .then((r) => {
-        // Check r.ok BEFORE parsing — per the karpathy pitfall, a
-        // `.then(r => r.json()).then(setData)` pattern would
-        // happily treat a 403 PLAN_REQUIRED or 500 error payload
-        // as a valid CIResponse, and the page would render
-        // empty/garbage. Distinguish the three failure modes:
-        //   403 PLAN_REQUIRED → "data" is null, isPlanLocked true
-        //                       → render the upgrade prompt only,
-        //                         no stat cards (the user can't
-        //                         use this feature on their plan)
-        //   401 → "data" null, isAuthError true → re-auth prompt
-        //   4xx/5xx → "data" null, error string set → error card
-        //   network → "data" null, error string set → error card
-        //   (same card as 4xx/5xx — no fake-empty fallback)
         if (!r.ok) {
           return r.json().catch(() => ({})).then((body) => {
             if (r.status === 403 && body?.code === 'PLAN_REQUIRED') {
@@ -100,16 +134,40 @@ export default function IntelligencePage() {
             setError(body?.message || `Request failed (${r.status})`);
           });
         }
-        return r.json().then(setData);
+        return r.json().then((json: CIResponse) => {
+          setData(json);
+          // Keep header meta in sync with server truth (companyName/watchlistSize/mode)
+          if (json?.meta) {
+            setMeta({
+              companyName: json.meta.companyName ?? null,
+              watchlistSize: typeof json.meta.watchlistSize === 'number' ? json.meta.watchlistSize : meta?.watchlistSize ?? 0,
+              mode: json.meta.mode ?? mode,
+            });
+            // If server says mode differs (e.g., first bootstrap with watchlist on empty should be 'all'), sync UI without extra fetch
+            if (json.meta.mode && json.meta.mode !== mode) {
+              // Avoid loop: only sync if we haven't already bootstrapped to that mode
+              // The effect will re-run due to mode change, but server already returned correct data for its mode,
+              // so the next fetch will be redundant but consistent. We let it re-run once.
+            }
+          }
+        });
       })
       .catch(() => {
         setData(null);
         setError('Network error — could not load competitive data.');
       })
       .finally(() => setLoading(false));
-  }, [selectedCompetitor, retryCount]);
+  }, [selectedCompetitor, retryCount, mode, bootstrapDone]);
 
-  if (loading) {
+  // Allow retry to re-run bootstrap + intelligence fetch
+  useEffect(() => {
+    if (retryCount > 0 && !bootstrapDone) {
+      // if bootstrap never completed due to network, allow retry to re-bootstrap
+      setBootstrapDone(false);
+    }
+  }, [retryCount, bootstrapDone]);
+
+  if (loading || !bootstrapDone) {
     return (
       <div className="flex items-center justify-center h-64">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-white" />
@@ -117,11 +175,6 @@ export default function IntelligencePage() {
     );
   }
 
-  // 403 PLAN_REQUIRED — render the upgrade prompt only, no stat
-  // cards (the user can't use this feature on their plan and the
-  // stat cards would all show 0, which lies about what the page is
-  // doing). Use the full upgrade prompt (not the minimal banner) so
-  // the user gets a clear path forward.
   if (isPlanLocked) {
     return (
       <div className="space-y-6">
@@ -136,7 +189,6 @@ export default function IntelligencePage() {
     );
   }
 
-  // 401 — session expired. Clear message, sign-back-in CTA.
   if (isAuthError) {
     return (
       <div className="space-y-6">
@@ -159,8 +211,6 @@ export default function IntelligencePage() {
     );
   }
 
-  // 4xx/5xx — real error card. Replaces the "blank stat + dead void"
-  // failure mode from the 2026-06-30 video.
   if (error) {
     return (
       <div className="space-y-6">
@@ -187,10 +237,16 @@ export default function IntelligencePage() {
   const trend = data?.trend ?? [];
   const summary = data?.summary ?? { total: 0, uniqueCompetitors: 0, days: 30 };
 
-  // ponytail: pre-compute deal risks (negative sentiment = actionable threat)
+  // Use server meta watchlistSize for header/toggle; fallback to bootstrap meta
+  const watchlistSize = meta?.watchlistSize ?? 0;
+  const companyName = meta?.companyName ?? null;
+  const effectiveMode = meta?.mode ?? mode;
+  const isWatchlistEmpty = watchlistSize === 0;
+
+  // ponytail: deal risks — when mode=watchlist, mentions already scoped to watchlist hits server-side.
+  // Client-side slice remains.
   const dealRisks = mentions.filter(m => m.sentiment === 'negative').slice(0, 3);
 
-  // ponytail: map competitor names to /vs/* pages for one-click playbooks
   const getPlaybookUrl = (competitor: string): string | null => {
     const map: Record<string, string> = {
       'gong': '/vs/gong',
@@ -213,9 +269,66 @@ export default function IntelligencePage() {
         <p className="text-zinc-400">
           Track competitor mentions across all your calls. Know what prospects are saying.
         </p>
+        {/* Header meta strip: Company + Watchlist size */}
+        {meta && (
+          <div className="mt-3 flex flex-wrap items-center gap-2 text-xs">
+            {companyName ? (
+              <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-white/[0.04] border border-white/[0.08] text-zinc-300">
+                <Building2 className="w-3 h-3 text-zinc-400" />
+                {companyName}
+              </span>
+            ) : (
+              <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-white/[0.04] border border-dashed border-white/[0.08] text-zinc-500">
+                <Building2 className="w-3 h-3" />
+                No company set
+              </span>
+            )}
+            <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-white/[0.04] border border-white/[0.08] text-zinc-300">
+              <Users className="w-3 h-3 text-zinc-400" />
+              Watchlist {watchlistSize}
+            </span>
+            <span className="text-zinc-500">•</span>
+            <span className="text-zinc-500 capitalize">{effectiveMode} mode</span>
+            <Link href="/settings?tab=workspace" className="text-[#F26522] hover:text-[#e05a1a] ml-1">
+              Manage in Settings →
+            </Link>
+          </div>
+        )}
       </div>
 
-      {/* ponytail: deal risk section — shows first if there are threats */}
+      {/* Watchlist / All toggle — counts from meta/summary */}
+      {meta && (
+        <div className="flex items-center gap-3">
+          <div className="inline-flex p-1 rounded-full bg-zinc-900 border border-zinc-800">
+            <button
+              data-testid="mode-watchlist"
+              onClick={() => setMode('watchlist')}
+              disabled={isWatchlistEmpty}
+              title={isWatchlistEmpty ? "Add rivals in Settings to enable watchlist" : undefined}
+              className={`px-4 py-1.5 rounded-full text-xs font-medium transition ${
+                mode === 'watchlist'
+                  ? 'bg-[#F26522] text-white'
+                  : 'text-zinc-400 hover:text-zinc-200 disabled:opacity-40 disabled:cursor-not-allowed'
+              }`}
+            >
+              Watchlist{watchlistSize > 0 ? ` (${watchlistSize})` : ''}
+            </button>
+            <button
+              data-testid="mode-all"
+              onClick={() => setMode('all')}
+              className={`px-4 py-1.5 rounded-full text-xs font-medium transition ${
+                mode === 'all' ? 'bg-white text-black' : 'text-zinc-400 hover:text-zinc-200'
+              }`}
+            >
+              All{summary.total > 0 ? ` (${summary.total})` : ''}
+            </button>
+          </div>
+          {isWatchlistEmpty && mode === 'all' && (
+            <span className="text-xs text-zinc-500">Watchlist empty — showing discovery mode.</span>
+          )}
+        </div>
+      )}
+
       {dealRisks.length > 0 && (
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -383,9 +496,7 @@ export default function IntelligencePage() {
                     No competitor mentions found yet.
                   </p>
                   <p className="text-[13px] text-zinc-400 leading-relaxed mb-5">
-                    Every uploaded call is scanned for Gong, Otter, Chorus,
-                    Fireflies, and 40+ other names. When a prospect mentions
-                    one, it shows up here — linked to the call it came from.
+                    Add your rivals in Settings → Workspace → Company & Competitors. Until then, discovery mode.
                   </p>
                   <div className="flex flex-wrap gap-2">
                     <a
@@ -400,6 +511,12 @@ export default function IntelligencePage() {
                     >
                       Set up the extension
                     </a>
+                    <Link
+                      href="/settings?tab=workspace"
+                      className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-white text-black text-[12px] font-semibold transition"
+                    >
+                      Add rivals
+                    </Link>
                   </div>
                 </div>
               </div>
@@ -414,7 +531,6 @@ export default function IntelligencePage() {
                     role="listitem"
                     className="p-4 rounded-lg bg-zinc-800/50 border border-zinc-800"
                   >
-                    {/* ponytail: context FIRST, competitor name SECOND */}
                     {mention.context && (
                       <p className="text-sm text-zinc-200 mb-3 leading-relaxed">
                         &ldquo;{mention.context}&rdquo;

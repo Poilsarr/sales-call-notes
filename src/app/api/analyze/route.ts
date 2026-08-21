@@ -28,6 +28,7 @@ import { captureApiError } from '@/lib/sentry';
 import { getSecret } from '@/lib/secrets';
 import { isQuotaError, quotaErrorResponse, captureQuotaEvent } from '@/lib/quota-guard';
 import { HubSpotService } from '@/services/crm/hubspot';
+import { normalizeCompetitorName } from '@/lib/competitor-watchlist';
 import { SalesforceService } from '@/services/crm/salesforce';
 import { logAuditAction } from '@/lib/audit-logger';
 import { refreshIntegrationToken } from '@/lib/integrations/token-refresh';
@@ -379,6 +380,25 @@ export async function POST(req: Request) {
               select: { id: true, term: true, definition: true },
             })
           : [];
+
+      // V2a: load effective watchlist + company for competitor prompt
+      let watchlistNames: string[] = [];
+      let effectiveCompanyName: string | null = null;
+      try {
+        if (user.teamId) {
+          const [entries, team] = await Promise.all([
+            prisma.trackedCompetitor.findMany({ where: { teamId: user.teamId }, select: { name: true } }),
+            prisma.team.findUnique({ where: { id: user.teamId }, select: { companyName: true } }),
+          ]);
+          watchlistNames = entries.map((e) => e.name);
+          effectiveCompanyName = team?.companyName ?? user.companyName ?? null;
+        } else {
+          const entries = await prisma.trackedCompetitor.findMany({ where: { userId: user.id }, select: { name: true } });
+          watchlistNames = entries.map((e) => e.name);
+          effectiveCompanyName = user.companyName ?? null;
+        }
+      } catch {}
+
       const analysisService = new AnalysisService(byok);
       analysisResult = await analysisService.analyze(
         correctedText,
@@ -393,6 +413,7 @@ export async function POST(req: Request) {
           : undefined,
         requestedTemplate || undefined,
         vocabulary,
+        { companyName: effectiveCompanyName, watchlist: watchlistNames },
       );
       console.log('Analysis succeeded');
     } catch (e: any) {
@@ -455,12 +476,45 @@ export async function POST(req: Request) {
     }));
 
     const seen = new Set<string>();
-    const competitors: Array<{ competitor: string; context: string | null; sentiment: string | null; mentionedBy: null; timestamp: null }> = [];
+    // Fetch watchlist for hit marking (already have watchlistNames, but need map id)
+    let watchlistMap = new Map<string, string>(); // normalized -> id
+    try {
+      const entries = user.teamId
+        ? await prisma.trackedCompetitor.findMany({ where: { teamId: user.teamId }, select: { id: true, normalizedName: true } })
+        : await prisma.trackedCompetitor.findMany({ where: { userId: user.id }, select: { id: true, normalizedName: true } });
+      for (const e of entries) watchlistMap.set(e.normalizedName, e.id);
+    } catch {}
+
+    const competitors: Array<{
+      competitor: string;
+      context: string | null;
+      sentiment: string | null;
+      mentionedBy: null;
+      timestamp: null;
+      normalizedCompetitor: string | null;
+      isWatchlistHit: boolean;
+      matchedEntryId: string | null;
+      userId: string;
+      teamId: string | null;
+    }> = [];
     const addComp = (name: string, context: string | null, sentiment: string | null) => {
       const key = name.toLowerCase().trim();
       if (!key || seen.has(key)) return;
       seen.add(key);
-      competitors.push({ competitor: name, context, sentiment, mentionedBy: null, timestamp: null });
+      const norm = normalizeCompetitorName(name) || key;
+      const hitId = watchlistMap.get(norm) ?? watchlistMap.get(norm.replace(/\.ai$/, "")) ?? null;
+      competitors.push({
+        competitor: name,
+        context,
+        sentiment,
+        mentionedBy: null,
+        timestamp: null,
+        normalizedCompetitor: norm,
+        isWatchlistHit: hitId !== null,
+        matchedEntryId: hitId,
+        userId: user.id,
+        teamId: user.teamId ?? null,
+      });
     };
     (analysisResult.competitorsMentioned ?? []).forEach((c: any) => {
       const cname = typeof c === 'string' ? c : c.name;

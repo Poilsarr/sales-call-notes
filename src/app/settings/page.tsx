@@ -6,6 +6,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import Nav from "@/components/nav";
 import TeamBrandingForm from "@/components/team-branding-form";
 import TeamVocabularySettings from "@/components/team-vocabulary-settings";
+import CompanyCompetitorSettings from "@/components/company-competitor-settings";
 import APIKeysSettings from "@/components/api-keys-settings";
 import ByokSettings from "@/components/byok-settings";
 import IntegrationsPanel from "@/components/settings/integrations-panel";
@@ -221,6 +222,9 @@ function SettingsContent({ user }: { user: ReturnType<typeof useUser>["user"] })
               <>
                 <Section title="Workspace" description="Team branding and workspace identity.">
                   <TeamBrandingForm />
+                </Section>
+                <Section title="Company & Competitors" description="Your company and watchlist — powers competitive intelligence.">
+                  <CompanyCompetitorSettings />
                 </Section>
                 <Section title="Team vocabulary" description="Teach Gauge your internal terms — applied to every new call analysis.">
                   <TeamVocabularySettings />

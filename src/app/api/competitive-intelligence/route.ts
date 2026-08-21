@@ -36,7 +36,13 @@ export async function GET(req: Request) {
 
     const url = new URL(req.url);
     const rawCompetitor = url.searchParams.get('competitor');
-    const competitor = rawCompetitor && rawCompetitor.trim().length > 0 ? rawCompetitor : undefined;
+    // Sanitize: strip ILIKE wildcards + control chars (H-01)
+    const sanitizedCompetitor = rawCompetitor
+      ? rawCompetitor.trim().replace(/[%_\\]/g, " ").replace(/[\r\n]/g, " ").trim().slice(0, 100)
+      : "";
+    const competitor = sanitizedCompetitor.length > 0 ? sanitizedCompetitor : undefined;
+    const modeParam = url.searchParams.get('mode');
+    const mode: 'watchlist' | 'all' = modeParam === 'all' ? 'all' : 'watchlist';
     const daysParam = url.searchParams.get('days');
     const fromParam = url.searchParams.get('from');
     const toParam = url.searchParams.get('to');
@@ -116,13 +122,49 @@ export async function GET(req: Request) {
     };
     if (Object.keys(dateFilter).length > 0) where.createdAt = dateFilter;
     if (teamId) where.call.teamId = teamId;
-    if (competitor) where.competitor = { contains: competitor, mode: 'insensitive' };
+    if (competitor) {
+      const norm = competitor.trim().toLowerCase().replace(/\s+/g, " ").trim();
+      if (norm.length > 0 && norm.length <= 100 && !/[%_\\]/.test(competitor)) {
+        const probe = norm.replace(/\b(inc\.?|llc|ltd|corp\.?|co\.?)\b\.?$/i, "").trim();
+        if (probe) {
+          where.normalizedCompetitor = probe;
+        } else {
+          where.competitor = { contains: competitor, mode: 'insensitive' };
+        }
+      } else {
+        where.competitor = { contains: competitor, mode: 'insensitive' };
+      }
+    }
+
+    // Resolve effective company + watchlist for mode/meta
+    let effectiveCompanyName: string | null = null;
+    let watchlistSize = 0;
+    try {
+      if (user.teamId) {
+        const team = await prisma.team.findUnique({ where: { id: user.teamId }, select: { companyName: true } });
+        if (team?.companyName) effectiveCompanyName = team.companyName;
+        watchlistSize = await prisma.trackedCompetitor.count({ where: { teamId: user.teamId } });
+      } else {
+        if (user.companyName) effectiveCompanyName = user.companyName;
+        watchlistSize = await prisma.trackedCompetitor.count({ where: { userId: user.id } });
+      }
+      // Fallback: if team companyName empty, try user companyName
+      if (!effectiveCompanyName && user.companyName) effectiveCompanyName = user.companyName;
+    } catch {
+      // fallback to defaults (discovery)
+    }
+
+    // Mode filter: watchlist only when watchlist non-empty, else discovery (all)
+    const effectiveMode = mode === 'watchlist' && watchlistSize > 0 ? 'watchlist' as const : 'all' as const;
+    if (effectiveMode === 'watchlist') {
+      where.isWatchlistHit = true;
+    }
 
     const mentions = await prisma.competitorMention.findMany({
       where,
       include: {
         call: {
-          select: { id: true, filename: true, title: true, createdAt: true, userId: true },
+          select: { id: true, filename: true, title: true, createdAt: true },
         },
       },
       orderBy: { createdAt: 'desc' },
@@ -137,9 +179,15 @@ export async function GET(req: Request) {
     let topCompetitor: string | null;
 
     if (explicitRange) {
+      // Fix: bucket the SAME where without pagination limit (previously bucketed only the page)
+      const allForTrend = await prisma.competitorMention.findMany({
+        where,
+        select: { competitor: true, createdAt: true },
+        orderBy: { createdAt: 'asc' },
+      });
       const bucketFn = groupByParam === 'month' ? monthBucket : isoWeekBucket;
       const buckets = new Map<string, TrendBucket>();
-      for (const m of mentions) {
+      for (const m of allForTrend) {
         const bucket = bucketFn(m.createdAt);
         const key = `${bucket}\u0000${m.competitor}`;
         const existing = buckets.get(key);
@@ -156,7 +204,7 @@ export async function GET(req: Request) {
       trend = entries;
 
       const competitorCounts = new Map<string, number>();
-      for (const m of mentions) {
+      for (const m of allForTrend) {
         competitorCounts.set(m.competitor, (competitorCounts.get(m.competitor) ?? 0) + 1);
       }
       uniqueCompetitors = competitorCounts.size;
@@ -194,6 +242,11 @@ export async function GET(req: Request) {
         from: from ? from.toISOString() : null,
         to: to ? to.toISOString() : null,
         groupBy: explicitRange ? groupByParam : null,
+      },
+      meta: {
+        companyName: effectiveCompanyName,
+        watchlistSize,
+        mode: effectiveMode,
       },
     });
   } catch (error: any) {

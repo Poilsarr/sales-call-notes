@@ -8,37 +8,40 @@ datasource db {
 }
 
 model User {
-  id                        String         @id @default(cuid())
-  clerkId                   String         @unique
-  email                     String         @unique
+  id                        String              @id @default(cuid())
+  clerkId                   String              @unique
+  email                     String              @unique
   name                      String?
   avatar                    String?
-  plan                      String         @default("FREE")
-  credits                   Int            @default(5)
-  paddleCustomerId          String?        @unique
+  plan                      String              @default("FREE")
+  credits                   Int                 @default(5)
+  paddleCustomerId          String?             @unique
   paddleSubscriptionId      String?
   subscriptionStatus        String?
   subscriptionPlan          String?
   trialEndsAt               DateTime?
   cancellationEffectiveDate DateTime?
   teamId                    String?
-  team                      Team?          @relation("teamMembers", fields: [teamId], references: [id])
-  teamRole                  String         @default("MEMBER")
+  team                      Team?               @relation("teamMembers", fields: [teamId], references: [id])
+  teamRole                  String              @default("MEMBER")
   slackUserId               String?
-  preferredTone             String?        @default("balanced")
-  rubricEmphasis            String[]       @default([])
-  byokOpenaiKey             String?        @map("byok_openai_key")
-  byokGroqKey               String?        @map("byok_groq_key")
-  ownedTeams                Team[]         @relation("teamOwner")
+  preferredTone             String?             @default("balanced")
+  rubricEmphasis            String[]            @default([])
+  byokOpenaiKey             String?             @map("byok_openai_key")
+  byokGroqKey               String?             @map("byok_groq_key")
+  companyName               String?             @db.VarChar(120)
+  trackedCompetitors        TrackedCompetitor[] @relation("UserCompetitors")
+  ownedTeams                Team[]              @relation("teamOwner")
   calls                     Call[]
-  assignedCalls             Call[]         @relation("callAssignments")
+  assignedCalls             Call[]              @relation("callAssignments")
   comments                  CallComment[]
   auditLogs                 AuditLog[]
   apiKeys                   ApiKey[]
   notifications             Notification[]
-  hasOnboarded              Boolean        @default(false)
-  createdAt                 DateTime       @default(now())
-  updatedAt                 DateTime       @updatedAt
+  hasOnboarded              Boolean             @default(false)
+  createdAt                 DateTime            @default(now())
+  updatedAt                 DateTime            @updatedAt
+  CompetitorMention         CompetitorMention[]
 
   @@index([email])
   @@index([teamId])
@@ -47,20 +50,23 @@ model User {
 }
 
 model Team {
-  id           String            @id @default(cuid())
-  name         String
-  slug         String            @unique
-  ownerId      String
-  owner        User              @relation("teamOwner", fields: [ownerId], references: [id])
-  members      User[]            @relation("teamMembers")
-  calls        Call[]
-  integrations Integration[]
-  vocabulary   VocabularyEntry[]
-  settings     String?
-  brandColor   String? // hex e.g. "#5b21b6"; null = default indigo
-  logoUrl      String? // https URL; null = default CP monogram
-  createdAt    DateTime          @default(now())
-  updatedAt    DateTime          @updatedAt
+  id                 String              @id @default(cuid())
+  name               String
+  slug               String              @unique
+  ownerId            String
+  owner              User                @relation("teamOwner", fields: [ownerId], references: [id])
+  members            User[]              @relation("teamMembers")
+  calls              Call[]
+  integrations       Integration[]
+  vocabulary         VocabularyEntry[]
+  trackedCompetitors TrackedCompetitor[] @relation("TeamCompetitors")
+  settings           String?
+  brandColor         String? // hex e.g. "#5b21b6"; null = default indigo
+  logoUrl            String? // https URL; null = default CP monogram
+  companyName        String?             @db.VarChar(120)
+  createdAt          DateTime            @default(now())
+  updatedAt          DateTime            @updatedAt
+  CompetitorMention  CompetitorMention[]
 
   @@index([slug])
   @@index([ownerId])
@@ -218,20 +224,51 @@ model RateLimit {
   @@index([userId])
 }
 
+model TrackedCompetitor {
+  id                String              @id @default(cuid())
+  teamId            String?
+  team              Team?               @relation("TeamCompetitors", fields: [teamId], references: [id], onDelete: Cascade)
+  userId            String?
+  user              User?               @relation("UserCompetitors", fields: [userId], references: [id], onDelete: Cascade)
+  name              String              @db.VarChar(100)
+  normalizedName    String              @db.VarChar(100)
+  createdAt         DateTime            @default(now())
+  updatedAt         DateTime            @updatedAt
+  CompetitorMention CompetitorMention[]
+
+  @@index([teamId])
+  @@index([userId])
+  @@index([normalizedName])
+}
+
 model CompetitorMention {
-  id          String   @id @default(cuid())
-  callId      String
-  call        Call     @relation(fields: [callId], references: [id], onDelete: Cascade)
-  competitor  String
-  context     String?
-  sentiment   String?
-  mentionedBy String?
-  timestamp   Float?
-  createdAt   DateTime @default(now())
+  id                   String             @id @default(cuid())
+  callId               String
+  call                 Call               @relation(fields: [callId], references: [id], onDelete: Cascade)
+  competitor           String
+  context              String?
+  sentiment            String?
+  mentionedBy          String?
+  timestamp            Float?
+  userId               String?
+  teamId               String?
+  user                 User?              @relation(fields: [userId], references: [id], onDelete: SetNull)
+  team                 Team?              @relation(fields: [teamId], references: [id], onDelete: SetNull)
+  normalizedCompetitor String?            @db.VarChar(100)
+  isWatchlistHit       Boolean            @default(false)
+  matchedEntryId       String?
+  matchedEntry         TrackedCompetitor? @relation(fields: [matchedEntryId], references: [id], onDelete: SetNull)
+  createdAt            DateTime           @default(now())
 
   @@index([callId])
   @@index([competitor])
   @@index([createdAt])
+  @@index([userId, createdAt(sort: Desc)])
+  @@index([teamId, createdAt(sort: Desc)])
+  @@index([userId, normalizedCompetitor])
+  @@index([teamId, normalizedCompetitor])
+  @@index([userId, isWatchlistHit, createdAt(sort: Desc)])
+  @@index([teamId, isWatchlistHit, createdAt(sort: Desc)])
 }
 
 model CallInsight {

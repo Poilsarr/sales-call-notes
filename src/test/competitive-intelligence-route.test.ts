@@ -6,12 +6,16 @@ const {
   findManyMock,
   groupByMock,
   countMock,
+  trackedCountMock,
+  teamFindUniqueMock,
 } = vi.hoisted(() => ({
   authMock: vi.fn(),
   upsertMock: vi.fn(),
   findManyMock: vi.fn(),
   groupByMock: vi.fn(),
   countMock: vi.fn(),
+  trackedCountMock: vi.fn().mockResolvedValue(0),
+  teamFindUniqueMock: vi.fn().mockResolvedValue(null),
 }));
 
 vi.mock('@clerk/nextjs/server', () => ({
@@ -27,6 +31,12 @@ vi.mock('@/lib/prisma', () => ({
       findMany: findManyMock,
       groupBy: groupByMock,
       count: countMock,
+    },
+    trackedCompetitor: {
+      count: trackedCountMock,
+    },
+    team: {
+      findUnique: teamFindUniqueMock,
     },
   },
 }));
@@ -169,11 +179,12 @@ describe('GET /api/competitive-intelligence', () => {
       );
 
       expect(response.status).toBe(200);
+      // Competitor filter now normalizes to exact normalizedCompetitor for watchlist efficiency (H-01)
       expect(findManyMock).toHaveBeenCalledWith(
         expect.objectContaining({
           where: expect.objectContaining({
             createdAt: { gte: expect.any(Date) },
-            competitor: { contains: 'acme', mode: 'insensitive' },
+            normalizedCompetitor: 'acme',
             call: { userId: 'user_1', teamId: 'team_a' },
           }),
         }),
@@ -182,7 +193,7 @@ describe('GET /api/competitive-intelligence', () => {
         expect.objectContaining({
           where: expect.objectContaining({
             createdAt: { gte: expect.any(Date) },
-            competitor: { contains: 'acme', mode: 'insensitive' },
+            normalizedCompetitor: 'acme',
             call: { userId: 'user_1', teamId: 'team_a' },
           }),
         }),
@@ -191,7 +202,7 @@ describe('GET /api/competitive-intelligence', () => {
         expect.objectContaining({
           where: expect.objectContaining({
             createdAt: { gte: expect.any(Date) },
-            competitor: { contains: 'acme', mode: 'insensitive' },
+            normalizedCompetitor: 'acme',
             call: { userId: 'user_1', teamId: 'team_a' },
           }),
         }),
@@ -326,8 +337,10 @@ describe('GET /api/competitive-intelligence', () => {
       expect(response.status).toBe(200);
       const where = findManyMock.mock.calls[0][0].where;
       expect(where).not.toHaveProperty('competitor');
+      expect(where).not.toHaveProperty('normalizedCompetitor');
       const groupByWhere = groupByMock.mock.calls[0][0].where;
       expect(groupByWhere).not.toHaveProperty('competitor');
+      expect(groupByWhere).not.toHaveProperty('normalizedCompetitor');
     });
 
     it('defaults the mentions result set to 50 and orders by createdAt descending', async () => {
@@ -345,7 +358,7 @@ describe('GET /api/competitive-intelligence', () => {
       );
     });
 
-    it('requests only id, filename, title, createdAt, and userId on the related call', async () => {
+    it('requests only id, filename, title, and createdAt on the related call (no userId leak)', async () => {
       authMock.mockResolvedValue({ userId: 'clerk_user_1' });
       upsertMock.mockResolvedValue(PRO_USER);
       findManyMock.mockResolvedValue([]);
@@ -356,7 +369,7 @@ describe('GET /api/competitive-intelligence', () => {
         expect.objectContaining({
           include: {
             call: {
-              select: { id: true, filename: true, title: true, createdAt: true, userId: true },
+              select: { id: true, filename: true, title: true, createdAt: true },
             },
           },
         }),

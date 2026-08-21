@@ -77,6 +77,7 @@ const populatedBody = {
     { competitor: 'Otter', count: 2 },
   ],
   summary: { total: 6, uniqueCompetitors: 2, days: 30 },
+  meta: { companyName: 'Acme Corp', watchlistSize: 2, mode: 'watchlist' as const },
 };
 
 const legacyMention = {
@@ -99,7 +100,39 @@ const legacyPopulatedBody = {
   mentions: [legacyMention],
   trend: [{ competitor: 'Gong', count: 1 }],
   summary: { total: 1, uniqueCompetitors: 1, days: 30 },
+  meta: { companyName: 'Acme Corp', watchlistSize: 1, mode: 'watchlist' as const },
 };
+
+// Helper to mock fetch handling company/competitors + intelligence
+function mockIntelligenceFetch(intelBody: unknown, opts?: { companyName?: string | null; watchlistEntries?: { id: string; name: string }[]; watchlistSize?: number }) {
+  const companyName = opts?.companyName ?? 'Acme Corp';
+  const entries = opts?.watchlistEntries ?? [{ id: '1', name: 'Gong' }, { id: '2', name: 'Otter' }];
+  const size = opts?.watchlistSize ?? entries.length;
+  vi.mocked(fetch).mockImplementation(async (url: string | Request | URL) => {
+    const u = typeof url === 'string' ? url : url.toString();
+    if (u.includes('/api/company')) return ok({ companyName });
+    if (u.includes('/api/competitors')) return ok({ entries, watchlistSize: size });
+    if (u.includes('/api/competitive-intelligence')) return ok(intelBody);
+    return ok({});
+  });
+}
+
+function mockIntelligenceFetchWithQueue(intelBodies: unknown[], opts?: { companyName?: string | null; watchlistEntries?: { id: string; name: string }[] }) {
+  const companyName = opts?.companyName ?? 'Acme Corp';
+  const entries = opts?.watchlistEntries ?? [{ id: '1', name: 'Gong' }];
+  let callIdx = 0;
+  vi.mocked(fetch).mockImplementation(async (url: string | Request | URL) => {
+    const u = typeof url === 'string' ? url : url.toString();
+    if (u.includes('/api/company')) return ok({ companyName });
+    if (u.includes('/api/competitors')) return ok({ entries });
+    if (u.includes('/api/competitive-intelligence')) {
+      const body = intelBodies[callIdx] ?? intelBodies[intelBodies.length - 1];
+      callIdx += 1;
+      return ok(body);
+    }
+    return ok({});
+  });
+}
 
 describe('IntelligencePage (/app/intelligence)', () => {
   beforeEach(() => {
@@ -112,7 +145,7 @@ describe('IntelligencePage (/app/intelligence)', () => {
   });
 
   it('renders stat cards, the mention row, and the truncation caption for populated data', async () => {
-    vi.mocked(fetch).mockResolvedValue(ok(populatedBody));
+    mockIntelligenceFetch(populatedBody);
 
     const { default: IntelligencePage } = await import('./page');
     render(<IntelligencePage />);
@@ -120,29 +153,26 @@ describe('IntelligencePage (/app/intelligence)', () => {
     await waitFor(() => {
       expect(screen.getByText('Total Mentions')).toBeInTheDocument();
     });
-    // First stat card: Total Mentions → summary.total (6).
     expect(screen.getByText('6')).toBeInTheDocument();
     expect(screen.getByText('Competitors Tracked')).toBeInTheDocument();
     expect(screen.getByText('2')).toBeInTheDocument();
-    // Top Competitor card shows trend[0].competitor + its count.
     expect(screen.getByText('Top Competitor')).toBeInTheDocument();
     expect(screen.getByText('4 mentions')).toBeInTheDocument();
     expect(screen.getAllByText('Gong').length).toBeGreaterThanOrEqual(1);
-    // The mention row renders the context snippet.
     expect(screen.getByText(/They mentioned Gong/)).toBeInTheDocument();
-    // summary.total (6) > mentions.length (1) → truncation caption.
     expect(
       screen.getByText(/Showing the most recent 1 of 6 mentions\./)
     ).toBeInTheDocument();
   });
 
   it('renders the plan-locked upgrade prompt on 403 PLAN_REQUIRED (no stat cards)', async () => {
-    vi.mocked(fetch).mockResolvedValue(
-      err(403, {
-        error: 'Upgrade to Pro to access competitive intelligence',
-        code: 'PLAN_REQUIRED',
-      })
-    );
+    vi.mocked(fetch).mockImplementation(async (url: string | Request | URL) => {
+      const u = typeof url === 'string' ? url : url.toString();
+      if (u.includes('/api/company')) return ok({ companyName: null });
+      if (u.includes('/api/competitors')) return ok({ entries: [] });
+      if (u.includes('/api/competitive-intelligence')) return err(403, { error: 'Upgrade to Pro to access competitive intelligence', code: 'PLAN_REQUIRED' });
+      return ok({});
+    });
 
     const { default: IntelligencePage } = await import('./page');
     render(<IntelligencePage />);
@@ -157,7 +187,13 @@ describe('IntelligencePage (/app/intelligence)', () => {
   });
 
   it('renders the session-expired message on 401', async () => {
-    vi.mocked(fetch).mockResolvedValue(err(401, {}));
+    vi.mocked(fetch).mockImplementation(async (url: string | Request | URL) => {
+      const u = typeof url === 'string' ? url : url.toString();
+      if (u.includes('/api/company')) return ok({ companyName: null });
+      if (u.includes('/api/competitors')) return ok({ entries: [] });
+      if (u.includes('/api/competitive-intelligence')) return err(401, {});
+      return ok({});
+    });
 
     const { default: IntelligencePage } = await import('./page');
     render(<IntelligencePage />);
@@ -168,9 +204,13 @@ describe('IntelligencePage (/app/intelligence)', () => {
   });
 
   it('renders the error card with the API message on 5xx', async () => {
-    vi.mocked(fetch).mockResolvedValue(
-      err(500, { message: 'Failed to fetch competitive intelligence' })
-    );
+    vi.mocked(fetch).mockImplementation(async (url: string | Request | URL) => {
+      const u = typeof url === 'string' ? url : url.toString();
+      if (u.includes('/api/company')) return ok({ companyName: null });
+      if (u.includes('/api/competitors')) return ok({ entries: [] });
+      if (u.includes('/api/competitive-intelligence')) return err(500, { message: 'Failed to fetch competitive intelligence' });
+      return ok({});
+    });
 
     const { default: IntelligencePage } = await import('./page');
     render(<IntelligencePage />);
@@ -184,7 +224,13 @@ describe('IntelligencePage (/app/intelligence)', () => {
   });
 
   it('renders the network error card — NOT the empty state — when fetch rejects', async () => {
-    vi.mocked(fetch).mockRejectedValue(new TypeError('Network request failed'));
+    vi.mocked(fetch).mockImplementation(async (url: string | Request | URL) => {
+      const u = typeof url === 'string' ? url : url.toString();
+      if (u.includes('/api/company')) return ok({ companyName: null });
+      if (u.includes('/api/competitors')) return ok({ entries: [] });
+      if (u.includes('/api/competitive-intelligence')) throw new TypeError('Network request failed');
+      return ok({});
+    });
 
     const { default: IntelligencePage } = await import('./page');
     render(<IntelligencePage />);
@@ -194,18 +240,18 @@ describe('IntelligencePage (/app/intelligence)', () => {
         screen.getByText(/Network error.*could not load competitive data/)
       ).toBeInTheDocument();
     });
-    // Locks the honesty fix: a network failure must never fall back to
-    // the fake-empty "No competitor mentions found yet." state.
     expect(screen.queryByText(/No competitor mentions found yet/)).toBeNull();
   });
 
-  it('renders the softened empty-state copy for an empty success response', async () => {
-    vi.mocked(fetch).mockResolvedValue(
-      ok({
+  it('renders the truthful empty-state copy for an empty success response', async () => {
+    mockIntelligenceFetch(
+      {
         mentions: [],
         trend: [],
         summary: { total: 0, uniqueCompetitors: 0, days: 30 },
-      })
+        meta: { companyName: null, watchlistSize: 0, mode: 'all' as const },
+      },
+      { companyName: null, watchlistEntries: [] }
     );
 
     const { default: IntelligencePage } = await import('./page');
@@ -214,19 +260,19 @@ describe('IntelligencePage (/app/intelligence)', () => {
     await waitFor(() => {
       expect(screen.getByText(/No competitor mentions found yet\./)).toBeInTheDocument();
     });
-    expect(screen.getByText(/linked to the call it came from/)).toBeInTheDocument();
+    expect(screen.getByText(/Add your rivals in Settings → Workspace → Company & Competitors\. Until then, discovery mode\./)).toBeInTheDocument();
   });
 
   it('re-fetches with ?competitor= when a competitor chip is clicked', async () => {
-    vi.mocked(fetch)
-      .mockResolvedValueOnce(ok(populatedBody))
-      .mockResolvedValueOnce(
-        ok({
-          mentions: [gongMention],
-          trend: [{ competitor: 'Gong', count: 4 }],
-          summary: { total: 4, uniqueCompetitors: 1, days: 30 },
-        })
-      );
+    mockIntelligenceFetchWithQueue([
+      populatedBody,
+      {
+        mentions: [gongMention],
+        trend: [{ competitor: 'Gong', count: 4 }],
+        summary: { total: 4, uniqueCompetitors: 1, days: 30 },
+        meta: { companyName: 'Acme Corp', watchlistSize: 1, mode: 'watchlist' as const },
+      },
+    ]);
 
     const { default: IntelligencePage } = await import('./page');
     render(<IntelligencePage />);
@@ -236,19 +282,18 @@ describe('IntelligencePage (/app/intelligence)', () => {
     });
     fireEvent.click(screen.getByTestId('chip-Gong'));
 
-    // The second fetch (index 1) must target the filtered endpoint.
     await waitFor(() => {
-      const url = vi.mocked(fetch).mock.calls[1]?.[0] as string;
-      expect(url).toContain('competitor=Gong');
+      const calls = vi.mocked(fetch).mock.calls.map((c) => String(c[0]));
+      const intelCalls = calls.filter((u) => u.includes('competitive-intelligence'));
+      expect(intelCalls.some((u) => u.includes('competitor=Gong'))).toBe(true);
     });
-    // Stat-card label + mentions heading both switch to filtered copy.
     await waitFor(() => {
       expect(screen.getAllByText(/Mentions of "Gong"/)).toHaveLength(2);
     });
   });
 
   it('renders the honesty banner when mentions have no context or sentiment (legacy calls)', async () => {
-    vi.mocked(fetch).mockResolvedValue(ok(legacyPopulatedBody));
+    mockIntelligenceFetch(legacyPopulatedBody);
 
     const { default: IntelligencePage } = await import('./page');
     render(<IntelligencePage />);
@@ -264,7 +309,7 @@ describe('IntelligencePage (/app/intelligence)', () => {
   });
 
   it('does not render the honesty banner when mentions have context and sentiment', async () => {
-    vi.mocked(fetch).mockResolvedValue(ok(populatedBody));
+    mockIntelligenceFetch(populatedBody);
 
     const { default: IntelligencePage } = await import('./page');
     render(<IntelligencePage />);
@@ -275,5 +320,82 @@ describe('IntelligencePage (/app/intelligence)', () => {
     expect(
       screen.queryByText(/mention\(s\) detected, but these calls were analyzed before/)
     ).toBeNull();
+  });
+
+  // V2a — watchlist ownership extensions
+  it('renders header meta strip showing Company and Watchlist size', async () => {
+    mockIntelligenceFetch(populatedBody, { companyName: 'Acme Corp', watchlistEntries: [{ id: '1', name: 'Gong' }, { id: '2', name: 'Otter' }] });
+
+    const { default: IntelligencePage } = await import('./page');
+    render(<IntelligencePage />);
+
+    await waitFor(() => {
+      expect(screen.getByText('Acme Corp')).toBeInTheDocument();
+    });
+    expect(screen.getByText(/Watchlist 2/)).toBeInTheDocument();
+  });
+
+  it('renders watchlist/all toggle and switches mode on click', async () => {
+    mockIntelligenceFetch(populatedBody);
+
+    const { default: IntelligencePage } = await import('./page');
+    render(<IntelligencePage />);
+
+    await waitFor(() => {
+      expect(screen.getByTestId('mode-watchlist')).toBeInTheDocument();
+    });
+    expect(screen.getByTestId('mode-all')).toBeInTheDocument();
+
+    // Default should be watchlist when size>0
+    expect(screen.getByTestId('mode-watchlist').className).toContain('bg-[#F26522]');
+
+    fireEvent.click(screen.getByTestId('mode-all'));
+    await waitFor(() => {
+      const calls = vi.mocked(fetch).mock.calls.map((c) => String(c[0]));
+      const intelCalls = calls.filter((u) => u.includes('competitive-intelligence'));
+      // Last intel call should have mode=all
+      expect(intelCalls[intelCalls.length - 1]).toContain('mode=all');
+    });
+  });
+
+  it('shows discovery mode message when watchlist empty', async () => {
+    mockIntelligenceFetch(
+      {
+        mentions: [],
+        trend: [],
+        summary: { total: 0, uniqueCompetitors: 0, days: 30 },
+        meta: { companyName: null, watchlistSize: 0, mode: 'all' as const },
+      },
+      { companyName: null, watchlistEntries: [] }
+    );
+
+    const { default: IntelligencePage } = await import('./page');
+    render(<IntelligencePage />);
+
+    await waitFor(() => {
+      expect(screen.getByText(/Watchlist empty — showing discovery mode\./)).toBeInTheDocument();
+    });
+    // Toggle should be visible but watchlist disabled
+    expect(screen.getByTestId('mode-watchlist')).toBeDisabled();
+  });
+
+  it('watchlist toggle disabled when empty has tooltip', async () => {
+    mockIntelligenceFetch(
+      {
+        mentions: [{ ...gongMention, competitor: 'DiscoveryCo' }],
+        trend: [{ competitor: 'DiscoveryCo', count: 1 }],
+        summary: { total: 1, uniqueCompetitors: 1, days: 30 },
+        meta: { companyName: null, watchlistSize: 0, mode: 'all' as const },
+      },
+      { companyName: null, watchlistEntries: [] }
+    );
+
+    const { default: IntelligencePage } = await import('./page');
+    render(<IntelligencePage />);
+
+    await waitFor(() => {
+      expect(screen.getByTestId('mode-watchlist')).toBeInTheDocument();
+    });
+    expect(screen.getByTestId('mode-watchlist').title).toMatch(/Add rivals in Settings/);
   });
 });
