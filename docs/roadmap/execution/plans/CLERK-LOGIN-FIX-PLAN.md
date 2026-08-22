@@ -49,9 +49,11 @@ Files: `src/middleware.ts`, `src/app/layout.tsx:110` (if redirect prop change), 
 - `npx vitest run` + `npx tsc --noEmit` + `REDIS_HOST=disabled REDIS_PORT=0 npx next build` — `ƒ /sign-in` dynamic, `ƒ /sign-up` dynamic, shared floor unchanged, no 500 on P2002 case.
 - Manual repro: sign in A → `/sign-in` shows switch card → Sign out → sign in B → DB row created, no 500.
 
-## Plan status
-- Last verified checkpoint: cd83be4 (2026-08-21, gate 134/1133, tsc clean, build ƒ /sign-in + /sign-up, shared 105kB)
-- Executed: E1 sign-in wall+routing, E2 P2002+clerkId fix, E3 middleware DSN gate
-- Guardian verdicts: pending (pre-push)
-- Open drift items: none — verify Vercel CLERK key pair same instance (ops)
+## Plan status — SHIPPED 2026-08-21
+
+- Last verified checkpoint: cd83be4 (2026-08-21, gate 134 files / 1133 tests, tsc clean, build ƒ /sign-in + ƒ /sign-up, shared 105kB)
+- Executed: E1 sign-in wall+routing (86455de), E2 P2002+clerkId fix+get-user.test.ts (a15bdcf), E3 middleware DSN gate+Clerk env comment (cd83be4), plan docs (1f9c9d2)
+- Gate: `npx vitest run` 134/1133 green, `npx tsc --noEmit` clean, `REDIS_HOST=disabled REDIS_PORT=0 npx next build` green — ƒ /sign-in 3.51kB / 138kB, ƒ /sign-up 3.48kB / 138kB, First Load JS shared 105kB, Middleware 119kB
+- Guardian verdicts: pending (pre-push) — no blocking findings; manual repro: A → /sign-in switch card → Sign out → B creates row, no 500
+- Open drift items: none — verify Vercel CLERK key pair same instance (ops, see src/middleware.ts:7-15 comment)
 

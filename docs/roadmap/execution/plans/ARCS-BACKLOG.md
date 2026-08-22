@@ -24,27 +24,28 @@ Follow-ups (frontier rows): settings toast copy stale; KG calls[] scrub; presign
 
 Status: SHIPPED. Deps: none.
 
-## C. DEPENDENCY UPGRADE (19 high-severity vulns)
+## C. DEPENDENCY UPGRADE (19 high-severity vulns) — NEXT (HIGH)
 
 `npm audit`: 26 total / 19 high / 0 critical / 4 moderate / 3 low.
 No blind `audit fix --force`. Requires a deliberate, gated upgrade pass:
 lockfile analysis → per-package upgrade with vitest+tsc+build per step →
 full Playwright + signed-in smoke.
 
-Status: NOT STARTED. Effort: L. Deps: none. Ship order: before broad launch.
+Status: NOT STARTED — NEXT (HIGH, after B shipped). Effort: L. Deps: none. Ship order: before broad launch.
 
-## D. SANDBOX / LIVE VERIFICATION (BLOCKED on user accounts)
+## D. SANDBOX / LIVE VERIFICATION (BLOCKED on user accounts — D1 Paddle-live PARKED per user)
 
 - D1. Paddle sandbox: upgrade / cancel / refund through `/api/paddle/webhook`
       (+ fix `PADDLE_ENV` / `NEXT_PUBLIC_PADDLE_CLIENT_KEY` to match live).
+      **PARKED** — Paddle **live** migration intentionally left parked until ship (per user 2026-08-21: "leave live until ship") — not in progress.
 - D2. HubSpot / Salesforce OAuth against sandboxes (ENCRYPTION_KEY now set —
       was audit blocker #4, fixed 08-19).
 - D3. 20–30 real end-to-end calls with diarization + analysis (needs OpenAI
       credits for embeddings/analysis; Groq covers transcription).
 - D4. Human-reviewed AI accuracy benchmark (audit ship-order item).
 
-Status: BLOCKED. Deps: user's Paddle/HubSpot/Salesforce dashboards, OpenAI
-credits, test creds.
+Status: BLOCKED / PARKED (D1 live parked). Deps: user's Paddle/HubSpot/Salesforce dashboards, OpenAI
+credits, test creds. Not in progress.
 
 ## E. FEATURE COMPLETION (audit ship-order items, post-security)
 
