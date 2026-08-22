@@ -51,5 +51,5 @@ jobs:
 
       - run: npx next build
 
-      - name: Run Lighthouse CI
-        run: npx lhci autorun
+      - name: Run Lighthouse CI (disabled - lhci removed, see package.json perf:lighthouse)
+        run: echo "lighthouse: removed, run npx @lhci/cli@latest autorun or use Vercel Speed Insights"

@@ -17,7 +17,7 @@
     "db:deploy": "prisma migrate deploy",
     "vercel-build": "prisma migrate deploy && next build",
     "perf:audit": "bash scripts/bundle-audit.sh",
-    "perf:lighthouse": "lhci autorun",
+    "perf:lighthouse": "echo \"lighthouse: removed, run npx @lhci/cli@latest or vercel speed insights\"",
     "bundle:proof": "./scripts/refresh-bundle-proof.sh",
     "doctor": "npx react-doctor@latest"
   },
@@ -64,7 +64,6 @@
     "js-cookie": "3.0.8"
   },
   "devDependencies": {
-    "@lhci/cli": "^0.15.1",
     "@playwright/test": "^1.61.0",
     "@testing-library/jest-dom": "^6.9.1",
     "@testing-library/react": "^16.3.2",
