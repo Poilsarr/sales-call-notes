@@ -24,14 +24,16 @@ Follow-ups (frontier rows): settings toast copy stale; KG calls[] scrub; presign
 
 Status: SHIPPED. Deps: none.
 
-## C. DEPENDENCY UPGRADE (19 high-severity vulns) — NEXT (HIGH)
+## C. DEPENDENCY UPGRADE (19 high-severity vulns) — plan: DEPS-UPGRADE-PLAN.md — **WAVES 1-4 SHIPPED 2026-08-22 (26→3)**
 
-`npm audit`: 26 total / 19 high / 0 critical / 4 moderate / 3 low.
-No blind `audit fix --force`. Requires a deliberate, gated upgrade pass:
-lockfile analysis → per-package upgrade with vitest+tsc+build per step →
-full Playwright + signed-in smoke.
+`npm audit` before: 26 total / 19 high / 0 critical / 4 moderate / 3 low.
 
-Status: NOT STARTED — NEXT (HIGH, after B shipped). Effort: L. Deps: none. Ship order: before broad launch.
+- Wave1 (f9a925f) dev-only: `vite@8.0.16`, `esbuild@0.28.2`, `nanoid@3.3.18`, `fast-uri@3.1.5` via `@sentry/nextjs@10.70.0`, `brace-expansion@5.0.9` — `26→18` (15 high).
+- Wave2 (c23e593) prod: `@vercel/blob@2.8.0` (`undici@6.28/7.29`), `form-data@4.0.6`, `js-cookie@3.0.8` — `18→13` (10 high).
+- Wave3 (4f566dc) Clerk patch-line: `@clerk/backend@1.14.1→1.34.0` — `13→13` (dedupe, no audit DB entry).
+- Wave4 (0bfe585) LHCI removal: `npm remove @lhci/cli` (abandoned) — `13→3` (only `next@15.5.23` + `postcss@8.5.14` + `sharp@0.34.5` remain, require `next@16` major).
+
+Status: WAVES 1-4 SHIPPED. Wave5 `next@16`/`postcss`/`sharp` deferred (major, per plan). Effort: L. Deps: none. Ship order: before broad launch.
 
 ## D. SANDBOX / LIVE VERIFICATION (BLOCKED on user accounts — D1 Paddle-live PARKED per user)
 

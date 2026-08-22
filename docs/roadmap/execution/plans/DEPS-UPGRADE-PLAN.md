@@ -72,10 +72,12 @@ Files: `package.json`, `package-lock.json` + `src/test` none (just bumps). Execu
 - `Next 16` major, `@prisma/client 7`, `openai 7`, `zod 4` — not vuln, not in audit.
 - `bullmq 6`, `ioredis 6` majors — not vuln.
 
-## Plan status
+## Plan status — WAVES 1-4 SHIPPED 2026-08-22
 
-- Last verified checkpoint: 1f9c9d2 (2026-08-21, CLERK-LOGIN-FIX shipped, 134/1133)
-- Explore: 2026-08-21 `npm audit --json` 26/19/4/3, `npm outdated` 35 behind, `npm ls` per-group verified
-- Guardian verdicts: pending (pre-execute Wave 1)
+- Last verified checkpoint: 0bfe585 (2026-08-22, audit 13→3, Wave4 LHCI remove)
+- Executed: Wave1 f9a925f (vite/esbuild/nanoid/fast-uri/brace-expansion, 26→18), Wave2 c23e593 (undici/form-data/js-cookie, 18→13), Wave3 4f566dc (clerk 1.34, 13→13), Wave4 0bfe585 (remove lhci, 13→3)
+- Gate: `npx vitest run` 136/1139, `npx tsc --noEmit` clean, `REDIS_HOST=disabled REDIS_PORT=0 npx next build` green — shared 105kB, `next@15.5.23` retained, `lhci` not in build
+- Remaining: 3 high (`next@15.5.23` + `postcss@8.5.14` + `sharp@0.34.5` via `next@16.3.2` major) — deferred to Wave5 (isolated PR per CLAUDE.md:4)
+- Guardian verdicts: pending Wave5
 - Open drift items: none
 
