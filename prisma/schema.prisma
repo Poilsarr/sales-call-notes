@@ -396,3 +396,12 @@ model PartnerApplication {
   @@index([email])
   @@index([referralCode])
 }
+
+model PaddleEvent {
+  id        String   @id // Paddle notification_id / event_id
+  type      String
+  createdAt DateTime @default(now())
+
+  @@index([type])
+  @@index([createdAt])
+}

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { useUser } from "@clerk/nextjs";
 import type { Paddle } from "@paddle/paddle-js";
 import { CheckCircle, Loader2, ArrowRight, Zap, Plus, Minus, ShieldCheck, RotateCcw, CreditCard, Clock, TrendingUp, ArrowUpRight, Download } from "lucide-react";
@@ -134,6 +134,7 @@ export default function PricingClient({
   const { user, isSignedIn, isLoaded: clerkLoaded } = useUser();
   const [cycle, setCycle] = useState<BillingCycle>("monthly");
   const [checkingOut, setCheckingOut] = useState(false);
+  const checkingOutRef = useRef(false);
   const [paddleError, setPaddleError] = useState(false);
 
   // Map tier name -> formatted total string from Paddle PricePreview.
@@ -212,11 +213,12 @@ export default function PricingClient({
 
   const openCheckout = useCallback(
     async (tier: Tier) => {
-      if (checkingOut) return;
+      if (checkingOut || checkingOutRef.current) return;
       if (!isSignedIn) {
         window.location.href = `/sign-up?redirect=/pricing`;
         return;
       }
+      checkingOutRef.current = true;
       setCheckingOut(true);
       try {
         // Lazy-load the Paddle SDK only when the user starts checkout. This
@@ -243,6 +245,7 @@ export default function PricingClient({
             : {}),
           customData: {
             clerkUserId: user?.id,
+            userId: user?.id,
           },
           settings: {
             displayMode: "overlay",
@@ -253,13 +256,14 @@ export default function PricingClient({
           onSuccess: redirectToWelcome,
           onCheckoutCompleted: redirectToWelcome,
           onClose: () => {
+            checkingOutRef.current = false;
             setCheckingOut(false);
           },
         } as any);
       } catch (err) {
         console.error("Paddle checkout failed:", err);
         setPaddleError(true);
-      } finally {
+        checkingOutRef.current = false;
         setCheckingOut(false);
       }
     },

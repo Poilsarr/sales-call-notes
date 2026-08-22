@@ -127,7 +127,7 @@ export default function UpgradePrompt({ feature, featureName, onClose, minimal, 
     
     paddle.Checkout.open({
       items: [{ priceId, quantity: 1 }],
-      customData: { userId: user.id, feature },
+      customData: { userId: user.id, clerkUserId: user.id, feature },
       settings: {
         displayMode: "overlay",
         theme: "dark",

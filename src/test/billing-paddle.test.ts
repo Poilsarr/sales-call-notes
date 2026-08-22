@@ -8,6 +8,9 @@ const {
   mockLogAuditAction,
   mockUnmarshal,
   mockGetSecret,
+  mockPaddleEventCreate,
+  mockAuditLogCreate,
+  mockPrismaFindUnique,
 } = vi.hoisted(() => ({
   mockPrismaFindFirst: vi.fn(),
   mockPrismaUpdate: vi.fn(),
@@ -15,6 +18,9 @@ const {
   mockLogAuditAction: vi.fn(),
   mockUnmarshal: vi.fn(),
   mockGetSecret: vi.fn(),
+  mockPaddleEventCreate: vi.fn().mockResolvedValue({}),
+  mockAuditLogCreate: vi.fn().mockResolvedValue({}),
+  mockPrismaFindUnique: vi.fn().mockResolvedValue(null),
 }));
 
 vi.mock("@/lib/prisma", () => ({
@@ -23,6 +29,13 @@ vi.mock("@/lib/prisma", () => ({
       findFirst: mockPrismaFindFirst,
       update: mockPrismaUpdate,
       updateMany: mockPrismaUpdateMany,
+      findUnique: mockPrismaFindUnique,
+    },
+    paddleEvent: {
+      create: mockPaddleEventCreate,
+    },
+    auditLog: {
+      create: mockAuditLogCreate,
     },
   },
 }));
@@ -95,6 +108,12 @@ describe("POST /api/paddle/webhook", () => {
     mockPrismaUpdate.mockReset();
     mockPrismaUpdateMany.mockReset();
     mockLogAuditAction.mockResolvedValue(undefined);
+    mockPaddleEventCreate.mockReset();
+    mockPaddleEventCreate.mockResolvedValue({});
+    mockAuditLogCreate.mockReset();
+    mockAuditLogCreate.mockResolvedValue({});
+    mockPrismaFindUnique.mockReset();
+    mockPrismaFindUnique.mockResolvedValue(null);
   });
 
   it("returns 401 when the webhook signature is invalid", async () => {
@@ -272,14 +291,19 @@ describe("POST /api/paddle/webhook", () => {
     expect(mockPrismaUpdateMany).not.toHaveBeenCalled();
   });
 
-  it("returns 404 when no user matches the subscription's customData", async () => {
+  it("dead-letters with 200 (not 404) when no user matches the subscription's customData — Paddle will not retry", async () => {
     mockUnmarshal.mockResolvedValue(subscriptionEvent("active"));
     mockPrismaFindFirst.mockResolvedValueOnce(null).mockResolvedValueOnce(null);
 
     const res = await POST(webhookRequest(subscriptionEvent("active")));
 
-    expect(res.status).toBe(404);
-    await expect(res.json()).resolves.toEqual({ error: "User not found" });
+    expect(res.status).toBe(200);
+    await expect(res.json()).resolves.toEqual({ received: true, orphan: true });
     expect(mockPrismaUpdate).not.toHaveBeenCalled();
+    expect(mockAuditLogCreate).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({ action: "PADDLE_WEBHOOK_ORPHAN" }),
+      })
+    );
   });
 });

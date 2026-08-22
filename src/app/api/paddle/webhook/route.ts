@@ -21,6 +21,20 @@ export async function POST(req: NextRequest) {
 
     const eventType: string = event.eventType;
     const data: any = event.data;
+    const notificationId: string | undefined =
+      (event as any).eventId || (event as any).notificationId || (event as any).id || undefined;
+
+    // H3: true idempotency — Paddle retries on non-2xx, so dedup by event id
+    if (notificationId) {
+      try {
+        await prisma.paddleEvent.create({ data: { id: notificationId, type: eventType } });
+      } catch (e: any) {
+        if (e?.code === "P2002") {
+          return NextResponse.json({ received: true, deduped: true, reason: "event_id" });
+        }
+        throw e;
+      }
+    }
 
     switch (eventType) {
       case "subscription.created":
@@ -48,16 +62,9 @@ export async function POST(req: NextRequest) {
           }
         }
 
-        if (plan === "FREE" && status === "active") {
-          console.error(
-            "[PADDLE_WEBHOOK] Active subscription with unmapped price IDs — defaulting to FREE. " +
-            "This likely means a new Paddle price ID was created but not added to lib/plans.ts. " +
-            `customerId=${customerId} subscriptionId=${subscriptionId} priceIds=${JSON.stringify(itemPriceIds)}`
-          );
-        }
-
         const dbStatus = status === "active" || status === "trialing" ? "active" : status;
 
+        // H1: dedup by (subscriptionId, status) still useful as second guard
         const existing = await prisma.user.findFirst({
           where: { paddleSubscriptionId: subscriptionId },
           select: { subscriptionStatus: true },
@@ -84,12 +91,51 @@ export async function POST(req: NextRequest) {
         });
 
         if (!targetUser) {
+          // H1: Paddle retries on 404 for 3 days → spam. Dead-letter with 200 instead.
           console.error(
-            "[PADDLE_WEBHOOK] Could not find user for subscription. " +
+            "[PADDLE_WEBHOOK] Could not find user — dead-lettering, Paddle will not retry. " +
             `customerId=${customerId} subscriptionId=${subscriptionId} ` +
-            `customData=${JSON.stringify(customData)}`
+            `customData=${JSON.stringify(customData)} eventType=${eventType}`
           );
-          return NextResponse.json({ error: "User not found" }, { status: 404 });
+          await prisma.auditLog
+            .create({
+              data: {
+                action: "PADDLE_WEBHOOK_ORPHAN",
+                entityId: subscriptionId,
+                metadata: { customerId, subscriptionId, customData, eventType, notificationId },
+              },
+            })
+            .catch(() => {});
+          return NextResponse.json({ received: true, orphan: true }, { status: 200 });
+        }
+
+        // H2: FREE fallback must NOT corrupt active users — keep prior plan
+        if (plan === "FREE" && status === "active") {
+          console.error(
+            "[PADDLE_WEBHOOK] Active subscription with unmapped price IDs — NOT downgrading to FREE. " +
+            `customerId=${customerId} subscriptionId=${subscriptionId} priceIds=${JSON.stringify(itemPriceIds)}`
+          );
+          const keep = await prisma.user.findUnique({ where: { id: targetUser.id }, select: { plan: true } });
+          const keepPlan = keep?.plan ?? "FREE";
+          await prisma.user.update({
+            where: { id: targetUser.id },
+            data: {
+              paddleCustomerId: customerId,
+              paddleSubscriptionId: subscriptionId,
+              subscriptionStatus: dbStatus,
+              subscriptionPlan: "UNKNOWN",
+              plan: keepPlan,
+              credits: keepPlan !== "FREE" ? 999 : 5,
+            },
+          });
+          await logAuditAction("SYSTEM", "PADDLE_WEBHOOK_UNMAPPED", targetUser.id, "User", {
+            eventType,
+            subscriptionId,
+            customerId,
+            itemPriceIds,
+            keptPlan: keepPlan,
+          });
+          break;
         }
 
         await prisma.user.update({
@@ -147,6 +193,11 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ received: true });
   } catch (error) {
     console.error("Paddle webhook error:", error);
-    return NextResponse.json({ error: "Webhook processing failed" }, { status: 500 });
+    // H1: Paddle retries on 500 → spam. Acknowledge with 200 and alert via logs/Sentry.
+    try {
+      const { captureApiError } = await import("@/lib/sentry");
+      captureApiError("/api/paddle/webhook", error, { method: "POST" });
+    } catch {}
+    return NextResponse.json({ received: true, error: "logged" }, { status: 200 });
   }
 }
