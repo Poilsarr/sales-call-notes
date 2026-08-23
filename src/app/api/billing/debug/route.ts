@@ -15,6 +15,9 @@ function getPaddleBaseUrl(): string {
 }
 
 export async function GET(req: NextRequest) {
+  if (process.env.NODE_ENV === "production" && process.env.VERCEL_ENV === "production") {
+    return NextResponse.json({ error: "Not found" }, { status: 404 });
+  }
   try {
     const { userId: clerkId } = await auth();
     if (!clerkId) {
