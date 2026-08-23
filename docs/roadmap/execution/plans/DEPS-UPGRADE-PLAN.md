@@ -72,12 +72,11 @@ Files: `package.json`, `package-lock.json` + `src/test` none (just bumps). Execu
 - `Next 16` major, `@prisma/client 7`, `openai 7`, `zod 4` — not vuln, not in audit.
 - `bullmq 6`, `ioredis 6` majors — not vuln.
 
-## Plan status — WAVES 1-4 SHIPPED 2026-08-22
+## Plan status — SHIPPED 2026-08-23 (audit 0)
 
-- Last verified checkpoint: 0bfe585 (2026-08-22, audit 13→3, Wave4 LHCI remove)
-- Executed: Wave1 f9a925f (vite/esbuild/nanoid/fast-uri/brace-expansion, 26→18), Wave2 c23e593 (undici/form-data/js-cookie, 18→13), Wave3 4f566dc (clerk 1.34, 13→13), Wave4 0bfe585 (remove lhci, 13→3)
-- Gate: `npx vitest run` 136/1139, `npx tsc --noEmit` clean, `REDIS_HOST=disabled REDIS_PORT=0 npx next build` green — shared 105kB, `next@15.5.23` retained, `lhci` not in build
-- Remaining: 3 high (`next@15.5.23` + `postcss@8.5.14` + `sharp@0.34.5` via `next@16.3.2` major) — deferred to Wave5 (isolated PR per CLAUDE.md:4)
-- Guardian verdicts: pending Wave5
+- Last verified checkpoint: 23736ee (2026-08-23, audit 0, CI #555 2m15s)
+- Executed: Wave1 f9a925f (26→18), Wave2 c23e593 (18→13), Wave3 4f566dc (13→13), Wave4 0bfe585 (13→3), Wave5 23736ee (postcss 8.5.26 + sharp 0.35.0 via overrides, 3→0, next retained; debug oracles 404 in prod, .env 600)
+- Gate: `npm audit` 0, `npx vitest run` 136/1139, `npx tsc --noEmit` clean, `REDIS_HOST=disabled REDIS_PORT=0 npx next build` green — shared 105kB, `next@15.5.23` retained, no `next@16` major
+- Guardian verdicts: CLEAR
 - Open drift items: none
 
