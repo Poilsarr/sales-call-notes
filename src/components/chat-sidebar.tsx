@@ -10,6 +10,7 @@ interface ChatMessage {
   role: 'user' | 'assistant';
   content: string;
   relevantCalls?: Array<{ id: string; filename: string; title?: string | null; displayName?: string; date: string; summary: string | null }>;
+  upgradeRequired?: boolean;
 }
 
 export function ChatSidebar() {
@@ -48,17 +49,31 @@ export function ChatSidebar() {
         body: JSON.stringify({ query: userMsg, userId: user.id }),
       });
       const data = await res.json();
-      // ponytail: show server error message instead of generic fallback
-      const content = !res.ok && data.error
-        ? `Error: ${data.error}`
-        : data.answer || 'No response available.';
-      const assistantKey = ++messageKeyRef.current;
-      setMessages(prev => [...prev, {
-        role: 'assistant',
-        content,
-        relevantCalls: data.relevantCalls,
-        _key: assistantKey,
-      } as any]);
+      if (res.status === 403 && data.code === 'PLAN_REQUIRED') {
+        // ponytail: Free-tier gate — render an upgrade affordance instead of
+        // an "Error:" bubble. Request logic above is untouched. (UpgradePrompt
+        // not reused: its default is a fullscreen modal and its minimal mode
+        // pulls Paddle/billing side effects — a Link suffices here.)
+        const assistantKey = ++messageKeyRef.current;
+        setMessages(prev => [...prev, {
+          role: 'assistant',
+          content: data.error || 'AI chat is a Pro plan feature.',
+          upgradeRequired: true,
+          _key: assistantKey,
+        } as any]);
+      } else {
+        // ponytail: show server error message instead of generic fallback
+        const content = !res.ok && data.error
+          ? `Error: ${data.error}`
+          : data.answer || 'No response available.';
+        const assistantKey = ++messageKeyRef.current;
+        setMessages(prev => [...prev, {
+          role: 'assistant',
+          content,
+          relevantCalls: data.relevantCalls,
+          _key: assistantKey,
+        } as any]);
+      }
     } catch {
       setMessages(prev => [...prev, { role: 'assistant', content: 'Failed to get response. Please try again.' }]);
     } finally {
@@ -87,6 +102,14 @@ export function ChatSidebar() {
             }`}
           >
             <p>{msg.content}</p>
+            {msg.upgradeRequired && (
+              <Link
+                href="/pricing"
+                className="mt-2 inline-flex items-center gap-1.5 rounded-full bg-emerald-500 px-3 py-1.5 text-xs font-medium text-white hover:bg-emerald-600 transition-colors"
+              >
+                Upgrade to Pro
+              </Link>
+            )}
             {msg.relevantCalls && msg.relevantCalls.length > 0 && (
               <div className="mt-2 pt-2 border-t border-zinc-700">
                 <p className="text-xs text-zinc-500 mb-1">Referenced calls:</p>

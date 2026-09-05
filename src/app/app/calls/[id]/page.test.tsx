@@ -210,4 +210,87 @@ describe('CallDetailPage (/app/calls/[id])', () => {
       expect(vi.mocked(toast.error)).toHaveBeenCalledWith('Network request failed');
     });
   });
+
+  it('bounds the 3-column grid to the viewport on xl so the chat input is not pushed to the page bottom', async () => {
+    renderPage();
+    await screen.findByTestId('chat-sidebar');
+    const grid = screen.getByTestId('transcript-viewer').closest('.grid');
+    expect(grid).not.toBeNull();
+    expect(grid!.className).toContain('xl:h-[calc(100vh-12rem)]');
+  });
+
+  it('gives the transcript and chat cards a bounded xl height with internal scroll', async () => {
+    renderPage();
+    await screen.findByTestId('chat-sidebar');
+    const chatCard = screen.getByTestId('chat-sidebar').parentElement;
+    expect(chatCard!.className).toContain('xl:h-full');
+    const transcriptCard = screen
+      .getByTestId('transcript-viewer')
+      .closest('.doppel-inner-dark');
+    expect(transcriptCard).not.toBeNull();
+    expect(transcriptCard!.className).toContain('xl:h-full');
+  });
+});
+
+// The page mocks ChatSidebar, so the 403 upgrade affordance is exercised
+// here against the real component via importActual (mock bypass), with
+// Clerk's useUser stubbed per the doMock + resetModules pattern.
+describe('ChatSidebar 403 upgrade affordance', () => {
+  beforeEach(() => {
+    vi.resetModules();
+    vi.doMock('@clerk/nextjs', () => ({
+      useUser: () => ({ user: { id: 'u1' }, isLoaded: true, isSignedIn: true }),
+    }));
+    Element.prototype.scrollIntoView = vi.fn() as any;
+  });
+
+  afterEach(() => {
+    vi.unstubAllGlobals();
+    vi.doUnmock('@clerk/nextjs');
+  });
+
+  async function renderRealChatSidebar(chatResponse: unknown, status = 403) {
+    vi.stubGlobal(
+      'fetch',
+      vi.fn().mockResolvedValue({
+        ok: status >= 200 && status < 300,
+        status,
+        json: async () => chatResponse,
+      } as Response),
+    );
+    const { ChatSidebar: RealChatSidebar } = await vi.importActual<
+      typeof import('@/components/chat-sidebar')
+    >('@/components/chat-sidebar');
+    render(<RealChatSidebar />);
+    fireEvent.change(screen.getByPlaceholderText('Ask about this call...'), {
+      target: { value: 'Summarize this call' },
+    });
+    fireEvent.submit(
+      screen.getByPlaceholderText('Ask about this call...').closest('form')!,
+    );
+  }
+
+  it('renders an upgrade link to /pricing instead of an Error bubble on 403 PLAN_REQUIRED', async () => {
+    await renderRealChatSidebar(
+      { error: 'AI chat is a Pro plan feature', code: 'PLAN_REQUIRED' },
+      403,
+    );
+
+    const link = await screen.findByRole('link', { name: /upgrade to pro/i });
+    expect(link).toHaveAttribute('href', '/pricing');
+    expect(screen.queryByText(/^Error:/)).not.toBeInTheDocument();
+    // Quick-query buttons stay visible above the affordance.
+    expect(
+      screen.getByRole('button', { name: /objections were raised/i }),
+    ).toBeInTheDocument();
+  });
+
+  it('still renders a plain Error bubble for non-plan errors', async () => {
+    await renderRealChatSidebar({ error: 'Boom' }, 500);
+
+    expect(await screen.findByText('Error: Boom')).toBeInTheDocument();
+    expect(
+      screen.queryByRole('link', { name: /upgrade to pro/i }),
+    ).not.toBeInTheDocument();
+  });
 });

@@ -325,9 +325,9 @@ export default function CallDetailPage({ params }: { params: Promise<{ id: strin
           {syncingCrm ? 'Syncing...' : 'Sync to CRM'}
         </button>
       </div>
-      <div className="grid grid-cols-1 xl:grid-cols-[0.95fr_0.95fr_0.7fr] gap-6">
-      <div className="doppel-outer-dark">
-        <div className="doppel-inner-dark p-6 lg:h-full overflow-hidden flex flex-col">
+      <div className="grid grid-cols-1 xl:grid-cols-[0.95fr_0.95fr_0.7fr] gap-6 xl:h-[calc(100vh-12rem)] xl:min-h-0">
+      <div className="doppel-outer-dark xl:min-h-0 xl:h-full xl:overflow-hidden">
+        <div className="doppel-inner-dark p-6 xl:h-full xl:min-h-0 overflow-hidden flex flex-col">
           <div className="flex items-center justify-between gap-3 mb-4">
             <h2 className="text-lg font-medium text-white">Transcript</h2>
             {data.audioUrl && audioSrc && (
@@ -360,15 +360,15 @@ export default function CallDetailPage({ params }: { params: Promise<{ id: strin
               onEnded={() => setPlaying(false)}
             />
           )}
-          <div className="flex-1 overflow-hidden">
+          <div className="flex-1 min-h-0 overflow-hidden">
             <TranscriptViewer ref={transcriptViewerRef} segments={segments} />
           </div>
         </div>
       </div>
 
-      <div className="space-y-6">
+      <div className="space-y-6 xl:h-full xl:min-h-0 xl:overflow-y-auto xl:pr-1">
         <div className="doppel-outer-dark">
-          <div className="doppel-inner-dark p-6 lg:h-full overflow-y-auto">
+          <div className="doppel-inner-dark p-6 xl:min-h-0">
             <AnalysisPanel
               onSeek={(ts) => transcriptViewerRef.current?.seekTo(ts)}
               analysis={{
@@ -533,8 +533,8 @@ export default function CallDetailPage({ params }: { params: Promise<{ id: strin
         </div>
       </div>
 
-      <div className="doppel-outer-dark">
-        <div className="doppel-inner-dark p-6 lg:h-full overflow-hidden flex flex-col">
+      <div className="doppel-outer-dark xl:min-h-0 xl:h-full xl:overflow-hidden">
+        <div className="doppel-inner-dark p-6 xl:h-full xl:min-h-0 overflow-hidden flex flex-col">
           <ChatSidebar />
         </div>
       </div>
