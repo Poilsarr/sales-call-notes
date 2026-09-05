@@ -117,7 +117,7 @@ export default function NoBotPage() {
                   </li>
                   <li className="flex gap-3">
                     <span className="text-green-500 shrink-0">✓</span>
-                    <span>GDPR + HIPAA-friendly by default. Delete in 30 days.</span>
+                    <span>GDPR + HIPAA-friendly by default. Delete anytime — immediate purge.</span>
                   </li>
                 </ul>
               </div>

@@ -63,7 +63,7 @@ function Feature3D({ index, color }: { index: number; color: string }) {
 
 const statsData = [
   { value: "60s", label: "Avg. processing time", icon: Clock },
-  { value: "98%", label: "Transcription accuracy", icon: Target },
+  { value: "Whisper", label: "large-v3 via Groq", icon: Target },
   { value: "12+", label: "Languages supported", icon: Globe },
   { value: "10+", label: "CRM integrations", icon: Share2 },
 ];

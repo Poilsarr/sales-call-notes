@@ -29,7 +29,7 @@ const integrations = [
   { brandId: "google_calendar" as const, name: "Google Calendar", desc: "Auto-detect meetings and join them for transcription.", category: "Calendar", status: "Live", provider: "google_calendar" as const },
   { brandId: "outlook_calendar" as const, name: "Outlook Calendar", desc: "Sync meetings from Microsoft 365 calendar for automatic capture.", status: "Coming Soon" },
   { brandId: "zoom" as const, name: "Zoom", desc: "Record and transcribe Zoom meetings directly from the platform.", status: "Coming Soon" },
-  { brandId: "google_meet" as const, name: "Google Meet", desc: "Live transcription and note-taking for Google Meet calls.", status: "Live", href: "/extension" },
+  { brandId: "google_meet" as const, name: "Google Meet", desc: "Live captions via Chrome extension — no bot joins your call.", status: "Live", href: "/extension" },
   { brandId: "chrome_extension" as const, name: "Chrome Extension", desc: "Capture Google Meet captions live and save calls to your dashboard on meeting end.", status: "Live", href: "/extension" },
   { brandId: "slack" as const, name: "Slack", desc: "Post call summaries, action items, and weekly digests to Slack.", status: "Live", provider: "slack" as const },
   { brandId: "zapier" as const, name: "Zapier", desc: "Push Gauge events into 5,000+ apps via Zapier workflows.", status: "Live", href: "/integrations/zapier" },

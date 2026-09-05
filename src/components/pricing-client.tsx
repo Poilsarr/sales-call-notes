@@ -48,7 +48,7 @@ const FAQ = [
   },
   {
     q: "Is my call audio used to train AI models?",
-    a: "No. Your audio, transcripts, and summaries are never used to train third-party models. We use hosted inference (Groq + OpenAI) with zero-retention data policies. See our security page for the full data-handling doc.",
+    a: "No. Your audio, transcripts, and summaries are never used to train third-party models. We use hosted inference (Groq + OpenAI) and do not use your data to train or fine-tune any model — that is our policy and our contract. See our security page for the full data-handling doc.",
   },
   {
     q: "Do you offer a discount for annual billing?",
