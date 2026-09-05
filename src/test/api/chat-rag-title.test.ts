@@ -147,7 +147,7 @@ describe('/api/chat POST callContext includes title', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mocks.auth.mockResolvedValue({ userId: USER_ID });
-    mocks.getUserByClerkId.mockResolvedValue({ id: 'user-db-id', plan: 'free' });
+    mocks.getUserByClerkId.mockResolvedValue({ id: 'user-db-id', plan: 'pro' });
     mocks.getByokKeys.mockResolvedValue({ openaiKey: 'sk-byok-test', groqKey: undefined, dropped: [] });
     mocks.embeddingsCreate.mockResolvedValue({ data: [{ embedding: [0.1, 0.2] }] });
     mocks.chatCompletionsCreate.mockResolvedValue({
@@ -197,5 +197,22 @@ describe('/api/chat POST callContext includes title', () => {
     expect(mocks.getUserByClerkId).toHaveBeenCalledWith(USER_ID);
     expect(mocks.getByokKeys).toHaveBeenCalledWith('user-db-id');
     expect(searchSpy).toHaveBeenCalledWith('query-arg', 'user-db-id', 5, 'sk-byok-test', true);
+  });
+
+  it('returns 403 with PLAN_REQUIRED for free-plan users', async () => {
+    mocks.getUserByClerkId.mockResolvedValueOnce({ id: 'user-db-id', plan: 'free' });
+
+    const { POST } = await import('@/app/api/chat/route');
+    const res = await POST(
+      new Request('http://x/api/chat', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ query: 'hello' }),
+      }) as unknown as NextRequest,
+    );
+
+    expect(res.status).toBe(403);
+    const body = await res.json();
+    expect(body.code).toBe('PLAN_REQUIRED');
   });
 });

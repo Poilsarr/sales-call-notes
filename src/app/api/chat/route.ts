@@ -5,6 +5,7 @@ import { createOpenAIClient } from "@/lib/openai-client";
 import { KnowledgeGraphService } from "@/services/ai/knowledge-graph";
 import { rateLimit } from "@/lib/rate-limit";
 import { getUserByClerkId } from "@/lib/get-user";
+import { getPlan, hasFeature } from "@/lib/plans";
 import { getByokKeys } from "@/lib/byok-resolver";
 
 export async function POST(req: NextRequest) {
@@ -14,6 +15,13 @@ export async function POST(req: NextRequest) {
 
     const user = await getUserByClerkId(sessionUserId);
     if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
+    if (!hasFeature(getPlan((user.plan || "free").toLowerCase()), "ai_chat")) {
+      return NextResponse.json(
+        { error: "AI chat is a Pro plan feature", code: "PLAN_REQUIRED" },
+        { status: 403 },
+      );
+    }
 
     const rl = await rateLimit({ key: `chat:${sessionUserId}`, limit: 20, windowSec: 60 });
     if (!rl.success) {

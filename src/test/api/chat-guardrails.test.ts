@@ -37,7 +37,7 @@ describe("POST /api/chat guardrails", () => {
 beforeEach(() => {
     vi.clearAllMocks();
     mocks.auth.mockResolvedValue({ userId: "clerk-1" });
-    mocks.getUserByClerkId.mockResolvedValue({ id: "user-db-id", plan: "free" });
+    mocks.getUserByClerkId.mockResolvedValue({ id: "user-db-id", plan: "pro" });
     mocks.getByokKeys.mockResolvedValue({ openaiKey: "sk-byok-test", groqKey: undefined, dropped: [] });
     mocks.rateLimit.mockResolvedValue({ success: true });
     mocks.createOpenAIClient.mockReturnValue({
@@ -78,5 +78,18 @@ beforeEach(() => {
     const res = await POST({ json: () => Promise.resolve({ query: "hello" }) } as any);
     expect(res.status).toBe(401);
     expect(mocks.getUserByClerkId).toHaveBeenCalledWith("clerk-1");
+  });
+
+  it("returns 403 with PLAN_REQUIRED for free-plan users", async () => {
+    mocks.getUserByClerkId.mockResolvedValueOnce({ id: "user-db-id", plan: "free" });
+    const res = await POST({ json: () => Promise.resolve({ query: "hello" }) } as any);
+    expect(res.status).toBe(403);
+    const body = await res.json();
+    expect(body.code).toBe("PLAN_REQUIRED");
+  });
+
+  it("returns 200 for pro-plan users", async () => {
+    const res = await POST({ json: () => Promise.resolve({ query: "hello" }) } as any);
+    expect(res.status).toBe(200);
   });
 });

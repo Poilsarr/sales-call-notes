@@ -257,7 +257,7 @@ export const PLANS: Record<PlanTier, PlanConfig> = {
 };
 
 export function getPlan(tier: PlanTier | string): PlanConfig {
-  return PLANS[tier as PlanTier] || PLANS.free;
+  return PLANS[((tier as string) || "free").toLowerCase() as PlanTier] || PLANS.free;
 }
 
 export function hasFeature(plan: PlanConfig, feature: FeatureId): boolean {

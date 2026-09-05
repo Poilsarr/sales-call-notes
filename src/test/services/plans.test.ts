@@ -27,6 +27,13 @@ describe("Plans Configuration", () => {
     expect(getPlan("unknown").tier).toBe("free");
   });
 
+  it("should resolve tiers case-insensitively", () => {
+    expect(getPlan("PRO").tier).toBe("pro");
+    expect(getPlan("BUSINESS").tier).toBe("business");
+    expect(getPlan("Free").tier).toBe("free");
+    expect(getPlan("ENTERPRISE").tier).toBe("enterprise");
+  });
+
   it("free plan should have upload_audio feature", () => {
     expect(hasFeature(PLANS.free, "upload_audio")).toBe(true);
   });
