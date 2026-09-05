@@ -6,6 +6,7 @@ import prisma from "@/lib/prisma";
 import { getUserByClerkId } from "@/lib/get-user";
 import { requireRole } from "@/lib/rbac";
 import { getSecret } from "@/lib/secrets";
+import { getAppUrl } from "@/lib/app-url";
 import {
   getDevSandboxCredentials,
   isDevSandboxEnabled,
@@ -13,17 +14,12 @@ import {
 import { logAuditAction } from "@/lib/audit-logger";
 import { encryptConfig } from "@/lib/integrations/config-crypto";
 
-function getAppUrl() {
-  const url = getSecret("NEXT_PUBLIC_APP_URL");
-  if (!url) throw new Error("NEXT_PUBLIC_APP_URL must be set");
-  return url.replace(/\/$/, "");
+function getRedirectUri(req?: { nextUrl?: { origin: string } }) {
+  const origin = req?.nextUrl?.origin ?? null;
+  return getSecret("GOOGLE_REDIRECT_URI") || `${getAppUrl(origin)}/api/integrations/google/callback`;
 }
 
-function getRedirectUri() {
-  return getSecret("GOOGLE_REDIRECT_URI") || `${getAppUrl()}/api/integrations/google/callback`;
-}
-
-async function exchangeCode(code: string) {
+async function exchangeCode(code: string, reqOrigin?: string | null) {
   const sandbox = getDevSandboxCredentials("google_calendar");
   const clientId = sandbox?.clientId || getSecret("GOOGLE_CLIENT_ID");
   const clientSecret = sandbox?.clientSecret || getSecret("GOOGLE_CLIENT_SECRET");
@@ -49,7 +45,7 @@ async function exchangeCode(code: string) {
       client_secret: clientSecret,
       code,
       grant_type: "authorization_code",
-      redirect_uri: getRedirectUri(),
+      redirect_uri: getRedirectUri({ nextUrl: { origin: reqOrigin || "" } } as any),
     }),
   });
 
@@ -78,15 +74,16 @@ async function exchangeCode(code: string) {
 
 export async function GET(req: NextRequest) {
   try {
+    const appUrl = getAppUrl(req.nextUrl.origin);
     const { userId } = await auth();
     if (!userId) {
-      return NextResponse.redirect(new URL("/sign-in", getAppUrl()));
+      return NextResponse.redirect(new URL("/sign-in", appUrl));
     }
 
     const error = req.nextUrl.searchParams.get("error");
     if (error) {
       return NextResponse.redirect(
-        new URL("/integrations?error=google_access_denied", getAppUrl()),
+        new URL("/integrations?error=google_access_denied", appUrl),
       );
     }
 
@@ -95,7 +92,7 @@ export async function GET(req: NextRequest) {
 
     if (!code || !state) {
       return NextResponse.redirect(
-        new URL("/integrations?error=missing_params", getAppUrl()),
+        new URL("/integrations?error=missing_params", appUrl),
       );
     }
 
@@ -103,7 +100,7 @@ export async function GET(req: NextRequest) {
     const stored = cookieStore.get("oauth_google_calendar");
     if (!stored || stored.value !== state) {
       return NextResponse.redirect(
-        new URL("/integrations?error=invalid_nonce", getAppUrl()),
+        new URL("/integrations?error=invalid_nonce", appUrl),
       );
     }
     cookieStore.delete("oauth_google_calendar");
@@ -118,12 +115,12 @@ export async function GET(req: NextRequest) {
       const { allowed } = await requireRole(userId, user.teamId, "ADMIN");
       if (!allowed) {
         return NextResponse.redirect(
-          new URL("/integrations?error=forbidden", getAppUrl()),
+          new URL("/integrations?error=forbidden", appUrl),
         );
       }
     }
 
-    const config = await exchangeCode(code);
+    const config = await exchangeCode(code, req.nextUrl.origin);
 
     if (!user.teamId) {
       const team = await prisma.team.create({
@@ -144,7 +141,7 @@ export async function GET(req: NextRequest) {
       (await prisma.user.findUnique({ where: { id: user.id } }))?.teamId;
     if (!teamId) {
       return NextResponse.redirect(
-        new URL("/integrations?error=no_team", getAppUrl()),
+        new URL("/integrations?error=no_team", appUrl),
       );
     }
 
@@ -176,12 +173,19 @@ export async function GET(req: NextRequest) {
     await logAuditAction(user.id, "CONNECT_GOOGLE_CALENDAR", teamId, "Integration", {});
 
     return NextResponse.redirect(
-      new URL("/integrations?google=connected", getAppUrl()),
+      new URL("/integrations?google=connected", appUrl),
     );
   } catch (err) {
     const message = err instanceof Error ? err.message : "unknown";
+    let target: string;
+    try {
+      // Prefer request-aware URL when available
+      target = getAppUrl((req as any)?.nextUrl?.origin ?? null);
+    } catch {
+      target = "https://usegauge.vercel.app";
+    }
     return NextResponse.redirect(
-      new URL(`/integrations?error=google_${message}`, getAppUrl()),
+      new URL(`/integrations?error=google_${message}`, target),
     );
   }
 }

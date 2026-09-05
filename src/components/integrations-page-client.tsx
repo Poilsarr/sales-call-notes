@@ -6,11 +6,11 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { useAuth } from "@clerk/nextjs";
 import Nav from "@/components/nav";
 import {
-  Sparkles, Building2, BarChart3, MessageSquare, Calendar, Globe,
-  Code, Layers, Share2, Users, Download, ArrowRight,
+  Sparkles, Code, Layers, Users, Download, ArrowRight,
   CheckCircle2, Loader2, Link2, Unplug, Zap, AlertCircle,
 } from "lucide-react";
 import { toast } from "sonner";
+import { BrandLogo } from "@/components/brand-logos";
 
 type SupportedProvider = "hubspot" | "salesforce" | "teams" | "slack" | "google_calendar";
 
@@ -23,16 +23,16 @@ type ProviderStatus = {
 };
 
 const integrations = [
-  { icon: <Building2 size={22} />, name: "HubSpot", desc: "Sync call notes and action items directly to HubSpot CRM deals and contacts.", status: "Live", provider: "hubspot" as const },
-  { icon: <BarChart3 size={22} />, name: "Salesforce", desc: "Push transcripts, summaries, and tasks to Salesforce opportunities.", status: "Live", provider: "salesforce" as const },
-  { icon: <MessageSquare size={22} />, name: "Microsoft Teams", desc: "Create Planner tasks and send channel messages with call summaries.", status: "Live", provider: "teams" as const },
-  { icon: <Calendar size={22} />, name: "Google Calendar", desc: "Auto-detect meetings and join them for transcription.", category: "Calendar", status: "Live", provider: "google_calendar" as const },
-  { icon: <Calendar size={22} />, name: "Outlook Calendar", desc: "Sync meetings from Microsoft 365 calendar for automatic capture.", status: "Coming Soon" },
-  { icon: <Globe size={22} />, name: "Zoom", desc: "Record and transcribe Zoom meetings directly from the platform.", status: "Coming Soon" },
-  { icon: <Globe size={22} />, name: "Google Meet", desc: "Live transcription and note-taking for Google Meet calls.", status: "Live", href: "/extension" },
-  { icon: <Globe size={22} />, name: "Chrome Extension", desc: "Capture Google Meet captions live and save calls to your dashboard on meeting end.", status: "Live", href: "/extension" },
-  { icon: <Layers size={22} />, name: "Slack", desc: "Post call summaries, action items, and weekly digests to Slack.", status: "Live", provider: "slack" as const },
-  { icon: <Share2 size={22} />, name: "Zapier", desc: "Push Gauge events into 5,000+ apps via Zapier workflows.", status: "Live", href: "/integrations/zapier" },
+  { brandId: "hubspot" as const, name: "HubSpot", desc: "Sync call notes and action items directly to HubSpot CRM deals and contacts.", status: "Live", provider: "hubspot" as const },
+  { brandId: "salesforce" as const, name: "Salesforce", desc: "Push transcripts, summaries, and tasks to Salesforce opportunities.", status: "Live", provider: "salesforce" as const },
+  { brandId: "teams" as const, name: "Microsoft Teams", desc: "Create Planner tasks and send channel messages with call summaries.", status: "Live", provider: "teams" as const },
+  { brandId: "google_calendar" as const, name: "Google Calendar", desc: "Auto-detect meetings and join them for transcription.", category: "Calendar", status: "Live", provider: "google_calendar" as const },
+  { brandId: "outlook_calendar" as const, name: "Outlook Calendar", desc: "Sync meetings from Microsoft 365 calendar for automatic capture.", status: "Coming Soon" },
+  { brandId: "zoom" as const, name: "Zoom", desc: "Record and transcribe Zoom meetings directly from the platform.", status: "Coming Soon" },
+  { brandId: "google_meet" as const, name: "Google Meet", desc: "Live transcription and note-taking for Google Meet calls.", status: "Live", href: "/extension" },
+  { brandId: "chrome_extension" as const, name: "Chrome Extension", desc: "Capture Google Meet captions live and save calls to your dashboard on meeting end.", status: "Live", href: "/extension" },
+  { brandId: "slack" as const, name: "Slack", desc: "Post call summaries, action items, and weekly digests to Slack.", status: "Live", provider: "slack" as const },
+  { brandId: "zapier" as const, name: "Zapier", desc: "Push Gauge events into 5,000+ apps via Zapier workflows.", status: "Live", href: "/integrations/zapier" },
   { icon: <Code size={22} />, name: "REST API", desc: "Build custom integrations with our full-featured REST API.", status: "Business+" },
   { icon: <Download size={22} />, name: "Webhooks", desc: "Receive real-time events when calls are transcribed and analyzed.", status: "Business+" },
   { icon: <Users size={22} />, name: "SSO / SAML 2.0", desc: "Enterprise single sign-on via SAML 2.0, Google, or Microsoft.", status: "Enterprise" },
@@ -172,6 +172,22 @@ function IntegrationsContent() {
       return;
     }
 
+    if (errorParam && errorParam.startsWith("google_")) {
+      handledCallbackRef.current = true;
+      const decoded = decodeURIComponent(errorParam.replace("google_", "")).replace(/_/g, " ");
+      toast.error(`Google Calendar: ${decoded}`);
+      router.replace("/integrations");
+      return;
+    }
+
+    if (errorParam && !errorParam.startsWith("slack_") && !errorParam.startsWith("teams_") && !errorParam.startsWith("google_")) {
+      // Catch-all for OAuth errors routed via ?error= (e.g. missing_params, invalid_nonce, forbidden)
+      handledCallbackRef.current = true;
+      toast.error(decodeURIComponent(errorParam).replace(/_/g, " "));
+      router.replace("/integrations");
+      return;
+    }
+
     if (!code || (provider !== "hubspot" && provider !== "salesforce" && provider !== "teams")) return;
 
     handledCallbackRef.current = true;
@@ -305,9 +321,13 @@ function IntegrationsContent() {
                 <div className="doppel-outer h-full group">
                   <div className="doppel-inner p-6 h-full flex flex-col">
                     <div className="flex items-start justify-between mb-4">
-                      <div className="w-11 h-11 rounded-xl bg-gray-100 flex items-center justify-center text-gray-500 group-hover:text-gray-900 group-hover:bg-gray-200 transition-all duration-500">
-                        {int.icon}
-                      </div>
+                      {"brandId" in int ? (
+                        <BrandLogo id={(int as { brandId: string }).brandId} />
+                      ) : (
+                        <div className="w-11 h-11 rounded-xl bg-gray-100 flex items-center justify-center text-gray-500 group-hover:text-gray-900 group-hover:bg-gray-200 transition-all duration-500">
+                          {(int as { icon: React.ReactNode }).icon}
+                        </div>
+                      )}
                       <span className={`text-[10px] font-medium px-2.5 py-0.5 rounded-full ${badgeClass}`}>{badgeText}</span>
                     </div>
                     <h3 className="text-[14px] font-semibold tracking-tight mb-1.5">{int.name}</h3>

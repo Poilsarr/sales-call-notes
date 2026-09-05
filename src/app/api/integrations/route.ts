@@ -7,6 +7,7 @@ import prisma from "@/lib/prisma";
 import { getUserByClerkId } from "@/lib/get-user";
 import { requireRole } from "@/lib/rbac";
 import { getSecret } from "@/lib/secrets";
+import { getAppUrl } from "@/lib/app-url";
 import { logAuditAction } from "@/lib/audit-logger";
 import {
   getDevSandboxCredentials,
@@ -86,14 +87,8 @@ function isSupportedProvider(value: string | null): value is SupportedProvider {
   return value === "hubspot" || value === "salesforce" || value === "teams" || value === "slack" || value === "google_calendar";
 }
 
-function getAppUrl() {
-  const url = getSecret("NEXT_PUBLIC_APP_URL");
-  if (!url) throw new Error("NEXT_PUBLIC_APP_URL must be set for OAuth redirects");
-  return url.replace(/\/$/, "");
-}
-
-function getRedirectUri() {
-  return `${getAppUrl()}/integrations`;
+function getRedirectUri(reqOrigin?: string | null) {
+  return `${getAppUrl(reqOrigin)}/integrations`;
 }
 
 function generateNonce(): string {
@@ -223,7 +218,7 @@ function serializeStatuses(
   );
 }
 
-async function buildHubSpotAuthUrl() {
+async function buildHubSpotAuthUrl(reqOrigin?: string | null) {
   const sandbox = getDevSandboxCredentials("hubspot");
   const clientId = sandbox?.clientId || getSecret("HUBSPOT_CLIENT_ID");
   if (!clientId) {
@@ -235,7 +230,7 @@ async function buildHubSpotAuthUrl() {
 
   const params = new URLSearchParams({
     client_id: clientId,
-    redirect_uri: getRedirectUri(),
+    redirect_uri: getRedirectUri(reqOrigin),
     scope: HUBSPOT_SCOPES.join(" "),
     response_type: "code",
     state: `hubspot:${nonce}`,
@@ -244,7 +239,7 @@ async function buildHubSpotAuthUrl() {
   return `https://app.hubspot.com/oauth/authorize?${params.toString()}`;
 }
 
-async function buildSalesforceAuthUrl() {
+async function buildSalesforceAuthUrl(reqOrigin?: string | null) {
   const sandbox = getDevSandboxCredentials("salesforce");
   const clientId = sandbox?.clientId || getSecret("SALESFORCE_CLIENT_ID");
   if (!clientId) {
@@ -257,7 +252,7 @@ async function buildSalesforceAuthUrl() {
 
   const params = new URLSearchParams({
     client_id: clientId,
-    redirect_uri: getRedirectUri(),
+    redirect_uri: getRedirectUri(reqOrigin),
     response_type: "code",
     scope: SALESFORCE_SCOPES.join(" "),
     state: `salesforce:${nonce}`,
@@ -268,7 +263,7 @@ async function buildSalesforceAuthUrl() {
   return `${getSalesforceAuthBase()}/services/oauth2/authorize?${params.toString()}`;
 }
 
-async function buildSlackAuthUrl() {
+async function buildSlackAuthUrl(reqOrigin?: string | null) {
   const sandbox = getDevSandboxCredentials("slack");
   const clientId = sandbox?.clientId || getSecret("SLACK_CLIENT_ID");
   if (!clientId) {
@@ -280,7 +275,7 @@ async function buildSlackAuthUrl() {
 
   const params = new URLSearchParams({
     client_id: clientId,
-    redirect_uri: getSlackRedirectUri(),
+    redirect_uri: getSlackRedirectUri(reqOrigin),
     scope: SLACK_SCOPES.join(","),
     state: `slack:${nonce}`,
   });
@@ -288,13 +283,13 @@ async function buildSlackAuthUrl() {
   return `https://slack.com/oauth/v2/authorize?${params.toString()}`;
 }
 
-function getSlackRedirectUri() {
+function getSlackRedirectUri(reqOrigin?: string | null) {
   const override = getSecret("SLACK_REDIRECT_URI");
   if (override) return override;
-  return `${getAppUrl()}/api/integrations/slack/callback`;
+  return `${getAppUrl(reqOrigin)}/api/integrations/slack/callback`;
 }
 
-async function buildTeamsAuthUrl() {
+async function buildTeamsAuthUrl(reqOrigin?: string | null) {
   const sandbox = getDevSandboxCredentials("teams");
   const clientId = sandbox?.clientId || (getSecret("TEAMS_CLIENT_ID") || getSecret("MICROSOFT_CLIENT_ID"));
   if (!clientId) {
@@ -306,7 +301,7 @@ async function buildTeamsAuthUrl() {
 
   const params = new URLSearchParams({
     client_id: clientId,
-    redirect_uri: getRedirectUri(),
+    redirect_uri: getRedirectUri(reqOrigin),
     response_type: "code",
     response_mode: "query",
     scope: TEAMS_SCOPES.join(" "),
@@ -316,7 +311,7 @@ async function buildTeamsAuthUrl() {
   return `https://login.microsoftonline.com/${getMicrosoftTenant()}/oauth2/v2.0/authorize?${params.toString()}`;
 }
 
-async function exchangeHubSpotCode(code: string) {
+async function exchangeHubSpotCode(code: string, reqOrigin?: string | null) {
   const sandbox = getDevSandboxCredentials("hubspot");
   const clientId = sandbox?.clientId || getSecret("HUBSPOT_CLIENT_ID");
   const clientSecret = sandbox?.clientSecret || getSecret("HUBSPOT_CLIENT_SECRET");
@@ -337,7 +332,7 @@ async function exchangeHubSpotCode(code: string) {
       grant_type: "authorization_code",
       client_id: clientId,
       client_secret: clientSecret,
-      redirect_uri: getRedirectUri(),
+      redirect_uri: getRedirectUri(reqOrigin),
       code,
     }),
   });
@@ -363,7 +358,7 @@ async function exchangeHubSpotCode(code: string) {
   };
 }
 
-async function exchangeSalesforceCode(code: string, verifier?: string) {
+async function exchangeSalesforceCode(code: string, verifier?: string, reqOrigin?: string | null) {
   const sandbox = getDevSandboxCredentials("salesforce");
   const clientId = sandbox?.clientId || getSecret("SALESFORCE_CLIENT_ID");
   if (!clientId) {
@@ -390,7 +385,7 @@ async function exchangeSalesforceCode(code: string, verifier?: string) {
     body: new URLSearchParams({
       grant_type: "authorization_code",
       client_id: clientId,
-      redirect_uri: getRedirectUri(),
+      redirect_uri: getRedirectUri(reqOrigin),
       code,
       code_verifier: verifier,
     }),
@@ -417,7 +412,7 @@ async function exchangeSalesforceCode(code: string, verifier?: string) {
   };
 }
 
-async function exchangeTeamsCode(code: string) {
+async function exchangeTeamsCode(code: string, reqOrigin?: string | null) {
   const sandbox = getDevSandboxCredentials("teams");
   const clientId = sandbox?.clientId || (getSecret("TEAMS_CLIENT_ID") || getSecret("MICROSOFT_CLIENT_ID"));
   const clientSecret = sandbox?.clientSecret || (getSecret("TEAMS_CLIENT_SECRET") || getSecret("MICROSOFT_CLIENT_SECRET"));
@@ -439,7 +434,7 @@ async function exchangeTeamsCode(code: string) {
       body: new URLSearchParams({
         client_id: clientId,
         client_secret: clientSecret,
-        redirect_uri: getRedirectUri(),
+        redirect_uri: getRedirectUri(reqOrigin),
         code,
         grant_type: "authorization_code",
         scope: TEAMS_SCOPES.join(" "),
@@ -505,17 +500,42 @@ export async function GET(req: NextRequest) {
         return NextResponse.json({ error: "Unsupported provider" }, { status: 400 });
       }
 
+      const reqOrigin = req.nextUrl.origin;
+      // Guard: never start an OAuth flow when the minimal OAuth credential
+      // for that provider is missing. This prevents a 500 throw leaking as
+      // an unhandled exception, while staying permissive enough for PKCE
+      // providers (Salesforce) that only need a clientId for the authorize step.
+      const isAuthUrlConfigured = (() => {
+        if (isDevSandboxEnabled()) return true;
+        if (providerParam === "hubspot") return Boolean(getSecret("HUBSPOT_CLIENT_ID"));
+        if (providerParam === "salesforce") return Boolean(getSecret("SALESFORCE_CLIENT_ID"));
+        if (providerParam === "slack") return Boolean(getSecret("SLACK_CLIENT_ID"));
+        if (providerParam === "google_calendar")
+          return Boolean(getSecret("GOOGLE_CLIENT_ID") && getSecret("GOOGLE_CLIENT_SECRET"));
+        return Boolean(
+          (getSecret("TEAMS_CLIENT_ID") || getSecret("MICROSOFT_CLIENT_ID")),
+        );
+      })();
+      if (!isAuthUrlConfigured) {
+        return NextResponse.json(
+          { error: `${providerParam} OAuth is not configured` },
+          { status: 400 },
+        );
+      }
       let authUrl: string;
       if (providerParam === "hubspot") {
-        authUrl = await buildHubSpotAuthUrl();
+        authUrl = await buildHubSpotAuthUrl(reqOrigin);
       } else if (providerParam === "salesforce") {
-        authUrl = await buildSalesforceAuthUrl();
+        authUrl = await buildSalesforceAuthUrl(reqOrigin);
       } else if (providerParam === "slack") {
-        authUrl = await buildSlackAuthUrl();
+        authUrl = await buildSlackAuthUrl(reqOrigin);
       } else if (providerParam === "google_calendar") {
-        authUrl = `${getAppUrl()}/api/integrations/google/connect`;
+        // Return a relative URL so the browser stays on the host it already
+        // trusts, regardless of NEXT_PUBLIC_APP_URL staleness. The connect
+        // handler itself resolves the absolute Google redirect_uri via getAppUrl().
+        authUrl = "/api/integrations/google/connect";
       } else {
-        authUrl = await buildTeamsAuthUrl();
+        authUrl = await buildTeamsAuthUrl(reqOrigin);
       }
 
       return NextResponse.json({ authUrl });
@@ -595,12 +615,13 @@ export async function POST(req: NextRequest) {
     }
 
     let config: Record<string, string | null>;
+    const reqOrigin = req.nextUrl?.origin ?? null;
     if (provider === "hubspot") {
-      config = await exchangeHubSpotCode(code);
+      config = await exchangeHubSpotCode(code, reqOrigin);
     } else if (provider === "salesforce") {
-      config = await exchangeSalesforceCode(code, verifier || undefined);
+      config = await exchangeSalesforceCode(code, verifier || undefined, reqOrigin);
     } else {
-      config = await exchangeTeamsCode(code);
+      config = await exchangeTeamsCode(code, reqOrigin);
     }
 
     const existing = await prisma.integration.findFirst({

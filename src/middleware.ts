@@ -22,6 +22,7 @@ const isPublicApi = createRouteMatcher([
   "/api/cron/(.*)",
   "/api/health",
   "/api/pricing-preview",
+  "/api/billing/price-ids",
   "/api/v1/calls",
 ]);
 const isProtectedRoute = createRouteMatcher(["/api/(.*)", "/dashboard(.*)", "/app(.*)", "/team(.*)", "/integrations(.*)", "/settings(.*)", "/billing(.*)", "/live(.*)"]);
@@ -76,15 +77,15 @@ export default clerkMiddleware(async (auth, req: NextRequest) => {
         (process.env.NODE_ENV === "development" ? " 'unsafe-eval'" : "") +
         " *.clerk.com *.clerk.accounts.dev https://challenges.cloudflare.com https://*.protect.clerk.com",
       "style-src 'self' 'unsafe-inline'",
-      "img-src 'self' data: *.clerk.com *.clerk.accounts.dev https://img.clerk.com *.paddle.com *.hubspot.com *.salesforce.com",
+      "img-src 'self' data: *.clerk.com *.clerk.accounts.dev https://img.clerk.com *.paddle.com *.hubspot.com *.salesforce.com *.googleusercontent.com",
       "media-src 'self' *.cloudfront.net",
-      "connect-src 'self' *.clerk.com *.clerk.accounts.dev https://*.protect.clerk.com *.openai.com *.groq.com *.paddle.com *.vercel.com vercel.com vitals.vercel-insights.com *.hubapi.com *.hubspot.com *.salesforce.com *.microsoftonline.com *.microsoft.com *.deepgram.com wss://*.deepgram.com",
+      "connect-src 'self' *.clerk.com *.clerk.accounts.dev https://*.protect.clerk.com *.openai.com *.groq.com *.paddle.com *.vercel.com vercel.com vitals.vercel-insights.com *.hubapi.com *.hubspot.com *.salesforce.com *.microsoftonline.com *.microsoft.com *.deepgram.com wss://*.deepgram.com https://www.googleapis.com https://oauth2.googleapis.com https://accounts.google.com",
       "frame-ancestors 'none'",
-      "frame-src *.clerk.com *.clerk.accounts.dev https://challenges.cloudflare.com https://*.protect.clerk.com",
+      "frame-src *.clerk.com *.clerk.accounts.dev https://challenges.cloudflare.com https://*.protect.clerk.com https://accounts.google.com",
       "worker-src 'self' blob:",
       "object-src 'none'",
       "manifest-src 'self'",
-      "form-action 'self'",
+      "form-action 'self' https://accounts.google.com",
     ].join('; ');
 
     response.headers.set('Content-Security-Policy', csp);
@@ -125,7 +126,7 @@ export default clerkMiddleware(async (auth, req: NextRequest) => {
 // auth() throws in production builds and every POST 500s.
 export const config = {
   matcher: [
-    "/api/((?!webhooks/hubspot|webhooks/salesforce|paddle|health|partners|pricing-preview).*)",
+    "/api/((?!webhooks/hubspot|webhooks/salesforce|paddle|health|partners|pricing-preview|billing/price-ids).*)",
     "/dashboard/:path*",
     "/app/:path*",
     "/team/:path*",

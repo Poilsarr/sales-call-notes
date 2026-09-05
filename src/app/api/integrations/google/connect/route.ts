@@ -4,17 +4,12 @@ import crypto from "crypto";
 import { auth } from "@clerk/nextjs/server";
 
 import { getSecret } from "@/lib/secrets";
+import { getAppUrl } from "@/lib/app-url";
 import { getUserByClerkId } from "@/lib/get-user";
 import { requireRole } from "@/lib/rbac";
 
 function generateNonce(): string {
   return crypto.randomBytes(16).toString("hex");
-}
-
-function getAppUrl() {
-  const url = getSecret("NEXT_PUBLIC_APP_URL");
-  if (!url) throw new Error("NEXT_PUBLIC_APP_URL must be set");
-  return url.replace(/\/$/, "");
 }
 
 export async function GET() {

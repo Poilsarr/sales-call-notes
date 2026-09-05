@@ -53,6 +53,26 @@ export async function GET(req: NextRequest) {
 
     return NextResponse.json({ events });
   } catch (error) {
+    const err = error as Error & { code?: string; status?: number };
+    if (err.code === "NOT_CONNECTED" || err.status === 401) {
+      return NextResponse.json(
+        { error: err.message || "Google Calendar not connected", code: "NOT_CONNECTED" },
+        { status: 401 },
+      );
+    }
+    if (err.code === "NEEDS_RECONNECT") {
+      return NextResponse.json(
+        { error: err.message || "Google Calendar needs reconnect", code: "NEEDS_RECONNECT" },
+        { status: 401 },
+      );
+    }
+    if (err.code === "GONE" || err.status === 410) {
+      return NextResponse.json(
+        { error: err.message || "Google Calendar sync expired", code: "GONE" },
+        { status: 410 },
+      );
+    }
+    console.error("[calendar] fetch failed", error);
     return NextResponse.json({ error: "Failed to fetch calendar" }, { status: 500 });
   }
 }

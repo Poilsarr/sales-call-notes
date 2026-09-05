@@ -4,6 +4,7 @@ import crypto from "crypto";
 import { cookies } from "next/headers";
 
 import { getSecret } from "@/lib/secrets";
+import { getAppUrl } from "@/lib/app-url";
 import { getUserByClerkId } from "@/lib/get-user";
 import { requireRole } from "@/lib/rbac";
 import {
@@ -18,12 +19,6 @@ const SLACK_SCOPES = [
   "commands",
   "im:write",
 ];
-
-function getAppUrl() {
-  const url = getSecret("NEXT_PUBLIC_APP_URL");
-  if (!url) throw new Error("NEXT_PUBLIC_APP_URL must be set for OAuth redirects");
-  return url.replace(/\/$/, "");
-}
 
 function getSlackRedirectUri() {
   const override = getSecret("SLACK_REDIRECT_URI");

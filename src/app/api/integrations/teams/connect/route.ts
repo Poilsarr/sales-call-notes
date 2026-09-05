@@ -4,6 +4,7 @@ import crypto from "crypto";
 import { cookies } from "next/headers";
 
 import { getSecret } from "@/lib/secrets";
+import { getAppUrl } from "@/lib/app-url";
 import { getUserByClerkId } from "@/lib/get-user";
 import { requireRole } from "@/lib/rbac";
 import {
@@ -35,12 +36,6 @@ async function setOAuthCookie(nonce: string) {
 
 function getMicrosoftTenant() {
   return getSecret("MICROSOFT_TENANT_ID") || getSecret("TEAMS_TENANT_ID") || "common";
-}
-
-function getAppUrl() {
-  const url = getSecret("NEXT_PUBLIC_APP_URL");
-  if (!url) throw new Error("NEXT_PUBLIC_APP_URL must be set for OAuth redirects");
-  return url.replace(/\/$/, "");
 }
 
 function getTeamsRedirectUri() {

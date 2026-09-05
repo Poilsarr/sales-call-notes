@@ -6,6 +6,7 @@ import prisma from "@/lib/prisma";
 import { getUserByClerkId } from "@/lib/get-user";
 import { requireRole } from "@/lib/rbac";
 import { getSecret } from "@/lib/secrets";
+import { getAppUrl } from "@/lib/app-url";
 import {
   getDevSandboxCredentials,
   isDevSandboxEnabled,
@@ -13,19 +14,13 @@ import {
 import { logAuditAction } from "@/lib/audit-logger";
 import { encryptConfig } from "@/lib/integrations/config-crypto";
 
-function getAppUrl() {
-  const url = getSecret("NEXT_PUBLIC_APP_URL");
-  if (!url) throw new Error("NEXT_PUBLIC_APP_URL must be set");
-  return url.replace(/\/$/, "");
-}
-
-function getSlackRedirectUri() {
+function getSlackRedirectUri(reqOrigin?: string | null) {
   const override = getSecret("SLACK_REDIRECT_URI");
   if (override) return override;
-  return `${getAppUrl()}/api/integrations/slack/callback`;
+  return `${getAppUrl(reqOrigin)}/api/integrations/slack/callback`;
 }
 
-async function exchangeCode(code: string) {
+async function exchangeCode(code: string, reqOrigin?: string | null) {
   const sandbox = getDevSandboxCredentials("slack");
   const clientId = sandbox?.clientId || getSecret("SLACK_CLIENT_ID");
   const clientSecret = sandbox?.clientSecret || getSecret("SLACK_CLIENT_SECRET");
@@ -52,7 +47,7 @@ async function exchangeCode(code: string) {
       client_id: clientId,
       client_secret: clientSecret,
       code,
-      redirect_uri: getSlackRedirectUri(),
+      redirect_uri: getSlackRedirectUri(reqOrigin),
     }),
   });
 
@@ -74,32 +69,33 @@ async function exchangeCode(code: string) {
 
 export async function GET(req: NextRequest) {
   try {
+    const appUrl = getAppUrl(req.nextUrl.origin);
     const { userId } = await auth();
     if (!userId) {
-      return NextResponse.redirect(new URL("/sign-in", getAppUrl()));
+      return NextResponse.redirect(new URL("/sign-in", appUrl));
     }
 
     const error = req.nextUrl.searchParams.get("error");
     if (error) {
-      return NextResponse.redirect(new URL("/integrations?error=slack_access_denied", getAppUrl()));
+      return NextResponse.redirect(new URL("/integrations?error=slack_access_denied", appUrl));
     }
 
     const code = req.nextUrl.searchParams.get("code");
     const state = req.nextUrl.searchParams.get("state");
 
     if (!code || !state) {
-      return NextResponse.redirect(new URL("/integrations?error=missing_params", getAppUrl()));
+      return NextResponse.redirect(new URL("/integrations?error=missing_params", appUrl));
     }
 
     const [stateProvider, nonce] = state.split(":");
     if (stateProvider !== "slack") {
-      return NextResponse.redirect(new URL("/integrations?error=invalid_state", getAppUrl()));
+      return NextResponse.redirect(new URL("/integrations?error=invalid_state", appUrl));
     }
 
     const cookieStore = await cookies();
     const stored = cookieStore.get("oauth_slack");
     if (!stored || stored.value !== nonce) {
-      return NextResponse.redirect(new URL("/integrations?error=invalid_nonce", getAppUrl()));
+      return NextResponse.redirect(new URL("/integrations?error=invalid_nonce", appUrl));
     }
     cookieStore.delete("oauth_slack");
 
@@ -110,11 +106,11 @@ export async function GET(req: NextRequest) {
     if (user.teamId) {
       const { allowed } = await requireRole(userId, user.teamId, "ADMIN");
       if (!allowed) {
-        return NextResponse.redirect(new URL("/integrations?error=forbidden", getAppUrl()));
+        return NextResponse.redirect(new URL("/integrations?error=forbidden", appUrl));
       }
     }
 
-    const config = await exchangeCode(code);
+    const config = await exchangeCode(code, req.nextUrl.origin);
 
     if (!user.teamId) {
       const team = await prisma.team.create({
@@ -132,7 +128,7 @@ export async function GET(req: NextRequest) {
 
     const teamId = user.teamId || (await prisma.user.findUnique({ where: { id: user.id } }))?.teamId;
     if (!teamId) {
-      return NextResponse.redirect(new URL("/integrations?error=no_team", getAppUrl()));
+      return NextResponse.redirect(new URL("/integrations?error=no_team", appUrl));
     }
 
     const existing = await prisma.integration.findFirst({
@@ -164,7 +160,7 @@ export async function GET(req: NextRequest) {
       slackTeamId: config.teamId,
     });
 
-    return NextResponse.redirect(new URL("/integrations?slack=connected", getAppUrl()));
+    return NextResponse.redirect(new URL("/integrations?slack=connected", appUrl));
   } catch (error) {
     const message = error instanceof Error ? error.message : "unknown";
     return NextResponse.redirect(new URL(`/integrations?error=slack_${message}`, getAppUrl()));

@@ -41,9 +41,38 @@ export class CalendarService {
   private async getToken(): Promise<string> {
     if (this.token) return this.token;
     const token = await refreshIntegrationToken(this.teamId, "google_calendar");
-    if (!token) throw new Error("Google Calendar not connected");
+    if (!token) {
+      const err = new Error("Google Calendar not connected") as Error & { code?: string; status?: number };
+      err.code = "NOT_CONNECTED";
+      err.status = 401;
+      throw err;
+    }
     this.token = token;
     return token;
+  }
+
+  private async fetchWithAuth(
+    url: string,
+    init: RequestInit,
+    retry = true,
+  ): Promise<Response> {
+    const token = await this.getToken();
+    const res = await fetch(url, {
+      ...init,
+      headers: { ...(init.headers || {}), Authorization: `Bearer ${token}` },
+    });
+
+    // Token fetched via refreshIntegrationToken may have expired between the
+    // DB check and the upstream call. On 401, force a refresh and retry once.
+    if (res.status === 401 && retry) {
+      this.token = null;
+      const refreshed = await refreshIntegrationToken(this.teamId, "google_calendar");
+      if (refreshed) {
+        this.token = refreshed;
+        return this.fetchWithAuth(url, init, false);
+      }
+    }
+    return res;
   }
 
   private normalizeEvent(event: GoogleEvent): CalendarEvent {
@@ -69,16 +98,41 @@ export class CalendarService {
   }
 
   async listEvents(calendarId = "primary"): Promise<CalendarEvent[]> {
-    const token = await this.getToken();
     const timeMin = new Date().toISOString();
     const timeMax = new Date(Date.now() + WEEK_MS).toISOString();
 
-    const res = await fetch(
-      `${this.baseUrl}/calendars/${encodeURIComponent(calendarId)}/events?timeMin=${timeMin}&timeMax=${timeMax}&singleEvents=true&orderBy=startTime&maxResults=10`,
-      { headers: { Authorization: `Bearer ${token}` } },
-    );
+    const url = `${this.baseUrl}/calendars/${encodeURIComponent(calendarId)}/events?timeMin=${timeMin}&timeMax=${timeMax}&singleEvents=true&orderBy=startTime&maxResults=10`;
+    const res = await this.fetchWithAuth(url, { method: "GET" });
 
-    if (!res.ok) throw new Error("Failed to list calendar events");
+    if (res.status === 401) {
+      const err = new Error("Google Calendar authorization expired — please reconnect") as Error & { code?: string; status?: number };
+      err.code = "NEEDS_RECONNECT";
+      err.status = 401;
+      throw err;
+    }
+    if (res.status === 404) {
+      // Calendar not found (deleted or wrong calendarId) — treat as empty, not crash
+      return [];
+    }
+    if (res.status === 410) {
+      // Google Calendar sync token expired (410 Gone) — caller should drop sync token.
+      // For our simple list (no syncToken) this should not happen, but handle gracefully.
+      const err = new Error("Google Calendar sync expired — please retry") as Error & { code?: string; status?: number };
+      err.code = "GONE";
+      err.status = 410;
+      throw err;
+    }
+    if (!res.ok) {
+      let body = "";
+      try {
+        body = (typeof (res as any).text === "function"
+          ? await (res as any).text()
+          : JSON.stringify(await res.json())) as string;
+      } catch {
+        body = "";
+      }
+      throw new Error(`Failed to list calendar events: ${res.status} ${body.slice(0, 200)}`);
+    }
 
     const data = (await res.json()) as { items?: GoogleEvent[] };
     return (data.items || []).map((e) => this.normalizeEvent(e));
@@ -91,8 +145,6 @@ export class CalendarService {
     description?: string,
     attendees?: string[],
   ): Promise<CalendarEvent> {
-    const token = await this.getToken();
-
     const body: Record<string, unknown> = {
       summary,
       start: { dateTime: startTime, timeZone: "UTC" },
@@ -104,16 +156,29 @@ export class CalendarService {
       body.attendees = attendees.map((email) => ({ email }));
     }
 
-    const res = await fetch(`${this.baseUrl}/calendars/primary/events`, {
+    const res = await this.fetchWithAuth(`${this.baseUrl}/calendars/primary/events`, {
       method: "POST",
-      headers: {
-        Authorization: `Bearer ${token}`,
-        "Content-Type": "application/json",
-      },
+      headers: { "Content-Type": "application/json" },
       body: JSON.stringify(body),
     });
 
-    if (!res.ok) throw new Error("Failed to create calendar event");
+    if (res.status === 401) {
+      const err = new Error("Google Calendar authorization expired — please reconnect") as Error & { code?: string; status?: number };
+      err.code = "NEEDS_RECONNECT";
+      err.status = 401;
+      throw err;
+    }
+    if (!res.ok) {
+      let bodyText = "";
+      try {
+        bodyText = (typeof (res as any).text === "function"
+          ? await (res as any).text()
+          : JSON.stringify(await res.json())) as string;
+      } catch {
+        bodyText = "";
+      }
+      throw new Error(`Failed to create calendar event: ${res.status} ${bodyText.slice(0, 200)}`);
+    }
 
     const data = (await res.json()) as GoogleEvent;
     return this.normalizeEvent(data);

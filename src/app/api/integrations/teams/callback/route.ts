@@ -6,6 +6,7 @@ import prisma from "@/lib/prisma";
 import { getUserByClerkId } from "@/lib/get-user";
 import { requireRole } from "@/lib/rbac";
 import { getSecret } from "@/lib/secrets";
+import { getAppUrl } from "@/lib/app-url";
 import {
   getDevSandboxCredentials,
   isDevSandboxEnabled,
@@ -20,23 +21,17 @@ const TEAMS_SCOPES = [
   "OnlineMeetings.ReadWrite",
 ];
 
-function getAppUrl() {
-  const url = getSecret("NEXT_PUBLIC_APP_URL");
-  if (!url) throw new Error("NEXT_PUBLIC_APP_URL must be set");
-  return url.replace(/\/$/, "");
-}
-
-function getTeamsRedirectUri() {
+function getTeamsRedirectUri(reqOrigin?: string | null) {
   const override = getSecret("TEAMS_REDIRECT_URI");
   if (override) return override;
-  return `${getAppUrl()}/api/integrations/teams/callback`;
+  return `${getAppUrl(reqOrigin)}/api/integrations/teams/callback`;
 }
 
 function getMicrosoftTenant() {
   return getSecret("MICROSOFT_TENANT_ID") || getSecret("TEAMS_TENANT_ID") || "common";
 }
 
-async function exchangeCode(code: string) {
+async function exchangeCode(code: string, reqOrigin?: string | null) {
   const sandbox = getDevSandboxCredentials("teams");
   const clientId = sandbox?.clientId || (getSecret("TEAMS_CLIENT_ID") || getSecret("MICROSOFT_CLIENT_ID"));
   const clientSecret = sandbox?.clientSecret || (getSecret("TEAMS_CLIENT_SECRET") || getSecret("MICROSOFT_CLIENT_SECRET"));
@@ -66,7 +61,7 @@ async function exchangeCode(code: string) {
         client_secret: clientSecret,
         code,
         grant_type: "authorization_code",
-        redirect_uri: getTeamsRedirectUri(),
+        redirect_uri: getTeamsRedirectUri(reqOrigin),
         scope: TEAMS_SCOPES.join(" "),
       }),
     },
@@ -97,15 +92,16 @@ async function exchangeCode(code: string) {
 
 export async function GET(req: NextRequest) {
   try {
+    const appUrl = getAppUrl(req.nextUrl.origin);
     const { userId } = await auth();
     if (!userId) {
-      return NextResponse.redirect(new URL("/sign-in", getAppUrl()));
+      return NextResponse.redirect(new URL("/sign-in", appUrl));
     }
 
     const error = req.nextUrl.searchParams.get("error");
     if (error) {
       return NextResponse.redirect(
-        new URL("/integrations?error=teams_access_denied", getAppUrl()),
+        new URL("/integrations?error=teams_access_denied", appUrl),
       );
     }
 
@@ -114,14 +110,14 @@ export async function GET(req: NextRequest) {
 
     if (!code || !state) {
       return NextResponse.redirect(
-        new URL("/integrations?error=missing_params", getAppUrl()),
+        new URL("/integrations?error=missing_params", appUrl),
       );
     }
 
     const [stateProvider, nonce] = state.split(":");
     if (stateProvider !== "teams") {
       return NextResponse.redirect(
-        new URL("/integrations?error=invalid_state", getAppUrl()),
+        new URL("/integrations?error=invalid_state", appUrl),
       );
     }
 
@@ -129,7 +125,7 @@ export async function GET(req: NextRequest) {
     const stored = cookieStore.get("oauth_teams");
     if (!stored || stored.value !== nonce) {
       return NextResponse.redirect(
-        new URL("/integrations?error=invalid_nonce", getAppUrl()),
+        new URL("/integrations?error=invalid_nonce", appUrl),
       );
     }
     cookieStore.delete("oauth_teams");
@@ -142,12 +138,12 @@ export async function GET(req: NextRequest) {
       const { allowed } = await requireRole(userId, user.teamId, "ADMIN");
       if (!allowed) {
         return NextResponse.redirect(
-          new URL("/integrations?error=forbidden", getAppUrl()),
+          new URL("/integrations?error=forbidden", appUrl),
         );
       }
     }
 
-    const config = await exchangeCode(code);
+    const config = await exchangeCode(code, req.nextUrl.origin);
 
     if (!user.teamId) {
       const team = await prisma.team.create({
@@ -168,7 +164,7 @@ export async function GET(req: NextRequest) {
       (await prisma.user.findUnique({ where: { id: user.id } }))?.teamId;
     if (!teamId) {
       return NextResponse.redirect(
-        new URL("/integrations?error=no_team", getAppUrl()),
+        new URL("/integrations?error=no_team", appUrl),
       );
     }
 
@@ -200,7 +196,7 @@ export async function GET(req: NextRequest) {
     await logAuditAction(user.id, "CONNECT_TEAMS", teamId, "Integration", {});
 
     return NextResponse.redirect(
-      new URL("/integrations?teams=connected", getAppUrl()),
+      new URL("/integrations?teams=connected", appUrl),
     );
   } catch (err) {
     const message = err instanceof Error ? err.message : "unknown";
