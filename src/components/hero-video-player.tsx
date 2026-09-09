@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useRef } from "react";
+import Image from "next/image";
 import { Play, X } from "lucide-react";
 
 /**
@@ -36,44 +37,65 @@ export function HeroVideoPlayer() {
       {!playing ? (
         <button
           onClick={handlePlay}
-          className="group relative w-full rounded-2xl overflow-hidden border border-gray-200 bg-gradient-to-br from-gray-50 to-gray-100 hover:border-[#F26522]/40 transition-all duration-300"
-          aria-label="Play product demo video"
+          className="group relative block w-full rounded-2xl overflow-hidden border border-gray-200 bg-[#F5F0E6] text-left shadow-[0_18px_60px_-24px_rgba(0,0,0,0.35)] hover:border-[#F26522]/50 hover:shadow-[0_24px_80px_-24px_rgba(242,101,34,0.45)] transition-all duration-500"
+          aria-label="Play The 2:14pm Call — Gauge short film (25 seconds)"
         >
-          {/* Thumbnail / placeholder — uses a compact 2.35:1 cinematic ratio */}
-          <div className="relative flex items-center justify-center" style={{ aspectRatio: "2.35 / 1" }}>
-            {/* Gradient overlay */}
-            <div className="absolute inset-0 bg-gradient-to-t from-black/30 via-transparent to-transparent" />
-
-            {/* Subtle grid pattern */}
-            <div
-              className="absolute inset-0 opacity-[0.03]"
-              style={{
-                backgroundImage:
-                  "linear-gradient(rgba(0,0,0,0.1) 1px, transparent 1px), linear-gradient(90deg, rgba(0,0,0,0.1) 1px, transparent 1px)",
-                backgroundSize: "24px 24px",
-              }}
+          {/* Cinematic cover — real film frame at a compact 2.35:1 ratio */}
+          <div className="relative flex items-center justify-center overflow-hidden" style={{ aspectRatio: "2.35 / 1" }}>
+            {/* Film frame — slow Ken Burns zoom on hover */}
+            <Image
+              src="/videos/gauge-hero-poster.jpg"
+              alt="Still from The 2:14pm Call — Gauge hero film"
+              fill
+              sizes="(max-width: 768px) 100vw, 896px"
+              className="object-cover scale-100 group-hover:scale-[1.04] transition-transform duration-[2000ms] ease-out"
+              loading="lazy"
             />
+            {/* Cinematic vignette — keeps edges rich, center open */}
+            <div className="absolute inset-0 bg-gradient-to-t from-black/55 via-black/5 to-black/25" />
+            <div className="absolute inset-0 bg-[radial-gradient(120%_90%_at_50%_45%,transparent_55%,rgba(0,0,0,0.35)_100%)]" />
 
-            {/* Play button */}
-            <div className="relative z-10 flex flex-col items-center gap-3">
-              <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-full bg-[#F26522] flex items-center justify-center shadow-lg shadow-[#F26522]/25 group-hover:scale-110 group-hover:shadow-[#F26522]/40 transition-all duration-500">
-                <Play
-                  size={28}
-                  className="text-white ml-1"
-                  fill="currentColor"
-                />
-              </div>
-              <span className="text-[12px] sm:text-[13px] font-medium text-gray-600 group-hover:text-gray-900 transition-colors bg-white/80 backdrop-blur-sm rounded-full px-3 py-1">
-                See it in action — 30s
+            {/* Top chrome — film badges */}
+            <div className="absolute top-0 inset-x-0 px-4 sm:px-5 py-3.5 flex items-center justify-between">
+              <span className="inline-flex items-center gap-2 text-[10px] font-mono tracking-[0.18em] uppercase text-white/85 bg-black/45 backdrop-blur-sm border border-white/15 rounded-full px-3 py-1.5">
+                <span className="w-1.5 h-1.5 rounded-full bg-[#F26522] animate-pulse" />
+                A short film
+              </span>
+              <span className="text-[10px] font-mono text-white/75 bg-black/45 backdrop-blur-sm border border-white/15 rounded-full px-3 py-1.5">
+                0:25
               </span>
             </div>
 
-            {/* Bottom bar with branding */}
-            <div className="absolute bottom-0 inset-x-0 px-4 py-3 flex items-center justify-between">
-              <span className="text-[10px] font-mono tracking-wider text-white/70 uppercase">
-                Product demo
+            {/* Center — play button with ping ring + title */}
+            <div className="relative z-10 flex flex-col items-center gap-3 sm:gap-4 px-6 text-center">
+              <span className="relative flex">
+                <span className="absolute inline-flex h-full w-full rounded-full bg-[#F26522] opacity-30 animate-ping" />
+                <span className="relative w-16 h-16 sm:w-20 sm:h-20 rounded-full bg-[#F26522] flex items-center justify-center shadow-xl shadow-[#F26522]/30 group-hover:scale-110 group-hover:shadow-[#F26522]/50 transition-all duration-500">
+                  <Play
+                    size={28}
+                    className="text-white ml-1"
+                    fill="currentColor"
+                  />
+                </span>
               </span>
-              <span className="text-[10px] font-mono text-white/50">0:30</span>
+              <span className="max-w-md">
+                <span className="block text-white font-semibold tracking-tight text-lg sm:text-2xl leading-tight drop-shadow-[0_2px_12px_rgba(0,0,0,0.5)]">
+                  The 2:14pm Call
+                </span>
+                <span className="mt-1.5 inline-block text-[11px] sm:text-[12px] font-medium text-white/85 bg-black/45 backdrop-blur-sm border border-white/15 rounded-full px-3 py-1">
+                  Maya vs. the forecast — watch it in 25 seconds
+                </span>
+              </span>
+            </div>
+
+            {/* Bottom chrome — title + meta */}
+            <div className="absolute bottom-0 inset-x-0 px-4 sm:px-5 py-3.5 flex items-center justify-between border-t border-white/10 bg-gradient-to-t from-black/50 to-transparent">
+              <span className="text-[10px] font-mono tracking-[0.18em] text-white/70 uppercase">
+                Gauge · Signal, not noise
+              </span>
+              <span className="text-[10px] font-mono text-white/60">
+                HD · No sound needed
+              </span>
             </div>
           </div>
         </button>
@@ -93,11 +115,11 @@ export function HeroVideoPlayer() {
             className="w-full aspect-video"
             controls
             playsInline
+            preload="none"
             onEnded={handleClose}
-            poster="/demo-poster.jpg"
+            poster="/videos/gauge-hero-poster.jpg"
           >
-            {/* Replace with your actual demo video */}
-            <source src="/demo-video.mp4" type="video/mp4" />
+            <source src="/videos/gauge-hero-25s.mp4" type="video/mp4" />
             Your browser does not support the video tag.
           </video>
         </div>
