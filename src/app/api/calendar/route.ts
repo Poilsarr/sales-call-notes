@@ -73,6 +73,13 @@ export async function GET(req: NextRequest) {
       );
     }
     console.error("[calendar] fetch failed", error);
-    return NextResponse.json({ error: "Failed to fetch calendar" }, { status: 500 });
+    const message = error instanceof Error ? error.message : String(error);
+    // Surface Google's actual error (e.g. "Calendar API not enabled") so the UI can guide the user
+    // instead of generic "Failed to fetch calendar".
+    const isGoogleApiError = message.includes("Failed to list") || message.includes("Failed to create");
+    return NextResponse.json(
+      { error: isGoogleApiError ? message : `Failed to fetch calendar: ${message.slice(0, 300)}`, code: err.code || "UNKNOWN" },
+      { status: 500 },
+    );
   }
 }
