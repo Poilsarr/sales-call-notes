@@ -31,7 +31,40 @@ export default function Home() {
         {/* HERO — on tall viewports the column flex stretches the hero; on mobile
           we use natural flow so the content doesn't sit in the middle of a
           sea of empty space. */}
-        <section className="relative lg:min-h-[100dvh] flex flex-col">
+        <section className="relative lg:min-h-[100dvh] flex flex-col overflow-hidden bg-gradient-to-b from-film-paper via-[#EFEFEF] to-[#EFEFEF]">
+          {/* Film-world dressing — waveform ribbon echo + paper grain */}
+          <div
+            className="absolute inset-0 opacity-[0.5] pointer-events-none"
+            style={{
+              backgroundImage:
+                "radial-gradient(rgba(19,19,22,0.055) 1px, transparent 1px)",
+              backgroundSize: "5px 5px",
+            }}
+            aria-hidden
+          />
+          <svg
+            className="absolute inset-x-0 top-[8%] w-full h-[420px] pointer-events-none"
+            viewBox="0 0 1440 420"
+            preserveAspectRatio="none"
+            aria-hidden
+          >
+            <path
+              d="M-20,300 C200,120 360,120 520,260 C680,400 840,400 1000,260 C1160,120 1300,140 1460,260"
+              fill="none"
+              stroke="#131316"
+              strokeWidth="5"
+              opacity="0.10"
+              strokeLinecap="round"
+            />
+            <path
+              d="M-20,330 C200,170 360,170 520,290 C680,410 840,410 1000,290 C1160,170 1300,190 1460,290"
+              fill="none"
+              stroke="#E8442E"
+              strokeWidth="5"
+              opacity="0.16"
+              strokeLinecap="round"
+            />
+          </svg>
           <div className="hidden lg:block flex-1" />
         <div className="relative z-20 w-full max-w-[1440px] mx-auto px-5 sm:px-8 lg:px-12 pt-10 pb-14 sm:pb-16 lg:pb-20">
           <div className="grid grid-cols-1 lg:grid-cols-[1.1fr_0.9fr] gap-10 lg:gap-16 items-center">
@@ -40,14 +73,14 @@ export default function Home() {
               <p className="text-[13px] leading-[14px] text-gray-900 tracking-wide mb-5 sm:mb-8">Gauge</p>
               <h1 className="text-[clamp(1.75rem,7vw,4.2rem)] sm:text-[clamp(2.5rem,5vw,4.2rem)] font-semibold sm:font-medium leading-[1.08] tracking-[-0.03em] text-gray-900">
                 Know the moment a<br className="hidden sm:block" />
-                <span className="sm:hidden"> </span>competitor enters the deal.
+                <span className="sm:hidden"> </span><span className="font-film italic font-normal text-film-vermilion">competitor</span> enters the deal.
               </h1>
               <p className="text-[15px] text-gray-500 max-w-xl mt-4 mb-3">
                 Gauge turns every sales call into structured notes, action items, and a real-time
                 competitive signal. Upload, record, or capture from Google Meet. $9/mo after a free forever tier.
               </p>
-              <div className="inline-flex items-center gap-2 text-[11px] font-medium text-[#F26522] bg-[#F26522]/[0.06] border border-[#F26522]/15 rounded-full px-3 py-1 mb-5">
-                <span className="w-1.5 h-1.5 rounded-full bg-[#F26522] animate-pulse" />
+              <div className="inline-flex items-center gap-2 text-[11px] font-mono font-medium text-film-ink bg-film-cream border-2 border-film-ink rounded-full px-3 py-1 mb-5 shadow-[3px_3px_0_#131316]">
+                <span className="w-1.5 h-1.5 rounded-full bg-film-vermilion animate-pulse" />
                 Currently in private beta
               </div>
               <div className="flex flex-row items-center gap-5 flex-wrap">
@@ -61,9 +94,10 @@ export default function Home() {
               </div>
             </div>
 
-            {/* RIGHT: product preview card */}
+            {/* RIGHT: product preview card — film sticker treatment */}
             <div className="relative lg:block">
-              <div className="doppel-outer">
+              <div className="absolute -top-3 left-1/2 -translate-x-1/2 rotate-[-2deg] w-24 h-6 bg-film-amber/60 border border-black/10 z-10" aria-hidden />
+              <div className="doppel-outer border-2 border-film-ink shadow-[8px_8px_0_#131316]">
                 <div className="doppel-inner p-5 sm:p-6">
                   <div className="flex items-center gap-2 mb-4">
                     <div className="w-2 h-2 rounded-full bg-[#F26522] animate-pulse" />
