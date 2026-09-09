@@ -11,6 +11,7 @@ const config: Config = {
       fontFamily: {
         sans: ["var(--font-geist-sans)", "sans-serif"],
         mono: ["var(--font-geist-mono)", "monospace"],
+        film: ["var(--font-film-serif)", "Georgia", "serif"],
       },
       colors: {
         background: "var(--background)",
@@ -42,6 +43,14 @@ const config: Config = {
           "gray-bg": "#EFEFEF",
           "gray-section": "#F5F5F5",
           "gray-dark": "#1a1a1a",
+        },
+        film: {
+          paper: "#F5F0E6",
+          cream: "#FFFDF7",
+          ink: "#131316",
+          vermilion: "#E8442E",
+          teal: "#0E7C6B",
+          amber: "#D9A21B",
         },
       },
       letterSpacing: {
