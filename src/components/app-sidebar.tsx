@@ -14,6 +14,7 @@ import {
   Plug,
   Settings,
   LogOut,
+  Calendar,
 } from 'lucide-react';
 import GaugeLogo from '@/components/gauge-logo';
 
@@ -31,6 +32,7 @@ const navItems = [
   { href: '/app', label: 'Dashboard', icon: LayoutDashboard },
   { href: '/app/calls', label: 'Calls', icon: Phone },
   { href: '/app/record', label: 'Record', icon: Mic },
+  { href: '/app/calendar', label: 'Calendar', icon: Calendar },
   { href: '/app/live', label: 'Live', icon: Radio },
   { href: '/app/intelligence', label: 'Intelligence', icon: Crosshair },
   { href: '/team', label: 'Team', icon: Users },

@@ -5,7 +5,7 @@ import { useUser } from '@clerk/nextjs';
 import { StatCard, BentoGrid } from '@/components/bento-stats';
 import { motion } from 'framer-motion';
 import Link from 'next/link';
-import { Upload } from 'lucide-react';
+import { Upload, Calendar, Video, ExternalLink } from 'lucide-react';
 
 interface AnalyticsData {
   totalCalls: number;
@@ -37,6 +37,8 @@ export default function DashboardPage() {
   const [data, setData] = useState<AnalyticsData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [cal, setCal] = useState<{ upcoming: Array<{ title: string; startTime: string; meetingLink: string | null; hasLink: boolean }>; active: Array<{ title: string }>; error?: string; code?: string } | null>(null);
+  const [calLoading, setCalLoading] = useState(true);
 
   useEffect(() => {
     if (!clerkLoaded) return;
@@ -56,6 +58,20 @@ export default function DashboardPage() {
       .catch(e => setError(e.message))
       .finally(() => setLoading(false));
   }, [user?.id, clerkLoaded]);
+
+  useEffect(() => {
+    if (!clerkLoaded || !user?.id) return;
+    setCalLoading(true);
+    fetch('/api/calendar?action=check-meetings', { cache: 'no-store' })
+      .then(async r => {
+        const j = await r.json().catch(() => ({}));
+        if (!r.ok) return { upcoming: [], active: [], error: j.error || 'Calendar not connected', code: j.code || null };
+        return j;
+      })
+      .then(setCal)
+      .catch(() => setCal({ upcoming: [], active: [], error: 'Failed to load calendar' }))
+      .finally(() => setCalLoading(false));
+  }, [clerkLoaded, user?.id]);
 
   const pendingActions = data
     ? data.totalActionItems - Math.round(data.totalActionItems * data.completionRate)
@@ -130,6 +146,40 @@ export default function DashboardPage() {
           loading={loading}
         />
       </BentoGrid>
+
+      {/* Calendar — easy access after Connect */}
+      <div className="rounded-xl border border-zinc-800 bg-zinc-900/40 px-4 py-3 flex items-center justify-between">
+        <div className="flex items-center gap-3">
+          <span className="w-8 h-8 rounded-lg bg-[#F26522]/10 flex items-center justify-center">
+            <Calendar className="w-4 h-4 text-[#F26522]" />
+          </span>
+          <div>
+            <p className="text-sm font-medium text-white">
+              {calLoading ? 'Checking calendar…' : cal?.active?.length ? `${cal.active.length} live now` : cal?.upcoming?.length ? `${cal.upcoming.length} upcoming in 30 min` : 'Calendar connected — no meetings in next 30 min'}
+            </p>
+            <p className="text-xs text-zinc-500">
+              {cal?.code === 'NOT_CONNECTED' || cal?.error?.includes('not connected') ? 'Connect Google Calendar to see meetings here' : 'Primary calendar · Next 7 days at /app/calendar'}
+            </p>
+          </div>
+        </div>
+        <div className="flex items-center gap-2">
+          {cal?.upcoming?.[0]?.meetingLink ? (
+            <a href={cal.upcoming[0].meetingLink} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1.5 rounded-full bg-emerald-600 hover:bg-emerald-500 text-white px-3 py-1.5 text-xs font-medium">
+              <Video className="w-3.5 h-3.5" /> Join <ExternalLink className="w-3 h-3 opacity-70" />
+            </a>
+          ) : null}
+          <Link href="/app/calendar" className="rounded-full bg-white text-zinc-900 px-3 py-1.5 text-xs font-semibold hover:bg-zinc-100">
+            Open Calendar →
+          </Link>
+        </div>
+      </div>
+
+      {cal?.code === 'NOT_CONNECTED' && (
+        <div className="rounded-xl border border-amber-500/20 bg-amber-500/10 px-4 py-3 flex items-center justify-between">
+          <p className="text-sm text-amber-200">Calendar not connected — connect once, then meetings appear here automatically.</p>
+          <Link href="/integrations" className="text-sm font-medium text-amber-300 underline">Connect →</Link>
+        </div>
+      )}
 
       <motion.div
         initial={{ opacity: 0, y: 20 }}

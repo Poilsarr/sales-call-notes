@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import localFont from "next/font/local";
+import { Instrument_Serif } from "next/font/google";
 import { ClerkProvider } from "@clerk/nextjs";
 import { Analytics } from "@vercel/analytics/react";
 import { SpeedInsights } from "@vercel/speed-insights/next";
@@ -17,6 +18,15 @@ const geistSans = localFont({
 const geistMono = localFont({
   src: "../../node_modules/geist/dist/fonts/geist-mono/GeistMono-Variable.woff2",
   variable: "--font-geist-mono",
+  display: "swap",
+});
+
+// Film serif — italic accent voice from "The 2:14pm Call" hero film.
+const filmSerif = Instrument_Serif({
+  weight: ["400"],
+  style: ["normal", "italic"],
+  subsets: ["latin"],
+  variable: "--font-film-serif",
   display: "swap",
 });
 
@@ -101,7 +111,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           dangerouslySetInnerHTML={{ __html: productJsonLd() }}
         />
       </head>
-      <body className={`${geistSans.variable} ${geistMono.variable} font-sans antialiased bg-white text-gray-900`}>
+      <body className={`${geistSans.variable} ${geistMono.variable} ${filmSerif.variable} font-sans antialiased bg-white text-gray-900`}>
         <a href="#main" className="skip-link">
           Skip to content
         </a>
