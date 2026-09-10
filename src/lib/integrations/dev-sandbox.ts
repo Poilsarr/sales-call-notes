@@ -68,6 +68,11 @@ const SANDBOX_VALUES: Record<SandboxProvider, SandboxCredentials> = {
 let warned = false;
 
 export function isDevSandboxEnabled(): boolean {
+  // Demo mode for screenshots / investor previews: set DEMO_INTEGRATIONS=true
+  // in Vercel to make HubSpot/Salesforce/Teams/Slack appear as "Live" and
+  // allow one-click Connect with fake tokens (no real OAuth). Remove the env
+  // var to restore honest "Not configured" badges in production.
+  if (process.env.DEMO_INTEGRATIONS === "true") return true;
   // Local development only. Vercel sets VERCEL=1 in every deployed
   // environment (including preview/development builds), so requiring
   // NODE_ENV=development AND VERCEL !== "1" guarantees the fake
