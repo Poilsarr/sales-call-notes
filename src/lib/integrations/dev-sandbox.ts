@@ -1,5 +1,7 @@
 export type SandboxProvider = "hubspot" | "salesforce" | "teams" | "slack" | "google_calendar";
 
+import { getSecret } from "@/lib/secrets";
+
 export type SandboxCredentials = {
   clientId: string;
   clientSecret: string;
@@ -86,10 +88,17 @@ export function getDevSandboxCredentials(
   if (!isDevSandboxEnabled()) {
     return null;
   }
+  // Demo mode should NOT hijack Google Calendar when real credentials are
+  // present — keep the real OAuth flow for the one CRM that is already
+  // working (project 347876872408). Demo only fakes the other 4.
+  if (process.env.DEMO_INTEGRATIONS === "true" && provider === "google_calendar") {
+    const hasRealGoogle = Boolean(getSecret("GOOGLE_CLIENT_ID") && getSecret("GOOGLE_CLIENT_SECRET"));
+    if (hasRealGoogle) return null;
+  }
   if (!warned) {
     warned = true;
     console.warn(
-      "[dev-sandbox] Using fake OAuth credentials (local development only). " +
+      "[dev-sandbox] Using fake OAuth credentials (demo/local). " +
         "Real HUBSPOT/SALESFORCE/TEAMS env vars are ignored. " +
         "See docs/INTEGRATIONS.md for production setup.",
     );
