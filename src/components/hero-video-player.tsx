@@ -33,7 +33,7 @@ export function HeroVideoPlayer() {
   };
 
   return (
-    <div>
+    <div id="demo">
       {!playing ? (
         <button
           onClick={handlePlay}

@@ -1,10 +1,10 @@
-import { Upload, Mic, Brain, Send } from "lucide-react";
+import { Upload, Brain, Send } from "lucide-react";
 
 /**
- * "How it works" — 4-step process section for the home page.
+ * "How it works" — 3-step process section for the home page.
  *
- * Explains the sales-call journey from upload to CRM push in plain English.
- * The icons match the workflow numbering so visitors can see the order.
+ * Input → signal → push, in plain words. No model names above the fold.
+ * Fast transcription + sales-tuned AI under the hood (details live on /features).
  *
  * Server component — no JS shipped.
  */
@@ -12,34 +12,23 @@ const STEPS = [
   {
     n: "01",
     icon: Upload,
-    title: "Drop the call",
-    body:
-      "Drag an MP3, paste a recording URL, or pipe from our Chrome extension. Files up to 500 MB, 4 hours each.",
-    detail: "MP3 · WAV · M4A · WebM · OGG · FLAC",
+    title: "Bring the call",
+    body: "Drop an MP3, hit record, or capture Google Meet. No bot ever joins.",
+    detail: "MP3 · Record · Google Meet",
   },
   {
     n: "02",
-    icon: Mic,
-    title: "Whisper transcribes",
-    body:
-      "Whisper Large V3 handles accents, crosstalk, and bad phone audio. 99 languages, auto-detect. ~30s for a 10-minute call.",
-    detail: "98.2% accuracy on Switchboard benchmark",
+    icon: Brain,
+    title: "Get notes + next steps in about a minute",
+    body: "Transcript with speakers, summary, owners and dates, BANT/MEDDIC. Fast transcription + sales-tuned AI.",
+    detail: "Transcript · Summary · Owners + dates",
   },
   {
     n: "03",
-    icon: Brain,
-    title: "AI extracts the signal",
-    body:
-      "Summary, decisions, action items with owners + due dates, MEDDIC fields, and every competitor mention on the call.",
-    detail: "GPT-4o with a sales-tuned prompt",
-  },
-  {
-    n: "04",
     icon: Send,
-    title: "Push to CRM or Slack",
-    body:
-      "One click to push structured notes to HubSpot or Salesforce. Slack pings fire the moment a competitor is named on a call.",
-    detail: "HubSpot · Salesforce · Slack · Webhooks",
+    title: "Get pinged when rivals show up",
+    body: "Exact quote + speaker to Slack. One click to HubSpot/Salesforce.",
+    detail: "Slack · HubSpot · Salesforce",
   },
 ];
 
@@ -60,7 +49,7 @@ export default function HowItWorks() {
           </p>
         </div>
 
-        <ol className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        <ol className="grid grid-cols-1 md:grid-cols-3 gap-4">
           {STEPS.map((s) => (
             <li key={s.n} className="relative">
               <div className="doppel-outer h-full">

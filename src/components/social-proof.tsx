@@ -37,12 +37,8 @@ export default function SocialProof() {
   return (
     <section className="bg-[#0a0a0b] text-white pt-16 sm:pt-20 lg:pt-28 pb-16 sm:pb-20 lg:pb-28 border-t border-white/5">
       <div className="max-w-[1440px] mx-auto px-5 sm:px-8 lg:px-12">
-        {/* Beta badge + header */}
+        {/* Header — badge removed (lives in proof-strip); quote + stats kept */}
         <div className="max-w-2xl mb-12">
-          <div className="inline-flex items-center gap-2 text-[11px] font-medium text-[#F26522] bg-[#F26522]/[0.06] border border-[#F26522]/15 rounded-full px-3 py-1 mb-4">
-            <span className="w-1.5 h-1.5 rounded-full bg-[#F26522] animate-pulse" />
-            Private beta
-          </div>
           <p className="text-[11px] uppercase tracking-[0.18em] text-white/40 mb-3">Who it&apos;s for</p>
           <h2 className="text-[clamp(1.5rem,4vw,2.6rem)] font-medium leading-[1.1] tracking-[-0.02em]">
             Built for the people actually running the calls.

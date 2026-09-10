@@ -3,11 +3,16 @@ import Nav from "@/components/nav";
 import SocialProof from "@/components/social-proof";
 import RoiCalculator from "@/components/roi-calculator";
 import HowItWorks from "@/components/how-it-works";
+import Differentiators from "@/components/differentiators";
+import UseCases from "@/components/use-cases";
 import FinalCta from "@/components/final-cta";
 import { HeroCTA } from "@/components/hero-cta";
 import { HeroVideoPlayer } from "@/components/hero-video-player";
 import StickyMarketingCta from "@/components/sticky-marketing-cta";
-import { Crosshair, Upload, BarChart3, Shield, Check, ArrowRight } from "lucide-react";
+import ProblemSection from "@/components/problem-section";
+import ProofStrip from "@/components/proof-strip";
+import { HOMEPAGE_COPY } from "@/lib/homepage-copy";
+import { Crosshair, Upload, BarChart3, Shield, Check, ArrowRight, Play } from "lucide-react";
 
 export const metadata = {
   title: "Gauge — AI Sales Call Notes & Competitive Intelligence",
@@ -68,28 +73,32 @@ export default function Home() {
           <div className="hidden lg:block flex-1" />
         <div className="relative z-20 w-full max-w-[1440px] mx-auto px-5 sm:px-8 lg:px-12 pt-10 pb-14 sm:pb-16 lg:pb-20">
           <div className="grid grid-cols-1 lg:grid-cols-[1.1fr_0.9fr] gap-10 lg:gap-16 items-center">
-            {/* LEFT: headline + sub + CTAs */}
+            {/* LEFT: headline + sub + CTAs.
+                Hero script per FRONTPAGE-PITCH-PLAN §4: plain-English What-line
+                + dual CTA (Otter.ai pattern: name the job in one line, one primary action). */}
             <div>
-              <p className="text-[13px] leading-[14px] text-gray-900 tracking-wide mb-5 sm:mb-8">Gauge</p>
+              <p className="text-[13px] leading-[14px] text-gray-900 tracking-wide mb-5 sm:mb-8">{HOMEPAGE_COPY.eyebrow}</p>
               <h1 className="text-[clamp(1.75rem,7vw,4.2rem)] sm:text-[clamp(2.5rem,5vw,4.2rem)] font-semibold sm:font-medium leading-[1.08] tracking-[-0.03em] text-gray-900">
-                Know the moment a<br className="hidden sm:block" />
-                <span className="sm:hidden"> </span><span className="font-film italic font-normal text-film-vermilion">competitor</span> enters the deal.
+                {HOMEPAGE_COPY.heroH1}
               </h1>
               <p className="text-[15px] text-gray-500 max-w-xl mt-4 mb-3">
-                Gauge turns every sales call into structured notes, action items, and a real-time
-                competitive signal. Upload, record, or capture from Google Meet. $9/mo after a free forever tier.
+                {HOMEPAGE_COPY.heroSub}
               </p>
               <div className="inline-flex items-center gap-2 text-[11px] font-mono font-medium text-film-ink bg-film-cream border-2 border-film-ink rounded-full px-3 py-1 mb-5 shadow-[3px_3px_0_#131316]">
                 <span className="w-1.5 h-1.5 rounded-full bg-film-vermilion animate-pulse" />
-                Currently in private beta
+                {HOMEPAGE_COPY.betaLine}
               </div>
-              <div className="flex flex-row items-center gap-5 flex-wrap">
-                <HeroCTA />
-                <Link href="/pricing" className="text-[13px] text-gray-600 hover:text-gray-900 font-medium underline-offset-4 hover:underline">
-                  See pricing →
+              <div className="flex flex-row items-center gap-3 sm:gap-4 flex-wrap">
+                <HeroCTA placement="hero" />
+                <Link
+                  href={HOMEPAGE_COPY.ctas.secondaryHref}
+                  className="inline-flex items-center gap-2 rounded-full border-2 border-gray-900 px-5 py-2 text-[13px] sm:text-[14px] font-medium text-gray-900 hover:bg-gray-900 hover:text-white transition-colors"
+                >
+                  <Play size={14} />
+                  <span>{HOMEPAGE_COPY.ctas.secondary}</span>
                 </Link>
-                <Link href="/demo" className="text-[13px] text-gray-600 hover:text-gray-900 font-medium underline-offset-4 hover:underline">
-                  See it live →
+                <Link href={HOMEPAGE_COPY.ctas.tertiaryHref} className="text-[13px] text-gray-600 hover:text-gray-900 font-medium underline-offset-4 hover:underline">
+                  {HOMEPAGE_COPY.ctas.tertiary}
                 </Link>
               </div>
             </div>
@@ -157,12 +166,20 @@ export default function Home() {
             </div>
           </div>
 
-          {/* VIDEO PLAYER — full width below the hero grid */}
+          {/* VIDEO PLAYER — full width below the hero grid.
+              NOTE (PR-A scope): the LCP poster <img> lives inside
+              hero-video-player.tsx (Executor B/C territory), and page.tsx
+              itself has no next/image usage — so no priority change here. */}
           <div className="mt-10 max-w-3xl">
             <HeroVideoPlayer />
           </div>
         </div>
       </section>
+
+      {/* PROOF STRIP + PROBLEM — FRONTPAGE-PITCH-PLAN §2-3 (Uber-deck slides 2-3).
+          Rendered directly below the hero; sections 5-9 below are untouched. */}
+      <ProofStrip />
+      <ProblemSection />
 
       {/* CAPABILITIES */}
       <section className="bg-white pt-16 sm:pt-20 lg:pt-28 pb-16 sm:pb-20 lg:pb-28 border-t border-gray-200">
@@ -304,6 +321,9 @@ export default function Home() {
 
       {/* HOW IT WORKS — 4-step process from upload to CRM push */}
       <HowItWorks />
+
+      <Differentiators />
+      <UseCases />
 
       {/* ROI CALCULATOR (honest math, all inputs user-controlled) */}
       <RoiCalculator />
