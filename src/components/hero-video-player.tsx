@@ -3,6 +3,7 @@
 import { useState, useRef } from "react";
 import Image from "next/image";
 import { Play, X } from "lucide-react";
+import { trackEvent } from "@/lib/analytics";
 
 /**
  * Hero video player — a lightweight inline video embed for the landing hero.
@@ -13,23 +14,40 @@ import { Play, X } from "lucide-react";
  *
  * This is the single highest-leverage conversion add identified in the
  * DESIGN_UX_AUDIT.md — static mockup → real product video.
+ *
+ * PR-2 analytics: fires `film_play` / `film_close` / `film_end` with
+ * `{film, duration_s}`. Anonymous-only properties.
  */
+export const FILM_SLUG = "2-14pm-call";
+export const FILM_DURATION_S = 25;
+
 export function HeroVideoPlayer() {
   const [playing, setPlaying] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
 
   const handlePlay = () => {
+    trackEvent("film_play", { film: FILM_SLUG, duration_s: FILM_DURATION_S });
     setPlaying(true);
     // Small delay so the video element mounts before we call play()
     setTimeout(() => videoRef.current?.play(), 50);
   };
 
-  const handleClose = () => {
+  const stopVideo = () => {
     if (videoRef.current) {
       videoRef.current.pause();
       videoRef.current.currentTime = 0;
     }
     setPlaying(false);
+  };
+
+  const handleClose = () => {
+    trackEvent("film_close", { film: FILM_SLUG, duration_s: FILM_DURATION_S });
+    stopVideo();
+  };
+
+  const handleEnded = () => {
+    trackEvent("film_end", { film: FILM_SLUG, duration_s: FILM_DURATION_S });
+    stopVideo();
   };
 
   return (
@@ -116,7 +134,7 @@ export function HeroVideoPlayer() {
             controls
             playsInline
             preload="none"
-            onEnded={handleClose}
+            onEnded={handleEnded}
             poster="/videos/gauge-hero-poster.jpg"
           >
             <source src="/videos/gauge-hero-25s.mp4" type="video/mp4" />

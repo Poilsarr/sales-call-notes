@@ -175,7 +175,7 @@ export default function Home() {
       <ProblemSection />
 
       {/* CAPABILITIES */}
-      <section className="bg-white pt-16 sm:pt-20 lg:pt-28 pb-16 sm:pb-20 lg:pb-28 border-t border-gray-200">
+      <section data-track-section="capabilities" className="bg-white pt-16 sm:pt-20 lg:pt-28 pb-16 sm:pb-20 lg:pb-28 border-t border-gray-200">
         <div className="max-w-[1440px] mx-auto px-5 sm:px-8 lg:px-12">
           <div className="max-w-2xl mb-14">
             <p className="text-[11px] uppercase tracking-[0.18em] text-gray-400 mb-3">Capabilities</p>
@@ -201,7 +201,7 @@ export default function Home() {
       </section>
 
       {/* COMPETITIVE INTEL DEMO — live alert feed */}
-      <section className="bg-[#0a0a0b] text-white pt-16 sm:pt-20 lg:pt-28 pb-16 sm:pb-20 lg:pb-28">
+      <section data-track-section="film" className="bg-[#0a0a0b] text-white pt-16 sm:pt-20 lg:pt-28 pb-16 sm:pb-20 lg:pb-28">
         <div className="max-w-[1440px] mx-auto px-5 sm:px-8 lg:px-12">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-center mb-14">
             <div className="max-w-2xl">
@@ -325,7 +325,7 @@ export default function Home() {
       <RoiCalculator />
 
       {/* PRICING + CTA */}
-      <section className="bg-white pt-16 sm:pt-20 lg:pt-28 pb-16 sm:pb-20 lg:pb-28 border-t border-gray-200">
+      <section data-track-section="pricing" className="bg-white pt-16 sm:pt-20 lg:pt-28 pb-16 sm:pb-20 lg:pb-28 border-t border-gray-200">
         <div className="max-w-[1440px] mx-auto px-5 sm:px-8 lg:px-12">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-center">
             <div>

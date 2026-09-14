@@ -104,6 +104,26 @@ export default function PrivacyPage() {
 
               <section>
                 <h2 className="text-[clamp(1.4rem,3.5vw,2rem)] font-medium leading-[1.1] tracking-[-0.02em] mb-3">
+                  Website analytics
+                </h2>
+                <p className="text-white/70 text-[14px] leading-relaxed mb-4">
+                  We measure anonymous usage of our marketing pages with
+                  Vercel Analytics, which is cookieless — it does not set
+                  tracking cookies or store personal identifiers. Events
+                  recorded are page interactions such as hero views,
+                  call-to-action clicks, demo film plays, section views, and
+                  pricing interactions (plan selection, calculator use,
+                  exit-intent display and clicks). Properties are anonymous
+                  only — for example the hero variant shown, the button id
+                  and page section, whether the visitor was signed in, the
+                  film id and duration, the calculator team size, and the
+                  section name. We never attach your name, email address, or
+                  account identity to these events.
+                </p>
+              </section>
+
+              <section>
+                <h2 className="text-[clamp(1.4rem,3.5vw,2rem)] font-medium leading-[1.1] tracking-[-0.02em] mb-3">
                   Retention &amp; your controls
                 </h2>
                 <ul className="space-y-2.5 text-white/70 text-[14px] leading-relaxed list-disc list-inside">

@@ -57,8 +57,53 @@ export type MarketingEvent =
   | "pricing_plan_selected"
   | "pricing_calculator_used"
   | "pricing_exit_intent_shown"
-  | "pricing_exit_intent_click";
+  | "pricing_exit_intent_click"
+  | "hero_view"
+  | "cta_click"
+  | "film_play"
+  | "film_close"
+  | "film_end"
+  | "section_view";
 
+export type HeroViewProperties = {
+  variant: string;
+};
+
+export type CtaClickProperties = {
+  id: string;
+  section: string;
+  signedIn: boolean;
+};
+
+export type FilmEventProperties = {
+  film: string;
+  duration_s: number;
+};
+
+export type SectionViewProperties = {
+  section: string;
+};
+
+export function trackEvent(
+  event: "hero_view",
+  properties: HeroViewProperties,
+): void;
+export function trackEvent(
+  event: "cta_click",
+  properties: CtaClickProperties,
+): void;
+export function trackEvent(
+  event: "film_play" | "film_close" | "film_end",
+  properties: FilmEventProperties,
+): void;
+export function trackEvent(
+  event: "section_view",
+  properties: SectionViewProperties,
+): void;
+export function trackEvent(
+  event: MarketingEvent,
+  properties?: Record<string, string | number | boolean>,
+): void;
 export function trackEvent(
   event: MarketingEvent,
   properties?: Record<string, string | number | boolean>,

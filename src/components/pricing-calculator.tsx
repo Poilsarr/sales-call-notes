@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useRef, useEffect } from "react";
 import { Calculator, Users, ArrowRight, CheckCircle } from "lucide-react";
 import Link from "next/link";
 import { trackEvent } from "@/lib/analytics";
@@ -17,6 +17,43 @@ function formatUSD(n: number): string {
 
 export default function PricingCalculator() {
   const [teamSize, setTeamSize] = useState(5);
+  // PR-2 analytics: fire the existing-but-dead `pricing_calculator_used`
+  // once per session on first slider interaction, debounced so a drag
+  // gesture reports a single event with the settled value.
+  const calcFiredRef = useRef(false);
+  const calcTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  useEffect(() => {
+    return () => {
+      if (calcTimerRef.current) clearTimeout(calcTimerRef.current);
+    };
+  }, []);
+
+  function handleTeamSizeChange(next: number) {
+    setTeamSize(next);
+    if (calcFiredRef.current) return;
+    try {
+      if (
+        typeof window !== "undefined" &&
+        window.sessionStorage.getItem("gauge_pricing_calculator_used")
+      ) {
+        calcFiredRef.current = true;
+        return;
+      }
+    } catch {
+      // storage unavailable — fall through to in-memory once-per-mount
+    }
+    if (calcTimerRef.current) clearTimeout(calcTimerRef.current);
+    calcTimerRef.current = setTimeout(() => {
+      calcFiredRef.current = true;
+      try {
+        window.sessionStorage.setItem("gauge_pricing_calculator_used", "1");
+      } catch {
+        // ignore — event still fires once per mount via the ref
+      }
+      trackEvent("pricing_calculator_used", { teamSize: next });
+    }, 500);
+  }
 
   const { gauge, fireflies, otter, saveVsFireflies, saveVsOtter, gaugePlan } = useMemo(() => {
     // Pro caps at 5 seats (plans.ts teamMemberLimit: 5) — beyond that the
@@ -67,7 +104,7 @@ export default function PricingCalculator() {
                     min={1}
                     max={20}
                     value={teamSize}
-                    onChange={(e) => setTeamSize(Number(e.target.value))}
+                    onChange={(e) => handleTeamSizeChange(Number(e.target.value))}
                     className="w-full accent-[#F26522] h-1.5 bg-gray-200 rounded-full appearance-none cursor-pointer"
                     style={{ accentColor: "#F26522" }}
                   />

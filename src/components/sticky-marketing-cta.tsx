@@ -3,6 +3,8 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { X, ArrowRight } from "lucide-react";
+import { useUser } from "@clerk/nextjs";
+import { trackEvent } from "@/lib/analytics";
 
 interface StickyMarketingCtaProps {
   label: string;
@@ -13,6 +15,7 @@ interface StickyMarketingCtaProps {
 export default function StickyMarketingCta({ label, href, cta }: StickyMarketingCtaProps) {
   const [visible, setVisible] = useState(false);
   const [dismissed, setDismissed] = useState(false);
+  const { user } = useUser();
 
   useEffect(() => {
     if (dismissed) return;
@@ -37,6 +40,13 @@ export default function StickyMarketingCta({ label, href, cta }: StickyMarketing
         <div className="flex items-center gap-2 shrink-0">
           <Link
             href={href}
+            onClick={() =>
+              trackEvent("cta_click", {
+                id: "sticky",
+                section: "sticky",
+                signedIn: !!user,
+              })
+            }
             className="group inline-flex items-center gap-2 bg-[#C94F17] hover:bg-[#A84310] text-white text-[12px] font-medium rounded-full pl-4 pr-1.5 py-1.5 transition-colors"
           >
             <span>{cta}</span>
