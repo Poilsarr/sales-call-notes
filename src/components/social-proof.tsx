@@ -35,12 +35,12 @@ const SEGMENTS = [
 
 export default function SocialProof() {
   return (
-    <section className="bg-[#0a0a0b] text-white pt-16 sm:pt-20 lg:pt-28 pb-16 sm:pb-20 lg:pb-28 border-t border-white/5">
+    <section className="bg-white text-gray-900 pt-16 sm:pt-20 lg:pt-28 pb-16 sm:pb-20 lg:pb-28 border-t border-gray-200">
       <div className="max-w-[1440px] mx-auto px-5 sm:px-8 lg:px-12">
         {/* Header — badge removed (lives in proof-strip); quote + stats kept */}
         <div className="max-w-2xl mb-12">
-          <p className="text-[11px] uppercase tracking-[0.18em] text-white/40 mb-3">Who it&apos;s for</p>
-          <h2 className="text-[clamp(1.5rem,4vw,2.6rem)] font-medium leading-[1.1] tracking-[-0.02em]">
+          <p className="text-[11px] uppercase tracking-[0.18em] text-gray-400 mb-3">Who it&apos;s for</p>
+          <h2 className="text-[clamp(1.5rem,4vw,2.6rem)] font-medium leading-[1.1] tracking-[-0.02em] text-gray-900">
             Built for the people actually running the calls.
           </h2>
         </div>
@@ -55,21 +55,21 @@ export default function SocialProof() {
           ].map((stat) => (
             <div
               key={stat.label}
-              className="rounded-xl border border-white/5 bg-white/[0.02] p-4 text-center"
+              className="rounded-xl border border-gray-200 bg-gray-50 p-4 text-center"
             >
-              <div className="text-xl sm:text-2xl font-semibold text-white tracking-tight">
+              <div className="text-xl sm:text-2xl font-semibold text-gray-900 tracking-tight">
                 {stat.value}
               </div>
-              <div className="text-[11px] text-white/35 mt-1">{stat.label}</div>
+              <div className="text-[11px] text-gray-500 mt-1">{stat.label}</div>
             </div>
           ))}
         </div>
 
         {/* Beta tester quote */}
         <div className="mb-10 max-w-2xl">
-          <div className="rounded-2xl border border-white/5 bg-white/[0.02] p-6 sm:p-8 relative">
+          <div className="rounded-2xl border border-gray-200 bg-gray-50 p-6 sm:p-8 relative">
             <Quote className="w-8 h-8 text-[#F26522]/20 absolute top-4 right-4" />
-            <p className="text-[15px] text-white/80 leading-relaxed mb-4 italic">
+            <p className="text-[15px] text-gray-600 leading-relaxed mb-4 italic">
               &ldquo;I stopped writing call notes manually after the first upload.
               The competitor detection caught a Gong mention I completely missed
               in a 40-minute discovery call.&rdquo;
@@ -79,8 +79,8 @@ export default function SocialProof() {
                 A
               </div>
               <div>
-                <p className="text-[13px] font-medium text-white">Alex R.</p>
-                <p className="text-[11px] text-white/35">SDR · Private beta tester</p>
+                <p className="text-[13px] font-medium text-gray-900">Alex R.</p>
+                <p className="text-[11px] text-gray-500">SDR · Private beta tester</p>
               </div>
             </div>
           </div>
@@ -90,14 +90,14 @@ export default function SocialProof() {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           {SEGMENTS.map((s, i) => (
             <div key={i} className="doppel-outer">
-              <div className="doppel-inner bg-zinc-900/60 p-6 sm:p-8 h-full">
+              <div className="doppel-inner p-6 sm:p-8 h-full">
                 <div className="w-10 h-10 rounded-xl bg-[#F26522]/10 border border-[#F26522]/20 flex items-center justify-center mb-5">
                   <s.icon size={18} className="text-[#F26522]" strokeWidth={1.5} />
                 </div>
-                <h3 className="font-semibold tracking-tight text-white mb-2 text-[15px]">
+                <h3 className="font-semibold tracking-tight text-gray-900 mb-2 text-[15px]">
                   {s.title}
                 </h3>
-                <p className="text-[13px] text-white/50 leading-relaxed">{s.desc}</p>
+                <p className="text-[13px] text-gray-500 leading-relaxed">{s.desc}</p>
               </div>
             </div>
           ))}
@@ -115,7 +115,7 @@ export default function SocialProof() {
               <ArrowRight size={13} className="text-[#F26522]" />
             </span>
           </Link>
-          <p className="text-[12px] text-white/25">
+          <p className="text-[12px] text-gray-500">
             No credit card. Free forever tier for solo SDRs.
           </p>
         </div>

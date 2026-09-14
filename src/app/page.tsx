@@ -22,9 +22,9 @@ export const metadata = {
 // Server component — zero JS shipped for the static landing content.
 // Only the CTA island runs client-side.
 const capabilities = [
-  { icon: Upload, title: "Upload or record", desc: "Drop an MP3, record in browser, or pipe from our Chrome extension. Whisper handles the rest." },
+  { icon: Upload, title: "Upload or record", desc: "Drop in an MP3, record in your browser, or capture Google Meet — no bot ever joins the call." },
   { icon: Crosshair, title: "Track competitors", desc: "Every call is scanned for competitor names. You get a Slack ping the second Gong, Otter, or Chorus shows up in a deal." },
-  { icon: BarChart3, title: "CRM-ready notes", desc: "Summary, action items, MEDDIC fields, next steps — formatted for HubSpot and Salesforce. One click to push." },
+  { icon: BarChart3, title: "CRM-ready notes", desc: "Summary, owners and due dates, and a follow-up draft — one click into HubSpot or Salesforce." },
   { icon: Shield, title: "Transparent privacy", desc: "Your calls are processed by disclosed cloud providers, never used to train our models, and covered by export and deletion controls." },
 ];
 
@@ -166,13 +166,6 @@ export default function Home() {
             </div>
           </div>
 
-          {/* VIDEO PLAYER — full width below the hero grid.
-              NOTE (PR-A scope): the LCP poster <img> lives inside
-              hero-video-player.tsx (Executor B/C territory), and page.tsx
-              itself has no next/image usage — so no priority change here. */}
-          <div className="mt-10 max-w-3xl">
-            <HeroVideoPlayer />
-          </div>
         </div>
       </section>
 
@@ -210,17 +203,20 @@ export default function Home() {
       {/* COMPETITIVE INTEL DEMO — live alert feed */}
       <section className="bg-[#0a0a0b] text-white pt-16 sm:pt-20 lg:pt-28 pb-16 sm:pb-20 lg:pb-28">
         <div className="max-w-[1440px] mx-auto px-5 sm:px-8 lg:px-12">
-          <div className="max-w-2xl mb-14">
-            <div className="inline-flex items-center gap-2 text-[11px] uppercase tracking-[0.18em] text-[#F26522] mb-3">
-              <Crosshair size={12} /> The wedge
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-center mb-14">
+            <div className="max-w-2xl">
+              <div className="inline-flex items-center gap-2 text-[11px] uppercase tracking-[0.18em] text-[#F26522] mb-3">
+                <Crosshair size={12} /> The wedge
+              </div>
+              <h2 className="text-[clamp(1.5rem,4vw,3rem)] font-medium leading-[1.1] tracking-[-0.02em] mb-3">
+                We tell you the second a competitor enters a deal.
+              </h2>
+              <p className="text-white/50 text-[14px]">
+                Not a weekly report. Not a dashboard nobody opens. A real-time ping with the exact call,
+                the speaker, and the line where it happened.
+              </p>
             </div>
-            <h2 className="text-[clamp(1.5rem,4vw,3rem)] font-medium leading-[1.1] tracking-[-0.02em] mb-3">
-              We tell you the second a competitor enters a deal.
-            </h2>
-            <p className="text-white/50 text-[14px]">
-              Not a weekly report. Not a dashboard nobody opens. A real-time ping with the exact call,
-              the speaker, and the line where it happened.
-            </p>
+            <HeroVideoPlayer />
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
@@ -335,7 +331,7 @@ export default function Home() {
             <div>
               <p className="text-[11px] uppercase tracking-[0.18em] text-gray-400 mb-3">Pricing</p>
               <h2 className="text-[clamp(1.5rem,4vw,2.6rem)] font-medium leading-[1.1] tracking-[-0.02em] text-gray-900 mb-4">
-                Free for solo SDRs. $9/mo when you scale. No AI credit traps.
+                Free 300 minutes a month. $9 flat when you scale — up to 5 seats, 1,200 minutes.
               </h2>
               <ul className="space-y-2 text-[14px] text-gray-600 mb-6">
                 {[

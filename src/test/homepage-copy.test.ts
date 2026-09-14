@@ -23,7 +23,11 @@ describe("homepage copy stays pinned to pricing truth", () => {
     expect(HOMEPAGE_COPY.pricing.proMinutes).toBe(PLANS.pro.minuteLimit);
     expect(HOMEPAGE_COPY.pricing.proPriceLabel).toBe(PLANS.pro.priceLabel);
     expect(HOMEPAGE_COPY.pricing.proPriceFlat).toMatch(/\$9/);
-    expect(HOMEPAGE_COPY.heroSub).toMatch(/\$9\/mo/);
+    // STAY PR-1: price moved out of heroSub into the pricing H2; heroSub now
+    // carries the one-outcome-then-inputs line (Slack ping + MP3/record/Meet).
+    expect(HOMEPAGE_COPY.heroSub).toMatch(/Slack/);
+    expect(HOMEPAGE_COPY.heroSub).toMatch(/rival/);
+    expect(HOMEPAGE_COPY.heroSub).toMatch(/MP3/);
   });
 
   it("tier definitions agree (Free 300 / Pro 1200)", () => {

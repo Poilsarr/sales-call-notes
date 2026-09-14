@@ -42,7 +42,7 @@ export const HOMEPAGE_COPY = {
   heroH1: "AI notetaker for sales calls that flags competitors.",
   heroH1Variant: "B" as const,
   heroSub:
-    "Gauge turns every sales call into notes, next steps, and a live alert when a rival is named. Upload, record, or capture from Google Meet. Free to start, $9/mo when you grow.",
+    "Gauge takes notes for every sales call — and pings you in Slack the moment a rival is named, with the exact quote. Upload an MP3, record in your browser, or capture Google Meet with no bot joining.",
   betaLine: "Currently in private beta",
   ctas: {
     primary: "Start free",
@@ -54,8 +54,8 @@ export const HOMEPAGE_COPY = {
   proof: {
     betaTeams: "12 beta teams",
     calls: "500+ calls",
-    quote: "caught a Gong mention I missed",
-    attribution: "Alex R., SDR",
+    quote: "Gauge caught a Gong mention I missed in a 40-minute discovery call.",
+    attribution: "Alex R., SDR, beta tester",
   },
   problem: {
     eyebrow: "The problem",
