@@ -56,14 +56,14 @@ export function HeroVideoPlayer() {
         <button
           onClick={handlePlay}
           className="group relative block w-full rounded-2xl overflow-hidden border border-gray-200 bg-[#F5F0E6] text-left shadow-[0_18px_60px_-24px_rgba(0,0,0,0.35)] hover:border-[#F26522]/50 hover:shadow-[0_24px_80px_-24px_rgba(242,101,34,0.45)] transition-all duration-500"
-          aria-label="Play The 2:14pm Call — Gauge short film (25 seconds)"
+          aria-label="Play The 2:14pm Call — Gauge competitive-intel film (25 seconds)"
         >
           {/* Cinematic cover — real film frame at a compact 2.35:1 ratio */}
           <div className="relative flex items-center justify-center overflow-hidden" style={{ aspectRatio: "2.35 / 1" }}>
             {/* Film frame — slow Ken Burns zoom on hover */}
             <Image
               src="/videos/gauge-hero-poster.jpg"
-              alt="Still from The 2:14pm Call — Gauge hero film"
+              alt="Still from The 2:14pm Call — Gauge competitive-intel film"
               fill
               sizes="(max-width: 768px) 100vw, 896px"
               className="object-cover scale-100 group-hover:scale-[1.04] transition-transform duration-[2000ms] ease-out"

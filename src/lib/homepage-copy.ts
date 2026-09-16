@@ -41,8 +41,14 @@ export const HOMEPAGE_COPY = {
   /** Rendered H1: variant B (explicit What-line). A + C kept in HERO_VARIANTS for A/B. */
   heroH1: "AI notetaker for sales calls that flags competitors.",
   heroH1Variant: "B" as const,
+  // Payer-voiced — management buyer, not rep
   heroSub:
-    "Gauge takes notes for every sales call — and pings you in Slack the moment a rival is named, with the exact quote. Upload an MP3, record in your browser, or capture Google Meet with no bot joining.",
+    "See every sales call your team makes — what customers said, which rivals came up, and what happens next. Your reps just talk. Gauge handles the notes, flags the risks in Slack, and shows you where to coach.",
+  heroManagerBullets: [
+    "Know what's really happening in every deal — short summaries with owners and dates.",
+    "Never get blindsided by a rival — exact quote in Slack, who said it, on which call.",
+    "Coach with evidence — talk time, mood, missed steps per rep.",
+  ],
   betaLine: "Currently in private beta",
   ctas: {
     primary: "Start free",
