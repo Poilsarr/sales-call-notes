@@ -55,7 +55,7 @@ export function HeroVideoPlayer() {
       {!playing ? (
         <button
           onClick={handlePlay}
-          className="group relative block w-full rounded-2xl overflow-hidden border border-gray-200 bg-[#F5F0E6] text-left shadow-[0_18px_60px_-24px_rgba(0,0,0,0.35)] hover:border-[#F26522]/50 hover:shadow-[0_24px_80px_-24px_rgba(242,101,34,0.45)] transition-all duration-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#F26522] focus-visible:ring-offset-2 focus-visible:ring-offset-[#0a0a0b]"
+          className="group relative block w-full rounded-2xl overflow-hidden border border-gray-200 bg-[#F5F0E6] text-left shadow-[0_18px_60px_-24px_rgba(0,0,0,0.35)] hover:border-[#F26522]/50 hover:shadow-[0_24px_80px_-24px_rgba(242,101,34,0.45)] transition-[border-color,box-shadow] duration-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#F26522] focus-visible:ring-offset-2 focus-visible:ring-offset-[#0a0a0b]"
           aria-label="Play The 2:14pm Call — Gauge competitive-intel film (25 seconds)"
         >
           {/* Cinematic cover — real film frame at a compact 2.35:1 ratio */}
