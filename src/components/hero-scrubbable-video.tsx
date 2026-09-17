@@ -142,7 +142,7 @@ export function HeroScrubbableVideo() {
               type="button"
               onClick={handleActivate}
               aria-label="Play management demo — 39 seconds, sound off"
-              className="group relative block w-full cursor-pointer"
+              className="group relative block w-full cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#F26522] focus-visible:ring-offset-2 focus-visible:ring-offset-white"
             >
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
@@ -154,18 +154,18 @@ export function HeroScrubbableVideo() {
               />
               <span className="absolute inset-0 flex items-center justify-center">
                 <span
-                  className="w-14 h-14 rounded-full flex items-center justify-center text-white shadow-lg transition-transform duration-200 ease-out group-hover:scale-105"
+                  className="w-16 h-16 rounded-full flex items-center justify-center text-white shadow-lg ring-2 ring-white/80 transition-transform duration-200 ease-out group-hover:scale-105"
                   style={{ backgroundColor: ACCENT }}
                 >
-                  <Play size={22} className="ml-0.5" fill="currentColor" />
+                  <Play size={22} className="ml-0.5" fill="currentColor" aria-hidden />
                 </span>
               </span>
               <span className="absolute bottom-3 left-3 right-3 flex items-center justify-between gap-2">
-                <span className="text-[11px] font-medium text-white/90 bg-black/55 backdrop-blur-sm border border-white/15 rounded-full px-3 py-1">
+                <span className="text-[11px] font-medium text-white bg-black/75 backdrop-blur-sm border border-white/20 rounded-full px-3 py-1.5">
                   For management — 0:39, sound off
                 </span>
-                <span className="shrink-0 w-9 h-9 rounded-full bg-black/55 backdrop-blur-sm border border-white/15 flex items-center justify-center text-white/90">
-                  <VolumeX size={16} />
+                <span className="shrink-0 w-11 h-11 rounded-full bg-black/70 backdrop-blur-sm border border-white/20 flex items-center justify-center text-white">
+                  <VolumeX size={16} aria-hidden />
                 </span>
               </span>
             </button>
@@ -181,7 +181,6 @@ export function HeroScrubbableVideo() {
                 poster={HERO_SCRUBBABLE_POSTER_SRC}
                 className="w-full aspect-video object-cover"
                 controls={controls}
-                onClick={handleActivate}
                 aria-label="Management demo — 39 seconds"
               >
                 <source src={HERO_SCRUBBABLE_VIDEO_SRC} type="video/mp4" />
@@ -190,21 +189,22 @@ export function HeroScrubbableVideo() {
                   src={CAPTIONS_SRC}
                   srcLang="en"
                   label="English"
+                  default
                 />
                 Your browser does not support the video tag.
               </video>
               {muted && (
                 <div className="absolute bottom-3 left-3 right-3 flex items-center justify-between gap-2">
-                  <span className="text-[11px] font-medium text-white/90 bg-black/55 backdrop-blur-sm border border-white/15 rounded-full px-3 py-1">
+                  <span className="text-[11px] font-medium text-white bg-black/75 backdrop-blur-sm border border-white/20 rounded-full px-3 py-1.5">
                     For management — 0:39, sound off
                   </span>
                   <button
                     type="button"
                     onClick={handleActivate}
                     aria-label="Unmute hero video"
-                    className="shrink-0 w-9 h-9 rounded-full bg-black/55 backdrop-blur-sm border border-white/15 flex items-center justify-center text-white/90 hover:text-white hover:bg-black/75 transition-colors"
+                    className="shrink-0 w-11 h-11 rounded-full bg-black/70 backdrop-blur-sm border border-white/20 flex items-center justify-center text-white hover:bg-black/85 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-black"
                   >
-                    {muted ? <VolumeX size={16} /> : <Volume2 size={16} />}
+                    {muted ? <VolumeX size={16} aria-hidden /> : <Volume2 size={16} aria-hidden />}
                   </button>
                 </div>
               )}
@@ -214,13 +214,13 @@ export function HeroScrubbableVideo() {
         <div className="p-3 sm:p-4 bg-white border-t border-gray-100">
           <div className="flex items-center gap-2 mb-2">
             <span
-              className="w-2 h-2 rounded-full animate-pulse"
+              className="w-2 h-2 rounded-full motion-safe:animate-pulse"
               style={{ backgroundColor: ACCENT }}
             />
-            <span className="text-[10px] font-mono uppercase tracking-wider text-gray-400">
+            <span className="text-[10px] font-mono uppercase tracking-wider text-gray-600">
               Live summary · tap a line to scrub
             </span>
-            <span className="ml-auto text-[9px] font-mono text-gray-300">
+            <span className="ml-auto text-[9px] font-mono text-gray-500">
               00:00–00:39
             </span>
           </div>
@@ -235,7 +235,7 @@ export function HeroScrubbableVideo() {
                 type="button"
                 onClick={() => seek(line.seekS)}
                 aria-label={`Scrub to ${line.aria}`}
-                className="w-full text-left flex gap-2.5 p-2.5 rounded-xl border hover:bg-[#F26522]/10 transition"
+                className="w-full text-left flex gap-2.5 p-2.5 rounded-xl border hover:bg-[#F26522]/10 transition min-h-[44px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#F26522] focus-visible:ring-offset-1"
                 style={{
                   borderColor: `${ACCENT}33`,
                   backgroundColor: `${ACCENT}0F`,
@@ -247,16 +247,16 @@ export function HeroScrubbableVideo() {
                 >
                   {line.speaker}
                 </span>
-                <span className="text-[12.5px] text-gray-600 leading-snug">
+                <span className="text-[12.5px] text-gray-700 leading-snug">
                   {line.text}
                 </span>
-                <span className="shrink-0 text-[10px] font-mono text-gray-400">
+                <span className="shrink-0 text-[10px] font-mono text-gray-600">
                   · {line.stamp}
                 </span>
               </button>
             ))}
           </div>
-          <div className="mt-2 flex items-center justify-between text-[10px] text-gray-400">
+          <div className="mt-2 flex items-center justify-between text-[10px] text-gray-600">
             <span className="flex items-center gap-1.5">
               <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
               Health 8.2

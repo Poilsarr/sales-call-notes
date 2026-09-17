@@ -61,10 +61,10 @@ export default function DemoPage() {
 
       <DemoCarousel />
 
-      {/* FOOTER */}
-      <footer className="border-t border-white/5 py-6 text-center text-[11px] text-white/30">
+      {/* DISCLAIMER (global SiteFooter renders from layout — no local <footer> here) */}
+      <p className="border-t border-white/5 py-6 text-center text-[11px] text-white/30">
         Sample data for product demo. Not from real customers. Gauge · {new Date().getFullYear()}
-      </footer>
+      </p>
     </main>
   );
 }

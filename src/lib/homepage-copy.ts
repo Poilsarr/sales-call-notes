@@ -22,7 +22,7 @@ export const HERO_VARIANTS: HeroVariant[] = [
   {
     key: "B",
     label: "explicit What (default)",
-    h1: "AI notetaker for sales calls that flags competitors.",
+    h1: "AI notetaker for sales calls that flags virtual competitors.",
   },
   {
     key: "C",
@@ -39,14 +39,20 @@ export interface ProblemBullet {
 export const HOMEPAGE_COPY = {
   eyebrow: "Gauge — AI sales-call notetaker",
   /** Rendered H1: variant B (explicit What-line). A + C kept in HERO_VARIANTS for A/B. */
-  heroH1: "AI notetaker for sales calls that flags competitors.",
+  heroH1: "AI notetaker for sales calls that flags virtual competitors.",
   heroH1Variant: "B" as const,
+  /**
+   * Virtual-competitor framing: Gauge is the always-on rival radar sitting
+   * inside every call — it hears the rival, proves it with the exact quote,
+   * and pings Slack before the deal drifts.
+   */
+  heroH1Highlight: "virtual competitors",
   // Payer-voiced — management buyer, not rep
   heroSub:
-    "See every sales call your team makes — what customers said, which rivals came up, and what happens next. Your reps just talk. Gauge handles the notes, flags the risks in Slack, and shows you where to coach.",
+    "Meet your virtual competitor radar: see every sales call your team makes — what customers said, which rivals came up, and what happens next. Your reps just talk. Gauge handles the notes, flags the risks in Slack, and shows you where to coach.",
   heroManagerBullets: [
     "Know what's really happening in every deal — short summaries with owners and dates.",
-    "Never get blindsided by a rival — exact quote in Slack, who said it, on which call.",
+    "Never get blindsided by a rival — your virtual competitor flag lands in Slack with the exact quote, speaker, and call.",
     "Coach with evidence — talk time, mood, missed steps per rep.",
   ],
   betaLine: "Currently in private beta",

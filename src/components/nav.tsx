@@ -82,7 +82,7 @@ export default function Nav() {
           {/* Mobile Toggle */}
           <button
             onClick={() => setOpen(!open)}
-            className="md:hidden bg-gray-900 rounded-full p-2 text-white"
+            className="md:hidden bg-gray-900 rounded-full p-3 min-h-[44px] min-w-[44px] flex items-center justify-center text-white"
             aria-label={open ? "Close menu" : "Open menu"}
             aria-expanded={open}
             aria-controls="mobile-menu"

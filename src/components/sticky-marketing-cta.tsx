@@ -56,7 +56,7 @@ export default function StickyMarketingCta({ label, href, cta }: StickyMarketing
           </Link>
           <button
             onClick={() => setDismissed(true)}
-            className="p-2 text-white/50 hover:text-white transition"
+            className="p-3 min-h-[44px] min-w-[44px] flex items-center justify-center text-white/50 hover:text-white transition"
             aria-label="Dismiss"
           >
             <X size={16} />

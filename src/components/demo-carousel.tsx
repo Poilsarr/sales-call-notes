@@ -1,16 +1,35 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
 import { Crosshair, ArrowRight, Check, Radio } from "lucide-react";
 import { DEMO_CALLS, sentimentClasses } from "@/lib/demo-data";
 
+const DEFAULT_CALL_ID = "call_acme_discovery";
+const CALL_PANEL_ID = "demo-call-panel";
+
+function isValidCallId(id: string | null): id is string {
+  return id !== null && DEMO_CALLS.some((c) => c.id === id);
+}
+
+/** SSR-safe read of ?call=. Falls back to the default sample call. */
+function callIdFromUrl(): string {
+  if (typeof window === "undefined") return DEFAULT_CALL_ID;
+  try {
+    const id = new URLSearchParams(window.location.search).get("call");
+    return isValidCallId(id) ? id : DEFAULT_CALL_ID;
+  } catch {
+    return DEFAULT_CALL_ID;
+  }
+}
+
 /**
  * Interactive demo carousel (Level 5.3 demo route).
  *
- * Client-only because it has two pieces of local state:
- *   - activeId: which sample call is selected
+ * Client-only because it has local state:
+ *   - activeId: which sample call is selected (deep-linked via ?call=)
  *   - pulse:    a counter that flips every 1.8s to animate the live dot
+ *               (disabled when the user prefers reduced motion)
  *
  * The page that hosts this is a server component so the carousel is the
  * only JS shipped for the page's interactive bits.
@@ -18,25 +37,82 @@ import { DEMO_CALLS, sentimentClasses } from "@/lib/demo-data";
 export default function DemoCarousel() {
   const [activeId, setActiveId] = useState(DEMO_CALLS[0].id);
   const [pulse, setPulse] = useState(0);
+  const [reducedMotion, setReducedMotion] = useState(false);
   const active = DEMO_CALLS.find((c) => c.id === activeId) ?? DEMO_CALLS[0];
 
-  useEffect(() => {
-    const id = setInterval(() => setPulse((p) => p + 1), 1800);
-    return () => clearInterval(id);
+  const selectCall = useCallback((id: string) => {
+    setActiveId(id);
+    if (typeof window === "undefined") return;
+    try {
+      const url = new URL(window.location.href);
+      url.searchParams.set("call", id);
+      window.history.replaceState(
+        null,
+        "",
+        `${url.pathname}?${url.searchParams.toString()}${url.hash}`,
+      );
+    } catch {
+      // URL API unavailable — selection still applies locally.
+    }
   }, []);
 
+  // Deep-link: read ?call= on mount (default call_acme_discovery),
+  // restore the selection on back/forward navigation.
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    setActiveId(callIdFromUrl());
+    const onPopState = () => setActiveId(callIdFromUrl());
+    window.addEventListener("popstate", onPopState);
+    return () => window.removeEventListener("popstate", onPopState);
+  }, []);
+
+  // Track the reduced-motion preference (SSR-safe; defaults to motion on).
+  useEffect(() => {
+    if (typeof window === "undefined" || typeof window.matchMedia !== "function")
+      return;
+    const mq = window.matchMedia("(prefers-reduced-motion: reduce)");
+    setReducedMotion(mq.matches);
+    const onChange = (e: MediaQueryListEvent) => setReducedMotion(e.matches);
+    mq.addEventListener?.("change", onChange);
+    return () => mq.removeEventListener?.("change", onChange);
+  }, []);
+
+  // Live-dot pulse — gated behind prefers-reduced-motion and skipped
+  // while the tab is hidden.
+  useEffect(() => {
+    if (reducedMotion) return;
+    if (
+      typeof window !== "undefined" &&
+      typeof window.matchMedia === "function" &&
+      window.matchMedia("(prefers-reduced-motion: reduce)").matches
+    )
+      return;
+    const id = setInterval(() => {
+      if (typeof document !== "undefined" && document.hidden) return;
+      setPulse((p) => p + 1);
+    }, 1800);
+    return () => clearInterval(id);
+  }, [reducedMotion]);
+
   return (
-    <section className="max-w-[1440px] mx-auto px-5 sm:px-8 lg:px-12 pb-20">
+    <section
+      data-track-section="demo-carousel"
+      className="max-w-[1440px] mx-auto px-5 sm:px-8 lg:px-12 pb-20"
+    >
       <div className="grid grid-cols-1 lg:grid-cols-[320px_1fr] gap-4">
         {/* CALL LIST */}
-        <div className="space-y-2">
+        <div role="tablist" aria-label="Sample calls" className="space-y-2">
           {DEMO_CALLS.map((c) => {
             const isActive = c.id === activeId;
             return (
               <button
                 key={c.id}
-                onClick={() => setActiveId(c.id)}
-                className={`w-full text-left rounded-2xl border p-4 transition-all ${
+                role="tab"
+                id={`demo-tab-${c.id}`}
+                aria-selected={isActive}
+                aria-controls={CALL_PANEL_ID}
+                onClick={() => selectCall(c.id)}
+                className={`min-h-[44px] w-full text-left rounded-2xl border p-4 transition-all ${
                   isActive
                     ? "bg-white/[0.04] border-[#F26522]/40"
                     : "bg-white/[0.02] border-white/5 hover:bg-white/[0.03]"
@@ -63,12 +139,18 @@ export default function DemoCarousel() {
         </div>
 
         {/* DETAIL PANE */}
-        <div className="space-y-4">
+        <div
+          role="tabpanel"
+          id={CALL_PANEL_ID}
+          aria-labelledby={`demo-tab-${active.id}`}
+          aria-live="polite"
+          className="space-y-4"
+        >
           {/* ALERT CARD (the hero moment) */}
           <div className="doppel-outer">
             <div className="doppel-inner bg-zinc-900/80 p-6 sm:p-8">
               <div className="flex items-center gap-2 mb-5">
-                <div className={`w-2 h-2 rounded-full bg-[#F26522] ${pulse % 2 === 0 ? "animate-pulse" : "opacity-50"}`} />
+                <div className={`w-2 h-2 rounded-full bg-[#F26522] ${!reducedMotion && pulse % 2 === 0 ? "animate-pulse" : "opacity-50"}`} />
                 <span className="text-[11px] uppercase tracking-[0.18em] text-white/40">
                   Live alert · {active.customer}
                 </span>
