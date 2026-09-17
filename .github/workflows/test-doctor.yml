@@ -1,0 +1,183 @@
+# Test Doctor — automatic test watchdog + safe auto-fix.
+#
+# WHAT IT DOES
+# - Nightly (and on red main CI, and on demand): runs the full vitest
+#   suite, classifies failures, and fixes what is safely fixable.
+# - AUTO-FIXABLE: stale AI-call proof (GATE 0). It re-runs the repo's
+#   own scripts/prove-openai.mjs with secrets and opens a PR carrying
+#   ONLY the refreshed proof JSON.
+# - Everything else: opens (or updates) a GitHub issue with the failing
+#   specs + run link. A human fixes the code.
+#
+# NO-COMPROMISE RULES (hard guardrails, review these before editing)
+# - NEVER edits src/*, test assertions, or CI config to make red green.
+# - NEVER weakens, skips, or deletes a test. A failing assertion is
+#   evidence, not an inconvenience.
+# - NEVER commits secrets or prints them (prove-script output is
+#   provider statuses only — no keys, no reply bodies beyond "pong").
+# - NEVER pushes to main, never merges, never force-pushes. Output is
+#   always a branch PR (proof refresh) or an issue (everything else).
+# - Proof refresh PRs touch exactly one file: scripts/.proof-openai.json.
+# - If the prove script fails (keys dead/quota), the doctor files an
+#   issue labeled `keys-needed` — it does NOT fabricate a proof.
+#
+# Permissions are minimal: read code, write issues/PRs, push only its
+# own auto/* branches (same token, constrained by the steps below).
+
+name: Test Doctor
+
+on:
+  schedule:
+    - cron: '0 5 * * *' # nightly 05:00 UTC
+  workflow_dispatch:
+  workflow_run:
+    workflows: ['CI']
+    types: [completed]
+
+permissions:
+  contents: read
+  actions: read
+
+concurrency:
+  group: test-doctor-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  doctor:
+    # React to red CI only on main; nightly + manual always run.
+    if: >
+      github.event_name != 'workflow_run' ||
+      (github.event.workflow_run.conclusion == 'failure' &&
+       github.event.workflow_run.head_branch == 'main')
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    permissions:
+      contents: write
+      issues: write
+      pull-requests: write
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_DB: testdb
+          POSTGRES_USER: testuser
+          POSTGRES_PASSWORD: testpass
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          ref: main
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 24
+          cache: 'npm'
+
+      - name: Write CI .env (never touch prod)
+        run: |
+          rm -f .env
+          cat > .env <<'EOF'
+          DATABASE_URL=postgresql://testuser:testpass@localhost:5432/testdb
+          EXPORT_TOKEN_SECRET=test_secret_at_least_16_chars_for_ci
+          NEXT_PUBLIC_APP_URL=http://localhost:3000
+          EOF
+
+      - run: npm ci
+      - run: npx prisma generate
+      - run: npx prisma db push
+
+      - name: Run full suite (JSON report, never fails the step)
+        id: suite
+        continue-on-error: true
+        run: |
+          npx vitest run --reporter=json --outputFile=test-report.json 2>&1 | tail -n 5 || true
+          test -f test-report.json || echo '{"testResults":[],"numFailedTests":1}' > test-report.json
+        env:
+          EXPORT_TOKEN_SECRET: test_secret_at_least_16_chars_for_ci
+          GATE0_FRESHNESS: 'on' # doctor enforces freshness: it CAN refresh
+
+      - name: Classify failures
+        id: classify
+        run: |
+          node -e "
+            const r = require('./test-report.json');
+            const failed = [];
+            for (const f of r.testResults || []) {
+              if (f.status === 'failed' || (f.assertionResults || []).some(a => a.status === 'failed')) failed.push(f.name);
+            }
+            const onlyProof = failed.length > 0 && failed.every(n => n.includes('proof-openai'));
+            console.log('failed=' + JSON.stringify(failed));
+            console.log('onlyProof=' + onlyProof);
+            require('fs').appendFileSync(process.env.GITHUB_OUTPUT, 'failed=' + JSON.stringify(failed) + '\nonlyProof=' + onlyProof + '\n');
+          "
+          echo "--- failed specs above (empty = green) ---"
+
+      - name: Green — nothing to do
+        if: steps.classify.outputs.onlyProof == 'false' && steps.classify.outputs.failed == '[]'
+        run: echo "Suite green. Doctor stands down."
+
+      - name: Attempt proof refresh (only when proof is the sole failure)
+        id: refresh
+        if: steps.classify.outputs.onlyProof == 'true'
+        continue-on-error: true
+        run: |
+          node scripts/prove-openai.mjs 2>&1 | tail -n 3 || true
+          node -e "
+            const p = require('./scripts/.proof-openai.json');
+            const fresh = Date.now() - new Date(p.timestamp).getTime() < 7*24*3600*1000;
+            console.log('ok=' + p.ok + ' fresh=' + fresh);
+            require('fs').appendFileSync(process.env.GITHUB_OUTPUT, 'ok=' + p.ok + '\nfresh=' + fresh + '\n');
+          "
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+
+      - name: Open PR with refreshed proof (one file only)
+        if: steps.classify.outputs.onlyProof == 'true' && steps.refresh.outputs.ok == 'true' && steps.refresh.outputs.fresh == 'true'
+        run: |
+          BR="auto/proof-refresh-$(date +%Y%m%d)"
+          git config user.name "test-doctor[bot]"
+          git config user.email "test-doctor[bot]@users.noreply.github.com"
+          git checkout -B "$BR"
+          git add scripts/.proof-openai.json
+          git status --short | grep -v '^ M scripts/.proof-openai.json$' | grep -v '^M scripts/.proof-openai.json$' && { echo "REFUSING: unexpected files staged"; exit 1; } || true
+          git commit -m "chore(proofs): refresh AI call proof (test-doctor auto)" || echo "nothing to commit"
+          git push origin "$BR" --force-with-lease
+          gh pr create --base main --head "$BR" \
+            --title "chore(proofs): refresh AI call proof (test-doctor auto)" \
+            --label "auto-fix" \
+            --body "Nightly doctor: GATE 0 proof went stale, live refresh succeeded. One file changed: scripts/.proof-openai.json. Source run: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}" \
+            || echo "PR already open (updated branch in place)"
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: File issue — keys dead or non-proof failures (never auto-fix code)
+        if: >
+          (steps.classify.outputs.onlyProof == 'true' &&
+           (steps.refresh.outputs.ok != 'true' || steps.refresh.outputs.fresh != 'true')) ||
+          (steps.classify.outputs.failed != '[]' && steps.classify.outputs.onlyProof != 'true')
+        run: |
+          if [ "${{ steps.classify.outputs.onlyProof }}" = "true" ]; then
+            TITLE="AI proof refresh failing — keys need attention (test-doctor)"
+            LABEL="keys-needed"
+            BODY="Nightly doctor: GATE 0 proof is stale AND live refresh failed (all providers errored — likely expired keys/quota). No proof was fabricated. Failing spec: src/test/proof-openai.test.ts. Action: refresh OPENAI/GROQ/ANTHROPIC keys, then run node scripts/prove-openai.mjs locally. Source run: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+          else
+            TITLE="Test failures on main need human (test-doctor)"
+            LABEL="tests-failing"
+            BODY="Nightly doctor: failing specs (doctor does not touch code): ${{ steps.classify.outputs.failed }}. Source run: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+          fi
+          EXISTING=$(gh issue list --state open --search "in:title $TITLE" --json number --jq '.[0].number // empty')
+          if [ -n "$EXISTING" ]; then
+            gh issue comment "$EXISTING" --body "Still failing as of run ${{ github.run_id }}: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+          else
+            gh issue create --title "$TITLE" --label "$LABEL" --body "$BODY"
+          fi
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
