@@ -23,11 +23,17 @@ describe("homepage copy stays pinned to pricing truth", () => {
     expect(HOMEPAGE_COPY.pricing.proMinutes).toBe(PLANS.pro.minuteLimit);
     expect(HOMEPAGE_COPY.pricing.proPriceLabel).toBe(PLANS.pro.priceLabel);
     expect(HOMEPAGE_COPY.pricing.proPriceFlat).toMatch(/\$9/);
-    // STAY PR-1: price moved out of heroSub into the pricing H2; heroSub now
-    // carries the one-outcome-then-inputs line (Slack ping + MP3/record/Meet).
+    // HERO-SWAP: heroSub is payer voice (manager, not rep) — Slack ping +
+    // rival + coach markers. The rep-voice MP3/record/Meet inputs line moved
+    // to the capabilities section.
     expect(HOMEPAGE_COPY.heroSub).toMatch(/Slack/);
     expect(HOMEPAGE_COPY.heroSub).toMatch(/rival/);
-    expect(HOMEPAGE_COPY.heroSub).toMatch(/MP3/);
+    expect(HOMEPAGE_COPY.heroSub).toMatch(/coach/);
+  });
+
+  it("hero manager bullets name the three payer outcomes", () => {
+    expect(HOMEPAGE_COPY.heroManagerBullets).toHaveLength(3);
+    expect(HOMEPAGE_COPY.heroManagerBullets.join(" ")).toMatch(/Slack/);
   });
 
   it("tier definitions agree (Free 300 / Pro 1200)", () => {

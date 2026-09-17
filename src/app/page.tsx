@@ -7,10 +7,13 @@ import Differentiators from "@/components/differentiators";
 import UseCases from "@/components/use-cases";
 import FinalCta from "@/components/final-cta";
 import { HeroCTA } from "@/components/hero-cta";
+import { HeroScrubbableVideo } from "@/components/hero-scrubbable-video";
+import { HeroEvidenceStack } from "@/components/hero-evidence-stack";
 import { HeroVideoPlayer } from "@/components/hero-video-player";
 import StickyMarketingCta from "@/components/sticky-marketing-cta";
 import ProblemSection from "@/components/problem-section";
 import ProofStrip from "@/components/proof-strip";
+import LiveProofStrip from "@/components/live-proof-strip";
 import { HOMEPAGE_COPY } from "@/lib/homepage-copy";
 import { Crosshair, Upload, BarChart3, Shield, Check, ArrowRight, Play } from "lucide-react";
 
@@ -101,68 +104,19 @@ export default function Home() {
                   {HOMEPAGE_COPY.ctas.tertiary}
                 </Link>
               </div>
+              <ul className="mt-5 space-y-1.5 text-[13px] text-gray-600">
+                {HOMEPAGE_COPY.heroManagerBullets.map((bullet) => (
+                  <li key={bullet} className="flex items-start gap-2">
+                    <span className="mt-[7px] w-1.5 h-1.5 shrink-0 rounded-full bg-emerald-500" aria-hidden />
+                    <span>{bullet}</span>
+                  </li>
+                ))}
+              </ul>
             </div>
 
-            {/* RIGHT: product preview card — film sticker treatment */}
-            <div className="relative lg:block">
-              <div className="absolute -top-3 left-1/2 -translate-x-1/2 rotate-[-2deg] w-24 h-6 bg-film-amber/60 border border-black/10 z-10" aria-hidden />
-              <div className="doppel-outer border-2 border-film-ink shadow-[8px_8px_0_#131316]">
-                <div className="doppel-inner p-5 sm:p-6">
-                  <div className="flex items-center gap-2 mb-4">
-                    <div className="w-2 h-2 rounded-full bg-[#F26522] animate-pulse" />
-                    <span className="text-[10px] font-mono tracking-wider text-gray-400 font-medium uppercase">Live summary</span>
-                    <span className="ml-auto text-[9px] font-mono text-gray-300">Acme Corp · Discovery</span>
-                  </div>
-
-                  <div className="space-y-2.5">
-                    <div className="flex items-start gap-2.5">
-                      <span className="shrink-0 text-[10px] font-mono font-medium text-[#F26522] bg-[#F26522]/[0.08] px-2 py-0.5 rounded-full leading-none mt-0.5">Priya S.</span>
-                      <p className="text-[12.5px] text-gray-600 leading-snug">Pricing decision is going to come from procurement, not us. They want to consolidate vendors next quarter.</p>
-                    </div>
-                    <div className="flex items-start gap-2.5">
-                      <span className="shrink-0 text-[10px] font-mono font-medium text-[#2563eb] bg-[#2563eb]/[0.08] px-2 py-0.5 rounded-full leading-none mt-0.5">You</span>
-                      <p className="text-[12.5px] text-gray-600 leading-snug">Understood. Want me to loop in your procurement lead next call, or send a one-pager for the consolidation review?</p>
-                    </div>
-                  </div>
-
-                  <div className="mt-4 pt-3 border-t border-gray-100">
-                    <div className="flex items-center justify-between mb-2">
-                      <span className="text-[10px] font-mono text-gray-400 uppercase tracking-wider">Action items</span>
-                      <span className="text-[10px] font-mono text-gray-300">3 found</span>
-                    </div>
-                    <ul className="space-y-1.5">
-                      <li className="flex items-center gap-2 text-[11.5px] text-gray-700">
-                        <span className="w-1 h-1 rounded-full bg-[#F26522]" />
-                        <span className="flex-1">Send procurement one-pager</span>
-                        <span className="text-[9px] font-mono text-gray-400">THU</span>
-                      </li>
-                      <li className="flex items-center gap-2 text-[11.5px] text-gray-700">
-                        <span className="w-1 h-1 rounded-full bg-[#F26522]" />
-                        <span className="flex-1">Loop in procurement lead</span>
-                        <span className="text-[9px] font-mono text-gray-400">FRI</span>
-                      </li>
-                      <li className="flex items-center gap-2 text-[11.5px] text-gray-700">
-                        <span className="w-1 h-1 rounded-full bg-[#F26522]" />
-                        <span className="flex-1">Schedule Q3 vendor review</span>
-                        <span className="text-[9px] font-mono text-gray-400">NEXT</span>
-                      </li>
-                    </ul>
-                  </div>
-
-                  <div className="mt-4 pt-3 border-t border-gray-100 flex items-center justify-between text-[10px] text-gray-400">
-                    <span className="flex items-center gap-1.5">
-                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
-                      Health 8.2
-                    </span>
-                    <span className="flex items-center gap-1.5">
-                      Sentiment positive
-                    </span>
-                    <span className="flex items-center gap-1.5">
-                      Talk ratio 42 / 58
-                    </span>
-                  </div>
-                </div>
-              </div>
+            <div className="space-y-4">
+              <HeroScrubbableVideo />
+              <HeroEvidenceStack />
             </div>
           </div>
 
@@ -171,6 +125,7 @@ export default function Home() {
 
       {/* PROOF STRIP + PROBLEM — FRONTPAGE-PITCH-PLAN §2-3 (Uber-deck slides 2-3).
           Rendered directly below the hero; sections 5-9 below are untouched. */}
+      <LiveProofStrip />
       <ProofStrip />
       <ProblemSection />
 
