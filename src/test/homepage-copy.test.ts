@@ -54,13 +54,16 @@ describe("hero variants", () => {
       "Know the second a rival enters your deal."
     );
     expect(HERO_VARIANTS[1].h1).toBe(
-      "AI notetaker for sales calls that flags competitors."
+      "AI notetaker for sales calls that flags virtual competitors."
     );
     expect(HERO_VARIANTS[2].h1).toBe(
       "Stop writing notes. Never miss a rival mention again."
     );
     expect(HOMEPAGE_COPY.heroH1Variant).toBe("B");
     expect(HOMEPAGE_COPY.heroH1).toBe(HERO_VARIANTS[1].h1);
+    expect(HOMEPAGE_COPY.heroH1).toMatch(/virtual competitor/);
+    expect(HOMEPAGE_COPY.heroH1Highlight).toBe("virtual competitors");
+    expect(HOMEPAGE_COPY.heroSub).toMatch(/virtual competitor/i);
   });
 
   it("keeps the plain-English eyebrow + beta line free of internal jargon", () => {

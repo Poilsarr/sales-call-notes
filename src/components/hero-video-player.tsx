@@ -51,11 +51,11 @@ export function HeroVideoPlayer() {
   };
 
   return (
-    <div id="demo">
+    <div id="demo" className="scroll-mt-24">
       {!playing ? (
         <button
           onClick={handlePlay}
-          className="group relative block w-full rounded-2xl overflow-hidden border border-gray-200 bg-[#F5F0E6] text-left shadow-[0_18px_60px_-24px_rgba(0,0,0,0.35)] hover:border-[#F26522]/50 hover:shadow-[0_24px_80px_-24px_rgba(242,101,34,0.45)] transition-all duration-500"
+          className="group relative block w-full rounded-2xl overflow-hidden border border-gray-200 bg-[#F5F0E6] text-left shadow-[0_18px_60px_-24px_rgba(0,0,0,0.35)] hover:border-[#F26522]/50 hover:shadow-[0_24px_80px_-24px_rgba(242,101,34,0.45)] transition-[border-color,box-shadow] duration-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#F26522] focus-visible:ring-offset-2 focus-visible:ring-offset-[#0a0a0b]"
           aria-label="Play The 2:14pm Call — Gauge competitive-intel film (25 seconds)"
         >
           {/* Cinematic cover — real film frame at a compact 2.35:1 ratio */}
@@ -66,7 +66,7 @@ export function HeroVideoPlayer() {
               alt="Still from The 2:14pm Call — Gauge competitive-intel film"
               fill
               sizes="(max-width: 768px) 100vw, 896px"
-              className="object-cover scale-100 group-hover:scale-[1.04] transition-transform duration-[2000ms] ease-out"
+              className="object-cover scale-100 motion-safe:group-hover:scale-[1.04] motion-safe:transition-transform motion-safe:duration-[2000ms] motion-safe:ease-out"
               loading="lazy"
             />
             {/* Cinematic vignette — keeps edges rich, center open */}
@@ -75,11 +75,11 @@ export function HeroVideoPlayer() {
 
             {/* Top chrome — film badges */}
             <div className="absolute top-0 inset-x-0 px-4 sm:px-5 py-3.5 flex items-center justify-between">
-              <span className="inline-flex items-center gap-2 text-[10px] font-mono tracking-[0.18em] uppercase text-white/85 bg-black/45 backdrop-blur-sm border border-white/15 rounded-full px-3 py-1.5">
-                <span className="w-1.5 h-1.5 rounded-full bg-[#F26522] animate-pulse" />
+              <span className="inline-flex items-center gap-2 text-[10px] font-mono tracking-[0.18em] uppercase text-white bg-black/60 backdrop-blur-sm border border-white/20 rounded-full px-3 py-1.5">
+                <span className="w-1.5 h-1.5 rounded-full bg-[#F26522] motion-safe:animate-pulse" aria-hidden />
                 A short film
               </span>
-              <span className="text-[10px] font-mono text-white/75 bg-black/45 backdrop-blur-sm border border-white/15 rounded-full px-3 py-1.5">
+              <span className="text-[10px] font-mono text-white bg-black/60 backdrop-blur-sm border border-white/20 rounded-full px-3 py-1.5">
                 0:25
               </span>
             </div>
@@ -87,12 +87,13 @@ export function HeroVideoPlayer() {
             {/* Center — play button with ping ring + title */}
             <div className="relative z-10 flex flex-col items-center gap-3 sm:gap-4 px-6 text-center">
               <span className="relative flex">
-                <span className="absolute inline-flex h-full w-full rounded-full bg-[#F26522] opacity-30 animate-ping" />
+                <span className="absolute inline-flex h-full w-full rounded-full bg-[#F26522] opacity-30 motion-safe:animate-ping" />
                 <span className="relative w-16 h-16 sm:w-20 sm:h-20 rounded-full bg-[#F26522] flex items-center justify-center shadow-xl shadow-[#F26522]/30 group-hover:scale-110 group-hover:shadow-[#F26522]/50 transition-all duration-500">
                   <Play
                     size={28}
                     className="text-white ml-1"
                     fill="currentColor"
+                    aria-hidden
                   />
                 </span>
               </span>
@@ -100,7 +101,7 @@ export function HeroVideoPlayer() {
                 <span className="block text-white font-semibold tracking-tight text-lg sm:text-2xl leading-tight drop-shadow-[0_2px_12px_rgba(0,0,0,0.5)]">
                   The 2:14pm Call
                 </span>
-                <span className="mt-1.5 inline-block text-[11px] sm:text-[12px] font-medium text-white/85 bg-black/45 backdrop-blur-sm border border-white/15 rounded-full px-3 py-1">
+                <span className="mt-1.5 inline-block text-[11px] sm:text-[12px] font-medium text-white bg-black/60 backdrop-blur-sm border border-white/20 rounded-full px-3 py-1">
                   Maya vs. the forecast — watch it in 25 seconds
                 </span>
               </span>
@@ -108,10 +109,10 @@ export function HeroVideoPlayer() {
 
             {/* Bottom chrome — title + meta */}
             <div className="absolute bottom-0 inset-x-0 px-4 sm:px-5 py-3.5 flex items-center justify-between border-t border-white/10 bg-gradient-to-t from-black/50 to-transparent">
-              <span className="text-[10px] font-mono tracking-[0.18em] text-white/70 uppercase">
+              <span className="text-[10px] font-mono tracking-[0.18em] text-white/80 uppercase">
                 Gauge · Signal, not noise
               </span>
-              <span className="text-[10px] font-mono text-white/60">
+              <span className="text-[10px] font-mono text-white/80">
                 HD · No sound needed
               </span>
             </div>
@@ -138,6 +139,12 @@ export function HeroVideoPlayer() {
             poster="/videos/gauge-hero-poster.jpg"
           >
             <source src="/videos/gauge-hero-25s.mp4" type="video/mp4" />
+            <track
+              kind="captions"
+              src="/videos/gauge-hero-mgmt-captions.vtt"
+              srcLang="en"
+              label="English"
+            />
             Your browser does not support the video tag.
           </video>
         </div>

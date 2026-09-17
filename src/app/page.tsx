@@ -10,6 +10,8 @@ import { HeroCTA } from "@/components/hero-cta";
 import { HeroScrubbableVideo } from "@/components/hero-scrubbable-video";
 import { HeroEvidenceStack } from "@/components/hero-evidence-stack";
 import { HeroVideoPlayer } from "@/components/hero-video-player";
+import { TeamShowcase } from "@/components/team-showcase";
+import { WhoWeAre } from "@/components/who-we-are";
 import StickyMarketingCta from "@/components/sticky-marketing-cta";
 import ProblemSection from "@/components/problem-section";
 import ProofStrip from "@/components/proof-strip";
@@ -80,11 +82,15 @@ export default function Home() {
                 Hero script per FRONTPAGE-PITCH-PLAN §4: plain-English What-line
                 + dual CTA (Otter.ai pattern: name the job in one line, one primary action). */}
             <div>
-              <p className="text-[13px] leading-[14px] text-gray-900 tracking-wide mb-5 sm:mb-8">{HOMEPAGE_COPY.eyebrow}</p>
-              <h1 className="text-[clamp(1.75rem,7vw,4.2rem)] sm:text-[clamp(2.5rem,5vw,4.2rem)] font-semibold sm:font-medium leading-[1.08] tracking-[-0.03em] text-gray-900">
-                {HOMEPAGE_COPY.heroH1}
+              <p className="text-[13px] leading-[14px] text-gray-700 font-medium tracking-wide mb-5 sm:mb-8">{HOMEPAGE_COPY.eyebrow}</p>
+              <h1 className="text-[clamp(1.75rem,7vw,4.2rem)] sm:text-[clamp(2.5rem,5vw,4.2rem)] font-semibold sm:font-medium leading-[1.08] tracking-[-0.03em] text-gray-900 text-balance">
+                {HOMEPAGE_COPY.heroH1.split(HOMEPAGE_COPY.heroH1Highlight)[0]}
+                <span className="text-[#C94F17] underline decoration-[#F26522]/50 decoration-[0.08em] underline-offset-[0.12em]">
+                  {HOMEPAGE_COPY.heroH1Highlight}
+                </span>
+                {HOMEPAGE_COPY.heroH1.split(HOMEPAGE_COPY.heroH1Highlight)[1]}
               </h1>
-              <p className="text-[15px] text-gray-500 max-w-xl mt-4 mb-3">
+              <p className="text-[15px] sm:text-base text-gray-700 max-w-xl mt-4 mb-3 leading-relaxed">
                 {HOMEPAGE_COPY.heroSub}
               </p>
               <div className="inline-flex items-center gap-2 text-[11px] font-mono font-medium text-film-ink bg-film-cream border-2 border-film-ink rounded-full px-3 py-1 mb-5 shadow-[3px_3px_0_#131316]">
@@ -95,7 +101,7 @@ export default function Home() {
                 <HeroCTA placement="hero" />
                 <Link
                   href={HOMEPAGE_COPY.ctas.secondaryHref}
-                  className="inline-flex items-center gap-2 rounded-full border-2 border-gray-900 px-5 py-2 text-[13px] sm:text-[14px] font-medium text-gray-900 hover:bg-gray-900 hover:text-white transition-colors"
+                  className="inline-flex items-center gap-2 rounded-full border-2 border-gray-900 px-5 py-3 min-h-[44px] text-[13px] sm:text-[14px] font-medium text-gray-900 hover:bg-gray-900 hover:text-white transition-colors"
                 >
                   <Play size={14} />
                   <span>{HOMEPAGE_COPY.ctas.secondary}</span>
@@ -114,14 +120,15 @@ export default function Home() {
               </ul>
             </div>
 
-            <div className="space-y-4">
+            <div>
               <HeroScrubbableVideo />
-              <HeroEvidenceStack />
             </div>
           </div>
 
         </div>
       </section>
+
+      <HeroEvidenceStack />
 
       {/* PROOF STRIP + PROBLEM — FRONTPAGE-PITCH-PLAN §2-3 (Uber-deck slides 2-3).
           Rendered directly below the hero; sections 5-9 below are untouched. */}
@@ -133,7 +140,7 @@ export default function Home() {
       <section data-track-section="capabilities" className="bg-white pt-16 sm:pt-20 lg:pt-28 pb-16 sm:pb-20 lg:pb-28 border-t border-gray-200">
         <div className="max-w-[1440px] mx-auto px-5 sm:px-8 lg:px-12">
           <div className="max-w-2xl mb-14">
-            <p className="text-[11px] uppercase tracking-[0.18em] text-gray-400 mb-3">Capabilities</p>
+            <p className="text-[11px] uppercase tracking-[0.18em] text-gray-600 mb-3">Capabilities</p>
             <h2 className="text-[clamp(1.5rem,4vw,3rem)] font-medium leading-[1.1] tracking-[-0.02em] text-gray-900 mb-3">
               Built for SDRs who lose deals to competitors they never saw coming.
             </h2>
@@ -156,7 +163,7 @@ export default function Home() {
       </section>
 
       {/* COMPETITIVE INTEL DEMO — live alert feed */}
-      <section data-track-section="film" className="bg-[#0a0a0b] text-white pt-16 sm:pt-20 lg:pt-28 pb-16 sm:pb-20 lg:pb-28">
+      <section data-track-section="film" className="bg-[#0a0a0b] text-white pt-16 sm:pt-20 lg:pt-28 pb-16 sm:pb-20 lg:pb-28 scroll-mt-24">
         <div className="max-w-[1440px] mx-auto px-5 sm:px-8 lg:px-12">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-center mb-14">
             <div className="max-w-2xl">
@@ -260,7 +267,7 @@ export default function Home() {
             ))}
           </div>
 
-          <p className="text-[11px] text-white/30 mt-6 max-w-2xl">
+          <p className="text-[11px] text-white/60 mt-6 max-w-2xl">
             Sample alerts — shown for product demo. In production,
             alerts fire in real time across all your active calls.
           </p>
@@ -269,6 +276,9 @@ export default function Home() {
 
       {/* WHO IT'S FOR (social proof — honest, no fake brand names) */}
       <SocialProof />
+
+      <TeamShowcase />
+      <WhoWeAre />
 
       {/* HOW IT WORKS — 4-step process from upload to CRM push */}
       <HowItWorks />
@@ -284,7 +294,7 @@ export default function Home() {
         <div className="max-w-[1440px] mx-auto px-5 sm:px-8 lg:px-12">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-center">
             <div>
-              <p className="text-[11px] uppercase tracking-[0.18em] text-gray-400 mb-3">Pricing</p>
+              <p className="text-[11px] uppercase tracking-[0.18em] text-gray-600 mb-3">Pricing</p>
               <h2 className="text-[clamp(1.5rem,4vw,2.6rem)] font-medium leading-[1.1] tracking-[-0.02em] text-gray-900 mb-4">
                 Free 300 minutes a month. $9 flat when you scale — up to 5 seats, 1,200 minutes.
               </h2>
@@ -317,7 +327,7 @@ export default function Home() {
               <div className="doppel-inner p-6 sm:p-8">
                 <div className="flex items-baseline gap-2 mb-2">
                   <span className="text-4xl font-semibold tracking-tight">$9</span>
-                  <span className="text-gray-400 text-[14px]">/month per user</span>
+                  <span className="text-gray-600 text-[14px]">/month per user</span>
                 </div>
                 <p className="text-[12px] text-gray-500 mb-6">Pro plan. Yearly = $7.50/mo.</p>
                 <div className="space-y-2 text-[13px]">
