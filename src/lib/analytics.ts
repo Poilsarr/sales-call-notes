@@ -1,3 +1,5 @@
+import { capturePostHogEvent } from "@/lib/posthog";
+
 export type SLOMetric =
   | "transcription_latency"
   | "analysis_latency"
@@ -114,6 +116,9 @@ export function trackEvent(
     import("@vercel/analytics")
       .then(({ track }) => {
         track(event, { ...properties, timestamp: Date.now() });
+        if (process.env.NEXT_PUBLIC_POSTHOG_KEY) {
+          capturePostHogEvent(event, { ...properties, timestamp: Date.now() });
+        }
       })
       .catch(() => {});
   } catch {
