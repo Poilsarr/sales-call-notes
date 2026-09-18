@@ -4,7 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useUser, UserButton } from "@clerk/nextjs";
 import { Show } from "@/components/show";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { ArrowRight, Menu, X } from "lucide-react";
 import GaugeLogo from "@/components/gauge-logo";
 
@@ -20,8 +20,26 @@ export default function Nav() {
   const { user } = useUser();
   const [open, setOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
+  const toggleRef = useRef<HTMLButtonElement>(null);
+  const prevOpenRef = useRef(false);
 
   useEffect(() => setMounted(true), []);
+
+  // Escape-to-close for the mobile menu (a11y: dismissible overlay).
+  useEffect(() => {
+    if (!open) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setOpen(false);
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [open ]);
+
+  // Return focus to the toggle button when the menu closes.
+  useEffect(() => {
+    if (prevOpenRef.current && !open) toggleRef.current?.focus();
+    prevOpenRef.current = open;
+  }, [open ]);
 
   return (
     <>
@@ -81,6 +99,7 @@ export default function Nav() {
 
           {/* Mobile Toggle */}
           <button
+            ref={toggleRef}
             onClick={() => setOpen(!open)}
             className="md:hidden bg-gray-900 rounded-full p-3 min-h-[44px] min-w-[44px] flex items-center justify-center text-white"
             aria-label={open ? "Close menu" : "Open menu"}
@@ -114,7 +133,7 @@ export default function Nav() {
             open ? "translate-y-0" : "translate-y-full"
           }`}
         >
-          <nav className="flex flex-col gap-4 mb-8">
+          <div role="group" aria-label="Mobile" className="flex flex-col gap-4 mb-8">
             {links.map((link) => (
               <Link
                 key={link.href}
@@ -126,7 +145,7 @@ export default function Nav() {
                 {link.label}
               </Link>
             ))}
-          </nav>
+          </div>
           <Link
             href="/sign-up"
             onClick={() => setOpen(false)}

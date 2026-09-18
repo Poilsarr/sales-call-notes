@@ -158,12 +158,31 @@ export function HeroScrubbableVideo() {
       id="hero-video"
       className="relative h-full min-h-[440px] lg:min-h-[600px] doppel-outer border-2 border-film-ink shadow-[8px_8px_0_#131316] overflow-hidden"
     >
+      <p id="hero-video-caption" className="sr-only">
+        39-second management demo with captions: hook, how it works, notes,
+        Slack alert.
+      </p>
+      {/* Chapter chips overlay — top-left, drive the same seek() as the scrub list */}
+      <div className="absolute top-3 left-3 z-10 flex flex-wrap gap-1.5">
+        {HERO_SCRUBBABLE_LINES.map((line) => (
+          <button
+            key={line.seekS}
+            type="button"
+            onClick={() => seek(line.seekS)}
+            aria-label={`Scrub to ${line.aria}`}
+            className="text-[10px] font-mono font-medium text-white bg-black/75 backdrop-blur-sm border border-white/20 rounded-full px-2.5 py-1 hover:bg-black/90 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-black"
+          >
+            {line.stamp}
+          </button>
+        ))}
+      </div>
       <div className="doppel-inner absolute inset-0 p-0 overflow-hidden">
         {!activated ? (
           <button
             type="button"
             onClick={handleActivate}
             aria-label="Play management demo — 39 seconds, sound off"
+            aria-describedby="hero-video-caption"
             className="group absolute inset-0 block w-full h-full cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#F26522] focus-visible:ring-offset-2 focus-visible:ring-offset-white"
           >
             {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -199,11 +218,12 @@ export function HeroScrubbableVideo() {
               muted={muted}
               loop
               playsInline
-              preload="none"
+              preload="metadata"
               poster={HERO_SCRUBBABLE_POSTER_SRC}
               className="absolute inset-0 w-full h-full object-cover"
               controls={controls}
               aria-label="Management demo — 39 seconds"
+              aria-describedby="hero-video-caption"
             >
               <source src={HERO_SCRUBBABLE_VIDEO_SRC} type="video/mp4" />
               <track

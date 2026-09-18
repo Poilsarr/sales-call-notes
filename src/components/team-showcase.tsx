@@ -16,7 +16,7 @@ export function TeamShowcase() {
       <div className="max-w-[1440px] mx-auto px-5 sm:px-8 lg:px-12">
         <div className="max-w-2xl mb-10">
           <p className="text-[11px] uppercase tracking-[0.18em] text-gray-600 mb-3">
-            Team showcase · Advisory board
+            Team showcase · Building in the open
           </p>
           <h2
             id="team-heading"
@@ -25,6 +25,12 @@ export function TeamShowcase() {
             The team building your virtual competitor radar.
           </h2>
           <p className="text-gray-700 text-[14px]">{ADVISORY_NOTE}</p>
+          <a
+            href="mailto:hello@usegauge.com"
+            className="inline-flex items-center min-h-[44px] min-w-[44px] text-[14px] font-medium text-[#A84310] underline underline-offset-4 mt-2"
+          >
+            Talk to the team →
+          </a>
         </div>
         <ul className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4" role="list">
           {TEAM_MEMBERS.map((m) => (

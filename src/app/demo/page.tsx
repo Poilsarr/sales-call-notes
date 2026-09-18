@@ -67,6 +67,14 @@ export default function DemoPage() {
         className="max-w-[1440px] mx-auto px-5 sm:px-8 lg:px-12 pb-16 sm:pb-20 lg:pb-28"
       >
         <HeroVideoPlayer fullBleed />
+        <p className="mt-4 text-center">
+          <a
+            href="#demo-calls"
+            className="text-[13px] font-medium text-white/70 hover:text-white underline-offset-4 hover:underline"
+          >
+            ↓ Pick a call below — watch the alert panel update
+          </a>
+        </p>
       </section>
 
       {/* CAROUSEL — BOTTOM half: sample-call tabs/detail (client island) */}

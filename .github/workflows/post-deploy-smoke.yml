@@ -16,6 +16,7 @@ on:
         required: false
         default: "https://usegauge.com"
         type: string
+  deployment_status: {}
 
 concurrency:
   group: post-deploy-smoke-${{ inputs.base_url || 'prod' }}
@@ -24,6 +25,7 @@ concurrency:
 jobs:
   smoke:
     name: Hit live URL
+    if: ${{ github.event_name == 'workflow_dispatch' || github.event.deployment_status.state == 'success' }}
     runs-on: ubuntu-latest
     timeout-minutes: 5
 

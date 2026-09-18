@@ -107,7 +107,7 @@ export default function Home() {
                   <Play size={14} />
                   <span>{HOMEPAGE_COPY.ctas.secondary}</span>
                 </Link>
-                <Link href={HOMEPAGE_COPY.ctas.tertiaryHref} className="text-[13px] text-gray-600 hover:text-gray-900 font-medium underline-offset-4 hover:underline">
+                <Link href={HOMEPAGE_COPY.ctas.tertiaryHref} className="inline-flex items-center min-h-[44px] text-[13px] text-gray-600 hover:text-gray-900 font-medium underline-offset-4 hover:underline">
                   {HOMEPAGE_COPY.ctas.tertiary}
                 </Link>
               </div>
@@ -181,7 +181,7 @@ export default function Home() {
             <h2 className="text-[clamp(1.5rem,4vw,3rem)] font-medium leading-[1.1] tracking-[-0.02em] mb-3">
               We tell you the second a competitor enters a deal.
             </h2>
-            <p className="text-white/50 text-[14px]">
+            <p className="text-white/75 text-[14px]">
               Not a weekly report. Not a dashboard nobody opens. A real-time ping with the exact call,
               the speaker, and the line where it happened.
             </p>
@@ -224,26 +224,26 @@ export default function Home() {
                 accent: "#7c3aed",
               },
             ].map((alert, i) => (
-              <div key={i} className="doppel-outer">
-                <div className="doppel-inner bg-zinc-900/80 p-5 sm:p-6 h-full flex flex-col">
+              <div key={i} className="doppel-outer-dark">
+                <div className="doppel-inner-dark p-5 sm:p-6 h-full flex flex-col">
                   <div className="flex items-center gap-2 mb-5">
                     <div
                       className="w-2 h-2 rounded-full animate-pulse"
                       style={{ backgroundColor: alert.accent }}
                     />
-                    <span className="text-[10px] uppercase tracking-[0.18em] text-white/40 font-mono">
+                    <span className="text-[10px] uppercase tracking-[0.18em] text-white/70 font-mono">
                       Live alert
                     </span>
-                    <span className="ml-auto text-[10px] font-mono text-white/30">
+                    <span className="ml-auto text-[10px] font-mono text-white/60">
                       {alert.age}
                     </span>
                   </div>
 
                   <div className="font-mono text-[12px] space-y-2.5 mb-5">
                     <div className="flex items-start gap-3">
-                      <span className="text-white/30 shrink-0 w-14">{alert.time}</span>
+                      <span className="text-white/60 shrink-0 w-14">{alert.time}</span>
                       <div>
-                        <span className="text-white/55">{alert.speaker}: </span>
+                        <span className="text-white/85">{alert.speaker}: </span>
                         <span className="text-white/90">&ldquo;{alert.quote}&rdquo;</span>
                       </div>
                     </div>
@@ -260,10 +260,10 @@ export default function Home() {
                         <div className="text-white font-semibold mb-0.5">
                           Competitor detected: {alert.detected}
                         </div>
-                        <div className="text-white/40 text-[10.5px]">
+                        <div className="text-white/70 text-[10.5px]">
                           {alert.call} · confidence {alert.confidence}
                         </div>
-                        <div className="text-white/30 text-[10.5px] mt-0.5 truncate">
+                        <div className="text-white/60 text-[10.5px] mt-0.5 truncate">
                           Slack ping → {alert.slack}
                         </div>
                       </div>
@@ -274,7 +274,7 @@ export default function Home() {
             ))}
           </div>
 
-          <p className="text-[11px] text-white/60 mt-6 max-w-2xl">
+          <p className="text-[12px] text-white/75 mt-6 max-w-2xl">
             Sample alerts — shown for product demo. In production,
             alerts fire in real time across all your active calls.
           </p>

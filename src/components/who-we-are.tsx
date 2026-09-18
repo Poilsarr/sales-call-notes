@@ -63,6 +63,12 @@ export function WhoWeAre() {
             </div>
           ))}
         </div>
+        <p className="text-[13px] text-gray-700 mt-8">
+          12 beta teams · 500+ calls · summaries in ~60s —{" "}
+          <a href="/demo" className="underline underline-offset-4 font-medium">
+            See the live demo →
+          </a>
+        </p>
       </div>
     </section>
   );
