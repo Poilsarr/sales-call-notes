@@ -54,7 +54,7 @@ describe("hero variants", () => {
       "Know the second a rival enters your deal."
     );
     expect(HERO_VARIANTS[1].h1).toBe(
-      "AI notetaker for sales calls that flags virtual competitors."
+      "AI notetaker for sales calls — your virtual competitor."
     );
     expect(HERO_VARIANTS[2].h1).toBe(
       "Stop writing notes. Never miss a rival mention again."
@@ -62,8 +62,15 @@ describe("hero variants", () => {
     expect(HOMEPAGE_COPY.heroH1Variant).toBe("B");
     expect(HOMEPAGE_COPY.heroH1).toBe(HERO_VARIANTS[1].h1);
     expect(HOMEPAGE_COPY.heroH1).toMatch(/virtual competitor/);
-    expect(HOMEPAGE_COPY.heroH1Highlight).toBe("virtual competitors");
+    expect(HOMEPAGE_COPY.heroH1Highlight).toBe("virtual competitor");
     expect(HOMEPAGE_COPY.heroSub).toMatch(/virtual competitor/i);
+    // HOMEPAGE-V2: frozen H1 — em dash, no "flags" anywhere in hero copy.
+    expect(HOMEPAGE_COPY.heroH1).toBe(
+      "AI notetaker for sales calls — your virtual competitor."
+    );
+    expect(HOMEPAGE_COPY.heroH1).not.toMatch(/flags?/i);
+    expect(HOMEPAGE_COPY.heroSub).not.toMatch(/flags?/i);
+    expect(HOMEPAGE_COPY.heroManagerBullets.join(" ")).not.toMatch(/flags?/i);
   });
 
   it("keeps the plain-English eyebrow + beta line free of internal jargon", () => {

@@ -17,11 +17,16 @@ import { trackEvent } from "@/lib/analytics";
  *
  * PR-2 analytics: fires `film_play` / `film_close` / `film_end` with
  * `{film, duration_s}`. Anonymous-only properties.
+ *
+ * `fullBleed` (default false) renders the facade as a full-width 16:9
+ * panel for the `#demo` band / `/demo` TOP half. The parent controls
+ * width — no max-w constraint inside. Default preserves the compact
+ * 2.35:1 card look used inline on the homepage film band.
  */
 export const FILM_SLUG = "2-14pm-call";
 export const FILM_DURATION_S = 25;
 
-export function HeroVideoPlayer() {
+export function HeroVideoPlayer({ fullBleed = false }: { fullBleed?: boolean }) {
   const [playing, setPlaying] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
 
@@ -58,8 +63,8 @@ export function HeroVideoPlayer() {
           className="group relative block w-full rounded-2xl overflow-hidden border border-gray-200 bg-[#F5F0E6] text-left shadow-[0_18px_60px_-24px_rgba(0,0,0,0.35)] hover:border-[#F26522]/50 hover:shadow-[0_24px_80px_-24px_rgba(242,101,34,0.45)] transition-[border-color,box-shadow] duration-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#F26522] focus-visible:ring-offset-2 focus-visible:ring-offset-[#0a0a0b]"
           aria-label="Play The 2:14pm Call — Gauge competitive-intel film (25 seconds)"
         >
-          {/* Cinematic cover — real film frame at a compact 2.35:1 ratio */}
-          <div className="relative flex items-center justify-center overflow-hidden" style={{ aspectRatio: "2.35 / 1" }}>
+          {/* Cinematic cover — full-bleed 16:9 when fullBleed, compact 2.35:1 card otherwise */}
+          <div className="relative flex items-center justify-center overflow-hidden" style={{ aspectRatio: fullBleed ? "16 / 9" : "2.35 / 1" }}>
             {/* Film frame — slow Ken Burns zoom on hover */}
             <Image
               src="/videos/gauge-hero-poster.jpg"

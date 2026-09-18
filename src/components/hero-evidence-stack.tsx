@@ -33,7 +33,7 @@ export function HeroEvidenceStack() {
     <section
       data-testid="hero-evidence-stack"
       aria-labelledby="evidence-heading"
-      className="bg-film-cream border-y border-film-ink/10 py-14 sm:py-20"
+      className="bg-film-cream border-y border-film-ink/10 py-16 sm:py-20 lg:py-28"
     >
       <div className="max-w-[1440px] mx-auto px-5 sm:px-8 lg:px-12">
         <div className="max-w-2xl mb-8">
@@ -51,7 +51,7 @@ export function HeroEvidenceStack() {
             id="evidence-heading"
             className="text-[clamp(1.5rem,4vw,2.6rem)] font-medium leading-[1.1] tracking-[-0.02em] text-gray-900 mb-3"
           >
-            Every flag ships with proof.
+            Every signal ships with proof.
           </h2>
           <p className="text-gray-700 text-[14px]">
             Your virtual competitor never says “trust me” — it shows the quote,

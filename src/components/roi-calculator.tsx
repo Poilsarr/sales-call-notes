@@ -31,7 +31,7 @@ export default function RoiCalculator() {
     <section className="bg-[#0a0a0b] text-white py-16 sm:py-20 lg:py-28 border-t border-white/5">
       <div className="max-w-[1440px] mx-auto px-5 sm:px-8 lg:px-12">
         <div className="max-w-2xl mb-12">
-          <p className="text-[11px] uppercase tracking-[0.18em] text-[#C94F17] mb-3">
+          <p className="text-[11px] uppercase tracking-[0.18em] text-white/60 mb-3">
             Calculator
           </p>
           <h2 className="text-[clamp(1.5rem,4vw,2.6rem)] font-medium leading-[1.1] tracking-[-0.02em]">

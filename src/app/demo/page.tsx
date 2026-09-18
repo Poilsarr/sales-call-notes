@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { Crosshair, ArrowRight } from "lucide-react";
 import DemoCarousel from "@/components/demo-carousel";
+import { HeroVideoPlayer } from "@/components/hero-video-player";
 import GaugeLogo from "@/components/gauge-logo";
 
 export const metadata = {
@@ -59,9 +60,19 @@ export default function DemoPage() {
         </p>
       </section>
 
+      {/* FILM — TOP half: the 25s competitive-intel film, full-bleed 16:9.
+          Parent controls width; player itself carries #demo + scroll-mt-24. */}
+      <section
+        aria-label="Gauge competitive-intel film"
+        className="max-w-[1440px] mx-auto px-5 sm:px-8 lg:px-12 pb-16 sm:pb-20 lg:pb-28"
+      >
+        <HeroVideoPlayer fullBleed />
+      </section>
+
+      {/* CAROUSEL — BOTTOM half: sample-call tabs/detail (client island) */}
       <DemoCarousel />
 
-      {/* DISCLAIMER (global SiteFooter renders from layout — no local <footer> here) */}
+      {/* DISCLAIMER (global SiteFooter renders from layout — no local footer element here) */}
       <p className="border-t border-white/5 py-6 text-center text-[11px] text-white/30">
         Sample data for product demo. Not from real customers. Gauge · {new Date().getFullYear()}
       </p>

@@ -8,6 +8,7 @@ import UseCases from "@/components/use-cases";
 import FinalCta from "@/components/final-cta";
 import { HeroCTA } from "@/components/hero-cta";
 import { HeroScrubbableVideo } from "@/components/hero-scrubbable-video";
+import { ScrubSummarySection } from "@/components/scrub-summary-section";
 import { HeroEvidenceStack } from "@/components/hero-evidence-stack";
 import { HeroVideoPlayer } from "@/components/hero-video-player";
 import { TeamShowcase } from "@/components/team-showcase";
@@ -77,11 +78,11 @@ export default function Home() {
           </svg>
           <div className="hidden lg:block flex-1" />
         <div className="relative z-20 w-full max-w-[1440px] mx-auto px-5 sm:px-8 lg:px-12 pt-10 pb-14 sm:pb-16 lg:pb-20">
-          <div className="grid grid-cols-1 lg:grid-cols-[1.1fr_0.9fr] gap-10 lg:gap-16 items-center">
+          <div className="grid grid-cols-1 lg:grid-cols-[1.1fr_0.9fr] gap-10 lg:gap-16 items-center lg:items-stretch">
             {/* LEFT: headline + sub + CTAs.
                 Hero script per FRONTPAGE-PITCH-PLAN §4: plain-English What-line
                 + dual CTA (Otter.ai pattern: name the job in one line, one primary action). */}
-            <div>
+            <div className="self-center">
               <p className="text-[13px] leading-[14px] text-gray-700 font-medium tracking-wide mb-5 sm:mb-8">{HOMEPAGE_COPY.eyebrow}</p>
               <h1 className="text-[clamp(1.75rem,7vw,4.2rem)] sm:text-[clamp(2.5rem,5vw,4.2rem)] font-semibold sm:font-medium leading-[1.08] tracking-[-0.03em] text-gray-900 text-balance">
                 {HOMEPAGE_COPY.heroH1.split(HOMEPAGE_COPY.heroH1Highlight)[0]}
@@ -120,7 +121,9 @@ export default function Home() {
               </ul>
             </div>
 
-            <div>
+            {/* RIGHT: video only — scrub list lives below the fold in
+                <ScrubSummarySection/> and drives this player via gauge:scrub. */}
+            <div className="h-full">
               <HeroScrubbableVideo />
             </div>
           </div>
@@ -129,6 +132,10 @@ export default function Home() {
       </section>
 
       <HeroEvidenceStack />
+
+      {/* Scrub companion moved below the fold (HOMEPAGE-V2): hero-right is
+          video only; these lines scrub it via the gauge:scrub event. */}
+      <ScrubSummarySection />
 
       {/* PROOF STRIP + PROBLEM — FRONTPAGE-PITCH-PLAN §2-3 (Uber-deck slides 2-3).
           Rendered directly below the hero; sections 5-9 below are untouched. */}
@@ -162,26 +169,26 @@ export default function Home() {
         </div>
       </section>
 
-      {/* COMPETITIVE INTEL DEMO — live alert feed */}
+      {/* COMPETITIVE INTEL DEMO — live alert feed.
+          Stacked halves (HOMEPAGE-V2 shell): copy header top, film middle,
+          alert cards grid bottom. Player internals owned by E2. */}
       <section data-track-section="film" className="bg-[#0a0a0b] text-white pt-16 sm:pt-20 lg:pt-28 pb-16 sm:pb-20 lg:pb-28 scroll-mt-24">
         <div className="max-w-[1440px] mx-auto px-5 sm:px-8 lg:px-12">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-center mb-14">
-            <div className="max-w-2xl">
-              <div className="inline-flex items-center gap-2 text-[11px] uppercase tracking-[0.18em] text-[#F26522] mb-3">
-                <Crosshair size={12} /> The wedge
-              </div>
-              <h2 className="text-[clamp(1.5rem,4vw,3rem)] font-medium leading-[1.1] tracking-[-0.02em] mb-3">
-                We tell you the second a competitor enters a deal.
-              </h2>
-              <p className="text-white/50 text-[14px]">
-                Not a weekly report. Not a dashboard nobody opens. A real-time ping with the exact call,
-                the speaker, and the line where it happened.
-              </p>
+          <div className="max-w-2xl mb-10 lg:mb-14">
+            <div className="inline-flex items-center gap-2 text-[11px] uppercase tracking-[0.18em] text-[#F26522] mb-3">
+              <Crosshair size={12} /> The wedge
             </div>
-            <HeroVideoPlayer />
+            <h2 className="text-[clamp(1.5rem,4vw,3rem)] font-medium leading-[1.1] tracking-[-0.02em] mb-3">
+              We tell you the second a competitor enters a deal.
+            </h2>
+            <p className="text-white/50 text-[14px]">
+              Not a weekly report. Not a dashboard nobody opens. A real-time ping with the exact call,
+              the speaker, and the line where it happened.
+            </p>
           </div>
+          <HeroVideoPlayer fullBleed />
 
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 mt-10 lg:mt-14">
             {[
               {
                 time: "00:14:22",

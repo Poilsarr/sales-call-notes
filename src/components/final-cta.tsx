@@ -9,7 +9,7 @@ import { ArrowRight } from "lucide-react";
  */
 export default function FinalCta() {
   return (
-    <section className="bg-white pb-16 sm:pb-20 lg:pb-28">
+    <section className="bg-white py-16 sm:py-20 lg:py-28">
       <div className="max-w-[1440px] mx-auto px-5 sm:px-8 lg:px-12">
         <div className="doppel-outer">
           <div className="doppel-inner bg-gradient-to-br from-[#0a0a0b] via-[#0a0a0b] to-[#1a0f08] p-10 sm:p-14 lg:p-20 text-center relative overflow-hidden">
@@ -24,7 +24,7 @@ export default function FinalCta() {
               <p className="text-[11px] uppercase tracking-[0.18em] text-[#F26522] mb-5 font-mono">
                 Start today
               </p>
-              <h2 className="text-[clamp(1.75rem,4vw,3.25rem)] font-medium leading-[1.1] tracking-[-0.02em] text-white mb-4 max-w-2xl mx-auto">
+              <h2 className="text-[clamp(1.5rem,4vw,2.6rem)] font-medium leading-[1.1] tracking-[-0.02em] text-white mb-4 max-w-2xl mx-auto">
                 Stop writing call notes. Start closing more deals.
               </h2>
               <p className="text-white/50 text-[14px] sm:text-[15px] max-w-xl mx-auto mb-8 leading-relaxed">

@@ -74,14 +74,14 @@ export default function Differentiators() {
     <section className="bg-[#0a0a0b] text-white py-16 sm:py-20 lg:py-28 border-t border-white/5">
       <div className="max-w-[1440px] mx-auto px-5 sm:px-8 lg:px-12">
         <div className="max-w-2xl mb-12">
-          <p className="text-[11px] uppercase tracking-[0.18em] text-white/40 mb-3">
+          <p className="text-[11px] uppercase tracking-[0.18em] text-white/60 mb-3">
             Why not Otter?
           </p>
           <h2 className="text-[clamp(1.5rem,4vw,2.6rem)] font-medium leading-[1.1] tracking-[-0.02em] mb-3">
             Built for the rival mention. Not the meeting minutes.
           </h2>
           <p className="text-white/50 text-[14px]">
-            Generic notetakers summarize. Gauge flags the exact moment a
+            Generic notetakers summarize. Gauge catches the exact moment a
             competitor enters the deal — with the quote, the speaker, and a
             push to where you work.
           </p>
@@ -158,7 +158,7 @@ export default function Differentiators() {
 
         {/* Integration strip — honest, existing assets only */}
         <div className="mt-12 border-t border-white/5 pt-8">
-          <p className="text-[11px] uppercase tracking-[0.18em] text-white/35 mb-5 text-center">
+          <p className="text-[11px] uppercase tracking-[0.18em] text-white/60 mb-5 text-center">
             Works with your stack
           </p>
           <div className="flex flex-wrap items-center justify-center gap-x-8 gap-y-4">

@@ -97,7 +97,7 @@ export default function DemoCarousel() {
   return (
     <section
       data-track-section="demo-carousel"
-      className="max-w-[1440px] mx-auto px-5 sm:px-8 lg:px-12 pb-20"
+      className="max-w-[1440px] mx-auto px-5 sm:px-8 lg:px-12 py-16 sm:py-20 lg:py-28"
     >
       <div className="grid grid-cols-1 lg:grid-cols-[320px_1fr] gap-4">
         {/* CALL LIST */}

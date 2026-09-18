@@ -38,7 +38,7 @@ export default function UseCases() {
     <section className="bg-white py-16 sm:py-20 lg:py-28 border-t border-gray-100">
       <div className="max-w-[1440px] mx-auto px-5 sm:px-8 lg:px-12">
         <div className="max-w-2xl mb-12">
-          <p className="text-[11px] uppercase tracking-[0.18em] text-gray-400 mb-3">
+          <p className="text-[11px] uppercase tracking-[0.18em] text-gray-600 mb-3">
             Where it pays off
           </p>
           <h2 className="text-[clamp(1.5rem,4vw,2.6rem)] font-medium leading-[1.1] tracking-[-0.02em] text-gray-900 mb-3">
