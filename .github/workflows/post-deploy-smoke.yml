@@ -3,10 +3,12 @@ name: Post-deploy smoke
 # Runs scripts/smoke-test.sh against the live URL after Vercel
 # finishes deploying. Triggered via workflow_dispatch (manual
 # button in the Actions tab) so deploys aren't blocked by
-# Vercel preview-deploy timing quirks.
+# Vercel preview-deploy timing quirks, plus deployment_status
+# (Vercel bot) on every deploy.
 #
-# Wire to Vercel "Deploy Hook" webhook if you want automatic
-# runs on every push to main.
+# URL resolution: manual input → the deployment's own URL →
+# https://usegauge.vercel.app. (Do NOT default to usegauge.com:
+# the domain isn't pointed at Vercel yet, so it fails TLS.)
 
 on:
   workflow_dispatch:
@@ -14,12 +16,12 @@ on:
       base_url:
         description: "Base URL to smoke (default: prod)"
         required: false
-        default: "https://usegauge.com"
+        default: "https://usegauge.vercel.app"
         type: string
   deployment_status: {}
 
 concurrency:
-  group: post-deploy-smoke-${{ inputs.base_url || 'prod' }}
+  group: post-deploy-smoke-${{ inputs.base_url || github.event.deployment_status.environment_url || 'prod' }}
   cancel-in-progress: true
 
 jobs:
@@ -34,11 +36,11 @@ jobs:
 
       - name: Smoke test live endpoints
         env:
-          BASE_URL: ${{ inputs.base_url || 'https://usegauge.com' }}
+          BASE_URL: ${{ inputs.base_url || github.event.deployment_status.environment_url || 'https://usegauge.vercel.app' }}
         run: bash scripts/smoke-test.sh
 
       - name: Report (always)
         if: always()
         run: |
           echo "::notice::Smoke run finished. Exit code: $?"
-          echo "URL tested: ${{ inputs.base_url || 'https://usegauge.com' }}"
+          echo "URL tested: ${{ inputs.base_url || github.event.deployment_status.environment_url || 'https://usegauge.vercel.app' }}"
