@@ -9,7 +9,7 @@ const posthogKey = process.env.NEXT_PUBLIC_POSTHOG_KEY;
 
 export default function GaugePostHogProvider({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
-  const { user } = useUser();
+  const { user, isLoaded } = useUser();
   const initialized = useRef(false);
 
   useEffect(() => {
@@ -18,14 +18,17 @@ export default function GaugePostHogProvider({ children }: { children: React.Rea
   }, []);
 
   useEffect(() => {
-    if (!posthogKey || !initialized.current) return;
+    // Gate on Clerk load: user is undefined both before load and when signed
+    // out, so resetting before isLoaded wipes the anonymous distinct_id that
+    // the pageview effect just stored.
+    if (!posthogKey || !initialized.current || !isLoaded) return;
     if (user) {
       const email = user.primaryEmailAddress?.emailAddress ?? user.emailAddresses?.[0]?.emailAddress;
       identifyPostHogUser(user.id, email);
     } else {
       resetPostHogUser();
     }
-  }, [user]);
+  }, [user, isLoaded]);
 
   useEffect(() => {
     if (!posthogKey || !initialized.current) return;
