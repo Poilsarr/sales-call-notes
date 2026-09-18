@@ -6,9 +6,11 @@ name: Post-deploy smoke
 # Vercel preview-deploy timing quirks, plus deployment_status
 # (Vercel bot) on every deploy.
 #
-# URL resolution: manual input → the deployment's own URL →
-# https://usegauge.vercel.app. (Do NOT default to usegauge.com:
-# the domain isn't pointed at Vercel yet, so it fails TLS.)
+# URL resolution: manual input → canonical prod URL for production
+# deploys (Vercel's environment_url is the deployment-specific hash URL,
+# which is SSO-gated) → the event URL otherwise → vercel.app fallback.
+# (Do NOT default to usegauge.com: the domain isn't pointed at Vercel
+# yet, so it fails TLS.)
 
 on:
   workflow_dispatch:
@@ -38,11 +40,11 @@ jobs:
 
       - name: Smoke test live endpoints
         env:
-          BASE_URL: ${{ inputs.base_url || github.event.deployment_status.environment_url || 'https://usegauge.vercel.app' }}
+          BASE_URL: ${{ inputs.base_url || (github.event.deployment.environment == 'production' && 'https://usegauge.vercel.app') || github.event.deployment_status.environment_url || 'https://usegauge.vercel.app' }}
         run: bash scripts/smoke-test.sh
 
       - name: Report (always)
         if: always()
         run: |
           echo "::notice::Smoke run finished. Exit code: $?"
-          echo "URL tested: ${{ inputs.base_url || github.event.deployment_status.environment_url || 'https://usegauge.vercel.app' }}"
+          echo "URL tested: ${{ inputs.base_url || (github.event.deployment.environment == 'production' && 'https://usegauge.vercel.app') || github.event.deployment_status.environment_url || 'https://usegauge.vercel.app' }}"
