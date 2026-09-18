@@ -102,48 +102,69 @@ describe("IntegrationsPageClient", () => {
     expect(screen.getByRole("heading", { name: "HubSpot" })).toBeInTheDocument();
     expect(screen.getByRole("heading", { name: "Salesforce" })).toBeInTheDocument();
     // Drain the on-mount /api/integrations fetch so the state update
-    // happens inside the test (no act() warning).
-    await screen.findAllByRole("button", { name: /add credentials/i });
+    // happens inside the test (no act() warning). Unconfigured providers
+    // render disabled Connect buttons (no dead-end settings redirect).
+    await screen.findAllByRole("button", { name: /^connect$/i });
   });
 
-  it("sends unconfigured CRM cards' Add credentials buttons to /settings?tab=integrations", async () => {
-    vi.mocked(fetch).mockResolvedValue(
-      okResponse({ integrations: unconfiguredStates, configuredProviders: {} })
-    );
+  it("starts the OAuth flow from a configured CRM card's Connect button", async () => {
+    vi.mocked(fetch)
+      .mockResolvedValueOnce(
+        okResponse({
+          integrations: {
+            ...unconfiguredStates,
+            salesforce: providerState({ configured: true }),
+          },
+          configuredProviders: {},
+        })
+      )
+      .mockResolvedValueOnce(
+        okResponse({ authUrl: "https://test.salesforce.com/services/oauth2/authorize?x=1" })
+      );
 
-    render(<IntegrationsPageClient />);
-
-    const addCredentialsButtons = await screen.findAllByRole("button", {
-      name: /add credentials/i,
+    const realLocation = window.location;
+    const assignMock = vi.fn();
+    Object.defineProperty(window, "location", {
+      value: { ...realLocation, assign: assignMock },
+      writable: true,
     });
-    expect(addCredentialsButtons).toHaveLength(2);
 
-    fireEvent.click(addCredentialsButtons[0]);
+    try {
+      render(<IntegrationsPageClient />);
 
-    await waitFor(() => {
-      expect(replaceMock).toHaveBeenCalledWith("/settings?tab=integrations");
-    });
-    expect(replaceMock).not.toHaveBeenCalledWith("/settings?tab=crm");
-  });
+      const heading = await screen.findByRole("heading", { name: "Salesforce" });
+      const card = heading.closest(".doppel-outer") as HTMLElement;
+      fireEvent.click(within(card).getByRole("button", { name: /^connect$/i }));
 
-  it("points the inline Add OAuth credentials links at /settings?tab=integrations", async () => {
-    vi.mocked(fetch).mockResolvedValue(
-      okResponse({ integrations: unconfiguredStates, configuredProviders: {} })
-    );
-
-    render(<IntegrationsPageClient />);
-
-    const links = await screen.findAllByRole("link", {
-      name: /add oauth credentials/i,
-    });
-    // One per unconfigured provider card (hubspot, salesforce, teams, slack, google_calendar).
-    expect(links).toHaveLength(5);
-    for (const link of links) {
-      expect(link).toHaveAttribute("href", "/settings?tab=integrations");
+      await waitFor(() => {
+        expect(fetch).toHaveBeenCalledWith("/api/integrations?action=auth-url&provider=salesforce");
+      });
+      await waitFor(() => {
+        expect(assignMock).toHaveBeenCalledWith(
+          "https://test.salesforce.com/services/oauth2/authorize?x=1"
+        );
+      });
+      expect(replaceMock).not.toHaveBeenCalledWith("/settings?tab=integrations");
+    } finally {
+      Object.defineProperty(window, "location", { value: realLocation, writable: true });
     }
   });
 
-  it("renders a Manage affordance for a connected CRM and no Sync CRM no-op", async () => {
+  it("shows an honest server-credentials hint instead of a dead-end settings link", async () => {
+    vi.mocked(fetch).mockResolvedValue(
+      okResponse({ integrations: unconfiguredStates, configuredProviders: {} })
+    );
+
+    render(<IntegrationsPageClient />);
+
+    const hints = await screen.findAllByText(/server oauth credentials are not set/i);
+    // One per unconfigured provider card (hubspot, salesforce, teams, slack, google_calendar).
+    expect(hints).toHaveLength(5);
+    expect(screen.queryByRole("link", { name: /add oauth credentials/i })).toBeNull();
+    expect(screen.queryByRole("button", { name: /add credentials/i })).toBeNull();
+  });
+
+  it("renders Connected + Disconnect (no Manage detour) for a connected CRM", async () => {
     vi.mocked(fetch).mockResolvedValue(
       okResponse({
         integrations: {
@@ -161,13 +182,17 @@ describe("IntegrationsPageClient", () => {
 
     render(<IntegrationsPageClient />);
 
-    const manageLink = await screen.findByRole("link", { name: /manage/i });
-    expect(manageLink).toHaveAttribute("href", "/settings?tab=integrations");
+    const heading = await screen.findByRole("heading", { name: "HubSpot" });
+    const card = heading.closest(".doppel-outer") as HTMLElement;
+    // Connected status + Disconnect button, and no Manage/Add-credentials
+    // detour to settings.
+    expect(within(card).getByText("Connected")).toBeInTheDocument();
+    expect(within(card).getByRole("button", { name: /disconnect/i })).toBeInTheDocument();
+    expect(within(card).queryByRole("link", { name: /manage/i })).toBeNull();
+    expect(within(card).queryByRole("button", { name: /add credentials/i })).toBeNull();
 
     expect(screen.queryByText("Sync CRM")).toBeNull();
     expect(screen.queryByText(/CRM sync started/)).toBeNull();
-    // The Connected status for the connected HubSpot card is still rendered.
-    expect(screen.getByText("Connected")).toBeInTheDocument();
   });
 
   it("handles ?google=connected with a success toast and refetches the integration list", async () => {
