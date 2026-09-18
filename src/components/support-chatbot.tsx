@@ -10,6 +10,8 @@ import {
 } from '@/lib/support-bot';
 
 interface ChatMsg {
+  /** Stable id — used as the React key (never the array index). */
+  id: number;
   role: 'user' | 'bot';
   text: string;
 }
@@ -27,12 +29,14 @@ export default function SupportChatbot() {
   const [input, setInput] = useState('');
   const [messages, setMessages] = useState<ChatMsg[]>([
     {
+      id: 0,
       role: 'bot',
       text: `Hi! I'm ${BOT_NAME} assistant. Ask me anything — features, pricing, integrations, or support. You can always reach our team at ${SUPPORT_EMAIL}.`,
     },
   ]);
   const bottomRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+  const idRef = useRef(1);
 
   useEffect(() => {
     if (open) {
@@ -57,18 +61,28 @@ export default function SupportChatbot() {
     if (!text) return;
     // Instant local answer — no fetch, no artificial delay.
     const { answer } = findSupportAnswer(text);
-    setMessages((prev) => [...prev, { role: 'user', text }, { role: 'bot', text: answer }]);
+    const userId = idRef.current++;
+    const botId = idRef.current++;
+    setMessages((prev) => [...prev, { role: 'user', text, id: userId }, { role: 'bot', text: answer, id: botId }]);
     setInput('');
   }, []);
 
   /** Render emails/URLs as clickable links inside bot + user bubbles. */
   const renderText = (text: string) => {
     const parts = text.split(/(\S+@\S+\.\S+|https?:\/\/\S+)/g);
-    return parts.map((part, i) => {
+    // Occurrence-count keys: stable + unique even for repeated words, and no
+    // map-index reference (lint: no-array-index-as-key).
+    const seen = new Map<string, number>();
+    const partKey = (kind: string, part: string) => {
+      const n = (seen.get(part) ?? 0) + 1;
+      seen.set(part, n);
+      return `${kind}-${part.length}-${part.slice(0, 24)}#${n}`;
+    };
+    return parts.map((part) => {
       if (/^\S+@\S+\.\S+$/.test(part)) {
         return (
           <a
-            key={i}
+            key={partKey('email', part)}
             href={`mailto:${part.replace(/[.,!?;]+$/, '')}`}
             className="underline underline-offset-2 break-words hover:opacity-80"
             onClick={(e) => e.stopPropagation()}
@@ -80,7 +94,7 @@ export default function SupportChatbot() {
       if (/^https?:\/\/\S+/.test(part)) {
         return (
           <a
-            key={i}
+            key={partKey('link', part)}
             href={part}
             target="_blank"
             rel="noopener noreferrer"
@@ -91,7 +105,7 @@ export default function SupportChatbot() {
           </a>
         );
       }
-      return <span key={i}>{part}</span>;
+      return <span key={partKey('text', part)}>{part}</span>;
     });
   };
 
@@ -99,10 +113,10 @@ export default function SupportChatbot() {
     <>
       {/* Chat panel — fixed above the launcher, always in the same place */}
       {open && (
-        <div
-          role="dialog"
+        <dialog
+          open
           aria-label={`${BOT_NAME} support chat`}
-          className="fixed bottom-24 right-4 sm:right-5 z-[90] flex flex-col overflow-hidden rounded-2xl border border-black/10 bg-white shadow-2xl w-[calc(100vw-2rem)] max-w-[370px] h-[520px] max-h-[70vh]"
+          className="fixed bottom-24 right-4 sm:right-5 z-[90] m-0 p-0 start-auto flex flex-col overflow-hidden rounded-2xl border border-black/10 bg-white shadow-2xl w-[calc(100vw-2rem)] max-w-[370px] h-[520px] max-h-[70vh]"
         >
           {/* Header */}
           <div className="flex items-center gap-3 bg-[#0a0a0b] px-4 py-3.5 shrink-0">
@@ -128,8 +142,8 @@ export default function SupportChatbot() {
 
           {/* Messages */}
           <div className="flex-1 min-h-0 overflow-y-auto px-3.5 py-3 space-y-2.5 bg-[#fafafa]" aria-live="polite">
-            {messages.map((m, i) => (
-              <div key={i} className={`flex ${m.role === 'user' ? 'justify-end' : 'justify-start'}`}>
+            {messages.map((m) => (
+              <div key={m.id} className={`flex ${m.role === 'user' ? 'justify-end' : 'justify-start'}`}>
                 <div
                   className={`max-w-[85%] rounded-2xl px-3.5 py-2.5 text-[13px] leading-relaxed ${
                     m.role === 'user'
@@ -184,7 +198,7 @@ export default function SupportChatbot() {
               <Send className="h-4 w-4" />
             </button>
           </form>
-        </div>
+        </dialog>
       )}
 
       {/* Launcher — fixed bottom-right, never moves on scroll.

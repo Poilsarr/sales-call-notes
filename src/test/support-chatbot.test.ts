@@ -20,4 +20,16 @@ describe('support chatbot mounting', () => {
     // High z-index so it sits above content (incl. sticky pills at z-70)
     expect(widget).toContain('z-[90]');
   });
+
+  it('panel is a native dialog with stable keys (no array-index keys)', () => {
+    const widget = readFileSync(join(root, 'src/components/support-chatbot.tsx'), 'utf8');
+    // Native <dialog open> (non-modal: no focus trap, manual Esc close preserved)
+    // with UA defaults neutralised (auto margin, 1em padding, inset-inline-start).
+    expect(widget).toContain('<dialog');
+    expect(widget).toContain('m-0 p-0 start-auto');
+    // No bare index keys anywhere (messages use stable ids, text parts use
+    // content + occurrence-count keys with no map-index reference).
+    expect(widget).not.toMatch(/key=\{i\}/);
+    expect(widget).not.toMatch(/parts\.map\(\(part,\s*i\)/);
+  });
 });
