@@ -5,6 +5,8 @@ import { ClerkProvider } from "@clerk/nextjs";
 import { Analytics } from "@vercel/analytics/react";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 import SiteFooter from "@/components/site-footer";
+import SupportChatbot from "@/components/support-chatbot";
+import GaugePostHogProvider from "@/components/posthog-provider";
 import { productJsonLd } from "@/lib/seo";
 import { CommandMenu } from "@/components/ui/command-menu";
 import "./globals.css";
@@ -118,8 +120,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <div className="noise-overlay" />
         <CommandMenu />
         <ClerkProvider signInUrl="/sign-in" signUpUrl="/sign-up" afterSignUpUrl="/app" afterSignInUrl="/app">
-          {children}
+          <GaugePostHogProvider>{children}</GaugePostHogProvider>
           <SiteFooter />
+          <SupportChatbot />
           <Analytics />
           <SpeedInsights />
           <script
