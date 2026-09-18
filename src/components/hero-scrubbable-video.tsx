@@ -139,7 +139,9 @@ export function HeroScrubbableVideo() {
 
   // Below-fold scrub list drives this player via CustomEvent.
   const seekRef = useRef(seek);
-  seekRef.current = seek;
+  useEffect(() => {
+    seekRef.current = seek;
+  });
   useEffect(() => {
     const onScrub = (e: Event) => {
       const seekS = (e as CustomEvent<{ seekS: number }>).detail?.seekS;
