@@ -57,11 +57,15 @@ export function HeroVideoPlayer({ fullBleed = false }: { fullBleed?: boolean }) 
 
   return (
     <div id="demo" className="scroll-mt-24">
+      <p id="hero-film-caption" className="sr-only">
+        25-second competitive-intel film with captions. No sound needed.
+      </p>
       {!playing ? (
         <button
           onClick={handlePlay}
           className="group relative block w-full rounded-2xl overflow-hidden border border-gray-200 bg-[#F5F0E6] text-left shadow-[0_18px_60px_-24px_rgba(0,0,0,0.35)] hover:border-[#F26522]/50 hover:shadow-[0_24px_80px_-24px_rgba(242,101,34,0.45)] transition-[border-color,box-shadow] duration-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#F26522] focus-visible:ring-offset-2 focus-visible:ring-offset-[#0a0a0b]"
           aria-label="Play The 2:14pm Call — Gauge competitive-intel film (25 seconds)"
+          aria-describedby="hero-film-caption"
         >
           {/* Cinematic cover — full-bleed 16:9 when fullBleed, compact 2.35:1 card otherwise */}
           <div className="relative flex items-center justify-center overflow-hidden" style={{ aspectRatio: fullBleed ? "16 / 9" : "2.35 / 1" }}>
@@ -142,6 +146,7 @@ export function HeroVideoPlayer({ fullBleed = false }: { fullBleed?: boolean }) 
             preload="none"
             onEnded={handleEnded}
             poster="/videos/gauge-hero-poster.jpg"
+            aria-describedby="hero-film-caption"
           >
             <source src="/videos/gauge-hero-25s.mp4" type="video/mp4" />
             <track
@@ -153,6 +158,16 @@ export function HeroVideoPlayer({ fullBleed = false }: { fullBleed?: boolean }) 
             Your browser does not support the video tag.
           </video>
         </div>
+      )}
+      {fullBleed && (
+        <p className="mt-4 text-center">
+          <a
+            href="#demo-calls"
+            className="text-[13px] font-medium text-white/70 hover:text-white underline-offset-4 hover:underline"
+          >
+            Pick a call below ↓
+          </a>
+        </p>
       )}
     </div>
   );

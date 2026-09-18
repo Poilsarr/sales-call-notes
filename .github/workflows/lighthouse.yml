@@ -51,5 +51,11 @@ jobs:
 
       - run: npx next build
 
-      - name: Run Lighthouse CI (disabled - lhci removed)
-        run: echo 'lighthouse removed - use npx @lhci/cli@latest autorun'
+      - name: Lighthouse audit
+        continue-on-error: true
+        uses: treosh/lighthouse-ci-action@v12
+        with:
+          urls: |
+            ${{ vars.NEXT_PUBLIC_APP_URL || 'https://usegauge.vercel.app' }}
+            ${{ vars.NEXT_PUBLIC_APP_URL || 'https://usegauge.vercel.app' }}/demo
+          uploadArtifacts: true

@@ -8,20 +8,25 @@
  * Animation is transform/opacity only via existing fadeUp keyframes.
  */
 
+import { FileText, MessageSquare, Database } from "lucide-react";
+
 const ACCENT = "#F26522";
 
 const EVIDENCE_CARDS = [
   {
+    icon: FileText,
     step: "01 · Transcript proof",
     title: "The exact line, with speaker and timestamp",
     body: "Sarah Chen · 00:14:22 — “We're also evaluating Gong and Chorus for the rollout.” Rival names highlighted the second they drop.",
   },
   {
+    icon: MessageSquare,
     step: "02 · Slack ping",
     title: "#deal-room-acme · Competitor detected: Gong (0.96)",
     body: "Exact quote + speaker + call link — Discovery 00:14:22. The whole deal room sees it before the call ends.",
   },
   {
+    icon: Database,
     step: "03 · CRM sync",
     title: "1-click HubSpot → Salesforce",
     body: "Summary, owners, due dates, and the follow-up draft land in your CRM. Deal health 8.2, rival tracked call-over-call.",
@@ -66,6 +71,13 @@ export function HeroEvidenceStack() {
               className={`doppel-outer ${i === 1 ? "animate-stagger-2" : i === 2 ? "animate-stagger-3" : "animate-stagger-1"}`}
             >
               <div className="doppel-inner p-6 sm:p-7 h-full bg-white">
+                <span
+                  aria-hidden
+                  className="inline-flex w-9 h-9 rounded-xl items-center justify-center mb-4"
+                  style={{ color: ACCENT, backgroundColor: `${ACCENT}14` }}
+                >
+                  <card.icon size={17} />
+                </span>
                 <p className="text-[11px] font-mono uppercase tracking-[0.16em] text-gray-600 mb-3">
                   {card.step}
                 </p>

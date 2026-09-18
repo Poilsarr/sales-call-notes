@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import { HERO_SCRUBBABLE_LINES } from "./hero-scrubbable-video";
 
 const ACCENT = "#F26522";
@@ -13,7 +14,9 @@ const ACCENT = "#F26522";
  * no data fetching, no other side effects.
  */
 export function ScrubSummarySection() {
-  const scrub = (seekS: number) => {
+  const [lastScrub, setLastScrub] = useState<string | null>(null);
+  const scrub = (seekS: number, stamp: string) => {
+    setLastScrub(stamp);
     window.dispatchEvent(
       new CustomEvent("gauge:scrub", { detail: { seekS } }),
     );
@@ -47,7 +50,7 @@ export function ScrubSummarySection() {
             <button
               key={line.seekS}
               type="button"
-              onClick={() => scrub(line.seekS)}
+              onClick={() => scrub(line.seekS, line.stamp)}
               aria-label={`Scrub to ${line.aria}`}
               className="w-full text-left flex gap-2.5 p-2.5 rounded-xl border hover:bg-[#F26522]/10 transition min-h-[44px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#F26522] focus-visible:ring-offset-1"
               style={{
@@ -70,14 +73,17 @@ export function ScrubSummarySection() {
             </button>
           ))}
         </div>
-        <div className="mt-4 flex items-center gap-6 max-w-2xl text-[10px] text-gray-600">
-          <span className="flex items-center gap-1.5">
-            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+        <p className="mt-4 max-w-2xl text-[10px] text-gray-600">
+          <span className="inline-flex items-center gap-1.5">
+            <span aria-hidden className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
             Health 8.2
           </span>
-          <span>Rival: Gong</span>
+          {" · Rival: Gong · "}
           <span>#deal-room-acme</span>
-        </div>
+        </p>
+        <p aria-live="polite" role="status" className="sr-only">
+          {lastScrub ? `Scrubbed to ${lastScrub}` : ""}
+        </p>
       </div>
     </section>
   );

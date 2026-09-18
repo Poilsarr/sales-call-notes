@@ -96,8 +96,9 @@ export default function DemoCarousel() {
 
   return (
     <section
+      id="demo-calls"
       data-track-section="demo-carousel"
-      className="max-w-[1440px] mx-auto px-5 sm:px-8 lg:px-12 py-16 sm:py-20 lg:py-28"
+      className="max-w-[1440px] mx-auto px-5 sm:px-8 lg:px-12 py-16 sm:py-20 lg:py-28 scroll-mt-24"
     >
       <div className="grid grid-cols-1 lg:grid-cols-[320px_1fr] gap-4">
         {/* CALL LIST */}
@@ -151,15 +152,15 @@ export default function DemoCarousel() {
             <div className="doppel-inner bg-zinc-900/80 p-6 sm:p-8">
               <div className="flex items-center gap-2 mb-5">
                 <div className={`w-2 h-2 rounded-full bg-[#F26522] ${!reducedMotion && pulse % 2 === 0 ? "animate-pulse" : "opacity-50"}`} />
-                <span className="text-[11px] uppercase tracking-[0.18em] text-white/40">
+                <span className="text-[11px] uppercase tracking-[0.18em] text-white/70">
                   Live alert · {active.customer}
                 </span>
               </div>
               <div className="space-y-3 font-mono text-[13px]">
-                {active.transcript.slice(0, 3).map((seg, i) => (
+                {active.transcript.slice(0, 5).map((seg, i) => (
                   <div key={i} className="flex items-start gap-4">
-                    <span className="text-white/30 shrink-0 w-16">{seg.time}</span>
-                    <span className="text-white/55 shrink-0 w-20">{seg.speaker}:</span>
+                    <span className="text-white/60 shrink-0 w-16">{seg.time}</span>
+                    <span className="text-white/85 shrink-0 w-20">{seg.speaker}:</span>
                     <span className="text-white/90">&ldquo;{seg.text}&rdquo;</span>
                   </div>
                 ))}
@@ -173,12 +174,12 @@ export default function DemoCarousel() {
                         <span className={`px-2 py-0.5 rounded-full text-[10px] border ${sentimentClasses(a.sentiment)}`}>
                           {a.sentiment}
                         </span>
-                        <span className="text-white/30 text-[10px] font-mono">conf {a.confidence.toFixed(2)}</span>
+                        <span className="text-white/60 text-[10px] font-mono">conf {a.confidence.toFixed(2)}</span>
                       </div>
-                      <div className="text-white/40">
+                      <div className="text-white/70">
                         {a.timestamp} · {a.speaker}: &ldquo;{a.line}&rdquo;
                       </div>
-                      <div className="text-white/30 mt-1">
+                      <div className="text-white/60 mt-1">
                         Slack ping sent to #deal-room-{active.customer.toLowerCase().split(" ")[0]}
                       </div>
                     </div>
@@ -213,7 +214,7 @@ export default function DemoCarousel() {
               <h2 className="text-[20px] sm:text-[24px] font-medium tracking-tight mb-2">
                 Get this on your calls.
               </h2>
-              <p className="text-white/50 text-[13px] mb-5 max-w-md mx-auto">
+              <p className="text-white/75 text-[13px] mb-5 max-w-md mx-auto">
                 Free forever for solo SDRs. Pro at $9/mo with 1,200 minutes, CRM sync, and team alerts.
               </p>
               <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
@@ -231,6 +232,12 @@ export default function DemoCarousel() {
                   className="text-[13px] text-white/60 hover:text-white font-medium underline-offset-4 hover:underline"
                 >
                   See pricing →
+                </Link>
+                <Link
+                  href="/features"
+                  className="text-[13px] text-white/60 hover:text-white font-medium underline-offset-4 hover:underline"
+                >
+                  How it works →
                 </Link>
               </div>
             </div>

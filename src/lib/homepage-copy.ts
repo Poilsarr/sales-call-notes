@@ -49,7 +49,7 @@ export const HOMEPAGE_COPY = {
   heroH1Highlight: "virtual competitor",
   // Payer-voiced — management buyer, not rep
   heroSub:
-    "Meet your virtual competitor radar: see every sales call your team makes — what customers said, which rivals came up, and what happens next. Your reps just talk. Gauge handles the notes, spots the risks in Slack, and shows you where to coach.",
+    "Meet your virtual competitor radar: every call summarized, every rival mention pinged to Slack with quote + speaker, every deal coachable.",
   heroManagerBullets: [
     "Know what's really happening in every deal — short summaries with owners and dates.",
     "Never get blindsided by a rival — your virtual competitor signal lands in Slack with the exact quote, speaker, and call.",

@@ -1,0 +1,71 @@
+name: Awaken
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  deployment_status: {}
+  issues:
+    types: [opened, labeled]
+  issue_comment: {}
+  schedule:
+    - cron: "0 6 * * *"
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  gate:
+    name: Gate (typecheck + lint + tests)
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      REDIS_HOST: disabled
+      REDIS_PORT: 0
+      GATE0_FRESHNESS: "off"
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 24
+          cache: npm
+
+      - run: npm ci
+
+      - name: Typecheck
+        run: npx tsc --noEmit
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Tests
+        env:
+          REDIS_HOST: disabled
+          REDIS_PORT: 0
+          GATE0_FRESHNESS: "off"
+        run: npx vitest run
+
+  smoke-note:
+    name: Smoke instructions
+    needs: gate
+    runs-on: ubuntu-latest
+    steps:
+      - run: |
+          echo "Gate passed. To smoke live endpoints run the post-deploy-smoke workflow:"
+          echo "  gh workflow run post-deploy-smoke.yml --ref main -f base_url=https://usegauge.com"
+
+  notify:
+    name: Notify Slack (optional)
+    needs: [gate, smoke-note]
+    if: ${{ always() }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Post summary to Slack if configured
+        run: |
+          [ -z "${{ secrets.SLACK_WEBHOOK_URL }}" ] && echo "skip: SLACK_WEBHOOK_URL not set" || curl -X POST -H 'Content-type: application/json' --data '{"text":"Awaken ${{ github.ref }} gate=${{ needs.gate.result }} smoke-note=${{ needs.smoke-note.result }}"}' "${{ secrets.SLACK_WEBHOOK_URL }}"
