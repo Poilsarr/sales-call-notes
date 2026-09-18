@@ -72,7 +72,8 @@ export const HERO_SCRUBBABLE_LINES: ScrubLine[] = [
  * <video> mounts only on click/scrub). Click unmutes/plays (film_play)
  * or a `gauge:scrub` CustomEvent `{seekS}` (dispatched by
  * <ScrubSummarySection/>) seeks into its VTT cue. Panel fills its column:
- * `h-full min-h-[440px] lg:min-h-[600px]`, poster/video `object-cover`.
+ * `h-full min-h-[440px] lg:min-h-[600px]`, poster/video `object-contain`
+ * over a blurred-fill backdrop (full 16:9 creative always visible, never cropped).
  * Transform/opacity only.
  */
 export function HeroScrubbableVideo() {
@@ -185,11 +186,18 @@ export function HeroScrubbableVideo() {
             aria-describedby="hero-video-caption"
             className="group absolute inset-0 block w-full h-full cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#F26522] focus-visible:ring-offset-2 focus-visible:ring-offset-white"
           >
+            {/* Blurred fill backdrop — same poster, never crops the story */}
+            <span
+              aria-hidden
+              className="absolute inset-0 scale-110 bg-cover bg-center blur-md"
+              style={{ backgroundImage: `url(${HERO_SCRUBBABLE_POSTER_SRC})` }}
+            />
+            <span aria-hidden className="absolute inset-0 bg-film-cream/40" />
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               src={HERO_SCRUBBABLE_POSTER_SRC}
               alt="Management demo preview — sales-call rival alert"
-              className="absolute inset-0 w-full h-full object-cover"
+              className="absolute inset-0 w-full h-full object-contain"
               fetchPriority="high"
               decoding="async"
             />
@@ -220,7 +228,7 @@ export function HeroScrubbableVideo() {
               playsInline
               preload="metadata"
               poster={HERO_SCRUBBABLE_POSTER_SRC}
-              className="absolute inset-0 w-full h-full object-cover"
+              className="absolute inset-0 w-full h-full object-contain bg-[#131316]"
               controls={controls}
               aria-label="Management demo — 39 seconds"
               aria-describedby="hero-video-caption"
