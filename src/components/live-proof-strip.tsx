@@ -56,7 +56,7 @@ export default function LiveProofStrip() {
       id="try-it"
       data-track-section="try-it"
       aria-label="Live proof — tap a call"
-      className="bg-[#EFEFEF] py-16 sm:py-20 lg:py-28 border-t border-gray-200"
+      className="bg-[#EFEFEF] py-16 sm:py-20 lg:py-28 border-t border-gray-200 scroll-mt-24"
     >
       <div className="max-w-[1440px] mx-auto px-5 sm:px-8 lg:px-12">
         <p className="text-[11px] uppercase tracking-[0.18em] text-gray-600 mb-3">
@@ -69,82 +69,143 @@ export default function LiveProofStrip() {
           Real rival mentions, caught live with the exact line and timestamp.
         </p>
 
-        <div className="flex gap-2 mb-6" aria-label="Sample calls">
-          {TABS.map((tab, i) => (
-            <button
-              key={tab.id}
-              aria-pressed={i === activeIdx}
-              aria-label={`Show ${tab.rival} mention in ${tab.label}`}
-              onClick={() => setActiveIdx(i)}
-              className={`rounded-full border-2 border-gray-900 px-4 py-1.5 text-[13px] font-medium transition-colors ${
-                i === activeIdx
-                  ? "bg-gray-900 text-white"
-                  : "text-gray-900 hover:bg-gray-900 hover:text-white"
-              }`}
-            >
-              {tab.label} · {tab.rival} {tab.confidence.toFixed(2)}
-            </button>
-          ))}
-        </div>
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-start">
+          <div>
+            <div className="flex gap-2 mb-6" aria-label="Sample calls">
+              {TABS.map((tab, i) => (
+                <button
+                  key={tab.id}
+                  aria-pressed={i === activeIdx}
+                  aria-label={`Show ${tab.rival} mention in ${tab.label}`}
+                  onClick={() => setActiveIdx(i)}
+                  className={`rounded-full border-2 border-gray-900 px-4 py-1.5 text-[13px] font-medium transition-colors ${
+                    i === activeIdx
+                      ? "bg-gray-900 text-white"
+                      : "text-gray-900 hover:bg-gray-900 hover:text-white"
+                  }`}
+                >
+                  {tab.label} · {tab.rival} {tab.confidence.toFixed(2)}
+                </button>
+              ))}
+            </div>
 
-        <div className="relative max-w-xl">
-          <div className="absolute -top-3 left-1/2 -translate-x-1/2 rotate-[-2deg] w-24 h-6 bg-film-amber/60 border border-black/10 z-10" aria-hidden />
-          <div className="doppel-outer border-2 border-film-ink shadow-[8px_8px_0_#131316]">
+            <div className="relative">
+              <div className="absolute -top-3 left-1/2 -translate-x-1/2 rotate-[-2deg] w-24 h-6 bg-film-amber/60 border border-black/10 z-10" aria-hidden />
+              <div className="doppel-outer border-2 border-film-ink shadow-[8px_8px_0_#131316]">
+                <div className="doppel-inner p-5 sm:p-6">
+                  <div className="flex items-center gap-2 mb-4">
+                    <div className="w-2 h-2 rounded-full bg-[#F26522] animate-pulse" />
+                    <span className="text-[10px] font-mono tracking-wider text-gray-600 font-medium uppercase">Live summary</span>
+                    <span className="ml-auto text-[9px] font-mono text-gray-500">{active.call}</span>
+                  </div>
+
+                  <div className="space-y-2.5">
+                    <div className="flex items-start gap-2.5">
+                      <span className="shrink-0 text-[10px] font-mono font-medium text-[#F26522] bg-[#F26522]/[0.08] px-2 py-0.5 rounded-full leading-none mt-0.5">{active.speaker}</span>
+                      <p className="text-[12.5px] text-gray-600 leading-snug">
+                        {active.quote}{" "}
+                        <span className="text-[10px] font-mono text-gray-500">· {active.time}</span>
+                      </p>
+                    </div>
+                    <div className="flex items-start gap-2.5">
+                      <span className="shrink-0 text-[10px] font-mono font-medium text-[#2563eb] bg-[#2563eb]/[0.08] px-2 py-0.5 rounded-full leading-none mt-0.5">You</span>
+                      <p className="text-[12.5px] text-gray-600 leading-snug">Understood. Want me to loop in your procurement lead next call, or send a one-pager for the consolidation review?</p>
+                    </div>
+                  </div>
+
+                  <div className="mt-4 pt-3 border-t border-gray-100">
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="text-[10px] font-mono text-gray-600 uppercase tracking-wider">Action items</span>
+                      <span className="text-[10px] font-mono text-gray-500">3 found</span>
+                    </div>
+                    <ul className="space-y-1.5">
+                      <li className="flex items-center gap-2 text-[11.5px] text-gray-700">
+                        <span className="w-1 h-1 rounded-full bg-[#F26522]" />
+                        <span className="flex-1">Send procurement one-pager</span>
+                        <span className="text-[9px] font-mono text-gray-500">THU</span>
+                      </li>
+                      <li className="flex items-center gap-2 text-[11.5px] text-gray-700">
+                        <span className="w-1 h-1 rounded-full bg-[#F26522]" />
+                        <span className="flex-1">Loop in procurement lead</span>
+                        <span className="text-[9px] font-mono text-gray-500">FRI</span>
+                      </li>
+                      <li className="flex items-center gap-2 text-[11.5px] text-gray-700">
+                        <span className="w-1 h-1 rounded-full bg-[#F26522]" />
+                        <span className="flex-1">Schedule Q3 vendor review</span>
+                        <span className="text-[9px] font-mono text-gray-500">NEXT</span>
+                      </li>
+                    </ul>
+                  </div>
+
+                  <div className="mt-4 pt-3 border-t border-gray-100 flex items-center justify-between text-[10px] text-gray-500">
+                    <span className="flex items-center gap-1.5">
+                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+                      Health 8.2
+                    </span>
+                    <span className="flex items-center gap-1.5">
+                      Rival: {active.rival}
+                    </span>
+                    <span className="flex items-center gap-1.5">
+                      {active.slack}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div
+            className="doppel-outer border-2 border-film-ink shadow-[8px_8px_0_#131316]"
+            aria-live="polite"
+            aria-label={`Rival signal for ${active.label}`}
+          >
             <div className="doppel-inner p-5 sm:p-6">
               <div className="flex items-center gap-2 mb-4">
                 <div className="w-2 h-2 rounded-full bg-[#F26522] animate-pulse" />
-                <span className="text-[10px] font-mono tracking-wider text-gray-600 font-medium uppercase">Live summary</span>
+                <span className="text-[10px] font-mono tracking-wider text-gray-600 font-medium uppercase">Rival signal</span>
                 <span className="ml-auto text-[9px] font-mono text-gray-500">{active.call}</span>
               </div>
 
-              <div className="space-y-2.5">
-                <div className="flex items-start gap-2.5">
-                  <span className="shrink-0 text-[10px] font-mono font-medium text-[#F26522] bg-[#F26522]/[0.08] px-2 py-0.5 rounded-full leading-none mt-0.5">{active.speaker}</span>
-                  <p className="text-[12.5px] text-gray-600 leading-snug">
-                    {active.quote}{" "}
-                    <span className="text-[10px] font-mono text-gray-500">· {active.time}</span>
-                  </p>
-                </div>
-                <div className="flex items-start gap-2.5">
-                  <span className="shrink-0 text-[10px] font-mono font-medium text-[#2563eb] bg-[#2563eb]/[0.08] px-2 py-0.5 rounded-full leading-none mt-0.5">You</span>
-                  <p className="text-[12.5px] text-gray-600 leading-snug">Understood. Want me to loop in your procurement lead next call, or send a one-pager for the consolidation review?</p>
-                </div>
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-[13px] font-medium text-gray-900">Rival: {active.rival}</span>
+                <span className="text-[10px] font-mono text-gray-500">{active.confidence.toFixed(2)}</span>
+              </div>
+              <div
+                className="h-2 rounded-full bg-gray-200 overflow-hidden mb-4"
+                role="progressbar"
+                aria-valuenow={Math.round(active.confidence * 100)}
+                aria-valuemin={0}
+                aria-valuemax={100}
+                aria-label={`${active.rival} confidence`}
+              >
+                <div
+                  className="h-full rounded-full bg-[#F26522]"
+                  style={{ width: `${Math.round(active.confidence * 100)}%` }}
+                />
               </div>
 
-              <div className="mt-4 pt-3 border-t border-gray-100">
-                <div className="flex items-center justify-between mb-2">
-                  <span className="text-[10px] font-mono text-gray-600 uppercase tracking-wider">Action items</span>
-                  <span className="text-[10px] font-mono text-gray-500">3 found</span>
-                </div>
-                <ul className="space-y-1.5">
-                  <li className="flex items-center gap-2 text-[11.5px] text-gray-700">
-                    <span className="w-1 h-1 rounded-full bg-[#F26522]" />
-                    <span className="flex-1">Send procurement one-pager</span>
-                    <span className="text-[9px] font-mono text-gray-500">THU</span>
-                  </li>
-                  <li className="flex items-center gap-2 text-[11.5px] text-gray-700">
-                    <span className="w-1 h-1 rounded-full bg-[#F26522]" />
-                    <span className="flex-1">Loop in procurement lead</span>
-                    <span className="text-[9px] font-mono text-gray-500">FRI</span>
-                  </li>
-                  <li className="flex items-center gap-2 text-[11.5px] text-gray-700">
-                    <span className="w-1 h-1 rounded-full bg-[#F26522]" />
-                    <span className="flex-1">Schedule Q3 vendor review</span>
-                    <span className="text-[9px] font-mono text-gray-500">NEXT</span>
-                  </li>
-                </ul>
+              <blockquote className="text-[13px] text-gray-700 leading-snug border-l-2 border-gray-900 pl-3 mb-4">
+                &ldquo;{active.quote}&rdquo;
+              </blockquote>
+
+              <p className="text-[11.5px] text-gray-600 mb-4">
+                <span className="shrink-0 text-[10px] font-mono font-medium text-[#F26522] bg-[#F26522]/[0.08] px-2 py-0.5 rounded-full leading-none">{active.speaker}</span>{" "}
+                <span className="text-[10px] font-mono text-gray-500">· {active.time}</span>
+              </p>
+
+              <div className="mb-4">
+                <span className="inline-flex items-center gap-1.5 rounded-full border-2 border-gray-900 px-3 py-1 text-[11px] font-medium text-gray-900">
+                  {active.slack}
+                </span>
               </div>
 
-              <div className="mt-4 pt-3 border-t border-gray-100 flex items-center justify-between text-[10px] text-gray-500">
+              <div className="pt-3 border-t border-gray-100 flex items-center justify-between text-[10px] text-gray-500">
                 <span className="flex items-center gap-1.5">
                   <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
                   Health 8.2
                 </span>
                 <span className="flex items-center gap-1.5">
                   Rival: {active.rival}
-                </span>
-                <span className="flex items-center gap-1.5">
-                  {active.slack}
                 </span>
               </div>
             </div>
