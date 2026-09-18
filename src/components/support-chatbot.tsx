@@ -70,11 +70,19 @@ export default function SupportChatbot() {
   /** Render emails/URLs as clickable links inside bot + user bubbles. */
   const renderText = (text: string) => {
     const parts = text.split(/(\S+@\S+\.\S+|https?:\/\/\S+)/g);
-    return parts.map((part, i) => {
+    // Occurrence-count keys: stable + unique even for repeated words, and no
+    // map-index reference (lint: no-array-index-as-key).
+    const seen = new Map<string, number>();
+    const partKey = (kind: string, part: string) => {
+      const n = (seen.get(part) ?? 0) + 1;
+      seen.set(part, n);
+      return `${kind}-${part.length}-${part.slice(0, 24)}#${n}`;
+    };
+    return parts.map((part) => {
       if (/^\S+@\S+\.\S+$/.test(part)) {
         return (
           <a
-            key={`email-${i}-${part.length}-${part.slice(0, 24)}`}
+            key={partKey('email', part)}
             href={`mailto:${part.replace(/[.,!?;]+$/, '')}`}
             className="underline underline-offset-2 break-words hover:opacity-80"
             onClick={(e) => e.stopPropagation()}
@@ -86,7 +94,7 @@ export default function SupportChatbot() {
       if (/^https?:\/\/\S+/.test(part)) {
         return (
           <a
-            key={`link-${i}-${part.length}-${part.slice(0, 24)}`}
+            key={partKey('link', part)}
             href={part}
             target="_blank"
             rel="noopener noreferrer"
@@ -97,7 +105,7 @@ export default function SupportChatbot() {
           </a>
         );
       }
-      return <span key={`text-${i}-${part.length}-${part.slice(0, 24)}`}>{part}</span>;
+      return <span key={partKey('text', part)}>{part}</span>;
     });
   };
 
