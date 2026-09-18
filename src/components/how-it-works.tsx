@@ -37,10 +37,10 @@ export default function HowItWorks() {
     <section className="bg-white py-16 sm:py-20 lg:py-28 border-t border-gray-100">
       <div className="max-w-[1440px] mx-auto px-5 sm:px-8 lg:px-12">
         <div className="max-w-2xl mb-14">
-          <p className="text-[11px] uppercase tracking-[0.18em] text-gray-400 mb-3">
+          <p className="text-[11px] uppercase tracking-[0.18em] text-gray-600 mb-3">
             How it works
           </p>
-          <h2 className="text-[clamp(1.5rem,4vw,3rem)] font-medium leading-[1.1] tracking-[-0.02em] text-gray-900 mb-3">
+          <h2 className="text-[clamp(1.5rem,4vw,2.6rem)] font-medium leading-[1.1] tracking-[-0.02em] text-gray-900 mb-3">
             From raw recording to CRM-ready notes in under 60 seconds.
           </h2>
           <p className="text-gray-500 text-[14px]">
@@ -58,7 +58,7 @@ export default function HowItWorks() {
                     <div className="w-10 h-10 rounded-xl bg-[#F26522]/10 flex items-center justify-center">
                       <s.icon size={18} className="text-[#F26522]" strokeWidth={1.5} />
                     </div>
-                    <span className="font-mono text-[10px] tracking-[0.18em] text-gray-400">
+                    <span className="font-mono text-[10px] tracking-[0.18em] text-gray-600">
                       STEP {s.n}
                     </span>
                   </div>
@@ -68,7 +68,7 @@ export default function HowItWorks() {
                   <p className="text-[13px] text-gray-500 leading-relaxed flex-1">
                     {s.body}
                   </p>
-                  <p className="mt-4 pt-3 border-t border-gray-100 text-[11px] text-gray-400 font-mono">
+                  <p className="mt-4 pt-3 border-t border-gray-100 text-[11px] text-gray-500 font-mono">
                     {s.detail}
                   </p>
                 </div>

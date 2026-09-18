@@ -10,7 +10,7 @@ const PILLARS = [
   {
     icon: Eye,
     title: "What we do",
-    desc: "Gauge turns every sales call into structured notes, owners, and follow-ups — with a virtual competitor flag the second a rival is named.",
+    desc: "Gauge turns every sales call into structured notes, owners, and follow-ups — with a virtual competitor signal the second a rival is named.",
   },
   {
     icon: Target,
@@ -38,12 +38,12 @@ export function WhoWeAre() {
           </p>
           <h2
             id="who-we-are-heading"
-            className="text-[clamp(1.5rem,4vw,3rem)] font-medium leading-[1.1] tracking-[-0.02em] text-gray-900 mb-3"
+            className="text-[clamp(1.5rem,4vw,2.6rem)] font-medium leading-[1.1] tracking-[-0.02em] text-gray-900 mb-3"
           >
             Reps talk. Gauge remembers everything.
           </h2>
           <p className="text-gray-700 text-[14px]">
-            We are the team behind the virtual competitor flag — built for
+            We are the team behind the virtual competitor signal — built for
             managers who need the truth from every call, not another dashboard
             nobody opens.
           </p>

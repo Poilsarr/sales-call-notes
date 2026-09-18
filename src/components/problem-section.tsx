@@ -12,11 +12,11 @@ export default function ProblemSection() {
   return (
     <section
       aria-labelledby="problem-heading"
-      className="bg-white pt-16 sm:pt-20 pb-16 sm:pb-20"
+      className="bg-white py-16 sm:py-20 lg:py-28"
     >
       <div className="max-w-[1440px] mx-auto px-5 sm:px-8 lg:px-12">
         <div className="max-w-2xl mb-10 sm:mb-12">
-          <p className="text-[11px] uppercase tracking-[0.18em] text-gray-400 mb-3">
+          <p className="text-[11px] uppercase tracking-[0.18em] text-gray-600 mb-3">
             {HOMEPAGE_COPY.problem.eyebrow}
           </p>
           <h2

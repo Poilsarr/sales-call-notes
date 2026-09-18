@@ -22,9 +22,9 @@ export default function ProofStrip() {
           <span className="italic">
             &ldquo;Gauge caught a Gong mention I missed in a 40-minute discovery call.&rdquo;
           </span>{" "}
-          <span className="text-gray-400">— Alex R., SDR, beta tester</span>
+          <span className="text-gray-500">— Alex R., SDR, beta tester</span>
         </p>
-        <p className="mt-1.5 text-center text-[12px] leading-relaxed text-gray-400">
+        <p className="mt-1.5 text-center text-[12px] leading-relaxed text-gray-500">
           <span className="font-medium text-gray-500">500+ calls</span>
           <span aria-hidden className="mx-2 text-gray-300">
             ·

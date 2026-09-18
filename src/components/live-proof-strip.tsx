@@ -56,10 +56,13 @@ export default function LiveProofStrip() {
       id="try-it"
       data-track-section="try-it"
       aria-label="Live proof — tap a call"
-      className="bg-[#EFEFEF] pt-14 sm:pt-16 lg:pt-20 pb-14 sm:pb-16 lg:pb-20 border-t border-gray-200"
+      className="bg-[#EFEFEF] py-16 sm:py-20 lg:py-28 border-t border-gray-200"
     >
       <div className="max-w-[1440px] mx-auto px-5 sm:px-8 lg:px-12">
-        <h2 className="text-[clamp(1.5rem,4vw,2.5rem)] font-medium leading-[1.1] tracking-[-0.02em] text-gray-900 mb-2">
+        <p className="text-[11px] uppercase tracking-[0.18em] text-gray-600 mb-3">
+          Live proof · tap a call
+        </p>
+        <h2 className="text-[clamp(1.5rem,4vw,2.6rem)] font-medium leading-[1.1] tracking-[-0.02em] text-gray-900 mb-2">
           Don&apos;t take our word for it — tap a call.
         </h2>
         <p className="text-gray-500 text-[14px] mb-6">
@@ -90,8 +93,8 @@ export default function LiveProofStrip() {
             <div className="doppel-inner p-5 sm:p-6">
               <div className="flex items-center gap-2 mb-4">
                 <div className="w-2 h-2 rounded-full bg-[#F26522] animate-pulse" />
-                <span className="text-[10px] font-mono tracking-wider text-gray-400 font-medium uppercase">Live summary</span>
-                <span className="ml-auto text-[9px] font-mono text-gray-300">{active.call}</span>
+                <span className="text-[10px] font-mono tracking-wider text-gray-600 font-medium uppercase">Live summary</span>
+                <span className="ml-auto text-[9px] font-mono text-gray-500">{active.call}</span>
               </div>
 
               <div className="space-y-2.5">
@@ -99,7 +102,7 @@ export default function LiveProofStrip() {
                   <span className="shrink-0 text-[10px] font-mono font-medium text-[#F26522] bg-[#F26522]/[0.08] px-2 py-0.5 rounded-full leading-none mt-0.5">{active.speaker}</span>
                   <p className="text-[12.5px] text-gray-600 leading-snug">
                     {active.quote}{" "}
-                    <span className="text-[10px] font-mono text-gray-400">· {active.time}</span>
+                    <span className="text-[10px] font-mono text-gray-500">· {active.time}</span>
                   </p>
                 </div>
                 <div className="flex items-start gap-2.5">
@@ -110,29 +113,29 @@ export default function LiveProofStrip() {
 
               <div className="mt-4 pt-3 border-t border-gray-100">
                 <div className="flex items-center justify-between mb-2">
-                  <span className="text-[10px] font-mono text-gray-400 uppercase tracking-wider">Action items</span>
-                  <span className="text-[10px] font-mono text-gray-300">3 found</span>
+                  <span className="text-[10px] font-mono text-gray-600 uppercase tracking-wider">Action items</span>
+                  <span className="text-[10px] font-mono text-gray-500">3 found</span>
                 </div>
                 <ul className="space-y-1.5">
                   <li className="flex items-center gap-2 text-[11.5px] text-gray-700">
                     <span className="w-1 h-1 rounded-full bg-[#F26522]" />
                     <span className="flex-1">Send procurement one-pager</span>
-                    <span className="text-[9px] font-mono text-gray-400">THU</span>
+                    <span className="text-[9px] font-mono text-gray-500">THU</span>
                   </li>
                   <li className="flex items-center gap-2 text-[11.5px] text-gray-700">
                     <span className="w-1 h-1 rounded-full bg-[#F26522]" />
                     <span className="flex-1">Loop in procurement lead</span>
-                    <span className="text-[9px] font-mono text-gray-400">FRI</span>
+                    <span className="text-[9px] font-mono text-gray-500">FRI</span>
                   </li>
                   <li className="flex items-center gap-2 text-[11.5px] text-gray-700">
                     <span className="w-1 h-1 rounded-full bg-[#F26522]" />
                     <span className="flex-1">Schedule Q3 vendor review</span>
-                    <span className="text-[9px] font-mono text-gray-400">NEXT</span>
+                    <span className="text-[9px] font-mono text-gray-500">NEXT</span>
                   </li>
                 </ul>
               </div>
 
-              <div className="mt-4 pt-3 border-t border-gray-100 flex items-center justify-between text-[10px] text-gray-400">
+              <div className="mt-4 pt-3 border-t border-gray-100 flex items-center justify-between text-[10px] text-gray-500">
                 <span className="flex items-center gap-1.5">
                   <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
                   Health 8.2

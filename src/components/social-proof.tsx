@@ -39,7 +39,7 @@ export default function SocialProof() {
       <div className="max-w-[1440px] mx-auto px-5 sm:px-8 lg:px-12">
         {/* Header — badge removed (lives in proof-strip); quote + stats kept */}
         <div className="max-w-2xl mb-12">
-          <p className="text-[11px] uppercase tracking-[0.18em] text-gray-400 mb-3">Who it&apos;s for</p>
+          <p className="text-[11px] uppercase tracking-[0.18em] text-gray-600 mb-3">Who it&apos;s for</p>
           <h2 className="text-[clamp(1.5rem,4vw,2.6rem)] font-medium leading-[1.1] tracking-[-0.02em] text-gray-900">
             Built for the people actually running the calls.
           </h2>
