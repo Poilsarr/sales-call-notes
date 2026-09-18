@@ -42,10 +42,6 @@ function IntegrationsContent() {
   const { isLoaded: authLoaded, isSignedIn } = useAuth();
   const router = useRouter();
 
-  const redirectToCrmEnv = () => {
-    router.replace("/settings?tab=integrations");
-  };
-
   useEffect(() => {
     if (authLoaded && !isSignedIn) router.replace("/sign-in");
   }, [authLoaded, isSignedIn, router]);
@@ -378,47 +374,13 @@ function IntegrationsContent() {
                                   <span>Credentials not set</span>
                                 </div>
                                 <p className="text-[11px] text-gray-400 mt-0.5">
-                                  <Link href="/settings?tab=integrations" className="underline underline-offset-2 hover:text-gray-600">Add OAuth credentials</Link> to enable.
+                                  Server OAuth credentials are not set — contact your workspace admin.
                                 </p>
                               </>
                             )}
                           </div>
 
-                          {int.provider === "hubspot" || int.provider === "salesforce" ? (
-                            <div className="flex items-center gap-2 shrink-0">
-                              {providerStates[int.provider].connected ? (
-                                <Link
-                                  href="/settings?tab=integrations"
-                                  className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-[#C94F17] text-white text-[11px] font-semibold hover:bg-[#A84310] transition-all"
-                                >
-                                  <Link2 size={14} />
-                                  Manage
-                                </Link>
-                              ) : (
-                                <button
-                                  onClick={redirectToCrmEnv}
-                                  className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-[#C94F17] text-white text-[11px] font-semibold hover:bg-[#A84310] transition-all"
-                                >
-                                  <Link2 size={14} />
-                                  Add credentials
-                                </button>
-                              )}
-                              {providerStates[int.provider].connected ? (
-                                <button
-                                  onClick={() => disconnectProvider(int.provider)}
-                                  disabled={providerLoading[int.provider]}
-                                  className="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-gray-200 text-[11px] font-medium text-gray-600 hover:text-gray-900 hover:bg-gray-50 transition-all disabled:opacity-50"
-                                >
-                                  {providerLoading[int.provider] ? (
-                                    <Loader2 size={14} className="animate-spin" />
-                                  ) : (
-                                    <Unplug size={14} />
-                                  )}
-                                  Disconnect
-                                </button>
-                              ) : null}
-                            </div>
-                          ) : providerStates[int.provider].connected ? (
+                          {providerStates[int.provider].connected ? (
                             <button
                               onClick={() => disconnectProvider(int.provider)}
                               disabled={providerLoading[int.provider]}
