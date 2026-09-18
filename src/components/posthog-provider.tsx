@@ -11,6 +11,10 @@ export default function GaugePostHogProvider({ children }: { children: React.Rea
   const pathname = usePathname();
   const { user, isLoaded } = useUser();
   const initialized = useRef(false);
+  // Tracks the last identified user so reset only fires on an actual
+  // sign-out transition — never for never-signed-in visitors (whose
+  // anonymous pageview id must survive Clerk finishing loading).
+  const prevUserId = useRef<string | null>(null);
 
   useEffect(() => {
     if (!posthogKey || initialized.current) return;
@@ -19,14 +23,16 @@ export default function GaugePostHogProvider({ children }: { children: React.Rea
 
   useEffect(() => {
     // Gate on Clerk load: user is undefined both before load and when signed
-    // out, so resetting before isLoaded wipes the anonymous distinct_id that
-    // the pageview effect just stored.
+    // out, so an unconditional reset wipes the anonymous distinct_id that the
+    // pageview effect stores on first paint.
     if (!posthogKey || !initialized.current || !isLoaded) return;
     if (user) {
       const email = user.primaryEmailAddress?.emailAddress ?? user.emailAddresses?.[0]?.emailAddress;
       identifyPostHogUser(user.id, email);
-    } else {
+      prevUserId.current = user.id;
+    } else if (prevUserId.current) {
       resetPostHogUser();
+      prevUserId.current = null;
     }
   }, [user, isLoaded]);
 
