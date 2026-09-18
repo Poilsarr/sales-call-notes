@@ -44,7 +44,11 @@ function isProviderConfigured(provider: SupportedProvider): boolean {
     return Boolean(getSecret("HUBSPOT_CLIENT_ID") && getSecret("HUBSPOT_CLIENT_SECRET"));
   }
   if (provider === "salesforce") {
-    return Boolean(getSecret("SALESFORCE_CLIENT_ID") && getSecret("SALESFORCE_CLIENT_SECRET"));
+    // PKCE public client: the connected app runs with "Require Secret for
+    // Web Server Flow" unchecked, so only the client ID marks it configured.
+    // (Demanding a secret here disabled the Connect button while the
+    // auth-url guard — correctly — only needs the client ID.)
+    return Boolean(getSecret("SALESFORCE_CLIENT_ID"));
   }
   if (provider === "slack") {
     return Boolean(getSecret("SLACK_CLIENT_ID") && getSecret("SLACK_CLIENT_SECRET"));

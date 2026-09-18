@@ -301,6 +301,26 @@ describe('GET /api/integrations', () => {
       expect(body.integrations.google_calendar.configured).toBe(false);
     });
 
+    it('marks salesforce configured with client ID alone (PKCE public client, no secret)', async () => {
+      mockAuth.mockResolvedValue({ userId: 'test-user' });
+      mockGetUserByClerkId.mockResolvedValue(mockUserWithTeam);
+      mockRequireRole.mockResolvedValue({ allowed: true, userRole: 'MEMBER' });
+      mockDevSandboxEnabled.mockReturnValue(false);
+      mockGetSecret.mockImplementation((key: string) => {
+        const map: Record<string, string> = {
+          SALESFORCE_CLIENT_ID: 'real-sf-id',
+        };
+        return map[key] || '';
+      });
+      mockFindMany.mockResolvedValue([]);
+
+      const response = await GET(mockGetRequest('http://localhost/api/integrations'));
+      const body = await response.json();
+
+      expect(body.integrations.salesforce.configured).toBe(true);
+      expect(body.integrations.hubspot.configured).toBe(false);
+    });
+
     it('marks all providers as sandbox when dev sandbox is enabled', async () => {
       mockAuth.mockResolvedValue({ userId: 'test-user' });
       mockGetUserByClerkId.mockResolvedValue(mockUserWithTeam);
