@@ -27,7 +27,9 @@ concurrency:
 jobs:
   smoke:
     name: Hit live URL
-    if: ${{ github.event_name == 'workflow_dispatch' || github.event.deployment_status.state == 'success' }}
+    # Preview deployments sit behind Vercel SSO (302 to login), so only
+    # smoke production deploys — previews would fail on auth, not on code.
+    if: ${{ github.event_name == 'workflow_dispatch' || (github.event.deployment_status.state == 'success' && github.event.deployment.environment == 'production') }}
     runs-on: ubuntu-latest
     timeout-minutes: 5
 
