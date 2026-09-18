@@ -143,6 +143,9 @@ export default function Home() {
       <ProofStrip />
       <ProblemSection />
 
+      {/* TEAM — frontal: trust right after the pitch */}
+      <TeamShowcase />
+
       {/* CAPABILITIES */}
       <section data-track-section="capabilities" className="bg-white pt-16 sm:pt-20 lg:pt-28 pb-16 sm:pb-20 lg:pb-28 border-t border-gray-200">
         <div className="max-w-[1440px] mx-auto px-5 sm:px-8 lg:px-12">
@@ -284,7 +287,6 @@ export default function Home() {
       {/* WHO IT'S FOR (social proof — honest, no fake brand names) */}
       <SocialProof />
 
-      <TeamShowcase />
       <WhoWeAre />
 
       {/* HOW IT WORKS — 4-step process from upload to CRM push */}

@@ -32,7 +32,7 @@ export function TeamShowcase() {
             Talk to the team →
           </a>
         </div>
-        <ul className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4" role="list">
+        <ul className="grid grid-cols-1 sm:grid-cols-2 gap-4" role="list">
           {TEAM_MEMBERS.map((m) => (
             <li key={m.role} className="doppel-outer">
               <div className="doppel-inner p-6 sm:p-7 h-full flex items-start gap-4">
