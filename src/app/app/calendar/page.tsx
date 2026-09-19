@@ -34,6 +34,7 @@ export default function CalendarPage() {
         return;
       }
       setEvents(Array.isArray(data.events) ? data.events : []);
+      setCode(data.code ?? null);
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Failed to load calendar');
     } finally {
@@ -88,6 +89,21 @@ export default function CalendarPage() {
               </div>
             </div>
           ))}
+        </div>
+      ) : code === 'NO_TEAM' ? (
+        <div className="rounded-xl border border-dashed border-zinc-800 bg-zinc-900/30 p-8 text-center">
+          <div className="w-12 h-12 rounded-full bg-zinc-800 flex items-center justify-center mx-auto mb-3">
+            <CheckCircle2 className="w-6 h-6 text-zinc-500" />
+          </div>
+          <p className="text-white font-medium">Set up your calendar</p>
+          <p className="text-sm text-zinc-500 mt-1">Connect Google Calendar to see your upcoming meetings here with one-tap Join links.</p>
+          <Link
+            href="/integrations"
+            className="inline-flex items-center gap-2 mt-4 rounded-full bg-[#F26522] hover:bg-[#e05a1a] text-white px-4 py-2 text-sm font-semibold"
+          >
+            <Plug className="w-4 h-4" />
+            Connect Google Calendar
+          </Link>
         </div>
       ) : error ? (
         <div className="rounded-xl border border-amber-500/20 bg-amber-500/10 p-6">
@@ -175,7 +191,11 @@ export default function CalendarPage() {
 
       <div className="rounded-xl bg-zinc-900/40 border border-zinc-800 px-4 py-3 flex items-center justify-between">
         <p className="text-xs text-zinc-500">
-          Connected via <span className="text-zinc-300">Google Calendar</span> · Primary calendar · Next 10 events · {events.length} shown
+          {code === 'NO_TEAM' ? (
+            <>Not connected · Connect Google Calendar to get started</>
+          ) : (
+            <>Connected via <span className="text-zinc-300">Google Calendar</span> · Primary calendar · Next 10 events · {events.length} shown</>
+          )}
         </p>
         <Link href="/integrations" className="text-xs text-zinc-400 hover:text-white underline-offset-4 hover:underline">
           Manage integrations →
