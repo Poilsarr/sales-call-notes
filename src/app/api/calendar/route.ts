@@ -17,12 +17,16 @@ export async function GET(req: NextRequest) {
     }
 
     const user = await getUserByClerkId(userId);
-    if (!user.teamId) {
-      return NextResponse.json({ error: "No team found" }, { status: 400 });
-    }
 
     const { searchParams } = new URL(req.url);
     const action = searchParams.get("action");
+
+    if (!user.teamId) {
+      if (action === "check-meetings") {
+        return NextResponse.json({ upcoming: [], active: [], code: "NO_TEAM" }, { status: 200 });
+      }
+      return NextResponse.json({ events: [], code: "NO_TEAM" }, { status: 200 });
+    }
 
     const calendar = new CalendarService(user.teamId);
 
