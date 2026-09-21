@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { useUser, useAuth } from "@clerk/nextjs";
 import { useRouter } from "next/navigation";
+import { toast } from "sonner";
 import Nav from "@/components/nav";
 import Link from "next/link";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
@@ -75,7 +76,8 @@ export default function TeamPage() {
   const router = useRouter();
 
   useEffect(() => {
-    if (authLoaded && !isSignedIn) router.replace("/sign-in");
+    if (authLoaded && !isSignedIn)
+      router.replace("/sign-in?redirect_url=%2Fteam");
   }, [authLoaded, isSignedIn, router]);
 
   const [members, setMembers] = useState<Member[]>([]);
@@ -129,7 +131,16 @@ export default function TeamPage() {
           }
         );
       } else if (res.status === 401) {
-        router.replace("/sign-in");
+        // Only bounce when signed-out is confirmed. A transient 401 while
+        // the session settles (auth still loading, or still signed in)
+        // keeps the page with a retryable error instead of auto-bouncing.
+        if (authLoaded && !isSignedIn) {
+          router.replace("/sign-in?redirect_url=%2Fteam");
+          return;
+        }
+        const transient = "Session still settling — please refresh to retry.";
+        setError(transient);
+        toast.error(transient);
         return;
       } else {
         resetState();
@@ -139,7 +150,7 @@ export default function TeamPage() {
     } finally {
       setLoading(false);
     }
-  }, [router, resetState]);
+  }, [router, resetState, authLoaded, isSignedIn]);
 
   useEffect(() => {
     fetchMembers();

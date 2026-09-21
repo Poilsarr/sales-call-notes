@@ -65,7 +65,14 @@ export default clerkMiddleware(async (auth, req: NextRequest) => {
         if (req.nextUrl.pathname.startsWith("/api/")) {
           return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
         }
-        return NextResponse.redirect(new URL("/sign-in", req.url));
+        return NextResponse.redirect(
+          new URL(
+            `/sign-in?redirect_url=${encodeURIComponent(
+              req.nextUrl.pathname + req.nextUrl.search,
+            )}`,
+            req.url,
+          ),
+        );
       }
     }
 
@@ -128,11 +135,17 @@ export default clerkMiddleware(async (auth, req: NextRequest) => {
 export const config = {
   matcher: [
     "/api/((?!webhooks/hubspot|webhooks/salesforce|webhooks/clerk|paddle|health|partners|pricing-preview|billing/price-ids).*)",
+    "/dashboard",
     "/dashboard/:path*",
+    "/app",
     "/app/:path*",
+    "/team",
     "/team/:path*",
+    "/integrations",
     "/integrations/:path*",
+    "/settings",
     "/settings/:path*",
+    "/billing",
     "/billing/:path*",
     "/live/:path*",
     "/admin/:path*",

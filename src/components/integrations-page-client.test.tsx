@@ -7,15 +7,19 @@ import { toast } from "sonner";
 // The page's actions navigate via useRouter().replace; hoist the mock
 // so assertions can inspect exactly where it was pointed. The search
 // params are read from a mutable holder so tests can simulate
-// OAuth callback URLs (e.g. ?google=connected).
-const { replaceMock, searchParamsMock } = vi.hoisted(() => ({
+// OAuth callback URLs (e.g. ?google=connected). Auth + pathname are also
+// mutable so tests can simulate signed-out bounces and intent URLs.
+const { replaceMock, searchParamsMock, authMock, pathnameMock } = vi.hoisted(() => ({
   replaceMock: vi.fn(),
   searchParamsMock: { params: new URLSearchParams() },
+  authMock: { isLoaded: true, isSignedIn: true },
+  pathnameMock: { value: "/integrations" },
 }));
 
 vi.mock("next/navigation", () => ({
   useRouter: () => ({ replace: replaceMock, push: vi.fn() }),
   useSearchParams: () => searchParamsMock.params,
+  usePathname: () => pathnameMock.value,
 }));
 
 vi.mock("next/link", () => ({
@@ -27,7 +31,7 @@ vi.mock("next/link", () => ({
 }));
 
 vi.mock("@clerk/nextjs", () => ({
-  useAuth: () => ({ isLoaded: true, isSignedIn: true }),
+  useAuth: () => authMock,
 }));
 
 vi.mock("@/components/nav", () => ({
@@ -80,6 +84,9 @@ describe("IntegrationsPageClient", () => {
   beforeEach(() => {
     replaceMock.mockReset();
     searchParamsMock.params = new URLSearchParams();
+    authMock.isLoaded = true;
+    authMock.isSignedIn = true;
+    pathnameMock.value = "/integrations";
     vi.mocked(toast.success).mockClear();
     vi.mocked(toast.error).mockClear();
     globalThis.IntersectionObserver = IntersectionObserverStub as unknown as typeof IntersectionObserver;
@@ -242,5 +249,101 @@ describe("IntegrationsPageClient", () => {
     expect(within(card).getByText("Live")).toBeInTheDocument();
     expect(within(card).getByRole("button", { name: /connect/i })).toBeInTheDocument();
     expect(within(card).queryByText("Coming Soon")).toBeNull();
+  });
+
+  it("redirects signed-out users to /sign-in with redirect_url preserving intent", async () => {
+    authMock.isLoaded = true;
+    authMock.isSignedIn = false;
+    pathnameMock.value = "/integrations";
+    vi.mocked(fetch).mockResolvedValue({
+      ok: false,
+      status: 401,
+      json: async () => ({ error: "Unauthorized" }),
+    } as Response);
+
+    render(<IntegrationsPageClient />);
+
+    // Settle-retry: the bounce fires only after auth is loaded and the
+    // initial fetch has settled (failed here), and it preserves intent.
+    await waitFor(() => {
+      expect(replaceMock).toHaveBeenCalledWith(
+        `/sign-in?redirect_url=${encodeURIComponent("/integrations")}`
+      );
+    });
+    expect(toast.error).toHaveBeenCalled();
+  });
+
+  it("preserves the query string in redirect_url", async () => {
+    authMock.isLoaded = true;
+    authMock.isSignedIn = false;
+    pathnameMock.value = "/integrations";
+    searchParamsMock.params = new URLSearchParams("foo=bar");
+    vi.mocked(fetch).mockResolvedValue({
+      ok: false,
+      status: 401,
+      json: async () => ({ error: "Unauthorized" }),
+    } as Response);
+
+    render(<IntegrationsPageClient />);
+
+    await waitFor(() => {
+      expect(replaceMock).toHaveBeenCalledWith(
+        `/sign-in?redirect_url=${encodeURIComponent("/integrations?foo=bar")}`
+      );
+    });
+  });
+
+  it("does not bounce signed-in users", async () => {
+    authMock.isLoaded = true;
+    authMock.isSignedIn = true;
+    vi.mocked(fetch).mockResolvedValue(
+      okResponse({ integrations: unconfiguredStates, configuredProviders: {} })
+    );
+
+    render(<IntegrationsPageClient />);
+
+    // Let the on-mount fetch settle, then assert no sign-in bounce.
+    await screen.findAllByRole("button", { name: /^connect$/i });
+    await waitFor(() => {
+      expect(fetch).toHaveBeenCalledTimes(1);
+    });
+    expect(replaceMock).not.toHaveBeenCalledWith(expect.stringContaining("/sign-in"));
+  });
+
+  it("stays when the fetch succeeds despite transient signed-out auth (settle-retry)", async () => {
+    authMock.isLoaded = true;
+    authMock.isSignedIn = false;
+    pathnameMock.value = "/integrations";
+    vi.mocked(fetch).mockResolvedValue(
+      okResponse({ integrations: unconfiguredStates, configuredProviders: {} })
+    );
+
+    render(<IntegrationsPageClient />);
+
+    // A successful fetch proves the session is valid — no bounce even
+    // though Clerk transiently reports signed-out.
+    await screen.findAllByRole("button", { name: /^connect$/i });
+    await waitFor(() => {
+      expect(fetch).toHaveBeenCalledTimes(1);
+    });
+    expect(replaceMock).not.toHaveBeenCalledWith(expect.stringContaining("/sign-in"));
+    expect(toast.error).not.toHaveBeenCalled();
+  });
+
+  it("does not redirect on transient API 401 for signed-in users — toasts instead", async () => {
+    authMock.isLoaded = true;
+    authMock.isSignedIn = true;
+    vi.mocked(fetch).mockResolvedValue({
+      ok: false,
+      status: 401,
+      json: async () => ({ error: "Unauthorized" }),
+    } as Response);
+
+    render(<IntegrationsPageClient />);
+
+    await waitFor(() => {
+      expect(toast.error).toHaveBeenCalled();
+    });
+    expect(replaceMock).not.toHaveBeenCalledWith(expect.stringContaining("/sign-in"));
   });
 });
