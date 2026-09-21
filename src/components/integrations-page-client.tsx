@@ -2,7 +2,7 @@
 
 import { Suspense, useEffect, useRef, useState, useCallback } from "react";
 import Link from "next/link";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter, usePathname, useSearchParams } from "next/navigation";
 import { useAuth } from "@clerk/nextjs";
 import Nav from "@/components/nav";
 import {
@@ -41,12 +41,22 @@ const integrations = [
 function IntegrationsContent() {
   const { isLoaded: authLoaded, isSignedIn } = useAuth();
   const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+  const [fetchSucceeded, setFetchSucceeded] = useState(false);
+  const [initialLoadDone, setInitialLoadDone] = useState(false);
 
   useEffect(() => {
-    if (authLoaded && !isSignedIn) router.replace("/sign-in");
-  }, [authLoaded, isSignedIn, router]);
+    // Settle-retry: only bounce once auth has loaded, the initial
+    // /api/integrations load has settled, the user is signed out, and the
+    // fetch did not succeed (a successful fetch proves the session is valid
+    // even if Clerk state is transiently cold). Transient API 401s only toast.
+    if (!authLoaded || !initialLoadDone || isSignedIn || fetchSucceeded) return;
+    const query = searchParams.toString();
+    const current = `${pathname || "/integrations"}${query ? `?${query}` : ""}`;
+    router.replace(`/sign-in?redirect_url=${encodeURIComponent(current)}`);
+  }, [authLoaded, initialLoadDone, isSignedIn, fetchSucceeded, pathname, searchParams, router]);
 
-  const searchParams = useSearchParams();
   const [providerStates, setProviderStates] = useState<Record<SupportedProvider, ProviderStatus>>({
     hubspot: { connected: false, enabled: false, syncedAt: null, configured: false },
     salesforce: { connected: false, enabled: false, syncedAt: null, configured: false },
@@ -61,7 +71,6 @@ function IntegrationsContent() {
     slack: false,
     google_calendar: false,
   });
-  const [initialLoadDone, setInitialLoadDone] = useState(false);
   const observerRef = useRef<IntersectionObserver | null>(null);
   const handledCallbackRef = useRef(false);
 
@@ -73,6 +82,9 @@ function IntegrationsContent() {
         throw new Error(data.error || "Failed to load integrations");
       }
       setProviderStates(data.integrations);
+      // A successful fetch proves the session is valid — cancel any pending
+      // signed-out bounce (cold Clerk state / transient 401 elsewhere).
+      setFetchSucceeded(true);
     } catch (error) {
       toast.error(error instanceof Error ? error.message : "Could not load integrations");
     } finally {

@@ -1,5 +1,6 @@
 import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { toast } from 'sonner';
 
 // Mock the shared Nav shell — the component under test is the page
 // body, not the navigation.
@@ -29,20 +30,26 @@ vi.mock('next/navigation', () => ({
   useRouter: () => mockRouter,
 }));
 
+vi.mock('sonner', () => ({
+  toast: { error: vi.fn(), success: vi.fn(), message: vi.fn() },
+}));
+
 // Clerk mock factory — each test overrides `useUser` / `useAuth` with the
 // scenario under test. A solo user has no team membership, so the page's
 // `isAdmin` (derived from members[]) is false — the invite form must still
 // render for them.
-function mockClerk(opts: { email: string; signedIn?: boolean }) {
+function mockClerk(opts: { email: string; signedIn?: boolean; authLoaded?: boolean }) {
+  const loaded = opts.authLoaded ?? true;
+  const signedIn = opts.signedIn ?? true;
   vi.doMock('@clerk/nextjs', () => ({
     useUser: () => ({
       user: {
         primaryEmailAddress: { toString: () => opts.email },
       },
-      isLoaded: true,
-      isSignedIn: opts.signedIn ?? true,
+      isLoaded: loaded,
+      isSignedIn: signedIn,
     }),
-    useAuth: () => ({ isLoaded: true, isSignedIn: opts.signedIn ?? true }),
+    useAuth: () => ({ isLoaded: loaded, isSignedIn: signedIn }),
   }));
 }
 
@@ -82,6 +89,10 @@ describe('TeamPage (/team)', () => {
   beforeEach(() => {
     vi.resetModules();
     vi.stubGlobal('fetch', vi.fn());
+    mockRouter.replace.mockClear();
+    mockRouter.push.mockClear();
+    vi.mocked(toast.error).mockClear();
+    vi.mocked(toast.success).mockClear();
   });
 
   afterEach(() => {
@@ -208,6 +219,77 @@ describe('TeamPage (/team)', () => {
     await waitFor(() => {
       expect(screen.getByText('2 total')).toBeInTheDocument();
       expect(screen.getByText(/Member invited/)).toBeInTheDocument();
+    });
+  });
+
+  it('confirmed signed-out state redirects with redirect_url preserved', async () => {
+    mockClerk({ email: 'alice@x.com', signedIn: false });
+
+    vi.mocked(fetch).mockResolvedValue(EMPTY_GET_RESPONSE as Response);
+
+    const { default: TeamPage } = await import('./page');
+    render(<TeamPage />);
+
+    await waitFor(() => {
+      expect(mockRouter.replace).toHaveBeenCalledWith(
+        '/sign-in?redirect_url=%2Fteam'
+      );
+    });
+  });
+
+  it('does not redirect while auth is still loading', async () => {
+    mockClerk({ email: 'alice@x.com', signedIn: false, authLoaded: false });
+
+    vi.mocked(fetch).mockResolvedValue(EMPTY_GET_RESPONSE as Response);
+
+    const { default: TeamPage } = await import('./page');
+    render(<TeamPage />);
+
+    await waitFor(() => {
+      expect(screen.getByText('Invite member')).toBeInTheDocument();
+    });
+    expect(mockRouter.replace).not.toHaveBeenCalled();
+  });
+
+  it('transient 401 while signed in shows a retry error and never auto-bounces', async () => {
+    mockClerk({ email: 'alice@x.com', signedIn: true });
+
+    vi.mocked(fetch).mockResolvedValue({
+      ok: false,
+      status: 401,
+      json: async () => ({ error: 'Unauthorized' }),
+    } as Response);
+
+    const { default: TeamPage } = await import('./page');
+    render(<TeamPage />);
+
+    await waitFor(() => {
+      expect(
+        screen.getByText(/Session still settling/)
+      ).toBeInTheDocument();
+    });
+    expect(mockRouter.replace).not.toHaveBeenCalled();
+    expect(toast.error).toHaveBeenCalledWith(
+      'Session still settling — please refresh to retry.'
+    );
+  });
+
+  it('confirmed signed-out 401 redirects with redirect_url preserved', async () => {
+    mockClerk({ email: 'alice@x.com', signedIn: false });
+
+    vi.mocked(fetch).mockResolvedValue({
+      ok: false,
+      status: 401,
+      json: async () => ({ error: 'Unauthorized' }),
+    } as Response);
+
+    const { default: TeamPage } = await import('./page');
+    render(<TeamPage />);
+
+    await waitFor(() => {
+      expect(mockRouter.replace).toHaveBeenCalledWith(
+        '/sign-in?redirect_url=%2Fteam'
+      );
     });
   });
 });

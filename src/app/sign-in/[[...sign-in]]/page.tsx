@@ -1,5 +1,7 @@
 "use client";
 
+import { Suspense, useEffect } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import { SignIn, SignOutButton, useAuth } from "@clerk/nextjs";
 
 function PulseSkeleton() {
@@ -27,7 +29,15 @@ function PulseSkeleton() {
   );
 }
 
-function AlreadySignedInCard() {
+function getSafeRedirectTarget(raw: string | null): string {
+  if (!raw) return "/app";
+  if (!raw.startsWith("/")) return "/app";
+  if (raw.startsWith("//")) return "/app";
+  if (raw.includes("://")) return "/app";
+  return raw;
+}
+
+function AlreadySignedInCard({ target = "/app" }: { target?: string }) {
   return (
     <div className="bg-white rounded-2xl border border-gray-200 p-6 text-center">
       <div className="w-10 h-10 bg-amber-100 rounded-full flex items-center justify-center mx-auto mb-4">
@@ -49,7 +59,7 @@ function AlreadySignedInCard() {
           </button>
         </SignOutButton>
         <a
-          href="/app"
+          href={target}
           className="w-full inline-flex items-center justify-center bg-white border border-gray-200 hover:bg-gray-50 text-gray-900 text-[13px] font-medium rounded-full h-10 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gray-400 focus-visible:ring-offset-2"
         >
           Go to app
@@ -59,8 +69,15 @@ function AlreadySignedInCard() {
   );
 }
 
-export default function SignInPage() {
+function SignInContent() {
   const { isSignedIn, isLoaded } = useAuth();
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const target = getSafeRedirectTarget(searchParams.get("redirect_url"));
+
+  useEffect(() => {
+    if (isLoaded && isSignedIn) router.replace(target);
+  }, [isLoaded, isSignedIn, target, router]);
 
   if (!isLoaded) {
     return (
@@ -90,7 +107,7 @@ export default function SignInPage() {
             <h1 className="text-[20px] font-semibold tracking-tight text-gray-900">Welcome back</h1>
             <p className="text-[13px] text-gray-500 mt-1">Sign in to Gauge</p>
           </div>
-          <AlreadySignedInCard />
+          <AlreadySignedInCard target={target} />
         </div>
       </main>
     );
@@ -109,7 +126,7 @@ export default function SignInPage() {
         <SignIn
           routing="path"
           path="/sign-in"
-          fallbackRedirectUrl="/app"
+          fallbackRedirectUrl={target}
           signUpUrl="/sign-up"
           appearance={{
             elements: {
@@ -136,5 +153,19 @@ export default function SignInPage() {
         />
       </div>
     </main>
+  );
+}
+
+export default function SignInPage() {
+  return (
+    <Suspense fallback={
+      <main id="main" className="min-h-screen bg-[#EFEFEF] flex items-center justify-center px-4 py-20">
+        <div className="w-full max-w-[400px]">
+          <PulseSkeleton />
+        </div>
+      </main>
+    }>
+      <SignInContent />
+    </Suspense>
   );
 }

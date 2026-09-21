@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import { useUser, useAuth } from '@clerk/nextjs';
 import { useRouter } from 'next/navigation';
+import { toast } from 'sonner';
 import Link from 'next/link';
 import Nav from '@/components/nav';
 import { Card, CardContent } from '@/components/ui/card';
@@ -36,7 +37,8 @@ export default function TeamPerformancePage() {
   const router = useRouter();
 
   useEffect(() => {
-    if (authLoaded && !isSignedIn) router.replace('/sign-in');
+    if (authLoaded && !isSignedIn)
+      router.replace('/sign-in?redirect_url=%2Fteam%2Fperformance');
   }, [authLoaded, isSignedIn, router]);
 
   const [calls, setCalls] = useState<CallPerformance[]>([]);
@@ -53,14 +55,21 @@ export default function TeamPerformancePage() {
         setCalls(data.calls || []);
         setMembers(data.members || []);
       } else if (res.status === 401) {
-        router.replace('/sign-in');
+        // Only bounce when signed-out is confirmed. A transient 401 while
+        // the session settles keeps the page with a retryable toast
+        // instead of auto-bouncing.
+        if (authLoaded && !isSignedIn) {
+          router.replace('/sign-in?redirect_url=%2Fteam%2Fperformance');
+        } else {
+          toast.error('Session still settling — please refresh to retry.');
+        }
       }
     } catch (err) {
       console.error('Failed to fetch performance:', err);
     } finally {
       setLoading(false);
     }
-  }, [router]);
+  }, [router, authLoaded, isSignedIn]);
 
   useEffect(() => {
     fetchPerformance();

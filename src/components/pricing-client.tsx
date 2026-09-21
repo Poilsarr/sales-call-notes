@@ -214,6 +214,9 @@ export default function PricingClient({
   const openCheckout = useCallback(
     async (tier: Tier) => {
       if (checkingOut || checkingOutRef.current) return;
+      // Wait for Clerk to settle: a transient !isSignedIn while the session
+      // loads must never bounce a signed-in buyer to /sign-up.
+      if (!clerkLoaded) return;
       if (!isSignedIn) {
         window.location.href = `/sign-up?redirect=/pricing`;
         return;
@@ -267,7 +270,7 @@ export default function PricingClient({
         setCheckingOut(false);
       }
     },
-    [checkingOut, isSignedIn, user, environment, clientToken, priceIdForCycle]
+    [checkingOut, clerkLoaded, isSignedIn, user, environment, clientToken, priceIdForCycle]
   );
 
   return (
