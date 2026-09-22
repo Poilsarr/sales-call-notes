@@ -18,6 +18,7 @@ const LIMITS: Record<string, LimitConfig> = {
   v1keys: { tokens: 5, window: "1 h" },
   v1session: { tokens: 60, window: "1 m" },
   live: { tokens: 120, window: "1 m" },
+  leads: { tokens: 5, window: "1 h" },
 };
 
 const instances = new Map<string, Ratelimit>();
@@ -94,5 +95,35 @@ export async function checkRateLimit(identifier: string, type: string = 'default
       });
     }
     return { success: true, remaining: 999, reset: 0 };
+  }
+}
+
+/**
+ * Fail-CLOSED variant of checkRateLimit for unauthenticated public routes
+ * (e.g. POST /api/leads). Unlike checkRateLimit — which deliberately fails
+ * open so customers are never locked out of their own data — a public,
+ * anonymous endpoint must not accept writes when the limiter is unavailable
+ * (no Redis creds, Redis down, unexpected error). Callers should treat any
+ * non-success result (limited OR unavailable) as a 429.
+ */
+export async function checkRateLimitStrict(identifier: string, type: string = 'default') {
+  const rl = getRatelimit(type);
+  if (!rl) {
+    console.warn(`Rate limiter unavailable for ${type} (no credentials) — failing closed`);
+    return { success: false, unavailable: true, remaining: 0, reset: 0 };
+  }
+
+  try {
+    const { success, remaining, reset } = await rl.limit(identifier);
+    return { success, unavailable: false, remaining, reset };
+  } catch (e) {
+    console.warn(`Rate limiter unavailable for ${type} (Redis down?), failing closed`, (e as Error)?.message || e);
+    if (process.env.NEXT_PUBLIC_SENTRY_DSN || process.env.SENTRY_DSN) {
+      Sentry.captureException(e, {
+        tags: { source: "rate-limit", type },
+        level: "warning",
+      });
+    }
+    return { success: false, unavailable: true, remaining: 0, reset: 0 };
   }
 }

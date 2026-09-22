@@ -397,6 +397,23 @@ model PartnerApplication {
   @@index([referralCode])
 }
 
+model EmailLead {
+  id               String    @id @default(cuid())
+  email            String    @unique
+  source           String?
+  ctaId            String?
+  status           String    @default("pending") // pending | confirmed | unsubscribed
+  consentAt        DateTime  @default(now())
+  confirmTokenHash String?   @unique
+  confirmedAt      DateTime?
+  unsubscribedAt   DateTime?
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+
+  @@index([status])
+  @@index([createdAt])
+}
+
 model PaddleEvent {
   id        String   @id // Paddle notification_id / event_id
   type      String

@@ -60,6 +60,7 @@ export type MarketingEvent =
   | "pricing_calculator_used"
   | "pricing_exit_intent_shown"
   | "pricing_exit_intent_click"
+  | "lead_captured"
   | "hero_view"
   | "cta_click"
   | "film_play"
@@ -85,6 +86,16 @@ export type FilmEventProperties = {
 export type SectionViewProperties = {
   section: string;
 };
+
+export type LeadCapturedProperties = {
+  source: string;
+  ctaId: string;
+};
+
+export function trackEvent(
+  event: "lead_captured",
+  properties: LeadCapturedProperties,
+): void;
 
 export function trackEvent(
   event: "hero_view",
