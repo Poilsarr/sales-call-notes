@@ -40,6 +40,12 @@
 2. **Every PR must hit `git status --short` cleanly** before push.
 3. **Local gate before push:** `npx vitest run && npx next build`.
    Both must be green.
+   **Standing rule (owner-ordered 2026-09-22): on EVERY commit/push,
+   dispatch a dedicated verification agent without being asked** — it
+   runs tsc / eslint / vitest / build, watches the CI/Awaken runs for
+   the pushed SHA via `gh run list` + `--log-failed`, and fixes or
+   reports red before moving on. Gate failures are never left for the
+   owner to discover on the Actions page.
 4. **Vercel "context" required-status-check hangs forever** on
    fresh PRs (the bot never reports). Recovery:
    - Wait ~5-10 min and retry `gh pr merge N --admin --squash`
