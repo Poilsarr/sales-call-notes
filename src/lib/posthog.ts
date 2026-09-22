@@ -32,6 +32,24 @@ function capture(event: string, properties: PostHogProperties = {}) {
   }).catch(() => {});
 }
 
+export function getPostHogDistinctId(): string | null {
+  if (typeof window === "undefined") return null;
+  return getDistinctId();
+}
+
+export function identifyPostHogLead(email: string) {
+  if (typeof window === "undefined") return;
+  const anonymousId = getDistinctId();
+  capture("$identify", {
+    distinct_id: anonymousId,
+    $anon_distinct_id: anonymousId,
+    $set: { email },
+  });
+  // Deliberately keep the anonymous distinct_id in storage — do NOT
+  // overwrite it with the email. The person is identified via $set
+  // while the same distinct_id continues to be used for events.
+}
+
 export function identifyPostHogUser(userId: string, email?: string) {
   const anonymousId = typeof window !== "undefined" ? window.localStorage.getItem("gauge_posthog_distinct_id") : null;
   capture("$identify", {
