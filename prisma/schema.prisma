@@ -403,6 +403,15 @@ model EmailLead {
   email            String    @unique
   source           String?
   ctaId            String?
+  distinctId       String?   @db.VarChar(128)
+  landingPage      String?   @db.VarChar(1024)
+  referrer         String?   @db.VarChar(1024)
+  utmSource        String?   @db.VarChar(128)
+  utmMedium        String?   @db.VarChar(128)
+  utmCampaign      String?   @db.VarChar(128)
+  utmContent       String?   @db.VarChar(128)
+  utmTerm          String?   @db.VarChar(128)
+  userAgent        String?   @db.VarChar(512)
   status           String    @default("pending") // pending | confirmed | unsubscribed
   consentAt        DateTime  @default(now())
   confirmTokenHash String?   @unique
@@ -413,6 +422,7 @@ model EmailLead {
 
   @@index([status])
   @@index([createdAt])
+  @@index([distinctId])
 }
 
 model PaddleEvent {
