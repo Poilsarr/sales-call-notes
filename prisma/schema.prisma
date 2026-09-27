@@ -58,6 +58,7 @@ model Team {
   members            User[]              @relation("teamMembers")
   calls              Call[]
   integrations       Integration[]
+  webhookEndpoints   WebhookEndpoint[]
   vocabulary         VocabularyEntry[]
   trackedCompetitors TrackedCompetitor[] @relation("TeamCompetitors")
   settings           String?
@@ -421,4 +422,38 @@ model PaddleEvent {
 
   @@index([type])
   @@index([createdAt])
+}
+
+model WebhookEndpoint {
+  id         String            @id @default(cuid())
+  teamId     String
+  team       Team              @relation(fields: [teamId], references: [id], onDelete: Cascade)
+  url        String
+  secret     String
+  events     String            @default("call.analyzed")
+  enabled    Boolean           @default(true)
+  createdAt  DateTime          @default(now())
+  updatedAt  DateTime          @updatedAt
+  deliveries WebhookDelivery[]
+
+  @@unique([teamId, url])
+  @@index([teamId])
+}
+
+model WebhookDelivery {
+  id          String          @id @default(cuid())
+  endpointId  String
+  endpoint    WebhookEndpoint @relation(fields: [endpointId], references: [id], onDelete: Cascade)
+  teamId      String
+  event       String
+  payload     String
+  status      String          @default("pending")
+  attempts    Int             @default(0)
+  nextRetryAt DateTime        @default(now())
+  lastError   String?
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
+
+  @@index([status, nextRetryAt])
+  @@index([endpointId])
 }

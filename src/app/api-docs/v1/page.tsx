@@ -97,6 +97,47 @@ const ENDPOINTS = [
       "500 Internal error",
     ],
   },
+  {
+    method: "POST",
+    path: "/api/webhooks",
+    auth: "Clerk session (Business plan — webhooks feature)",
+    desc: "Register a team webhook endpoint. Secret is auto-generated (32-byte hex) when omitted and returned exactly once on create.",
+    request: `{
+  "url": "https://example.com/hooks/gauge",
+  "secret": "optional-signing-secret",
+  "events": ["call.analyzed"]  // subset of call.created, call.analyzed, call.deleted
+}`,
+    response: `{
+  "id": "wh_abc123",
+  "url": "https://example.com/hooks/gauge",
+  "events": ["call.analyzed"],
+  "hasSecret": true,
+  "secret": "returned-once-on-create"
+}`,
+    errors: [
+      "400 url required / must start with https://",
+      "400 events must be a subset of [call.created, call.analyzed, call.deleted]",
+      "400 Webhooks require a team workspace",
+      "401 Unauthorized",
+      "403 Webhooks are a Business plan feature",
+      "500 Internal error",
+    ],
+  },
+  {
+    method: "POST",
+    path: "/api/cron/webhook-dispatch",
+    auth: "Bearer CRON_SECRET (server cron only)",
+    desc: "Dispatch up to 20 pending/retrying webhook deliveries due for retry. Retries with 5s timeout + HMAC signature, backoff, max 8 attempts.",
+    response: `{
+  "processed": 20,
+  "delivered": 18,
+  "failed": 2
+}`,
+    errors: [
+      "401 Unauthorized (missing or invalid CRON_SECRET)",
+      "500 CRON_SECRET not configured",
+    ],
+  },
 ];
 
 const SCOPES = [
