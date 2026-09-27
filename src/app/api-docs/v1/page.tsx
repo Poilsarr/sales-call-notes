@@ -138,6 +138,55 @@ const ENDPOINTS = [
       "500 CRON_SECRET not configured",
     ],
   },
+  {
+    method: "POST",
+    path: "/api/v1/bots",
+    auth: "Bearer cn_live_… (requires read_write scope)",
+    desc: "Dispatch a meeting bot via paste-a-link. Without RECALL_API_KEY the session is stored as pending_manual; with a key the bot joins and a meeting.summary_ready event is enqueued on completion.",
+    request: `{
+  "meetingUrl": "https://meet.google.com/abc-defg-hij",
+  "title": "Acme discovery"
+}`,
+    response: `{
+  "id": "bot_xyz",
+  "status": "pending",
+  "mode": "recall",
+  "meetingUrl": "https://meet.google.com/abc-defg-hij",
+  "platform": "googleMeet"
+}`,
+    errors: [
+      "401 Unauthorized",
+      "403 Insufficient scope (need read_write)",
+      "400 INVALID_MEETING_URL",
+      "429 Rate limit exceeded (with Retry-After)",
+      "502 BOT_DISPATCH_FAILED",
+    ],
+  },
+  {
+    method: "POST",
+    path: "/api/slack/digest",
+    auth: "Clerk session (team workspace required)",
+    desc: "Post a per-meeting digest (summary + action items + health score) to the team's Slack channel. When callId is provided, the caller's access is verified with the same IDOR guard as POST /api/slack.",
+    request: `{
+  "title": "Acme discovery — 2026-09-27",
+  "summary": "Agreed on pilot scope…",
+  "actionItems": ["Send proposal by Friday"],
+  "healthScore": 82,
+  "callId": "call_xyz"
+}`,
+    response: `{
+  "delivered": true,
+  "channel": "#general"
+}`,
+    errors: [
+      "400 title required",
+      "400 team workspace required",
+      "401 Unauthorized",
+      "403 Forbidden (call belongs to another team)",
+      "404 Call not found (when callId provided)",
+      "500 Slack digest failed",
+    ],
+  },
 ];
 
 const SCOPES = [

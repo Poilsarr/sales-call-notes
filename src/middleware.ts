@@ -19,6 +19,7 @@ const isPublicApi = createRouteMatcher([
   "/api/webhooks/hubspot",
   "/api/webhooks/salesforce",
   "/api/webhooks/clerk",
+  "/api/webhooks/recall",
   "/api/paddle/webhook",
   "/api/cron/(.*)",
   "/api/health",

@@ -457,3 +457,22 @@ model WebhookDelivery {
   @@index([status, nextRetryAt])
   @@index([endpointId])
 }
+
+model BotSession {
+  id            String   @id @default(cuid())
+  teamId        String
+  userId        String
+  meetingUrl    String
+  platform      String   @default("unknown")
+  status        String   @default("pending")
+  recallBotId   String?
+  title         String?
+  consentShown  Boolean  @default(false)
+  transcriptUrl String?
+  error         String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@index([teamId])
+  @@index([status])
+}
