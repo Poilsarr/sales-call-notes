@@ -1,3 +1,4 @@
+import Image from "next/image";
 import { TEAM_MEMBERS, ADVISORY_NOTE } from "@/lib/team";
 
 /**
@@ -36,12 +37,22 @@ export function TeamShowcase() {
           {TEAM_MEMBERS.map((m) => (
             <li key={m.role} className="doppel-outer">
               <div className="doppel-inner p-6 sm:p-7 h-full flex items-start gap-4">
-                <span
-                  aria-hidden
-                  className="w-11 h-11 shrink-0 rounded-full bg-[#F26522]/10 text-[#C94F17] flex items-center justify-center text-[12px] font-bold tracking-tight"
-                >
-                  {m.initials}
-                </span>
+                {m.photo ? (
+                  <Image
+                    src={m.photo}
+                    alt={m.name}
+                    width={44}
+                    height={44}
+                    className="w-11 h-11 shrink-0 rounded-full object-cover"
+                  />
+                ) : (
+                  <span
+                    aria-hidden
+                    className="w-11 h-11 shrink-0 rounded-full bg-[#F26522]/10 text-[#C94F17] flex items-center justify-center text-[12px] font-bold tracking-tight"
+                  >
+                    {m.initials}
+                  </span>
+                )}
                 <span className="min-w-0">
                   <span className="block text-[11px] uppercase tracking-[0.16em] text-gray-600 font-medium">
                     {m.role}

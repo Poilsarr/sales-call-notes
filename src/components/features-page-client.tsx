@@ -199,9 +199,74 @@ function ComparisonSection() {
   );
 }
 
+export const FEATURES_FAQ: { q: string; a: string }[] = [
+  {
+    q: "Can I migrate from Otter.ai or Fireflies.ai?",
+    a: "Yes. Export your MP3s from your old tool and upload them in bulk — no workflow change, no bot to install. Your HubSpot or Salesforce sync carries over on Pro.",
+  },
+  {
+    q: "What languages do you support?",
+    a: "Gauge auto-detects the spoken language on every call, built on Whisper Large V3. No per-language setup or extra charge.",
+  },
+  {
+    q: "Do you train AI models on my calls?",
+    a: "No. Your audio, transcripts, and summaries are never used to train third-party models. We use hosted inference and do not fine-tune on your data.",
+  },
+  {
+    q: "How does the competitor radar work?",
+    a: "Tell Gauge which rivals to watch. When a rival name is mentioned on a call, you get a real-time Slack ping plus a battlecard push with talk tracks — surfaced across calls in trends.",
+  },
+  {
+    q: "What do the free minutes include?",
+    a: "300 transcription minutes per month, forever, no credit card. Every minute includes speaker labels, summaries, and action items — nothing held back.",
+  },
+];
+
+export function FeaturesFaqSection() {
+  return (
+    <section id="faq" className="pb-16 sm:pb-20 px-5 sm:px-8 lg:px-12">
+      <div className="max-w-3xl mx-auto">
+        <div className="text-center mb-10">
+          <div className="eyebrow inline-flex items-center gap-2 mb-4">
+            <Zap size={12} /> Frequently asked
+          </div>
+          <h2 className="text-[clamp(1.5rem,4vw,2.5rem)] font-medium leading-[1.1] tracking-[-0.02em]">
+            Features questions, answered
+          </h2>
+        </div>
+        <div>
+          {FEATURES_FAQ.map((item, i) => (
+            <div key={i} className="border-b border-gray-200">
+              <details className="group py-5">
+                <summary className="flex items-center justify-between cursor-pointer text-left gap-4 list-none">
+                  <span className="text-[14px] font-medium text-gray-900">{item.q}</span>
+                  <span className="shrink-0 w-6 h-6 rounded-full bg-gray-100 flex items-center justify-center text-gray-600 group-open:rotate-45 transition-transform">
+                    <span aria-hidden className="text-[16px] leading-none">+</span>
+                  </span>
+                </summary>
+                <p className="pt-3 text-[13px] text-gray-600 leading-relaxed">{item.a}</p>
+              </details>
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
 export default function FeaturesPageClient() {
   const { isSignedIn } = useUser();
   const heroRef = useRef<HTMLDivElement>(null);
+
+  const featuresFaqJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    mainEntity: FEATURES_FAQ.map((f) => ({
+      "@type": "Question",
+      name: f.q,
+      acceptedAnswer: { "@type": "Answer", text: f.a },
+    })),
+  };
 
   return (
     <>
@@ -257,6 +322,8 @@ export default function FeaturesPageClient() {
 
       <ComparisonSection />
 
+      <FeaturesFaqSection />
+
       <section className="pb-16 sm:pb-20 lg:pb-28 px-5 sm:px-8 lg:px-12">
         <div className="max-w-[1440px] mx-auto">
           <div className="doppel-outer group">
@@ -307,6 +374,10 @@ export default function FeaturesPageClient() {
       </section>
 
       <StickyMarketingCta label="Start with 300 free minutes/mo" href="/sign-up" cta="Start free" />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(featuresFaqJsonLd) }}
+      />
     </main>
     </>
   );

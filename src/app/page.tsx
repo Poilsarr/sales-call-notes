@@ -1,9 +1,11 @@
 import Link from "next/link";
 import Nav from "@/components/nav";
 import SocialProof from "@/components/social-proof";
+import PersonasTabs from "@/components/personas-tabs";
 import RoiCalculator from "@/components/roi-calculator";
 import HowItWorks from "@/components/how-it-works";
 import Differentiators from "@/components/differentiators";
+import VsTeaser from "@/components/vs-teaser";
 import UseCases from "@/components/use-cases";
 import FinalCta from "@/components/final-cta";
 import { HeroCTA } from "@/components/hero-cta";
@@ -15,8 +17,10 @@ import { TeamShowcase } from "@/components/team-showcase";
 import { WhoWeAre } from "@/components/who-we-are";
 import StickyMarketingCta from "@/components/sticky-marketing-cta";
 import ProblemSection from "@/components/problem-section";
-import ProofStrip from "@/components/proof-strip";
+import TrustStrip from "@/components/trust-strip";
 import LiveProofStrip from "@/components/live-proof-strip";
+import { ProductVisualsSection } from "@/components/product-visuals-section";
+import RadarMoat from "@/components/radar-moat";
 import { HOMEPAGE_COPY } from "@/lib/homepage-copy";
 import { Crosshair, Upload, BarChart3, Shield, Check, ArrowRight, Play } from "lucide-react";
 
@@ -140,11 +144,14 @@ export default function Home() {
       {/* PROOF STRIP + PROBLEM — FRONTPAGE-PITCH-PLAN §2-3 (Uber-deck slides 2-3).
           Rendered directly below the hero; sections 5-9 below are untouched. */}
       <LiveProofStrip />
-      <ProofStrip />
+      <TrustStrip />
       <ProblemSection />
 
       {/* TEAM — frontal: trust right after the pitch */}
       <TeamShowcase />
+
+      {/* PRODUCT VISUALS — photo-real proof right after the pitch+trust unit */}
+      <ProductVisualsSection />
 
       {/* CAPABILITIES */}
       <section data-track-section="capabilities" className="bg-white pt-16 sm:pt-20 lg:pt-28 pb-16 sm:pb-20 lg:pb-28 border-t border-gray-200">
@@ -171,6 +178,9 @@ export default function Home() {
           </div>
         </div>
       </section>
+
+      {/* RADAR MOAT — dark band breaking into the film wedge */}
+      <RadarMoat />
 
       {/* COMPETITIVE INTEL DEMO — live alert feed.
           Stacked halves (HOMEPAGE-V2 shell): copy header top, film middle,
@@ -286,6 +296,7 @@ export default function Home() {
 
       {/* WHO IT'S FOR (social proof — honest, no fake brand names) */}
       <SocialProof />
+      <PersonasTabs />
 
       <WhoWeAre />
 
@@ -293,6 +304,7 @@ export default function Home() {
       <HowItWorks />
 
       <Differentiators />
+      <VsTeaser />
       <UseCases />
 
       {/* ROI CALCULATOR (honest math, all inputs user-controlled) */}

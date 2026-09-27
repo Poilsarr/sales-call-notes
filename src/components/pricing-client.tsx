@@ -273,6 +273,16 @@ export default function PricingClient({
     [checkingOut, clerkLoaded, isSignedIn, user, environment, clientToken, priceIdForCycle]
   );
 
+  const faqJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    mainEntity: FAQ.map((f) => ({
+      "@type": "Question",
+      name: f.q,
+      acceptedAnswer: { "@type": "Answer", text: f.a },
+    })),
+  };
+
   return (
     <main id="main" className="flex-1 bg-white text-gray-900">
       {/* Hero — two-column layout matching the home page. Left: copy + billing
@@ -747,6 +757,10 @@ export default function PricingClient({
 
       <ExitIntentModal />
       <StickyPricingCta />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(faqJsonLd) }}
+      />
     </main>
   );
 }
