@@ -65,6 +65,17 @@ export default function SocialProof() {
           ))}
         </div>
 
+        {/* Honest beta line — no logos to show yet (PR #42: no fake customers) */}
+        <div className="mb-10 rounded-xl border border-gray-200 bg-white p-4 text-center sm:text-left">
+          <p className="text-[13px] text-gray-600">
+            <span className="font-medium text-gray-900">
+              12 beta teams · building in open.
+            </span>{" "}
+            No customer logos to show yet — just real calls processed and real
+            beta feedback.
+          </p>
+        </div>
+
         {/* Beta tester quote */}
         <div className="mb-10 max-w-2xl">
           <div className="rounded-2xl border border-gray-200 bg-gray-50 p-6 sm:p-8 relative">

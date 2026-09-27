@@ -53,12 +53,19 @@ const ROWS: {
 ];
 
 const BRANDS = [
-  { src: "/brand/hubspot.svg", alt: "HubSpot" },
-  { src: "/brand/salesforce.svg", alt: "Salesforce" },
-  { src: "/brand/slack.png", alt: "Slack" },
-  { src: "/brand/google-meet.svg", alt: "Google Meet" },
-  { src: "/brand/zoom.svg", alt: "Zoom" },
-  { src: "/brand/chrome.svg", alt: "Chrome" },
+  { src: "/brand/hubspot.svg", alt: "HubSpot", status: "Live" },
+  { src: "/brand/salesforce.svg", alt: "Salesforce", status: "Live" },
+  { src: "/brand/slack.png", alt: "Slack", status: "Live" },
+  { src: "/brand/google-meet.svg", alt: "Google Meet", status: "Live" },
+  { src: "/brand/zoom.svg", alt: "Zoom", status: "Coming Soon" },
+  { src: "/brand/chrome.svg", alt: "Chrome", status: "Live" },
+  { src: "/brand/teams.svg", alt: "Microsoft Teams", status: "Live" },
+  {
+    src: "/brand/google-calendar.svg",
+    alt: "Google Calendar",
+    status: "Live",
+  },
+  { src: "/brand/outlook.svg", alt: "Outlook", status: "Coming Soon" },
 ];
 
 /**
@@ -163,15 +170,28 @@ export default function Differentiators() {
           </p>
           <div className="flex flex-wrap items-center justify-center gap-x-8 gap-y-4">
             {BRANDS.map((b) => (
-              <Image
+              <span
                 key={b.alt}
-                src={b.src}
-                alt={b.alt}
-                width={96}
-                height={28}
-                className="h-7 w-auto opacity-50 grayscale hover:opacity-80 hover:grayscale-0 transition"
-                loading="lazy"
-              />
+                className="inline-flex flex-col items-center gap-1.5"
+              >
+                <Image
+                  src={b.src}
+                  alt={b.alt}
+                  width={96}
+                  height={28}
+                  className="h-7 w-auto opacity-50 grayscale hover:opacity-80 hover:grayscale-0 transition"
+                  loading="lazy"
+                />
+                <span
+                  className={`text-[10px] font-medium px-2.5 py-0.5 rounded-full ${
+                    b.status === "Live"
+                      ? "bg-green-100 text-green-700"
+                      : "bg-yellow-100 text-yellow-700"
+                  }`}
+                >
+                  {b.status}
+                </span>
+              </span>
             ))}
           </div>
         </div>

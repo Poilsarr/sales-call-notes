@@ -15,6 +15,8 @@ export interface TeamMember {
   focus: string;
   /** 1–2 initials rendered in the avatar circle. */
   initials: string;
+  /** Optional headshot path. When undefined, initials fallback renders. */
+  photo?: string;
 }
 
 export const TEAM_MEMBERS: TeamMember[] = [
