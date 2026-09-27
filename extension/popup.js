@@ -146,6 +146,21 @@ el("viewHistory").addEventListener("click", () => {
   chrome.tabs.create({ url: `${APP_BASE_URL}/app/calls` });
 });
 
+el("openPanel").addEventListener("click", async () => {
+  // Side panel hosts the Part 3B recorder (Bearer key + Record/Stop/Send).
+  try {
+    if (chrome.sidePanel?.open) {
+      const currentWindow = await chrome.windows.getCurrent();
+      await chrome.sidePanel.open({ windowId: currentWindow.id });
+      window.close();
+      return;
+    }
+  } catch (error) {
+    console.warn("[Gauge] sidePanel.open failed, falling back to tab", error);
+  }
+  chrome.tabs.create({ url: chrome.runtime.getURL("sidepanel.html") });
+});
+
 el("signInBtn").addEventListener("click", () => {
   chrome.tabs.create({ url: buildSignInUrl("/app/record?source=extension") });
 });

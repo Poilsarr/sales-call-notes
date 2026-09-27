@@ -2,9 +2,24 @@
   "manifest_version": 3,
   "name": "Gauge - Meeting Notes",
   "version": "1.0.0",
-  "description": "Automatically capture Google Meet transcripts and generate AI-powered sales notes.",
-  "permissions": ["storage", "identity", "activeTab", "cookies", "alarms"],
-  "host_permissions": ["https://meet.google.com/*", "https://usegauge.vercel.app/*"],
+  "description": "Capture meeting captions + audio (on your Record click) and generate AI-powered sales notes.",
+  "_review_notes": [
+    "PERMISSION storage: persists caption buffer + upload state locally (chrome.storage.local) so a closed tab never loses captions.",
+    "PERMISSION tabCapture: captures the meeting TAB audio stream ONLY after the user clicks Record in the side panel. Never auto-starts; stream is released on Stop.",
+    "PERMISSION offscreen: hosts the MediaRecorder (32kbps Opus) in an offscreen document because MV3 service workers die after ~30s and cannot hold a MediaStream. Created lazily on first Record click, closed on Stop.",
+    "PERMISSION sidePanel: hosts the recorder UI (paste Bearer key, Record/Stop/Send, recent calls).",
+    "PERMISSION alarms: retries the captions finalize POST after the service worker restarts (SW 30s death respected - no setTimeout chains).",
+    "HOST meet.google.com / teams.microsoft.com / *.zoom.us: meeting pages where caption scraping + tab audio capture run, and only there.",
+    "HOST https://usegauge.vercel.app/* (APP_ORIGIN in shared.js): Gauge API - /api/upload-url, /api/analyze, /api/v1/calls with Bearer cn_live_/cn_test_.",
+    "REMOVED vs 1.0.0: identity, activeTab, cookies dropped - auth is now a pasted Bearer key kept in chrome.storage.session (memory-only, never local)."
+  ],
+  "permissions": ["storage", "tabCapture", "offscreen", "sidePanel", "alarms"],
+  "host_permissions": [
+    "https://meet.google.com/*",
+    "https://teams.microsoft.com/*",
+    "https://*.zoom.us/*",
+    "https://usegauge.vercel.app/*"
+  ],
   "action": {
     "default_popup": "popup.html",
     "default_icon": {
@@ -13,13 +28,20 @@
       "128": "icon128.png"
     }
   },
+  "side_panel": {
+    "default_path": "sidepanel.html"
+  },
   "background": {
     "service_worker": "background.js",
     "type": "module"
   },
   "content_scripts": [
     {
-      "matches": ["https://meet.google.com/*"],
+      "matches": [
+        "https://meet.google.com/*",
+        "https://teams.microsoft.com/*",
+        "https://*.zoom.us/*"
+      ],
       "js": ["content.js"],
       "run_at": "document_idle"
     }

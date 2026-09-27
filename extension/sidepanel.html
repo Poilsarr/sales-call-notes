@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      min-height: 100vh;
+      padding: 16px;
+      font-family: -apple-system, BlinkMacSystemFont, "Inter", sans-serif;
+      background: #0a0a0a;
+      color: #fff;
+    }
+    .logo { display: flex; align-items: center; gap: 8px; margin-bottom: 4px; }
+    .logo-icon { width: 20px; height: 20px; background: #6366f1; border-radius: 4px; transform: rotate(45deg); }
+    .logo-text { font-size: 14px; font-weight: 500; }
+    .hint { font-size: 11px; color: rgba(255,255,255,0.45); margin-bottom: 16px; }
+    .hint a { color: #a5b4fc; }
+    .card {
+      padding: 12px; border-radius: 12px;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.1);
+      margin-bottom: 12px;
+    }
+    .label { font-size: 13px; font-weight: 600; margin-bottom: 8px; }
+    .sub { font-size: 11px; color: rgba(255,255,255,0.45); margin-top: 8px; word-break: break-word; }
+    .keyrow { display: flex; gap: 8px; }
+    input[type="password"] {
+      flex: 1; min-width: 0;
+      padding: 9px 10px; border-radius: 10px;
+      border: 1px solid rgba(255,255,255,0.15);
+      background: rgba(255,255,255,0.06); color: #fff;
+      font-size: 12px; font-family: ui-monospace, monospace;
+    }
+    .btn {
+      padding: 9px 12px; border-radius: 10px; border: none;
+      font-size: 12px; font-weight: 600; cursor: pointer; transition: all 0.2s;
+      white-space: nowrap;
+    }
+    .btn-primary { background: #6366f1; color: white; }
+    .btn-primary:hover { background: #4f46e5; }
+    .btn-danger { background: #dc2626; color: white; }
+    .btn-danger:hover { background: #b91c1c; }
+    .btn-secondary { background: rgba(255,255,255,0.1); color: white; }
+    .btn-secondary:hover { background: rgba(255,255,255,0.15); }
+    .btn:disabled { opacity: 0.45; cursor: not-allowed; }
+    .btnrow { display: flex; gap: 8px; margin-top: 8px; }
+    .btnrow .btn { flex: 1; padding: 11px 8px; }
+    .dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 6px; vertical-align: 1px; }
+    .dot-idle { background: #6b7280; }
+    .dot-rec { background: #ef4444; animation: blink 1.2s infinite; }
+    .dot-ok { background: #22c55e; }
+    .dot-err { background: #ef4444; }
+    @keyframes blink { 50% { opacity: 0.35; } }
+    @media (prefers-reduced-motion: reduce) { .dot-rec { animation: none; } }
+    ul.calls { list-style: none; display: flex; flex-direction: column; gap: 8px; }
+    ul.calls li a {
+      display: block; padding: 9px 10px; border-radius: 10px;
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(255,255,255,0.08);
+      color: #fff; text-decoration: none; font-size: 12px;
+    }
+    ul.calls li a:hover { background: rgba(255,255,255,0.08); }
+    ul.calls .meta { font-size: 10px; color: rgba(255,255,255,0.4); margin-top: 3px; }
+    .footer { margin-top: 16px; font-size: 10px; color: rgba(255,255,255,0.3); }
+  </style>
+</head>
+<body>
+  <div class="logo">
+    <div class="logo-icon"></div>
+    <div class="logo-text">Gauge Recorder</div>
+  </div>
+  <p class="hint">
+    Paste an API key (<code>cn_live_…</code> / <code>cn_test_…</code>) minted via
+    <code>POST /api/v1/keys/exchange</code> — see the
+    <a id="docsLink" href="#">API docs</a>. The key stays in session memory only.
+  </p>
+
+  <div class="card" aria-label="API key">
+    <div class="label">API key</div>
+    <div class="keyrow">
+      <input id="apiKey" type="password" autocomplete="off" spellcheck="false"
+        placeholder="cn_live_…" aria-label="Bearer API key" />
+      <button class="btn btn-secondary" id="saveKey">Save</button>
+    </div>
+    <div class="sub" id="keyStatus">No key saved for this session.</div>
+  </div>
+
+  <div class="card" aria-label="Recording">
+    <div class="label"><span class="dot dot-idle" id="recDot"></span><span id="recText">Idle</span></div>
+    <div class="btnrow">
+      <button class="btn btn-primary" id="recordBtn">Record</button>
+      <button class="btn btn-danger" id="stopBtn" disabled>Stop</button>
+      <button class="btn btn-secondary" id="sendBtn" disabled>Send</button>
+    </div>
+    <div class="sub" id="recStatus">Open a Meet / Teams / Zoom tab, then press Record.</div>
+  </div>
+
+  <div class="card" aria-label="Recent calls">
+    <div class="label">Recent calls</div>
+    <ul class="calls" id="callsList"><li class="sub">Save a key to load calls.</li></ul>
+  </div>
+
+  <div class="footer">Tab audio is captured only while recording. Captions stream from the meeting tab.</div>
+
+  <script type="module" src="sidepanel.js"></script>
+</body>
+</html>

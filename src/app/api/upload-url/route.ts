@@ -1,8 +1,7 @@
 import { NextResponse } from 'next/server';
-import { auth } from '@clerk/nextjs/server';
 import crypto from 'crypto';
 import { issueSignedToken, presignUrl } from '@vercel/blob';
-import { getUserByClerkId } from '@/lib/get-user';
+import { resolveRequestUser } from '@/lib/resolve-request-user';
 import { getPlan } from '@/lib/plans';
 
 // ponytail: per-tier file size limits (MB). Free gets 30MB — covers a 30-min call at 128kbps MP3.
@@ -24,12 +23,26 @@ export async function POST(req: Request) {
   const storeId = process.env.BLOB_STORE_ID;
 
   try {
-    const { userId: clerkUserId } = await auth();
-    if (!clerkUserId) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    // Part 3A dual-auth: Bearer API key first, Clerk session fallback.
+    // Cookie flow is preserved — resolveRequestUser only diverges when a
+    // valid Bearer key is present.
+    const resolved = await resolveRequestUser(req, 'POST');
+    if (!resolved.ok) {
+      return NextResponse.json(
+        { error: resolved.error },
+        {
+          status: resolved.status,
+          ...(resolved.retryAfterSec
+            ? { headers: { 'Retry-After': String(resolved.retryAfterSec) } }
+            : {}),
+        },
+      );
     }
 
-    const user = await getUserByClerkId(clerkUserId);
+    const user = resolved.user;
+    // Blob-path namespace: Clerk id for sessions (unchanged), db user id
+    // for API keys (keys have no Clerk id).
+    const namespace = resolved.authType === 'api_key' ? user.id : (resolved.clerkUserId ?? user.id);
     const plan = getPlan(user.plan || 'free');
     const maxFileSizeMB = MAX_FILE_SIZE_MB[plan.tier] || 500;
 
@@ -72,7 +85,7 @@ export async function POST(req: Request) {
     // ponytail: omission is intentional — see commit message.
 
     const ext = (filename || 'recording.webm').split('.').pop() || 'webm';
-    pathname = `uploads/${clerkUserId}/${crypto.randomUUID()}.${ext}`;
+    pathname = `uploads/${namespace}/${crypto.randomUUID()}.${ext}`;
 
     if (!storeId) {
       return NextResponse.json({ error: 'BLOB_STORE_ID not set' }, { status: 500 });

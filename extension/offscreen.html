@@ -1,0 +1,13 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <title>Gauge Audio Capture (offscreen)</title>
+</head>
+<body>
+  <!-- Offscreen host for the meeting-audio MediaRecorder. MV3 service
+       workers die after ~30s and cannot hold a MediaStream, so recording
+       lives here. No UI is ever shown. -->
+  <script type="module" src="offscreen.js"></script>
+</body>
+</html>

@@ -1,5 +1,4 @@
 import { NextResponse } from 'next/server';
-import { auth } from '@clerk/nextjs/server';
 import prisma from '@/lib/prisma';
 import { AudioPreprocessingService } from '@/services/ai/audio-preprocessing';
 import { Correction } from '@/types';
@@ -11,7 +10,7 @@ import { SlackService } from "@/services/slack";
 import { WebhookService } from "@/services/webhooks";
 import { sendTranscriptReadyEmail } from "@/services/email";
 import { parseRemoveFillers } from '@/lib/transcription-options';
-import { getUserByClerkId } from '@/lib/get-user';
+import { resolveRequestUser } from '@/lib/resolve-request-user';
 import { getByokKeys } from '@/lib/byok-resolver';
 import { AnalyticsService } from '@/services/ai/analytics';
 import { PIIRedactorService } from '@/services/ai/pii-redactor';
@@ -86,8 +85,21 @@ export async function POST(req: Request) {
   let persistedCallId: string | null = null;
 
   try {
-    const { userId: clerkUserId } = await auth();
-    if (!clerkUserId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    // Part 3A dual-auth: Bearer API key first, Clerk session fallback.
+    // Downstream logic (user.teamId, BYOK, plan caps) is unchanged — only
+    // the auth preamble resolves the user differently.
+    const resolved = await resolveRequestUser(req, 'POST');
+    if (!resolved.ok) {
+      return NextResponse.json(
+        { error: resolved.error },
+        {
+          status: resolved.status,
+          ...(resolved.retryAfterSec
+            ? { headers: { 'Retry-After': String(resolved.retryAfterSec) } }
+            : {}),
+        },
+      );
+    }
 
     console.log('Analyze route called');
 
@@ -104,7 +116,8 @@ export async function POST(req: Request) {
 
     // Resolved once, before the branches: the multipart branch needs the
     // plan tier to enforce the server-side size cap BEFORE writing the blob.
-    const user = await getUserByClerkId(clerkUserId);
+    // (Resolved by the dual-auth preamble above — same row either path.)
+    const user = resolved.user;
 
     if (isJson) {
       const body = await req.json();
