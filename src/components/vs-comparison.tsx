@@ -1,5 +1,8 @@
 import Link from "next/link";
 import Nav from "@/components/nav";
+import ProductVisualCard, {
+  type ProductVisualVariant,
+} from "@/components/product-visual-card";
 import { CheckCircle, X, ArrowRight, Sparkles, Shield, Zap } from "lucide-react";
 
 export type ComparisonRow = { label: string; us: string; them: string };
@@ -33,7 +36,13 @@ export type ComparisonData = {
   faq: FaqItem[];
 };
 
-export function VsComparisonPage({ data }: { data: ComparisonData }) {
+export function VsComparisonPage({
+  data,
+  visualVariant = "transcript",
+}: {
+  data: ComparisonData;
+  visualVariant?: ProductVisualVariant;
+}) {
   const us = "Gauge";
   const them = data.competitorName;
   const lastUpdated = "July 2026";
@@ -67,7 +76,7 @@ export function VsComparisonPage({ data }: { data: ComparisonData }) {
           <div className="flex flex-wrap gap-3">
             <Link
               href="/sign-up"
-              className="group inline-flex items-center gap-2 bg-[#C94F17] hover:bg-[#b04011] text-white text-[13px] rounded-full pl-5 pr-2 py-2 transition-colors duration-300"
+              className="group inline-flex items-center gap-2 bg-[#F26522] hover:bg-[#e05a1a] text-white text-[13px] rounded-full pl-5 pr-2 py-2 transition-colors duration-300"
             >
               <span className="flex flex-col overflow-hidden h-[20px]">
                 <span className="transition-transform duration-500 ease-[cubic-bezier(0.25,0.1,0.25,1)] group-hover:-translate-y-1/2 leading-[20px]">
@@ -84,6 +93,12 @@ export function VsComparisonPage({ data }: { data: ComparisonData }) {
               className="inline-flex items-center bg-white border border-gray-300 hover:border-gray-900 text-gray-900 text-[13px] rounded-full px-5 py-2 transition-colors duration-300"
             >
               See full pricing
+            </Link>
+            <Link
+              href="/demo"
+              className="inline-flex items-center bg-white border border-gray-300 hover:border-gray-900 text-gray-900 text-[13px] rounded-full px-5 py-2 transition-colors duration-300"
+            >
+              See live demo
             </Link>
           </div>
         </div>
@@ -125,6 +140,21 @@ export function VsComparisonPage({ data }: { data: ComparisonData }) {
                 </table>
               </div>
             </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Product proof */}
+      <section className="pb-16 px-5 sm:px-8 lg:px-12">
+        <div className="max-w-[1100px] mx-auto">
+          <div className="max-w-[560px] mx-auto">
+            <ProductVisualCard
+              eyebrow="Product proof"
+              title="Upload a recording — get BANT, MEDDIC, and action items"
+              body="Every plan runs the same analysis: transcript with speaker labels, action items with owners and deadlines, and CRM sync. No bot joins your meeting."
+              footer={`Product mock — ${visualVariant} view`}
+              variant={visualVariant}
+            />
           </div>
         </div>
       </section>
@@ -275,6 +305,20 @@ export function VsComparisonPage({ data }: { data: ComparisonData }) {
                   is GDPR-ready and yours to delete. {them} requires a bot in the room — we
                   don&apos;t. You upload the recording, you stay in control.
                 </p>
+                <div className="mt-4 flex flex-wrap gap-2 font-mono text-[11px] text-gray-600">
+                  <span className="inline-flex items-center rounded-full border border-gray-200 bg-gray-50 px-3 py-1">
+                    No auto-join
+                  </span>
+                  <span className="inline-flex items-center rounded-full border border-gray-200 bg-gray-50 px-3 py-1">
+                    No training on audio
+                  </span>
+                  <span className="inline-flex items-center rounded-full border border-gray-200 bg-gray-50 px-3 py-1">
+                    GDPR-ready
+                  </span>
+                  <span className="inline-flex items-center rounded-full border border-gray-200 bg-gray-50 px-3 py-1">
+                    Delete anytime
+                  </span>
+                </div>
               </div>
             </div>
           </div>
@@ -322,7 +366,7 @@ export function VsComparisonPage({ data }: { data: ComparisonData }) {
                 </p>
                 <Link
                   href="/sign-up"
-                  className="group inline-flex items-center gap-2 bg-[#C94F17] hover:bg-[#b04011] text-white text-[13px] rounded-full pl-5 pr-2 py-2 transition-colors duration-300"
+                  className="group inline-flex items-center gap-2 bg-[#F26522] hover:bg-[#e05a1a] text-white text-[13px] rounded-full pl-5 pr-2 py-2 transition-colors duration-300"
                 >
                   <span className="flex flex-col overflow-hidden h-[20px]">
                     <span className="transition-transform duration-500 ease-[cubic-bezier(0.25,0.1,0.25,1)] group-hover:-translate-y-1/2 leading-[20px]">

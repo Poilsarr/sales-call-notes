@@ -21,6 +21,14 @@ describe("/api-docs/v1 page", () => {
     expect(CONTENT).toContain('path: "/api/v1/calls"');
   });
 
+  it("documents the 5 newer endpoints (webhooks/cron/bots/slack-digest/deal-score)", () => {
+    expect(CONTENT).toContain('path: "/api/webhooks"');
+    expect(CONTENT).toContain('path: "/api/cron/webhook-dispatch"');
+    expect(CONTENT).toContain('path: "/api/v1/bots"');
+    expect(CONTENT).toContain('path: "/api/slack/digest"');
+    expect(CONTENT).toContain('path: "/api/calls/[id]/deal-score"');
+  });
+
   it("shows both scopes (read, read_write)", () => {
     expect(CONTENT).toContain("read");
     expect(CONTENT).toContain("read_write");
