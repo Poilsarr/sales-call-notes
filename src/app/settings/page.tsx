@@ -21,6 +21,7 @@ import { Avatar } from "@/components/ui/avatar";
 import { getPlan, hasFeature, type FeatureId, type PlanTier } from "@/lib/plans";
 import { toast } from "sonner";
 import dynamic from "next/dynamic";
+import Link from "next/link";
 import {
   User,
   CreditCard,
@@ -329,6 +330,20 @@ function SettingsContent({ user }: { user: ReturnType<typeof useUser>["user"] })
                         </button>
                       </CardContent>
                     </Card>
+                  </div>
+                  <div className="mt-6 rounded-xl border border-white/10 bg-white/[0.03] p-4 flex items-center justify-between gap-4">
+                    <div>
+                      <p className="text-sm font-medium text-white">Retention settings</p>
+                      <p className="text-xs text-white/50 mt-1">
+                        Effective defaults (90-day audio · 365-day transcripts) and per-meeting purge.
+                      </p>
+                    </div>
+                    <Link
+                      href="/settings/retention"
+                      className="shrink-0 px-4 py-2 rounded-full bg-white/5 border border-white/10 text-white/70 text-xs font-medium hover:bg-white/10 hover:text-white transition"
+                    >
+                      Open retention →
+                    </Link>
                   </div>
                 </Section>
               </>

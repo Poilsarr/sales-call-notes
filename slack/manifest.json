@@ -1,0 +1,51 @@
+{
+  "_metadata": {
+    "major_version": 2,
+    "minor_version": 1
+  },
+  "display_information": {
+    "name": "Gauge",
+    "description": "Meeting recaps, action items, and health scores in Slack.",
+    "background_color": "#0F172A",
+    "long_description": "Gauge brings your sales-call intelligence into Slack: slash-command recaps and rich link unfurls for every meeting."
+  },
+  "features": {
+    "bot_user": {
+      "display_name": "Gauge",
+      "always_online": true
+    },
+    "slash_commands": [
+      {
+        "command": "/gauge",
+        "description": "Get a meeting recap in Slack",
+        "usage_hint": "recap <callId>",
+        "url": "<APP_URL>/api/slack/commands",
+        "should_escape": false
+      }
+    ],
+    "unfurl_domains": ["usegauge.vercel.app"]
+  },
+  "oauth_config": {
+    "redirect_urls": ["<APP_URL>/api/integrations/slack/callback"],
+    "scopes": {
+      "bot": [
+        "chat:write",
+        "chat:write.public",
+        "commands",
+        "links:read",
+        "links:write",
+        "users:read",
+        "im:write"
+      ]
+    }
+  },
+  "settings": {
+    "event_subscriptions": {
+      "request_url": "<APP_URL>/api/slack/events",
+      "bot_events": ["link_shared"]
+    },
+    "org_deploy_enabled": false,
+    "socket_mode_enabled": false,
+    "token_rotation_enabled": false
+  }
+}

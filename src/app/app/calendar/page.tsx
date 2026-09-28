@@ -4,6 +4,7 @@ import { useEffect, useState, useCallback } from 'react';
 import Link from 'next/link';
 import { Calendar, Clock, Users, Video, ExternalLink, RefreshCw, AlertCircle, CheckCircle2, Loader2, Plug } from 'lucide-react';
 import { toast } from 'sonner';
+import BotPanel from './bot-panel';
 
 interface CalendarEvent {
   id: string;
@@ -188,6 +189,8 @@ export default function CalendarPage() {
           })}
         </div>
       )}
+
+      <BotPanel />
 
       <div className="rounded-xl bg-zinc-900/40 border border-zinc-800 px-4 py-3 flex items-center justify-between">
         <p className="text-xs text-zinc-500">
