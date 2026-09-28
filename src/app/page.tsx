@@ -19,6 +19,9 @@ import StickyMarketingCta from "@/components/sticky-marketing-cta";
 import ProblemSection from "@/components/problem-section";
 import TrustStrip from "@/components/trust-strip";
 import LiveProofStrip from "@/components/live-proof-strip";
+import ObjectionTrio from "@/components/objection-trio";
+import PricingTeaser from "@/components/pricing-teaser";
+import SeoLinks from "@/components/seo-links";
 import { ProductVisualsSection } from "@/components/product-visuals-section";
 import RadarMoat from "@/components/radar-moat";
 import { HOMEPAGE_COPY } from "@/lib/homepage-copy";
@@ -135,20 +138,16 @@ export default function Home() {
         </div>
       </section>
 
-      <HeroEvidenceStack />
-
       {/* Scrub companion moved below the fold (HOMEPAGE-V2): hero-right is
           video only; these lines scrub it via the gauge:scrub event. */}
       <ScrubSummarySection />
+      <TrustStrip />
+
+      <HeroEvidenceStack />
 
       {/* PROOF STRIP + PROBLEM — FRONTPAGE-PITCH-PLAN §2-3 (Uber-deck slides 2-3).
           Rendered directly below the hero; sections 5-9 below are untouched. */}
-      <LiveProofStrip />
-      <TrustStrip />
       <ProblemSection />
-
-      {/* TEAM — frontal: trust right after the pitch */}
-      <TeamShowcase />
 
       {/* PRODUCT VISUALS — photo-real proof right after the pitch+trust unit */}
       <ProductVisualsSection />
@@ -179,8 +178,90 @@ export default function Home() {
         </div>
       </section>
 
+      {/* HOW IT WORKS — 4-step process from upload to CRM push */}
+      <HowItWorks />
+
       {/* RADAR MOAT — dark band breaking into the film wedge */}
       <RadarMoat />
+
+      <PersonasTabs />
+
+      <ObjectionTrio />
+
+      {/* WHO IT'S FOR (social proof — honest, no fake brand names) */}
+      <SocialProof />
+      <LiveProofStrip />
+
+      <Differentiators />
+      <VsTeaser />
+      <UseCases />
+
+      {/* ROI CALCULATOR (honest math, all inputs user-controlled) */}
+      <RoiCalculator />
+
+      <PricingTeaser />
+
+      {/* PRICING + CTA */}
+      <section data-track-section="pricing" className="bg-white pt-16 sm:pt-20 lg:pt-28 pb-16 sm:pb-20 lg:pb-28 border-t border-gray-200">
+        <div className="max-w-[1440px] mx-auto px-5 sm:px-8 lg:px-12">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-center">
+            <div>
+              <p className="text-[11px] uppercase tracking-[0.18em] text-gray-600 mb-3">Pricing</p>
+              <h2 className="text-[clamp(1.5rem,4vw,2.6rem)] font-medium leading-[1.1] tracking-[-0.02em] text-gray-900 mb-4">
+                Free 300 minutes a month. $9 flat when you scale — up to 5 seats, 1,200 minutes.
+              </h2>
+              <ul className="space-y-2 text-[14px] text-gray-600 mb-6">
+                {[
+                  "Unlimited uploads, 1,200 min/mo on Pro",
+                  "Competitive intel + Slack alerts from day one on Pro",
+                  "HubSpot + Salesforce CRM push, one click",
+                  "Cancel anytime. Annual available.",
+                ].map((line, i) => (
+                  <li key={i} className="flex items-start gap-2">
+                    <Check size={16} className="text-[#F26522] mt-0.5 shrink-0" />
+                    <span>{line}</span>
+                  </li>
+                ))}
+              </ul>
+              <div className="flex flex-col sm:flex-row gap-3">
+                <Link href="/pricing" className="inline-flex items-center gap-2 bg-[#F26522] hover:bg-[#e05a1a] text-white text-[13px] rounded-full pl-5 pr-2 py-2 w-fit">
+                  <span>See full pricing</span>
+                  <span className="w-7 h-7 bg-white rounded-full flex items-center justify-center">
+                    <ArrowRight size={14} className="text-[#F26522]" />
+                  </span>
+                </Link>
+                <Link href="/features" className="text-[13px] text-gray-600 hover:text-gray-900 font-medium self-center underline-offset-4 hover:underline">
+                  See all features →
+                </Link>
+              </div>
+            </div>
+            <div className="doppel-outer">
+              <div className="doppel-inner p-6 sm:p-8">
+                <div className="flex items-baseline gap-2 mb-2">
+                  <span className="text-4xl font-semibold tracking-tight">$9</span>
+                  <span className="text-gray-600 text-[14px]">/month per user</span>
+                </div>
+                <p className="text-[12px] text-gray-500 mb-6">Pro plan. Yearly = $7.50/mo.</p>
+                <div className="space-y-2 text-[13px]">
+                  {[
+                    "1,200 transcription minutes/mo",
+                    "Unlimited AI summaries",
+                    "HubSpot + Salesforce sync",
+                    "Competitive intelligence + Slack alerts",
+                    "Team workspace (up to 5)",
+                    "Priority support",
+                  ].map((f, i) => (
+                    <div key={i} className="flex items-center gap-2 text-gray-700">
+                      <Check size={14} className="text-[#F26522]" />
+                      <span>{f}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
 
       {/* COMPETITIVE INTEL DEMO — live alert feed.
           Stacked halves (HOMEPAGE-V2 shell): copy header top, film middle,
@@ -294,86 +375,15 @@ export default function Home() {
         </div>
       </section>
 
-      {/* WHO IT'S FOR (social proof — honest, no fake brand names) */}
-      <SocialProof />
-      <PersonasTabs />
+      {/* TEAM — frontal: trust right after the pitch */}
+      <TeamShowcase />
 
       <WhoWeAre />
 
-      {/* HOW IT WORKS — 4-step process from upload to CRM push */}
-      <HowItWorks />
-
-      <Differentiators />
-      <VsTeaser />
-      <UseCases />
-
-      {/* ROI CALCULATOR (honest math, all inputs user-controlled) */}
-      <RoiCalculator />
-
-      {/* PRICING + CTA */}
-      <section data-track-section="pricing" className="bg-white pt-16 sm:pt-20 lg:pt-28 pb-16 sm:pb-20 lg:pb-28 border-t border-gray-200">
-        <div className="max-w-[1440px] mx-auto px-5 sm:px-8 lg:px-12">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-center">
-            <div>
-              <p className="text-[11px] uppercase tracking-[0.18em] text-gray-600 mb-3">Pricing</p>
-              <h2 className="text-[clamp(1.5rem,4vw,2.6rem)] font-medium leading-[1.1] tracking-[-0.02em] text-gray-900 mb-4">
-                Free 300 minutes a month. $9 flat when you scale — up to 5 seats, 1,200 minutes.
-              </h2>
-              <ul className="space-y-2 text-[14px] text-gray-600 mb-6">
-                {[
-                  "Unlimited uploads, 1,200 min/mo on Pro",
-                  "Competitive intel + Slack alerts from day one on Pro",
-                  "HubSpot + Salesforce CRM push, one click",
-                  "Cancel anytime. Annual available.",
-                ].map((line, i) => (
-                  <li key={i} className="flex items-start gap-2">
-                    <Check size={16} className="text-[#F26522] mt-0.5 shrink-0" />
-                    <span>{line}</span>
-                  </li>
-                ))}
-              </ul>
-              <div className="flex flex-col sm:flex-row gap-3">
-                <Link href="/pricing" className="inline-flex items-center gap-2 bg-[#F26522] hover:bg-[#e05a1a] text-white text-[13px] rounded-full pl-5 pr-2 py-2 w-fit">
-                  <span>See full pricing</span>
-                  <span className="w-7 h-7 bg-white rounded-full flex items-center justify-center">
-                    <ArrowRight size={14} className="text-[#F26522]" />
-                  </span>
-                </Link>
-                <Link href="/features" className="text-[13px] text-gray-600 hover:text-gray-900 font-medium self-center underline-offset-4 hover:underline">
-                  See all features →
-                </Link>
-              </div>
-            </div>
-            <div className="doppel-outer">
-              <div className="doppel-inner p-6 sm:p-8">
-                <div className="flex items-baseline gap-2 mb-2">
-                  <span className="text-4xl font-semibold tracking-tight">$9</span>
-                  <span className="text-gray-600 text-[14px]">/month per user</span>
-                </div>
-                <p className="text-[12px] text-gray-500 mb-6">Pro plan. Yearly = $7.50/mo.</p>
-                <div className="space-y-2 text-[13px]">
-                  {[
-                    "1,200 transcription minutes/mo",
-                    "Unlimited AI summaries",
-                    "HubSpot + Salesforce sync",
-                    "Competitive intelligence + Slack alerts",
-                    "Team workspace (up to 5)",
-                    "Priority support",
-                  ].map((f, i) => (
-                    <div key={i} className="flex items-center gap-2 text-gray-700">
-                      <Check size={14} className="text-[#F26522]" />
-                      <span>{f}</span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
       {/* FINAL CTA — closing conversion touchpoint before footer */}
       <FinalCta />
+
+      <SeoLinks />
 
       {/* CHROME EXTENSION — for users who don't want to upload/record */}
       <section className="px-5 sm:px-8 lg:px-12 py-12 sm:py-16">
