@@ -27,17 +27,17 @@ export const featureContent: Record<number, FeatureContent> = {
     ],
   },
   2: {
-    summary: "Whisper Large V3, 98.2% on Switchboard. Handles accents, crosstalk, and bad phone audio.",
+    summary: "Whisper Large V3 with robust handling for accents, crosstalk, and phone audio.",
     bullets: [
       "Whisper Large V3 with custom domain adaptation",
-      "98.2% word accuracy on the Switchboard benchmark",
+      "Evaluated on Switchboard plus an internal sales-call sample; accuracy varies by audio quality",
       "Robust to accents, crosstalk, and bad phone audio",
       "Auto punctuation, capitalization, filler-word cleanup",
       "Timestamped segments down to the 100 ms level",
     ],
     specs: [
       { label: "Model", value: "Whisper Large V3 (Groq-hosted)" },
-      { label: "Languages", value: "99 supported, auto-detect default" },
+      { label: "Languages", value: "12 first-class languages, auto-detect default" },
       { label: "Latency", value: "~30s for a 10-minute call" },
       { label: "Output", value: "JSON, SRT, VTT, plain text" },
     ],
@@ -47,12 +47,12 @@ export const featureContent: Record<number, FeatureContent> = {
     ],
   },
   3: {
-    summary: "2-3 sentence recap with decisions and next steps. Tuned on 10k+ real B2B sales calls.",
+    summary: "2-3 sentence recap with decisions and next steps. Prompt-tuned on real B2B sales transcripts.",
     bullets: [
       "2-3 sentence recap of the full conversation",
       "Pulls out decisions, objections, and buying signals",
       "Next-steps section with clear ownership per item",
-      "Tuned on 10k+ B2B SaaS sales transcripts",
+      "Prompt-tuned on real B2B SaaS sales transcripts",
       "Executive summary mode available for managers",
     ],
     specs: [
@@ -83,7 +83,7 @@ export const featureContent: Record<number, FeatureContent> = {
     ],
     meta: [
       { label: "Powered by", value: "GPT-4o function calling" },
-      { label: "Coverage", value: "Catches 92% of items in eval set" },
+      { label: "Coverage", value: "Reviewed against an internal eval set; coverage varies by call style" },
     ],
   },
   5: {
@@ -92,7 +92,7 @@ export const featureContent: Record<number, FeatureContent> = {
       "Field-mapped templates for HubSpot, Salesforce, Teams",
       "Paste-ready formatting with the right line breaks",
       "Auto-attaches the call recording link and transcript",
-      "Two-way sync keeps CRM notes in step with Gauge",
+      "One-way push keeps CRM notes in step with Gauge; edits in Gauge don't auto-sync back",
       "Per-team custom templates with merge fields",
     ],
     specs: [
@@ -139,7 +139,7 @@ export const featureContent: Record<number, FeatureContent> = {
       { label: "Engine", value: "Pyannote 3.1 + custom fine-tune" },
       { label: "Max speakers", value: "10 per call, configurable higher" },
       { label: "Overlap", value: "Detected and split into segments" },
-      { label: "Accuracy", value: "DER 6.8% on the AMI benchmark" },
+      { label: "Accuracy", value: "Overlap-aware; accuracy varies by mic setup and overlap" },
     ],
     meta: [
       { label: "Powered by", value: "Pyannote.audio + speaker embeddings" },
@@ -167,27 +167,27 @@ export const featureContent: Record<number, FeatureContent> = {
     ],
   },
   9: {
-    summary: "AI runs in-browser by default. Audio and transcripts stay local, cloud is opt-in.",
+    summary: "Cloud processing by default with disclosed providers. Local-only option for regulated calls; never used to train models.",
     bullets: [
-      "Whisper runs locally via WebGPU when supported",
-      "Zero-upload mode for regulated industries like finance",
-      "Audio file is hashed before any opt-in cloud sync",
-      "Toggle cloud AI per call from the upload screen",
-      "Local-only badge on every card and transcript view",
+      "Processed by disclosed cloud providers by default, never used to train models",
+      "Opt-in local-only mode for regulated industries like finance",
+      "Export and deletion controls on every workspace",
+      "Toggle local-only per call from the upload screen",
+      "Processing location shown on every card and transcript view",
     ],
     specs: [
-      { label: "Default engine", value: "whisper.cpp on WebGPU or WASM" },
-      { label: "Hardware", value: "Apple Silicon, NVIDIA, AMD GPUs" },
-      { label: "Cloud sync", value: "Off by default, opt-in per call" },
-      { label: "Compliance", value: "GDPR and HIPAA-friendly default" },
+      { label: "Default", value: "Cloud processing, local-only opt-in" },
+      { label: "Local engine", value: "whisper.cpp on WebGPU or WASM" },
+      { label: "Cloud sync", value: "On by default, local-only per call" },
+      { label: "Compliance", value: "GDPR-friendly with deletion controls" },
     ],
     meta: [
-      { label: "Powered by", value: "whisper.cpp + WebLLM runtime" },
-      { label: "Fallback", value: "Cloud Whisper if local model missing" },
+      { label: "Powered by", value: "Groq-hosted Whisper + local whisper.cpp option" },
+      { label: "Fallback", value: "Local model when offline and supported" },
     ],
   },
   10: {
-    summary: "12 first-class, 99 supported. Auto-detects the spoken language, no menu to click.",
+    summary: "12 first-class languages. Auto-detects the spoken language, no menu to click.",
     bullets: [
       "EN, ES, FR, DE, PT, IT, NL, PL, JA, ZH, KO, AR first-class",
       "Auto-detects the spoken language per call",
@@ -197,7 +197,7 @@ export const featureContent: Record<number, FeatureContent> = {
     ],
     specs: [
       { label: "First-class", value: "EN, ES, FR, DE, PT, IT, NL, PL, JA, ZH, KO, AR" },
-      { label: "Total supported", value: "99 via Whisper multilingual" },
+      { label: "Total supported", value: "12 first-class; more via Whisper multilingual (accuracy varies)" },
       { label: "Detection", value: "First 30 seconds, confidence-scored" },
       { label: "Translation", value: "GPT-4o pass, opt-in per workspace" },
     ],
@@ -223,7 +223,7 @@ export const featureContent: Record<number, FeatureContent> = {
     ],
     meta: [
       { label: "Spec", value: "Documented at /api-docs/v1" },
-      { label: "SLA", value: "99.9% webhook delivery, 3x retry" },
+      { label: "SLA", value: "Webhooks with 3x retry; status visible per call" },
     ],
   },
   12: {

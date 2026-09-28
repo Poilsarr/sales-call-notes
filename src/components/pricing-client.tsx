@@ -311,61 +311,82 @@ export default function PricingClient({
               </div>
             </div>
 
-            {/* RIGHT: Pro plan preview card — mirrors the home page's "Live
-                summary" pattern. Visitors land on /pricing wanting to know
-                "is Pro worth it?"; this card answers with a compact snapshot
-                of what Pro actually includes, anchored on the $9 price. */}
+            {/* RIGHT: Pro proof visual — coded mock (no binaries) built from
+                film/accent tokens. Tier summary on top, mini rival-signal +
+                Slack motif below, so visitors see what Pro actually buys.
+                Mock literals (Sarah Chen / Gong / #deal-room-acme) reuse the
+                shipped live-proof TABS set — no new invented content. */}
             <div className="relative">
-              <div className="doppel-outer">
-                <div className="doppel-inner p-5 sm:p-6">
-                  <div className="flex items-center gap-2 mb-4">
-                    <div className="w-2 h-2 rounded-full bg-[#F26522] animate-pulse" />
-                    <span className="text-[10px] font-mono tracking-wider text-gray-400 font-medium uppercase">
-                      Pro · $9/mo
-                    </span>
-                    <span className="ml-auto text-[9px] font-mono text-gray-300">
-                      5 seats included
-                    </span>
+              <div
+                aria-hidden
+                className="absolute -top-3 left-1/2 -translate-x-1/2 rotate-[-2deg] w-24 h-6 bg-film-amber/60 border border-black/10 z-10"
+              />
+              <div className="doppel-outer border-2 border-film-ink shadow-[8px_8px_0_#131316]">
+                <div className="doppel-inner bg-white p-0 overflow-hidden">
+                  <div className="bg-film-cream p-5 sm:p-6">
+                    <div className="flex items-center gap-2 mb-4">
+                      <div className="w-2 h-2 rounded-full bg-[#F26522] animate-pulse" />
+                      <span className="text-[10px] font-mono tracking-wider text-gray-600 font-medium uppercase">
+                        Pro · $9/mo flat
+                      </span>
+                      <span className="ml-auto text-[9px] font-mono text-gray-500">
+                        5 seats included
+                      </span>
+                    </div>
+
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="text-[13px] font-medium text-gray-900">
+                        Rival: Gong
+                      </span>
+                      <span className="text-[10px] font-mono text-gray-500">0.96</span>
+                    </div>
+                    <div
+                      className="h-2 rounded-full bg-gray-200 overflow-hidden mb-4"
+                      role="progressbar"
+                      aria-valuenow={96}
+                      aria-valuemin={0}
+                      aria-valuemax={100}
+                      aria-label="Gong confidence"
+                    >
+                      <div
+                        className="h-full rounded-full"
+                        style={{ width: "96%", backgroundColor: "#F26522" }}
+                      />
+                    </div>
+
+                    <blockquote className="text-[13px] text-gray-700 leading-snug border-l-2 border-film-ink pl-3 mb-3">
+                      &ldquo;We&rsquo;re also evaluating Gong and Chorus for the rollout.&rdquo;
+                    </blockquote>
+                    <p className="text-[11.5px] text-gray-600 mb-4">
+                      <span
+                        className="shrink-0 text-[10px] font-mono font-medium px-2 py-0.5 rounded-full leading-none"
+                        style={{ backgroundColor: "#F26522", color: "#fff" }}
+                      >
+                        Sarah Chen
+                      </span>{" "}
+                      <span className="text-[10px] font-mono text-gray-500">
+                        · 00:14:22
+                      </span>
+                    </p>
+
+                    <div className="mb-1">
+                      <span className="inline-flex items-center gap-1.5 rounded-full border-2 border-film-ink px-3 py-1 text-[11px] font-medium text-gray-900 bg-white">
+                        #deal-room-acme
+                      </span>
+                    </div>
                   </div>
 
-                  <div className="space-y-2.5">
-                    <div className="flex items-start gap-2.5">
-                      <CheckCircle size={14} className="text-[#F26522] shrink-0 mt-0.5" />
-                      <p className="text-[12.5px] text-gray-700 leading-snug">
-                        <strong>1,200</strong> transcription minutes / mo — about 20 calls
-                      </p>
-                    </div>
-                    <div className="flex items-start gap-2.5">
-                      <CheckCircle size={14} className="text-[#F26522] shrink-0 mt-0.5" />
-                      <p className="text-[12.5px] text-gray-700 leading-snug">
-                        <strong>HubSpot + Salesforce</strong> sync, one click
-                      </p>
-                    </div>
-                    <div className="flex items-start gap-2.5">
-                      <CheckCircle size={14} className="text-[#F26522] shrink-0 mt-0.5" />
-                      <p className="text-[12.5px] text-gray-700 leading-snug">
-                        <strong>Competitive-intel</strong> alerts when a rival name hits a call
-                      </p>
-                    </div>
-                    <div className="flex items-start gap-2.5">
-                      <CheckCircle size={14} className="text-[#F26522] shrink-0 mt-0.5" />
-                      <p className="text-[12.5px] text-gray-700 leading-snug">
-                        <strong>90-min</strong> call limit · live transcription · priority support
-                      </p>
-                    </div>
-                  </div>
-
-                  <div className="mt-4 pt-3 border-t border-gray-100 flex items-center justify-between text-[10px] text-gray-400">
+                  <div className="px-5 sm:px-6 py-3 border-t border-film-ink/10 flex items-center justify-between text-[10px] text-gray-500">
                     <span className="flex items-center gap-1.5">
                       <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
-                      Cancel anytime
+                      1,200 min/mo
                     </span>
                     <span className="flex items-center gap-1.5">
                       <span className="w-1.5 h-1.5 rounded-full bg-[#F26522]" />
-                      17% off annual
+                      HubSpot + Salesforce
                     </span>
                     <span className="hidden sm:flex items-center gap-1.5">
-                      Local currency
+                      Cancel anytime
                     </span>
                   </div>
                 </div>
@@ -513,42 +534,58 @@ export default function PricingClient({
         )}
       </section>
 
-      {/* Trust badges — reduce friction at the point of purchase decision */}
+      {/* Trust strip — single mono-pill row + integration row. Replaces the
+          three peach cards with one strip so the purchase decision reads at
+          a glance. Copy kept verbatim; no new assets. */}
       <section className="pb-12 sm:pb-16 px-5 sm:px-8 lg:px-12">
         <div className="max-w-[1440px] mx-auto">
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-            {[
-              {
-                icon: CreditCard,
-                title: "No credit card for Free",
-                body: "Start with 300 minutes/mo instantly. Pay only when you upgrade.",
-              },
-              {
-                icon: RotateCcw,
-                title: "Cancel anytime",
-                body: "No annual lock-ins. Downgrade or cancel from your billing page.",
-              },
-              {
-                icon: ShieldCheck,
-                title: "14-day money-back guarantee",
-                body: "Not happy with Pro or Business? Full refund, no questions asked.",
-              },
-            ].map((badge) => (
-              <div
-                key={badge.title}
-                className="doppel-outer flex flex-col items-center text-center"
-              >
-                <div className="doppel-inner p-6 w-full h-full">
-                  <div className="w-10 h-10 rounded-full bg-[#F26522]/10 flex items-center justify-center mx-auto mb-3">
-                    <badge.icon size={20} className="text-[#F26522]" />
-                  </div>
-                  <h4 className="text-[13px] font-semibold text-gray-900 mb-1">
-                    {badge.title}
-                  </h4>
-                  <p className="text-[12px] text-gray-500 leading-relaxed">{badge.body}</p>
+          <div className="rounded-2xl border border-gray-200 bg-white px-5 py-5 sm:px-8">
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-center">
+              {[
+                {
+                  icon: CreditCard,
+                  title: "No credit card for Free",
+                  body: "Start with 300 minutes/mo instantly. Pay only when you upgrade.",
+                },
+                {
+                  icon: RotateCcw,
+                  title: "Cancel anytime",
+                  body: "No annual lock-ins. Downgrade or cancel from your billing page.",
+                },
+                {
+                  icon: ShieldCheck,
+                  title: "14-day money-back guarantee",
+                  body: "Not happy with Pro or Business? Full refund, no questions asked.",
+                },
+              ].map((badge, i) => (
+                <div
+                  key={badge.title}
+                  className={`flex items-center gap-2.5 px-4 py-2.5 ${
+                    i > 0 ? "border-t sm:border-t-0 sm:border-l border-gray-200" : ""
+                  }`}
+                >
+                  <badge.icon size={16} className="text-gray-900 shrink-0" />
+                  <p className="text-[12px] text-gray-500 leading-relaxed">
+                    <strong className="font-semibold text-gray-900">
+                      {badge.title}
+                    </strong>{" "}
+                    — {badge.body}
+                  </p>
                 </div>
-              </div>
-            ))}
+              ))}
+            </div>
+            <div className="mt-4 pt-4 border-t border-gray-100 flex flex-wrap items-center justify-center gap-x-5 gap-y-2 font-mono text-[11px] uppercase tracking-[0.14em] text-gray-400">
+              {[
+                "HubSpot",
+                "Salesforce",
+                "Slack",
+                "Google Meet",
+                "Zoom",
+                "Microsoft Teams",
+              ].map((name) => (
+                <span key={name}>{name}</span>
+              ))}
+            </div>
           </div>
         </div>
       </section>
@@ -675,6 +712,53 @@ export default function PricingClient({
                     </div>
                   ))}
                 </div>
+                {/* Migration visual — 3-step coded mock (export → import →
+                    searchable) on film tokens. Copy above kept verbatim. */}
+                <div className="mt-8 rounded-2xl bg-film-cream border border-film-ink/10 p-5 sm:p-6">
+                  <p className="text-[10px] font-mono uppercase tracking-[0.18em] text-gray-500 mb-4 text-center">
+                    How migration works
+                  </p>
+                  <ol className="grid grid-cols-1 sm:grid-cols-[1fr_auto_1fr_auto_1fr] items-center gap-3">
+                    {[
+                      {
+                        step: "01",
+                        title: "Export",
+                        body: "Download MP3s from Fireflies, Otter, or Fathom.",
+                      },
+                      {
+                        step: "02",
+                        title: "Import",
+                        body: "Bulk-upload to Gauge — transcripts with speaker labels.",
+                      },
+                      {
+                        step: "03",
+                        title: "Searchable",
+                        body: "Summaries, quotes, and action items in one search.",
+                      },
+                    ].map((s, i) => (
+                      <li key={s.step} className="contents">
+                        <div className="rounded-xl bg-white border border-film-ink/10 px-4 py-3">
+                          <p className="text-[10px] font-mono text-[#F26522] font-semibold mb-1">
+                            {s.step}
+                          </p>
+                          <p className="text-[13px] font-semibold text-gray-900 mb-1">
+                            {s.title}
+                          </p>
+                          <p className="text-[12px] text-gray-500 leading-relaxed">
+                            {s.body}
+                          </p>
+                        </div>
+                        {i < 2 && (
+                          <ArrowRight
+                            size={16}
+                            className="text-gray-400 hidden sm:block shrink-0"
+                            aria-hidden
+                          />
+                        )}
+                      </li>
+                    ))}
+                  </ol>
+                </div>
               </div>
             </div>
           </div>
@@ -683,7 +767,9 @@ export default function PricingClient({
 
       <PricingSocialProof />
 
-      {/* CTA */}
+      {/* CTA — single H2 + product motif. The old double-H2 (one per
+          eyebrow) is merged: one headline, one /sign-up pill. Motif pills
+          quote honest plan facts only. */}
       <section className="pb-16 sm:pb-20 lg:pb-28 px-5 sm:px-8 lg:px-12">
         <div className="max-w-[1440px] mx-auto">
           <div className="doppel-outer group">
@@ -692,9 +778,27 @@ export default function PricingClient({
                 <div className="eyebrow inline-flex items-center gap-2 mb-5">
                   <TrendingUp size={12} /> Why teams upgrade
                 </div>
-                <h2 className="text-[clamp(1.5rem,4vw,2.5rem)] font-medium leading-[1.12] tracking-[-0.02em] mb-10">
-                  One tool that pays for itself
+                <h2 className="text-[clamp(1.5rem,4vw,3rem)] font-medium leading-[1.12] tracking-[-0.02em] mb-3">
+                  Ready to save hours every week?
                 </h2>
+                <p className="text-gray-500 mb-6 text-[14px]">
+                  Join SDRs who cut their note-taking time by 80%.
+                </p>
+                <div className="flex flex-wrap items-center justify-center gap-2 mb-10">
+                  {[
+                    "$9/mo flat · Pro, 5 seats",
+                    "1,200 transcription min/mo",
+                    "Cancel anytime",
+                  ].map((pill) => (
+                    <span
+                      key={pill}
+                      className="inline-flex items-center gap-1.5 rounded-full border border-film-ink/15 bg-film-cream px-3 py-1 font-mono text-[11px] text-gray-700"
+                    >
+                      <span aria-hidden className="w-1.5 h-1.5 rounded-full bg-[#F26522]" />
+                      {pill}
+                    </span>
+                  ))}
+                </div>
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 text-left max-w-4xl mx-auto mb-12">
                   {[
                     {
@@ -725,15 +829,6 @@ export default function PricingClient({
               </div>
 
               <div className="relative z-10">
-                <div className="eyebrow inline-flex items-center gap-2 mb-5">
-                  <ArrowRight size={12} /> Start today
-                </div>
-                <h2 className="text-[clamp(1.5rem,4vw,3rem)] font-medium leading-[1.12] tracking-[-0.02em] mb-3">
-                  Ready to save hours every week?
-                </h2>
-                <p className="text-gray-500 mb-8 text-[14px]">
-                  Join SDRs who cut their note-taking time by 80%.
-                </p>
                 <Link
                   href="/sign-up"
                   onClick={() => trackEvent("pricing_cta_click", { section: "bottom" })}
