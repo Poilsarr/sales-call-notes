@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState, useCallback } from "react";
 import type { RefObject } from "react";
+import Link from "next/link";
 import { useGSAP } from "@gsap/react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
@@ -73,6 +74,27 @@ const steps = [
   { num: "02", title: "Transcribe", desc: "Whisper AI converts speech to text", icon: Mic, color: "#2563eb" },
   { num: "03", title: "Analyze", desc: "Extract insights & action items", icon: Brain, color: "#7c3aed" },
   { num: "04", title: "Export", desc: "Push to CRM or download", icon: Share2, color: "#059669" },
+];
+
+/**
+ * Per-card link targets — one honest destination per feature card.
+ * Rendered beside the Learn-more toggle (toggle behavior untouched).
+ * All hrefs are existing routes: /pricing, /api-docs/v1, /privacy,
+ * /vs/otter-ai, /vs/fireflies, /vs/gong.
+ */
+const cardLinks: { href: string; label: string }[] = [
+  { href: "/pricing", label: "See pricing" },
+  { href: "/vs/otter-ai", label: "Read comparison" },
+  { href: "/vs/fireflies", label: "Read comparison" },
+  { href: "/api-docs/v1", label: "API docs" },
+  { href: "/vs/gong", label: "Read comparison" },
+  { href: "/vs/gong", label: "Read comparison" },
+  { href: "/api-docs/v1", label: "API docs" },
+  { href: "/api-docs/v1", label: "API docs" },
+  { href: "/privacy", label: "Privacy details" },
+  { href: "/vs/otter-ai", label: "Read comparison" },
+  { href: "/api-docs/v1", label: "API docs" },
+  { href: "/pricing", label: "See pricing" },
 ];
 
 const featureCategories = [
@@ -351,18 +373,26 @@ function FeatureCard({ feature, index }: { feature: typeof features[0]; index: n
 
           <div className="mt-5 pt-4 border-t border-gray-100 flex items-center justify-between">
             <span className="text-[10px] text-gray-400 uppercase tracking-[0.15em] font-medium">Feature {String(index + 1).padStart(2, "0")}</span>
-            <button
-              type="button"
-              onClick={(e) => { e.stopPropagation(); setIsExpanded((v) => !v); }}
-              className="flex items-center gap-1.5 text-[10px] text-gray-400 hover:text-gray-700 transition-colors duration-300 cursor-pointer"
-              aria-expanded={isExpanded}
-            >
-              <span className="font-mono uppercase tracking-[0.15em]">{isExpanded ? "Hide" : "Learn more"}</span>
-              <ArrowRight
-                strokeWidth={1.5}
-                className={`w-3 h-3 transition-transform duration-500 ${isExpanded ? "rotate-90" : "group-hover:translate-x-1"}`}
-              />
-            </button>
+            <span className="flex items-center gap-3">
+              <Link
+                href={cardLinks[index]?.href ?? "/api-docs/v1"}
+                className="text-[10px] font-mono uppercase tracking-[0.15em] text-[#C94F17] hover:underline"
+              >
+                {cardLinks[index]?.label ?? "API docs"} →
+              </Link>
+              <button
+                type="button"
+                onClick={(e) => { e.stopPropagation(); setIsExpanded((v) => !v); }}
+                className="flex items-center gap-1.5 text-[10px] text-gray-400 hover:text-gray-700 transition-colors duration-300 cursor-pointer"
+                aria-expanded={isExpanded}
+              >
+                <span className="font-mono uppercase tracking-[0.15em]">{isExpanded ? "Hide" : "Learn more"}</span>
+                <ArrowRight
+                  strokeWidth={1.5}
+                  className={`w-3 h-3 transition-transform duration-500 ${isExpanded ? "rotate-90" : "group-hover:translate-x-1"}`}
+                />
+              </button>
+            </span>
           </div>
         </div>
       </div>

@@ -8,6 +8,7 @@ import Nav from "@/components/nav";
 import { useUser, SignInButton } from "@clerk/nextjs";
 import { Sparkles, ArrowRight, Zap, Cpu, Lock, BarChart3 } from "lucide-react";
 import StickyMarketingCta from "@/components/sticky-marketing-cta";
+import { ProductVisualsSection } from "@/components/product-visuals-section";
 
 // Single async boundary for all GSAP/ScrollTrigger animations — avoids duplicate gsap
 // runtime and second waterfall for the same module (previous code had two
@@ -194,6 +195,36 @@ function ComparisonSection() {
           as of 2026-06-22. We try to keep this honest — if you spot
           something we got wrong, we&apos;ll fix it in the next update.
         </p>
+
+        <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
+          <Link
+            href="/vs/otter-ai"
+            className="inline-flex items-center gap-1.5 text-[12px] font-semibold text-[#C94F17] hover:underline"
+          >
+            Gauge vs Otter.ai — Read comparison →
+          </Link>
+          <span className="text-gray-200" aria-hidden="true">|</span>
+          <Link
+            href="/vs/fireflies"
+            className="inline-flex items-center gap-1.5 text-[12px] font-semibold text-[#C94F17] hover:underline"
+          >
+            Gauge vs Fireflies.ai — Read comparison →
+          </Link>
+          <span className="text-gray-200" aria-hidden="true">|</span>
+          <Link
+            href="/vs/gong"
+            className="inline-flex items-center gap-1.5 text-[12px] font-semibold text-[#C94F17] hover:underline"
+          >
+            Gauge vs Gong — Read comparison →
+          </Link>
+        </div>
+        <p className="text-[11px] text-gray-400 mt-3 max-w-2xl mx-auto text-center">
+          Switching tools? See also{" "}
+          <Link href="/otter-alternative" className="underline underline-offset-2 hover:text-gray-600">
+            /otter-alternative
+          </Link>{" "}
+          for the 7-tool roundup.
+        </p>
       </div>
     </section>
   );
@@ -292,7 +323,7 @@ export default function FeaturesPageClient() {
             From transcription to CRM export, Gauge handles the entire sales call workflow.
             No bots. No complex setup. Just results.
           </p>
-          <div className="hero-badge inline-flex items-center gap-4 px-5 py-2.5 rounded-full bg-white/80 backdrop-blur-sm border border-gray-200 text-[12px] text-gray-500 shadow-sm">
+          <div className="hero-badge inline-flex items-center gap-4 px-5 py-2.5 rounded-full bg-white/80 backdrop-blur-sm border border-gray-200 text-[12px] text-gray-500 shadow-sm mb-8">
             <span className="flex items-center gap-1.5">
               <Cpu size={14} className="text-[#F26522]" />
               <span>12 features</span>
@@ -308,6 +339,28 @@ export default function FeaturesPageClient() {
               <span>Under 60s processing</span>
             </span>
           </div>
+          <div className="flex flex-wrap items-center justify-center gap-3">
+            <Link
+              href="/sign-up"
+              className="group inline-flex items-center gap-2 bg-[#C94F17] hover:bg-[#A84310] text-white text-[13px] rounded-full pl-5 pr-2 py-2 transition-colors duration-300"
+            >
+              <span className="flex flex-col overflow-hidden h-[20px]">
+                <span className="transition-transform duration-500 ease-[cubic-bezier(0.25,0.1,0.25,1)] group-hover:-translate-y-1/2 leading-[20px]">
+                  Start free
+                </span>
+                <span className="leading-[20px]">Start free</span>
+              </span>
+              <span className="w-7 h-7 bg-white rounded-full flex items-center justify-center transition-transform duration-500 ease-[cubic-bezier(0.25,0.1,0.25,1)] group-hover:-rotate-45">
+                <ArrowRight size={14} className="text-[#F26522]" />
+              </span>
+            </Link>
+            <Link
+              href="/pricing"
+              className="inline-flex items-center gap-2 bg-white/80 backdrop-blur-sm border border-gray-200 hover:border-gray-300 text-gray-900 text-[13px] rounded-full px-5 py-2.5 transition-colors duration-300"
+            >
+              See pricing
+            </Link>
+          </div>
           <FeaturesBundle variant="hero" heroRef={heroRef} />
         </div>
 
@@ -319,6 +372,8 @@ export default function FeaturesPageClient() {
       </section>
 
       <FeaturesBundle variant="features" />
+
+      <ProductVisualsSection />
 
       <ComparisonSection />
 
