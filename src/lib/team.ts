@@ -1,9 +1,9 @@
 /**
  * Team + advisory roster (FRONTPAGE-OVERHAUL Tasks 3+4).
  *
- * Owner-confirmed (2026-09-18): Kushagarh Singh (Founder), Sandeep Kalra
- * (Advisor), Yogesh (CTO), Samaira (Design). No photos or credentials
- * listed here.
+ * Owner-confirmed (2026-09-18, updated 2026-09-28): Kushagarh Singh
+ * (Founder), Sandeep Kalra (Advisor), Yogesh (CTO). No photos or
+ * credentials listed here.
  */
 
 export interface TeamMember {
@@ -23,7 +23,6 @@ export const TEAM_MEMBERS: TeamMember[] = [
   { role: "Founder", name: "Kushagarh Singh", focus: "Vision, product, and competitive-intel roadmap.", initials: "KS" },
   { role: "Advisor", name: "Sandeep Kalra", focus: "Industry guidance and go-to-market support.", initials: "SK" },
   { role: "CTO", name: "Yogesh Garg", focus: "Architecture, AI pipeline, and reliability.", initials: "YG" },
-  { role: "Design", name: "Samaira Raina", focus: "Marketing surface, accessibility, and demo craft.", initials: "SR" },
 ];
 
 export const ADVISORY_NOTE =
