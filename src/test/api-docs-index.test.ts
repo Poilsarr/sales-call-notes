@@ -20,6 +20,11 @@ describe("/api-docs index page", () => {
     expect(INDEX).toContain("/settings?tab=api-keys");
   });
 
+  it("shows the accurate v1 endpoint count (9 rendered)", () => {
+    expect(INDEX).toContain("endpoints: 9");
+    expect(INDEX).not.toContain("endpoints: 4");
+  });
+
   it("does not claim planned endpoints are shipped (audit-correctness)", () => {
     // Karpathy rule 5: don't lie about what isn't true.
     expect(INDEX).toContain("planned");

@@ -239,6 +239,18 @@ export default function DemoCarousel() {
                 >
                   How it works →
                 </Link>
+                <Link
+                  href="/vs/otter-ai"
+                  className="text-[13px] text-white/60 hover:text-white font-medium underline-offset-4 hover:underline"
+                >
+                  Compare vs Otter →
+                </Link>
+                <Link
+                  href="/vs/fireflies"
+                  className="text-[13px] text-white/60 hover:text-white font-medium underline-offset-4 hover:underline"
+                >
+                  Compare vs Fireflies →
+                </Link>
               </div>
             </div>
           </div>

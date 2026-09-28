@@ -322,7 +322,7 @@ function IntegrationsContent() {
               ? "bg-amber-100 text-amber-700"
               : int.status === "Live" ? "bg-green-100 text-green-700"
               : int.status === "Coming Soon" ? "bg-yellow-100 text-yellow-700"
-              : int.status === "Business+" ? "bg-[#C94F17]/10 text-[#C94F17]"
+              : int.status === "Business+" ? "bg-[#F26522]/10 text-[#F26522]"
               : "bg-gray-100 text-gray-500";
             return (
               <div key={int.name} className="reveal" style={{ transitionDelay: `${i * 0.04}s` }}>
@@ -441,7 +441,7 @@ function IntegrationsContent() {
                 <p className="text-gray-500 mb-8 text-[14px]">We support custom integrations via our REST API and webhooks.</p>
                 <Link
                   href="/sign-up"
-                  className="group inline-flex items-center gap-2 bg-[#C94F17] hover:bg-[#A84310] text-white text-[13px] rounded-full pl-5 pr-2 py-2 transition-colors duration-300"
+                  className="group inline-flex items-center gap-2 bg-[#F26522] hover:bg-[#e05a1a] text-white text-[13px] rounded-full pl-5 pr-2 py-2 transition-colors duration-300"
                 >
                   <span className="flex flex-col overflow-hidden h-[20px]">
                     <span className="transition-transform duration-500 ease-[cubic-bezier(0.25,0.1,0.25,1)] group-hover:-translate-y-1/2 leading-[20px]">

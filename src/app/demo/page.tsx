@@ -53,7 +53,7 @@ export default function DemoPage() {
         </h1>
         <p className="text-white/50 text-[14px] max-w-2xl mb-2">
           Five sample calls. Real transcript moments where Gong, Chorus, Otter, and Fireflies
-          entered the deal. The same engine runs on every paid plan.
+          entered the deal. Available on Pro and above.
         </p>
         <p className="text-white/30 text-[12px]">
           Click a call on the left. Watch the alert panel update.

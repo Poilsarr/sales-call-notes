@@ -21,7 +21,7 @@ const AVAILABLE_VERSIONS = [
     desc: "Public scoped API keys. Generate, list, and revoke keys; list your own calls. Bearer-token auth.",
     href: "/api-docs/v1",
     released: "2026-06-21",
-    endpoints: 4,
+    endpoints: 9,
   },
 ];
 
