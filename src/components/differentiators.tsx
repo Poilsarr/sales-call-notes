@@ -194,6 +194,14 @@ export default function Differentiators() {
               </span>
             ))}
           </div>
+          <p className="text-center mt-6">
+            <Link
+              href="/integrations"
+              className="text-[13px] text-white/70 hover:text-white font-medium underline underline-offset-4"
+            >
+              View all integrations →
+            </Link>
+          </p>
         </div>
       </div>
     </section>

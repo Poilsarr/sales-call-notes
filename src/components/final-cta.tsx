@@ -42,10 +42,10 @@ export default function FinalCta() {
                   </span>
                 </Link>
                 <Link
-                  href="/pricing"
+                  href="/demo"
                   className="text-[14px] text-white/70 hover:text-white font-medium underline underline-offset-4 px-4 py-2.5"
                 >
-                  See full pricing →
+                  See live demo →
                 </Link>
               </div>
               <p className="text-white/30 text-[12px] mt-6">
