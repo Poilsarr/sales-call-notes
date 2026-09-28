@@ -476,3 +476,13 @@ model BotSession {
   @@index([teamId])
   @@index([status])
 }
+
+model RetentionPolicy {
+  id              String   @id @default(cuid())
+  teamId          String   @unique
+  audioDays       Int      @default(90)
+  transcriptDays  Int      @default(365)
+  deleteAudioOnly Boolean  @default(false)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+}

@@ -22,6 +22,16 @@ export interface HubSpotDeal {
   };
 }
 
+/**
+ * Builds the canonical "View in Gauge" deep-link for a call.
+ * Pure helper (env-read only) so it is unit-testable without network.
+ * Base URL comes from NEXT_PUBLIC_APP_URL with a local fallback.
+ */
+export function buildCallDeepLink(callId: string): string {
+  const base = (process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000").replace(/\/$/, "");
+  return `${base}/app/calls/${callId}`;
+}
+
 export class HubSpotService {
   private baseUrl = "https://api.hubapi.com";
   private formatter = new CRMFormatterService();
@@ -93,6 +103,11 @@ export class HubSpotService {
 
   private async createNote(call: CRMCall, dealId: string, accessToken: string) {
     const noteContent = this.formatter.formatNote(call, 'hubspot');
+    // Append-only deep-link: never replaces existing note fields.
+    const callId = (call as { id?: string }).id;
+    const bodyWithLink = callId
+      ? `${noteContent}\nView in Gauge: ${buildCallDeepLink(callId)}`
+      : noteContent;
 
     const response = await fetch(`${this.baseUrl}/crm/v3/objects/notes`, {
       method: "POST",
@@ -102,7 +117,7 @@ export class HubSpotService {
       },
       body: JSON.stringify({
         properties: {
-          hs_note_body: noteContent,
+          hs_note_body: bodyWithLink,
           hs_timestamp: Date.now().toString(),
           hs_parent_id: dealId,
           hs_parent_type: "deal",
