@@ -166,7 +166,7 @@ const ENDPOINTS = [
     method: "POST",
     path: "/api/slack/digest",
     auth: "Clerk session (team workspace required)",
-    desc: "Post a per-meeting digest (summary + action items + health score) to the team's Slack channel. When callId is provided, the caller's access is verified with the same IDOR guard as POST /api/slack.",
+    desc: "Post a per-meeting digest (summary + action items + health score) to the team's Slack channel. Accepts an optional risk payload (riskScore, riskFlags, nextQuestions) surfaced in the Slack blocks. When callId is provided, the caller's access is verified with the same IDOR guard as POST /api/slack.",
     request: `{
   "title": "Acme discovery — 2026-09-27",
   "summary": "Agreed on pilot scope…",
@@ -185,6 +185,23 @@ const ENDPOINTS = [
       "403 Forbidden (call belongs to another team)",
       "404 Call not found (when callId provided)",
       "500 Slack digest failed",
+    ],
+  },
+  {
+    method: "GET",
+    path: "/api/calls/[id]/deal-score",
+    auth: "Clerk session (must own the call)",
+    desc: "Score a call's deal risk: riskScore out of 64 with risk flags, missing MEDDPICC/BANT fields, and follow-up questions.",
+    response: `{
+  "riskScore": 42,
+  "riskFlags": ["No economic buyer identified"],
+  "missingFields": ["budget", "decision_process"],
+  "nextQuestions": ["Who signs off on budget?"]
+}`,
+    errors: [
+      "401 Unauthorized",
+      "403 Forbidden (call belongs to another user)",
+      "404 Call not found",
     ],
   },
 ];

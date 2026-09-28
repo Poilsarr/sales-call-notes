@@ -2,6 +2,12 @@ import prisma from "@/lib/prisma";
 import { getSecret } from "@/lib/secrets";
 import { decryptConfig } from "@/lib/integrations/config-crypto";
 
+export interface MeetingDigestRisk {
+  riskScore: number;
+  riskFlags: string[];
+  nextQuestions: string[];
+}
+
 export interface MeetingDigestInput {
   teamId: string;
   title: string;
@@ -9,6 +15,7 @@ export interface MeetingDigestInput {
   actionItems?: string[];
   healthScore?: number | null;
   callId?: string;
+  risk?: MeetingDigestRisk;
 }
 
 export interface MeetingDigestResult {
@@ -45,6 +52,7 @@ export function buildMeetingDigestBlocks(input: {
   summary?: string | null;
   actionItems?: string[];
   healthScore?: number | null;
+  risk?: MeetingDigestRisk;
 }): unknown[] {
   const blocks: unknown[] = [
     {
@@ -81,6 +89,22 @@ export function buildMeetingDigestBlocks(input: {
           text: `${emoji} Health score: ${Math.round(input.healthScore)}%`,
         },
       ],
+    });
+  }
+
+  if (input.risk) {
+    const flags = (input.risk.riskFlags ?? []).filter(Boolean).slice(0, 2);
+    const topQuestion = (input.risk.nextQuestions ?? []).filter(Boolean)[0];
+    let text = `⚠️ Risk score: ${input.risk.riskScore}/64`;
+    if (flags.length > 0) {
+      text += `\n${flags.map((f) => `• ${f}`).join("\n")}`;
+    }
+    if (topQuestion) {
+      text += `\n▸ Next: ${topQuestion}`;
+    }
+    blocks.push({
+      type: "context",
+      elements: [{ type: "mrkdwn", text }],
     });
   }
 

@@ -18,7 +18,7 @@ export async function POST(req: NextRequest) {
     if (!userId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
     const body = await req.json();
-    const { title, summary, actionItems, healthScore, callId } = body ?? {};
+    const { title, summary, actionItems, healthScore, callId, risk } = body ?? {};
 
     if (!title || typeof title !== "string") {
       return NextResponse.json({ error: "title required" }, { status: 400 });
@@ -54,6 +54,35 @@ export async function POST(req: NextRequest) {
         ? healthScore
         : undefined;
 
+    // Optional risk passthrough → forwarded to postMeetingDigest (omitted
+    // entirely when absent or malformed, preserving prior behavior).
+    let digestRisk:
+      | { riskScore: number; riskFlags: string[]; nextQuestions: string[] }
+      | undefined;
+    if (risk !== null && typeof risk === "object") {
+      const candidate = risk as {
+        riskScore?: unknown;
+        riskFlags?: unknown;
+        nextQuestions?: unknown;
+      };
+      if (
+        typeof candidate.riskScore === "number" &&
+        Number.isFinite(candidate.riskScore)
+      ) {
+        const onlyStrings = (v: unknown): string[] =>
+          Array.isArray(v)
+            ? v.filter(
+                (t): t is string => typeof t === "string" && t.length > 0,
+              )
+            : [];
+        digestRisk = {
+          riskScore: candidate.riskScore,
+          riskFlags: onlyStrings(candidate.riskFlags),
+          nextQuestions: onlyStrings(candidate.nextQuestions),
+        };
+      }
+    }
+
     const result = await postMeetingDigest({
       teamId,
       title,
@@ -61,6 +90,7 @@ export async function POST(req: NextRequest) {
       actionItems: items,
       healthScore: score,
       callId: typeof callId === "string" ? callId : undefined,
+      ...(digestRisk ? { risk: digestRisk } : {}),
     });
 
     return NextResponse.json(result);

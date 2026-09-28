@@ -95,6 +95,35 @@ async function resolveAuth(
   return { ok: true, ctx: { dbUserId, teamId } };
 }
 
+/**
+ * Part5B risk delivery — Part5A provides scoreDeal from @/lib/deal-risk.
+ * Dynamic import with fallback: when the module is absent (or scoring
+ * throws), the `risk` key is omitted and the pre-existing shape is kept
+ * byte-identical.
+ */
+async function maybeScoreDealRisk(call: {
+  transcript?: string | null;
+  summary?: string | null;
+}): Promise<unknown | undefined> {
+  try {
+    // @ts-ignore — Part5A provides @/lib/deal-risk; resolves once it lands.
+    const mod = await import("@/lib/deal-risk");
+    const scoreDeal = (
+      mod as {
+        scoreDeal?: (input: { transcript: string; summary: string }) => unknown;
+      }
+    ).scoreDeal;
+    if (typeof scoreDeal !== "function") return undefined;
+    const risk = await scoreDeal({
+      transcript: call.transcript ?? "",
+      summary: call.summary ?? "",
+    });
+    return risk ?? undefined;
+  } catch {
+    return undefined;
+  }
+}
+
 export async function GET(req: Request, { params }: { params: Promise<{ id: string }> }) {
   const authed = await resolveAuth(req, "GET");
   if (!authed.ok) return authed.response;
@@ -109,6 +138,7 @@ export async function GET(req: Request, { params }: { params: Promise<{ id: stri
       teamId: true,
       title: true,
       summary: true,
+      transcript: true,
       healthScore: true,
     },
   });
@@ -120,12 +150,15 @@ export async function GET(req: Request, { params }: { params: Promise<{ id: stri
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
 
-  return NextResponse.json({
+  const risk = await maybeScoreDealRisk(call);
+  const body: Record<string, unknown> = {
     id: call.id,
     title: call.title,
     summary: call.summary,
     healthScore: call.healthScore,
-  });
+  };
+  if (risk !== undefined) body.risk = risk;
+  return NextResponse.json(body);
 }
 
 export async function DELETE(req: Request, { params }: { params: Promise<{ id: string }> }) {

@@ -236,6 +236,11 @@ describe("GET /api/v1/meetings/[id]", () => {
       title: "Sync",
       summary: "Great call",
       healthScore: 82,
+      risk: expect.objectContaining({
+        riskScore: expect.any(Number),
+        missingFields: expect.any(Array),
+        nextQuestions: expect.any(Array),
+      }),
     });
   });
 
