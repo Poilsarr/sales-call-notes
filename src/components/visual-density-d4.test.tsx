@@ -97,7 +97,7 @@ describe("VISUAL-DENSITY D4 — TeamShowcase", () => {
 });
 
 describe("VISUAL-DENSITY D4 — HeroEvidenceStack", () => {
-  it("keeps header, card copy, and footer verbatim", () => {
+  it("keeps header, deduped captions, and footer verbatim", () => {
     const { scope } = evidenceSection();
     expect(
       scope.getByText("Live evidence · from call 00:14:22 · conf 0.96")
@@ -105,15 +105,17 @@ describe("VISUAL-DENSITY D4 — HeroEvidenceStack", () => {
     expect(
       scope.getByRole("heading", { name: /every signal ships with proof/i })
     ).toBeDefined();
-    for (const title of [
+    for (const caption of [
       "The exact line, with speaker and timestamp",
-      "#deal-room-acme · Competitor detected: Gong (0.96)",
+      "Competitor detected: Gong (0.96)",
       "1-click HubSpot → Salesforce",
     ]) {
       expect(
-        scope.getAllByText(title).length,
-        `expected verbatim title: ${title}`
+        scope.getAllByText(caption).length,
+        `expected caption: ${caption}`
       ).toBeGreaterThanOrEqual(1);
+      // Caption is a single short line (≤8 words).
+      expect(caption.split(/\s+/).length).toBeLessThanOrEqual(8);
     }
     for (const step of [
       "01 · Transcript proof",
@@ -126,6 +128,18 @@ describe("VISUAL-DENSITY D4 — HeroEvidenceStack", () => {
       ).toBeGreaterThanOrEqual(1);
     }
     expect(scope.getByText("Health 8.2")).toBeDefined();
+    // Dedupe: removed lower text bodies must not render.
+    for (const removed of [
+      "Rival names highlighted the second they drop",
+      "The whole deal room sees it before the call ends",
+      "Deal health 8.2, rival tracked call-over-call",
+      "#deal-room-acme · Competitor detected: Gong (0.96)",
+    ]) {
+      expect(
+        scope.queryByText(removed),
+        `expected removed body gone: ${removed}`
+      ).toBeNull();
+    }
   });
 
   it("renders a mini mock strip atop each of the 3 cards", () => {
@@ -167,7 +181,7 @@ describe("VISUAL-DENSITY D4 — HeroEvidenceStack", () => {
     }
   });
 
-  it("keeps doppel shells, stagger, and accent icon tiles", () => {
+  it("keeps doppel shells, stagger, and accent (no icon tiles)", () => {
     const { el } = evidenceSection();
     expect(el.querySelectorAll(".doppel-outer").length).toBe(3);
     expect(el.querySelector(".animate-stagger-1")).not.toBeNull();
@@ -179,5 +193,6 @@ describe("VISUAL-DENSITY D4 — HeroEvidenceStack", () => {
     );
     expect(src).toContain("#F26522");
     expect(src).not.toContain("use client");
+    expect(src).not.toContain("lucide-react");
   });
 });
