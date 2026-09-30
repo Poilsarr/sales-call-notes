@@ -90,10 +90,11 @@ describe("P2B integrations wall (differentiators + trust-strip)", () => {
     expect(src).not.toContain('alt: "Zoom", status: "Live"');
   });
 
-  it("trust-strip mirrors the same 3 additions (9 logos)", () => {
+  it("trust-strip mirrors the same 3 additions (9 logos, marquee x2)", () => {
     render(<TrustStrip />);
     for (const alt of NINE_LOGOS) {
-      expect(screen.getByAltText(alt)).toBeInTheDocument();
+      // OTTER-VISUAL-THEME V2: TrustStrip logo row is a marquee (dup x2).
+      expect(screen.getAllByAltText(alt)).toHaveLength(2);
     }
   });
 

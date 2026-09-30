@@ -23,9 +23,10 @@ import ObjectionTrio from "@/components/objection-trio";
 import PricingTeaser from "@/components/pricing-teaser";
 import SeoLinks from "@/components/seo-links";
 import { ProductVisualsSection } from "@/components/product-visuals-section";
+import CapabilitiesBento from "@/components/capabilities-bento";
 import RadarMoat from "@/components/radar-moat";
 import { HOMEPAGE_COPY } from "@/lib/homepage-copy";
-import { Crosshair, Upload, BarChart3, Shield, Check, ArrowRight, Play } from "lucide-react";
+import { Crosshair, Check, ArrowRight, Play } from "lucide-react";
 
 export const metadata = {
   title: "Gauge — AI Sales Call Notes & Competitive Intelligence",
@@ -34,12 +35,6 @@ export const metadata = {
 
 // Server component — zero JS shipped for the static landing content.
 // Only the CTA island runs client-side.
-const capabilities = [
-  { icon: Upload, title: "Upload or record", desc: "Drop in an MP3, record in your browser, or capture Google Meet — no bot ever joins the call." },
-  { icon: Crosshair, title: "Track competitors", desc: "Every call is scanned for competitor names. You get a Slack ping the second Gong, Otter, or Chorus shows up in a deal." },
-  { icon: BarChart3, title: "CRM-ready notes", desc: "Summary, owners and due dates, and a follow-up draft — one click into HubSpot or Salesforce." },
-  { icon: Shield, title: "Transparent privacy", desc: "Your calls are processed by disclosed cloud providers, never used to train our models, and covered by export and deletion controls." },
-];
 
 export default function Home() {
   return (
@@ -49,7 +44,16 @@ export default function Home() {
         {/* HERO — on tall viewports the column flex stretches the hero; on mobile
           we use natural flow so the content doesn't sit in the middle of a
           sea of empty space. */}
-        <section className="relative lg:min-h-[100dvh] flex flex-col overflow-hidden bg-gradient-to-b from-film-paper via-[#EFEFEF] to-[#EFEFEF]">
+        <section className="relative lg:min-h-[100dvh] flex flex-col overflow-hidden bg-white">
+          {/* Otter-style decorative blobs (peach/blue, pointer-events-none) */}
+          <div
+            aria-hidden
+            className="absolute -top-24 -left-24 h-96 w-96 rounded-full bg-[#FFF4ED] blur-3xl pointer-events-none"
+          />
+          <div
+            aria-hidden
+            className="absolute top-1/3 -right-24 h-96 w-96 rounded-full bg-[#EFF4FF] blur-3xl pointer-events-none"
+          />
           {/* Film-world dressing — waveform ribbon echo + paper grain */}
           <div
             className="absolute inset-0 opacity-[0.5] pointer-events-none"
@@ -152,31 +156,8 @@ export default function Home() {
       {/* PRODUCT VISUALS — photo-real proof right after the pitch+trust unit */}
       <ProductVisualsSection />
 
-      {/* CAPABILITIES */}
-      <section data-track-section="capabilities" className="bg-white pt-16 sm:pt-20 lg:pt-28 pb-16 sm:pb-20 lg:pb-28 border-t border-gray-200">
-        <div className="max-w-[1440px] mx-auto px-5 sm:px-8 lg:px-12">
-          <div className="max-w-2xl mb-14">
-            <p className="text-[11px] uppercase tracking-[0.18em] text-gray-600 mb-3">Capabilities</p>
-            <h2 className="text-[clamp(1.5rem,4vw,3rem)] font-medium leading-[1.1] tracking-[-0.02em] text-gray-900 mb-3">
-              Built for SDRs who lose deals to competitors they never saw coming.
-            </h2>
-            <p className="text-gray-500 text-[14px]">Four things. No filler.</p>
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {capabilities.map((c, i) => (
-              <div key={i} className="doppel-outer">
-                <div className="doppel-inner p-6 sm:p-8 md:p-10 h-full">
-                  <div className="w-10 h-10 rounded-xl bg-[#F26522]/10 flex items-center justify-center mb-5">
-                    <c.icon size={18} className="text-[#F26522]" strokeWidth={1.5} />
-                  </div>
-                  <h3 className="font-semibold tracking-tight text-gray-900 mb-2 text-[15px]">{c.title}</h3>
-                  <p className="text-[13px] text-gray-500 leading-relaxed max-w-md">{c.desc}</p>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
+      {/* CAPABILITIES — visual bento (coded product mocks, no binaries) */}
+      <CapabilitiesBento />
 
       {/* HOW IT WORKS — 4-step process from upload to CRM push */}
       <HowItWorks />

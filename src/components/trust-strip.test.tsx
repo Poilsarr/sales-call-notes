@@ -38,13 +38,25 @@ describe("TrustStrip (GAUGE-REDESIGN-PART1 E1)", () => {
     expect(screen.getByText("99.2% uptime")).toBeInTheDocument();
   });
 
-  it("renders 6 integration logos with alt text", () => {
+  it("renders 6 integration logos with alt text (marquee duplicates x2)", () => {
     render(<TrustStrip />);
     for (const alt of LOGO_ALTS) {
-      expect(screen.getByAltText(alt)).toBeInTheDocument();
+      // OTTER-VISUAL-THEME V2: logo row is a marquee — list duplicated x2.
+      expect(screen.getAllByAltText(alt)).toHaveLength(2);
     }
     const images = screen.getAllByRole("img");
     expect(images.length).toBeGreaterThanOrEqual(LOGO_ALTS.length);
+  });
+
+  it("marquee duplicate is aria-hidden; original list is not", () => {
+    const { container } = render(<TrustStrip />);
+    const track = container.querySelector(".animate-marquee");
+    expect(track).not.toBeNull();
+    const hiddenDupes = track?.querySelectorAll('[aria-hidden="true"]');
+    expect(hiddenDupes?.length).toBe(1);
+    expect(
+      hiddenDupes?.[0].querySelectorAll('img[alt="HubSpot"]').length
+    ).toBe(1);
   });
 
   it("exposes aria-label Early traction + data-track-section trust", () => {

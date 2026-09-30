@@ -34,7 +34,7 @@ export default function FinalCta() {
               <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
                 <Link
                   href="/sign-up"
-                  className="group inline-flex items-center gap-2 bg-[#F26522] hover:bg-[#e05a1a] text-white text-[14px] font-medium rounded-full pl-6 pr-2 py-2.5 transition-colors duration-300"
+                  className="group inline-flex items-center gap-2 bg-gradient-to-r from-[#F26522] to-[#E8442E] hover:brightness-95 shadow-[0_8px_24px_-8px_rgba(242,101,34,0.5)] text-white text-[14px] font-medium rounded-full pl-6 pr-2 py-2.5 transition-all duration-300"
                 >
                   <span>Start free</span>
                   <span className="w-8 h-8 bg-white rounded-full flex items-center justify-center group-hover:rotate-45 transition-transform duration-500">
