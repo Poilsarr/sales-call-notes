@@ -12,24 +12,41 @@ import { Building2, User, Users, Quote, ArrowRight, Zap } from "lucide-react";
  * counter, a real beta tester quote, and a "Join the beta" CTA.
  * Previously scored 5/10 for social proof. This fixes it.
  *
+ * VISUAL-DENSITY D3: stats are bigger/bolder with per-stat color accents;
+ * segment cards get larger distinct-pastel icon tiles; the quote card gets
+ * an oversized quote mark + a stat chip row. All copy below is verbatim.
+ *
  * Renders as a server component — no JS shipped.
  */
+
+const STATS = [
+  { value: "500+", label: "Calls processed", accent: "#F26522" },
+  { value: "12", label: "Beta testers", accent: "#2563EB" },
+  { value: "60s", label: "Avg processing time", accent: "#059669" },
+  { value: "99.2%", label: "Uptime", accent: "#7C3AED" },
+];
 
 const SEGMENTS = [
   {
     icon: User,
     title: "Solo SDRs",
     desc: "Drop an MP3, get a summary + action items + CRM-ready notes in 60 seconds. Free forever tier.",
+    tile: "bg-[#EFF4FF] border-[#2563EB]/20",
+    iconColor: "text-[#2563EB]",
   },
   {
     icon: Users,
     title: "RevOps teams",
     desc: "Push structured notes to HubSpot or Salesforce on every call. MEDDIC fields auto-populated.",
+    tile: "bg-[#FFF4ED] border-[#F26522]/20",
+    iconColor: "text-[#F26522]",
   },
   {
     icon: Building2,
     title: "Sales managers",
     desc: "See every team's calls, talk ratios, and competitor mentions in one dashboard. Alerts on the deals that matter.",
+    tile: "bg-[#EDFAF5] border-[#059669]/20",
+    iconColor: "text-[#059669]",
   },
 ];
 
@@ -47,17 +64,16 @@ export default function SocialProof() {
 
         {/* Live stats bar — honest numbers */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-10">
-          {[
-            { value: "500+", label: "Calls processed" },
-            { value: "12", label: "Beta testers" },
-            { value: "60s", label: "Avg processing time" },
-            { value: "99.2%", label: "Uptime" },
-          ].map((stat) => (
+          {STATS.map((stat) => (
             <div
               key={stat.label}
-              className="rounded-xl border border-gray-200 bg-gray-50 p-4 text-center"
+              data-testid="social-proof-stat"
+              className="rounded-xl border border-gray-200 bg-gray-50 p-4 sm:p-5 text-center"
             >
-              <div className="text-xl sm:text-2xl font-semibold text-gray-900 tracking-tight">
+              <div
+                className="text-3xl sm:text-4xl font-bold tracking-tight"
+                style={{ color: stat.accent }}
+              >
                 {stat.value}
               </div>
               <div className="text-[11px] text-gray-500 mt-1">{stat.label}</div>
@@ -78,14 +94,34 @@ export default function SocialProof() {
 
         {/* Beta tester quote */}
         <div className="mb-10 max-w-2xl">
-          <div className="rounded-2xl border border-gray-200 bg-gray-50 p-6 sm:p-8 relative">
-            <Quote className="w-8 h-8 text-[#F26522]/20 absolute top-4 right-4" />
-            <p className="text-[15px] text-gray-600 leading-relaxed mb-4 italic">
+          <div className="rounded-2xl border border-gray-200 bg-gray-50 p-6 sm:p-8 relative overflow-hidden">
+            <span
+              aria-hidden
+              className="absolute -top-3 left-4 text-[96px] leading-none text-[#F26522]/15 select-none font-serif"
+            >
+              &ldquo;
+            </span>
+            <Quote className="w-12 h-12 text-[#F26522]/25 absolute top-4 right-4" />
+            <p className="text-[15px] text-gray-600 leading-relaxed mb-4 italic relative">
               &ldquo;I stopped writing call notes manually after the first upload.
               The competitor detection caught a Gong mention I completely missed
               in a 40-minute discovery call.&rdquo;
             </p>
-            <div className="flex items-center gap-3">
+            <div
+              data-testid="social-proof-quote-chips"
+              className="flex flex-wrap gap-1.5 mb-4 relative"
+            >
+              <span className="text-[10px] font-mono font-medium px-2.5 py-1 rounded-full border border-gray-200 bg-white text-gray-700">
+                500+ calls
+              </span>
+              <span className="text-[10px] font-mono font-medium px-2.5 py-1 rounded-full border border-gray-200 bg-white text-gray-700">
+                60s avg
+              </span>
+              <span className="text-[10px] font-mono font-medium px-2.5 py-1 rounded-full border border-gray-200 bg-white text-gray-700">
+                12 beta teams
+              </span>
+            </div>
+            <div className="flex items-center gap-3 relative">
               <div className="w-8 h-8 rounded-full bg-[#F26522]/10 border border-[#F26522]/20 flex items-center justify-center text-[11px] font-semibold text-[#F26522]">
                 A
               </div>
@@ -100,10 +136,12 @@ export default function SocialProof() {
         {/* Segment cards */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           {SEGMENTS.map((s, i) => (
-            <div key={i} className="doppel-outer">
+            <div key={i} className="doppel-outer" data-testid="social-proof-segment">
               <div className="doppel-inner p-6 sm:p-8 h-full">
-                <div className="w-10 h-10 rounded-xl bg-[#F26522]/10 border border-[#F26522]/20 flex items-center justify-center mb-5">
-                  <s.icon size={18} className="text-[#F26522]" strokeWidth={1.5} />
+                <div
+                  className={`w-12 h-12 rounded-2xl border flex items-center justify-center mb-5 ${s.tile}`}
+                >
+                  <s.icon size={20} className={s.iconColor} strokeWidth={1.5} />
                 </div>
                 <h3 className="font-semibold tracking-tight text-gray-900 mb-2 text-[15px]">
                   {s.title}

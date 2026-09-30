@@ -6,6 +6,12 @@
  * Slack ping, and CRM sync as three readable cards under a proper `h2`
  * (screen-reader heading nav lands here). Server component, no client JS.
  * Animation is transform/opacity only via existing fadeUp keyframes.
+ *
+ * VISUAL-DENSITY D4: each card gets a condensed mini mock strip on top
+ * (transcript line / slack message / crm field row — same tokens as
+ * product-visual-card: bg-film-cream, mono headers, confidence bar,
+ * Health 8.2 footer). Header / card copy / section footer / accents
+ * verbatim.
  */
 
 import { FileText, MessageSquare, Database } from "lucide-react";
@@ -32,6 +38,129 @@ const EVIDENCE_CARDS = [
     body: "Summary, owners, due dates, and the follow-up draft land in your CRM. Deal health 8.2, rival tracked call-over-call.",
   },
 ];
+
+function TranscriptStrip() {
+  return (
+    <div
+      data-testid="evidence-visual-transcript"
+      className="bg-film-cream p-4 border-b border-film-ink/10"
+    >
+      <div className="flex items-center gap-2 mb-3">
+        <span
+          aria-hidden
+          className="w-2 h-2 rounded-full animate-pulse"
+          style={{ backgroundColor: ACCENT }}
+        />
+        <span className="text-[10px] font-mono tracking-wider text-gray-600 font-medium uppercase">
+          Live summary
+        </span>
+        <span className="ml-auto text-[9px] font-mono text-gray-500">
+          00:14:22
+        </span>
+      </div>
+      <blockquote className="text-[12px] text-gray-700 leading-snug border-l-2 border-film-ink pl-3 mb-2">
+        &ldquo;We&rsquo;re also evaluating Gong and Chorus for the
+        rollout.&rdquo;
+      </blockquote>
+      <p className="text-[11px] text-gray-600">
+        <span
+          className="shrink-0 text-[10px] font-mono font-medium px-2 py-0.5 rounded-full leading-none"
+          style={{ backgroundColor: "#131316", color: "#fff" }}
+        >
+          Sarah Chen
+        </span>{" "}
+        <span className="text-[10px] font-mono text-gray-500">
+          · 00:14:22
+        </span>
+      </p>
+    </div>
+  );
+}
+
+function SlackStrip() {
+  const pct = 96;
+  return (
+    <div
+      data-testid="evidence-visual-slack"
+      className="bg-film-cream p-4 border-b border-film-ink/10"
+    >
+      <div className="flex items-center gap-2 mb-3">
+        <span
+          aria-hidden
+          className="w-2 h-2 rounded-full animate-pulse"
+          style={{ backgroundColor: ACCENT }}
+        />
+        <span className="text-[10px] font-mono tracking-wider text-gray-600 font-medium uppercase">
+          Rival signal
+        </span>
+        <span className="ml-auto text-[9px] font-mono text-gray-500">
+          #deal-room-acme
+        </span>
+      </div>
+      <div className="flex items-center justify-between mb-2">
+        <span className="text-[12px] font-medium text-gray-900">
+          Rival: Gong
+        </span>
+        <span className="text-[10px] font-mono text-gray-500">0.96</span>
+      </div>
+      <div
+        className="h-2 rounded-full bg-gray-200 overflow-hidden"
+        role="progressbar"
+        aria-valuenow={pct}
+        aria-valuemin={0}
+        aria-valuemax={100}
+        aria-label="Gong confidence"
+      >
+        <div
+          className="h-full rounded-full"
+          style={{ width: `${pct}%`, backgroundColor: ACCENT }}
+        />
+      </div>
+    </div>
+  );
+}
+
+function CrmStrip() {
+  const fields = [
+    { label: "Deal", value: "Acme Corp · Discovery" },
+    { label: "Owner", value: "Sarah Chen" },
+    { label: "Next step", value: "Send competitive one-pager · THU" },
+  ];
+  return (
+    <div
+      data-testid="evidence-visual-crm"
+      className="bg-film-cream p-4 border-b border-film-ink/10"
+    >
+      <div className="flex items-center gap-2 mb-3">
+        <span
+          aria-hidden
+          className="w-2 h-2 rounded-full animate-pulse"
+          style={{ backgroundColor: ACCENT }}
+        />
+        <span className="text-[10px] font-mono tracking-wider text-gray-600 font-medium uppercase">
+          CRM sync
+        </span>
+        <span className="ml-auto text-[9px] font-mono text-gray-500">
+          HubSpot → Salesforce
+        </span>
+      </div>
+      <dl className="rounded-xl border border-film-ink/10 bg-white divide-y divide-gray-100">
+        {fields.map((field) => (
+          <div key={field.label} className="flex items-baseline gap-3 px-3 py-1.5">
+            <dt className="shrink-0 w-20 text-[10px] font-mono uppercase tracking-wider text-gray-500">
+              {field.label}
+            </dt>
+            <dd className="text-[12px] font-medium text-gray-900 truncate">
+              {field.value}
+            </dd>
+          </div>
+        ))}
+      </dl>
+    </div>
+  );
+}
+
+const EVIDENCE_VISUALS = [TranscriptStrip, SlackStrip, CrmStrip] as const;
 
 export function HeroEvidenceStack() {
   return (
@@ -65,29 +194,35 @@ export function HeroEvidenceStack() {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          {EVIDENCE_CARDS.map((card, i) => (
-            <div
-              key={card.step}
-              className={`doppel-outer ${i === 1 ? "animate-stagger-2" : i === 2 ? "animate-stagger-3" : "animate-stagger-1"}`}
-            >
-              <div className="doppel-inner p-6 sm:p-7 h-full bg-white">
-                <span
-                  aria-hidden
-                  className="inline-flex w-9 h-9 rounded-xl items-center justify-center mb-4"
-                  style={{ color: ACCENT, backgroundColor: `${ACCENT}14` }}
-                >
-                  <card.icon size={17} />
-                </span>
-                <p className="text-[11px] font-mono uppercase tracking-[0.16em] text-gray-600 mb-3">
-                  {card.step}
-                </p>
-                <p className="text-[15px] font-semibold text-gray-900 tracking-tight mb-2">
-                  {card.title}
-                </p>
-                <p className="text-[13px] text-gray-700 leading-relaxed">{card.body}</p>
+          {EVIDENCE_CARDS.map((card, i) => {
+            const Visual = EVIDENCE_VISUALS[i];
+            return (
+              <div
+                key={card.step}
+                className={`doppel-outer ${i === 1 ? "animate-stagger-2" : i === 2 ? "animate-stagger-3" : "animate-stagger-1"}`}
+              >
+                <div className="doppel-inner p-0 overflow-hidden h-full bg-white flex flex-col">
+                  <Visual />
+                  <div className="p-6 sm:p-7 flex-1">
+                    <span
+                      aria-hidden
+                      className="inline-flex w-9 h-9 rounded-xl items-center justify-center mb-4"
+                      style={{ color: ACCENT, backgroundColor: `${ACCENT}14` }}
+                    >
+                      <card.icon size={17} />
+                    </span>
+                    <p className="text-[11px] font-mono uppercase tracking-[0.16em] text-gray-600 mb-3">
+                      {card.step}
+                    </p>
+                    <p className="text-[15px] font-semibold text-gray-900 tracking-tight mb-2">
+                      {card.title}
+                    </p>
+                    <p className="text-[13px] text-gray-700 leading-relaxed">{card.body}</p>
+                  </div>
+                </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
 
         <div className="mt-6 flex flex-wrap items-center gap-x-6 gap-y-2 text-[12px] font-mono text-gray-600">

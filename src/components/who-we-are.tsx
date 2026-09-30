@@ -3,6 +3,9 @@ import { Crosshair, Eye, Target } from "lucide-react";
 /**
  * WhoWeAre — who we are, goal, what we achieve (FRONTPAGE-OVERHAUL Task 4).
  *
+ * VISUAL-DENSITY (D2): pastel card fills (blue/peach/mint via section-tint
+ * utilities) + larger tinted icon tiles. Copy is VERBATIM.
+ *
  * Server component, zero JS. Honest numbers only (12 beta teams, 500+ calls)
  * — no fake logos, no invented metrics.
  */
@@ -11,16 +14,25 @@ const PILLARS = [
     icon: Eye,
     title: "What we do",
     desc: "Gauge turns every sales call into structured notes, owners, and follow-ups — with a virtual competitor signal the second a rival is named.",
+    tint: "section-tint-blue",
+    tile: "bg-[#DBE7FF]",
+    iconColor: "text-[#1D4ED8]",
   },
   {
     icon: Target,
     title: "Our goal",
     desc: "No rep ever loses a deal to a competitor nobody wrote down. Every mention becomes evidence, every deal stays visible.",
+    tint: "section-tint-peach",
+    tile: "bg-[#FFE3D1]",
+    iconColor: "text-[#C94F17]",
   },
   {
     icon: Crosshair,
     title: "What we achieve",
     desc: "12 beta teams run 500+ calls through Gauge — summaries in under 60 seconds, Slack pings with exact quotes, one-click CRM push.",
+    tint: "section-tint-mint",
+    tile: "bg-[#C9F0DE]",
+    iconColor: "text-[#047857]",
   },
 ];
 
@@ -51,9 +63,11 @@ export function WhoWeAre() {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           {PILLARS.map((p) => (
             <div key={p.title} className="doppel-outer">
-              <div className="doppel-inner p-6 sm:p-8 h-full">
-                <div className="w-10 h-10 rounded-xl bg-[#F26522]/10 flex items-center justify-center mb-5">
-                  <p.icon size={18} className="text-[#C94F17]" strokeWidth={1.75} aria-hidden />
+              <div className={`doppel-inner ${p.tint} p-6 sm:p-8 h-full`}>
+                <div
+                  className={`w-12 h-12 rounded-2xl ${p.tile} flex items-center justify-center mb-5`}
+                >
+                  <p.icon size={22} className={p.iconColor} strokeWidth={1.75} aria-hidden />
                 </div>
                 <h3 className="font-semibold tracking-tight text-gray-900 mb-2 text-[15px]">
                   {p.title}
