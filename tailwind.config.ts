@@ -52,6 +52,15 @@ const config: Config = {
           teal: "#0E7C6B",
           amber: "#D9A21B",
         },
+        pastel: {
+          blue: "#EFF4FF",
+          peach: "#FFF4ED",
+          mint: "#EDFAF5",
+          lavender: "#F3F0FF",
+        },
+      },
+      boxShadow: {
+        soft: "0 1px 2px rgba(16,24,40,0.06), 0 12px 32px -12px rgba(16,24,40,0.18)",
       },
       letterSpacing: {
         tightest: "-0.06em",

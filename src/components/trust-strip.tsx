@@ -62,18 +62,38 @@ export function TrustStrip() {
           </span>
           <span>99.2% uptime</span>
         </p>
-        <div className="mt-3 flex flex-wrap items-center justify-center gap-x-8 gap-y-3">
-          {LOGOS.map((logo) => (
-            <Image
-              key={logo.alt}
-              src={logo.src}
-              alt={logo.alt}
-              width={96}
-              height={28}
-              className="h-7 w-auto opacity-50 grayscale"
-              loading="lazy"
-            />
-          ))}
+        <div className="mt-3 overflow-hidden">
+          <div className="animate-marquee flex w-max items-center">
+            <div className="flex items-center gap-x-8 pr-8">
+              {LOGOS.map((logo) => (
+                <Image
+                  key={logo.alt}
+                  src={logo.src}
+                  alt={logo.alt}
+                  width={96}
+                  height={28}
+                  className="h-7 w-auto opacity-50 grayscale"
+                  loading="lazy"
+                />
+              ))}
+            </div>
+            <div
+              aria-hidden="true"
+              className="flex items-center gap-x-8 pr-8"
+            >
+              {LOGOS.map((logo) => (
+                <Image
+                  key={`marquee-dup-${logo.alt}`}
+                  src={logo.src}
+                  alt={logo.alt}
+                  width={96}
+                  height={28}
+                  className="h-7 w-auto opacity-50 grayscale"
+                  loading="lazy"
+                />
+              ))}
+            </div>
+          </div>
         </div>
         <div className="mt-3 flex flex-wrap items-center justify-center gap-x-6 gap-y-2 font-mono text-[12px] text-gray-600">
           <span className="flex items-center gap-1.5">
