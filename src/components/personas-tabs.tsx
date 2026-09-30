@@ -15,6 +15,11 @@ import { HOMEPAGE_COPY } from "@/lib/homepage-copy";
  * Tab a11y mirrors live-proof-strip: aria-pressed + aria-label on each
  * button, active `bg-gray-900 text-white`. Card shell is
  * doppel-outer > doppel-inner p-6 with a peach icon chip.
+ *
+ * VISUAL-DENSITY D3: the tab pane is a 2-col grid (text left, coded mini
+ * visual right). All copy below is verbatim; visuals are decorative coded
+ * mocks (no binaries, no new claims). The peach icon chip remains the
+ * single F26522 marker — visuals use neutral/cool accents only.
  */
 
 interface Persona {
@@ -91,6 +96,191 @@ export const PERSONAS: Persona[] = [
   },
 ];
 
+function SoloTranscriptMini() {
+  return (
+    <div
+      data-testid="persona-visual-transcript"
+      aria-label="Transcript preview"
+      className="rounded-xl border border-film-ink/10 bg-film-cream p-4"
+    >
+      <p className="text-[10px] font-mono uppercase tracking-wider text-gray-500 mb-3">
+        Transcript · 00:30:12
+      </p>
+      <div className="space-y-2 text-[12px] leading-snug">
+        <p className="text-gray-600">
+          <span className="font-mono text-[10px] text-gray-400 mr-2">
+            30:04
+          </span>
+          <span className="font-medium text-gray-900">Rep: </span>
+          Walk me through the rollout…
+        </p>
+        <p className="rounded-lg bg-white border border-film-ink/10 p-2.5 text-gray-700">
+          <span className="font-mono text-[10px] text-gray-400 mr-2">
+            30:12
+          </span>
+          <span className="font-medium text-gray-900">Prospect: </span>
+          We&rsquo;re also evaluating Gong…
+        </p>
+        <p className="flex items-center gap-2 pt-1">
+          <span className="text-[10px] font-mono font-medium px-2 py-0.5 rounded-full leading-none bg-gray-900 text-white">
+            Rival: Gong
+          </span>
+          <span className="text-[10px] font-mono text-gray-500">
+            quote + speaker
+          </span>
+        </p>
+      </div>
+    </div>
+  );
+}
+
+function AeSlackMini() {
+  return (
+    <div
+      data-testid="persona-visual-slack"
+      aria-label="Slack ping preview"
+      className="rounded-xl border border-film-ink/10 bg-film-cream p-4"
+    >
+      <p className="text-[10px] font-mono uppercase tracking-wider text-gray-500 mb-3">
+        #deal-room-acme · Slack ping
+      </p>
+      <div className="rounded-lg bg-white border border-film-ink/10 p-3 mb-2">
+        <p className="text-[12px] text-gray-700 leading-snug mb-2">
+          &ldquo;We&rsquo;re also evaluating Gong for the rollout.&rdquo;
+        </p>
+        <p className="text-[10px] font-mono text-gray-500">
+          Maya · Discovery · 30:12
+        </p>
+      </div>
+      <p className="text-[10px] font-mono text-gray-500">
+        exact quote + speaker
+      </p>
+    </div>
+  );
+}
+
+function RevOpsCrmMini() {
+  const fields = [
+    { label: "Deal", value: "Acme Corp · Discovery" },
+    { label: "Owner", value: "Sarah Chen" },
+    { label: "MEDDIC", value: "Champion identified" },
+    { label: "Next step", value: "Send one-pager · THU" },
+  ];
+  return (
+    <div
+      data-testid="persona-visual-crm"
+      aria-label="CRM field preview"
+      className="rounded-xl border border-film-ink/10 bg-film-cream p-4"
+    >
+      <p className="text-[10px] font-mono uppercase tracking-wider text-gray-500 mb-3">
+        CRM sync · HubSpot → Salesforce
+      </p>
+      <dl className="rounded-lg border border-film-ink/10 bg-white divide-y divide-gray-100 mb-2">
+        {fields.map((field) => (
+          <div key={field.label} className="flex items-baseline gap-3 px-3 py-1.5">
+            <dt className="shrink-0 w-20 text-[10px] font-mono uppercase tracking-wider text-gray-500">
+              {field.label}
+            </dt>
+            <dd className="text-[12px] font-medium text-gray-900 truncate">
+              {field.value}
+            </dd>
+          </div>
+        ))}
+      </dl>
+      <p className="text-[10px] font-mono text-gray-500">
+        no manual cleanup
+      </p>
+    </div>
+  );
+}
+
+const TALK_BARS = [
+  { rep: "Maya", pct: 32 },
+  { rep: "Jon", pct: 58 },
+  { rep: "Pri", pct: 45 },
+];
+
+function ManagersBarsMini() {
+  return (
+    <div
+      data-testid="persona-visual-bars"
+      role="img"
+      aria-label="Talk ratio per rep preview"
+      className="rounded-xl border border-film-ink/10 bg-film-cream p-4"
+    >
+      <p className="text-[10px] font-mono uppercase tracking-wider text-gray-500 mb-3">
+        Talk ratio · per rep
+      </p>
+      <div className="space-y-3">
+        {TALK_BARS.map((bar) => (
+          <div key={bar.rep}>
+            <div className="flex items-baseline justify-between mb-1">
+              <span className="text-[12px] font-medium text-gray-900">
+                {bar.rep}
+              </span>
+              <span className="text-[10px] font-mono text-gray-500">
+                {bar.pct}%
+              </span>
+            </div>
+            <div className="h-2 rounded-full bg-gray-200 overflow-hidden">
+              <div
+                className="h-full rounded-full bg-gray-900"
+                style={{ width: `${bar.pct}%` }}
+              />
+            </div>
+          </div>
+        ))}
+      </div>
+      <p className="text-[10px] font-mono text-gray-500 mt-3">
+        who listens, who pitches, who closes
+      </p>
+    </div>
+  );
+}
+
+function FounderStatMini() {
+  return (
+    <div
+      data-testid="persona-visual-stat"
+      aria-label="Founder pipeline preview"
+      className="rounded-xl border border-film-ink/10 bg-film-cream p-4"
+    >
+      <p className="text-[10px] font-mono uppercase tracking-wider text-gray-500 mb-3">
+        Today&rsquo;s pipeline
+      </p>
+      <p className="text-4xl font-bold tracking-tight text-gray-900 leading-none">
+        12
+      </p>
+      <p className="text-[12px] font-medium text-gray-900 mt-1">
+        beta teams building in the open
+      </p>
+      <p className="text-[10px] font-mono text-gray-500 mt-2">
+        500+ calls processed
+      </p>
+      <p className="mt-3 border-t border-film-ink/10 pt-3 text-[12px] leading-snug text-gray-700">
+        every mention, commitment, and follow-up
+      </p>
+    </div>
+  );
+}
+
+function PersonaVisual({ id }: { id: string }) {
+  switch (id) {
+    case "solo-sdr":
+      return <SoloTranscriptMini />;
+    case "ae-discovery":
+      return <AeSlackMini />;
+    case "revops":
+      return <RevOpsCrmMini />;
+    case "sales-managers":
+      return <ManagersBarsMini />;
+    case "founder":
+      return <FounderStatMini />;
+    default:
+      return null;
+  }
+}
+
 export default function PersonasTabs() {
   const [activeIdx, setActiveIdx] = useState(0);
   const active = PERSONAS[activeIdx];
@@ -130,36 +320,41 @@ export default function PersonasTabs() {
           ))}
         </div>
 
-        <div className="doppel-outer max-w-2xl">
+        <div className="doppel-outer max-w-4xl">
           <div
             className="doppel-inner p-6"
             aria-live="polite"
             aria-label={`${active.label} details`}
           >
-            <div className="w-10 h-10 rounded-xl bg-[#F26522]/10 border border-[#F26522]/20 flex items-center justify-center mb-5">
-              <ActiveIcon
-                size={18}
-                className="text-[#F26522]"
-                strokeWidth={1.5}
-              />
+            <div className="grid gap-6 md:grid-cols-2 md:items-center">
+              <div>
+                <div className="w-10 h-10 rounded-xl bg-[#F26522]/10 border border-[#F26522]/20 flex items-center justify-center mb-5">
+                  <ActiveIcon
+                    size={18}
+                    className="text-[#F26522]"
+                    strokeWidth={1.5}
+                  />
+                </div>
+                <h3 className="font-semibold tracking-tight text-gray-900 mb-2 text-[15px]">
+                  {active.headline}
+                </h3>
+                <p className="text-[13px] text-gray-500 leading-relaxed">
+                  {active.body}
+                </p>
+                <p className="mt-4 border-t border-gray-100 pt-4 text-[13px] leading-relaxed text-gray-700">
+                  <span className="font-medium text-gray-900">Radar angle: </span>
+                  {active.radar}
+                </p>
+                <Link
+                  href={active.ctaHref}
+                  aria-label={`${active.ctaLabel.replace(" →", "")} for ${active.label}`}
+                  className="mt-4 inline-flex items-center gap-1 text-[13px] font-medium text-[#F26522] hover:underline"
+                >
+                  {active.ctaLabel}
+                </Link>
+              </div>
+              <PersonaVisual id={active.id} />
             </div>
-            <h3 className="font-semibold tracking-tight text-gray-900 mb-2 text-[15px]">
-              {active.headline}
-            </h3>
-            <p className="text-[13px] text-gray-500 leading-relaxed">
-              {active.body}
-            </p>
-            <p className="mt-4 border-t border-gray-100 pt-4 text-[13px] leading-relaxed text-gray-700">
-              <span className="font-medium text-gray-900">Radar angle: </span>
-              {active.radar}
-            </p>
-            <Link
-              href={active.ctaHref}
-              aria-label={`${active.ctaLabel.replace(" →", "")} for ${active.label}`}
-              className="mt-4 inline-flex items-center gap-1 text-[13px] font-medium text-[#F26522] hover:underline"
-            >
-              {active.ctaLabel}
-            </Link>
           </div>
         </div>
       </div>

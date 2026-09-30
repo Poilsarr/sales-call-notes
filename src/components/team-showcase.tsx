@@ -1,12 +1,25 @@
-import Image from "next/image";
 import { TEAM_MEMBERS, ADVISORY_NOTE } from "@/lib/team";
 
 /**
  * TeamShowcase — advisory-board / team grid on `/` (FRONTPAGE-OVERHAUL Task 3).
  *
- * Server component, zero JS. Placeholder-safe: initials avatars, no invented
- * photos or credentials. Proper `h2` so screen-reader heading nav finds it.
+ * Server component, zero JS. Placeholder-safe: gradient initial chips, no
+ * photos or invented credentials. Proper `h2` so screen-reader heading nav
+ * finds it.
+ *
+ * VISUAL-DENSITY D4: initials → large gradient avatar chips (distinct hue
+ * per member), role pill, hover ring. Copy (roles/names/focus/note/CTA)
+ * verbatim from `src/lib/team.ts`.
  */
+
+/** Distinct gradient hue per seat — orange / blue / teal / violet. */
+const AVATAR_GRADIENTS = [
+  "from-[#F26522] to-[#A84310]",
+  "from-[#2563EB] to-[#1E3A8A]",
+  "from-[#0D9488] to-[#134E4A]",
+  "from-[#7C3AED] to-[#4C1D95]",
+] as const;
+
 export function TeamShowcase() {
   return (
     <section
@@ -34,27 +47,21 @@ export function TeamShowcase() {
           </a>
         </div>
         <ul className="grid grid-cols-1 sm:grid-cols-2 gap-4" role="list">
-          {TEAM_MEMBERS.map((m) => (
-            <li key={m.role} className="doppel-outer">
-              <div className="doppel-inner p-6 sm:p-7 h-full flex items-start gap-4">
-                {m.photo ? (
-                  <Image
-                    src={m.photo}
-                    alt={m.name}
-                    width={44}
-                    height={44}
-                    className="w-11 h-11 shrink-0 rounded-full object-cover"
-                  />
-                ) : (
-                  <span
-                    aria-hidden
-                    className="w-11 h-11 shrink-0 rounded-full bg-[#F26522]/10 text-[#C94F17] flex items-center justify-center text-[12px] font-bold tracking-tight"
-                  >
-                    {m.initials}
-                  </span>
-                )}
+          {TEAM_MEMBERS.map((m, i) => (
+            <li
+              key={m.role}
+              className="doppel-outer group transition-all duration-200 hover:-translate-y-0.5 hover:ring-2 hover:ring-[#F26522]/30 hover:shadow-lg"
+            >
+              <div className="doppel-inner p-6 sm:p-7 h-full flex items-start gap-4 sm:gap-5 transition-colors group-hover:bg-orange-50/30">
+                <span
+                  aria-hidden
+                  data-testid={`team-avatar-${m.initials}`}
+                  className={`w-11 h-11 sm:w-14 sm:h-14 shrink-0 rounded-full bg-gradient-to-br ${AVATAR_GRADIENTS[i % AVATAR_GRADIENTS.length]} text-white flex items-center justify-center text-[14px] sm:text-[16px] font-bold tracking-tight shadow-md ring-1 ring-black/10`}
+                >
+                  {m.initials}
+                </span>
                 <span className="min-w-0">
-                  <span className="block text-[11px] uppercase tracking-[0.16em] text-gray-600 font-medium">
+                  <span className="inline-flex items-center rounded-full border border-gray-200 bg-gray-100 px-2.5 py-0.5 text-[11px] uppercase tracking-[0.16em] text-gray-600 font-medium mb-2">
                     {m.role}
                   </span>
                   <span className="block text-[15px] font-semibold text-gray-900 tracking-tight">
