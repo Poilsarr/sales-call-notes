@@ -1,5 +1,6 @@
 import Link from "next/link";
 import GaugeLogo from "@/components/gauge-logo";
+import FooterLeadForm from "@/components/footer-lead-form";
 
 /**
  * Site footer — 4-column link directory + status badge + legal row.
@@ -72,6 +73,7 @@ export default function SiteFooter() {
                 All systems operational
               </span>
             </div>
+            <FooterLeadForm />
           </div>
 
           {/* Link columns */}

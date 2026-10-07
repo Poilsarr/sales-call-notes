@@ -70,5 +70,42 @@ export function capturePostHogEvent(event: string, properties?: PostHogPropertie
 
 export function capturePostHogPageview(pathname: string) {
   if (typeof window === "undefined") return;
-  capture("$pageview", { $current_url: window.location.href, pathname });
+  const properties: PostHogProperties = {
+    $current_url: window.location.href.slice(0, 1024),
+    pathname,
+  };
+
+  const referrer = (document.referrer || "").slice(0, 1024);
+  if (referrer) {
+    properties.$referrer = referrer;
+  }
+
+  try {
+    const params = new URLSearchParams(window.location.search);
+    const utmKeys = [
+      "utm_source",
+      "utm_medium",
+      "utm_campaign",
+      "utm_content",
+      "utm_term",
+    ] as const;
+    for (const k of utmKeys) {
+      const v = params.get(k);
+      if (v) {
+        properties[k] = v.slice(0, 128);
+      }
+    }
+  } catch {
+    // URLSearchParams should never throw for location.search, but
+    // analytics must never break the app.
+  }
+
+  if (typeof window.innerWidth === "number") {
+    properties.viewport_w = window.innerWidth;
+  }
+  if (typeof window.innerHeight === "number") {
+    properties.viewport_h = window.innerHeight;
+  }
+
+  capture("$pageview", properties);
 }

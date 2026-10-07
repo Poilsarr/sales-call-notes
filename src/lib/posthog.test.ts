@@ -80,3 +80,122 @@ describe('identifyPostHogLead', () => {
     expect(raw).not.toContain('@');
   });
 });
+
+describe('capturePostHogPageview', () => {
+  beforeEach(() => {
+    vi.resetModules();
+    vi.stubEnv('NEXT_PUBLIC_POSTHOG_KEY', 'test-key');
+    vi.stubEnv('NEXT_PUBLIC_POSTHOG_HOST', 'https://us.i.posthog.com');
+    localStorageMock.clear();
+    vi.stubGlobal(
+      'fetch',
+      vi.fn().mockResolvedValue({ ok: true, json: async () => ({}) }),
+    );
+    window.history.pushState({}, '', '/');
+    Object.defineProperty(document, 'referrer', { value: '', configurable: true });
+    Object.defineProperty(window, 'innerWidth', { value: 1440, configurable: true, writable: true });
+    Object.defineProperty(window, 'innerHeight', { value: 900, configurable: true, writable: true });
+  });
+
+  afterEach(() => {
+    vi.unstubAllGlobals();
+    vi.unstubAllEnvs();
+    window.history.pushState({}, '', '/');
+    Object.defineProperty(document, 'referrer', { value: '', configurable: true });
+  });
+
+  it('enriches pageview with $referrer, UTMs, viewport while keeping core props', async () => {
+    window.localStorage.setItem('gauge_posthog_distinct_id', 'anon-789');
+    window.history.pushState(
+      {},
+      '',
+      '/pricing?utm_source=google&utm_medium=cpc&utm_campaign=spring&utm_content=hero&utm_term=notes',
+    );
+    Object.defineProperty(document, 'referrer', {
+      value: 'https://google.com/search?q=gauge',
+      configurable: true,
+    });
+    Object.defineProperty(window, 'innerWidth', { value: 1440, configurable: true, writable: true });
+    Object.defineProperty(window, 'innerHeight', { value: 900, configurable: true, writable: true });
+
+    const mod = await import('@/lib/posthog');
+    mod.capturePostHogPageview('/pricing');
+
+    expect(fetch).toHaveBeenCalledTimes(1);
+    const [, opts] = vi.mocked(fetch).mock.calls[0] as [string, RequestInit];
+    const body = JSON.parse(opts.body as string);
+    expect(body.event).toBe('$pageview');
+    expect(body.properties.pathname).toBe('/pricing');
+    expect(body.properties.$current_url).toContain('/pricing');
+    expect(body.properties.$referrer).toBe('https://google.com/search?q=gauge');
+    expect(body.properties.utm_source).toBe('google');
+    expect(body.properties.utm_medium).toBe('cpc');
+    expect(body.properties.utm_campaign).toBe('spring');
+    expect(body.properties.utm_content).toBe('hero');
+    expect(body.properties.utm_term).toBe('notes');
+    expect(body.properties.viewport_w).toBe(1440);
+    expect(body.properties.viewport_h).toBe(900);
+    expect(body.properties.distinct_id).toBe('anon-789');
+    expect(body.properties.$lib).toBe('gauge-web');
+  });
+
+  it('omits $referrer when empty and omits absent UTM params', async () => {
+    window.localStorage.setItem('gauge_posthog_distinct_id', 'anon-789');
+    window.history.pushState({}, '', '/features?utm_source=newsletter');
+    Object.defineProperty(document, 'referrer', { value: '', configurable: true });
+
+    const mod = await import('@/lib/posthog');
+    mod.capturePostHogPageview('/features');
+
+    expect(fetch).toHaveBeenCalledTimes(1);
+    const [, opts] = vi.mocked(fetch).mock.calls[0] as [string, RequestInit];
+    const body = JSON.parse(opts.body as string);
+    expect(body.properties).not.toHaveProperty('$referrer');
+    expect(body.properties.utm_source).toBe('newsletter');
+    expect(body.properties).not.toHaveProperty('utm_medium');
+    expect(body.properties).not.toHaveProperty('utm_campaign');
+    expect(body.properties).not.toHaveProperty('utm_content');
+    expect(body.properties).not.toHaveProperty('utm_term');
+  });
+
+  it('caps $current_url/$referrer at 1024 and UTM values at 128', async () => {
+    window.localStorage.setItem('gauge_posthog_distinct_id', 'anon-789');
+    const longUtm = 'x'.repeat(300);
+    window.history.pushState({}, '', `/pricing?utm_source=${longUtm}&utm_medium=${longUtm}`);
+    Object.defineProperty(document, 'referrer', {
+      value: `https://example.com/${'r'.repeat(2000)}`,
+      configurable: true,
+    });
+
+    const mod = await import('@/lib/posthog');
+    mod.capturePostHogPageview('/pricing');
+
+    const [, opts] = vi.mocked(fetch).mock.calls[0] as [string, RequestInit];
+    const body = JSON.parse(opts.body as string);
+    expect((body.properties.$current_url as string).length).toBeLessThanOrEqual(1024);
+    expect((body.properties.$referrer as string).length).toBeLessThanOrEqual(1024);
+    expect((body.properties.utm_source as string).length).toBeLessThanOrEqual(128);
+    expect((body.properties.utm_medium as string).length).toBeLessThanOrEqual(128);
+    // Truncation keeps the leading characters.
+    expect(body.properties.utm_source).toBe('x'.repeat(128));
+  });
+
+  it('never includes email in the pageview payload', async () => {
+    window.localStorage.setItem('gauge_posthog_distinct_id', 'anon-789');
+    window.history.pushState({}, '', '/pricing?utm_source=google');
+    Object.defineProperty(document, 'referrer', {
+      value: 'https://google.com/',
+      configurable: true,
+    });
+
+    const mod = await import('@/lib/posthog');
+    mod.capturePostHogPageview('/pricing');
+
+    const [, opts] = vi.mocked(fetch).mock.calls[0] as [string, RequestInit];
+    const body = JSON.parse(opts.body as string);
+    expect(body.properties).not.toHaveProperty('email');
+    const raw = JSON.stringify(body);
+    expect(raw).not.toContain('@');
+    expect(raw).not.toContain('lead@example.com');
+  });
+});

@@ -85,8 +85,20 @@ describe("POST /api/leads", () => {
 
     const res = await POST(
       makeRequest(
-        { email: "  New-User@Example.COM ", source: "pricing", ctaId: "exit-modal" },
-        { "x-forwarded-for": "1.2.3.4, 203.0.113.9" },
+        {
+          email: "  New-User@Example.COM ",
+          source: "pricing",
+          ctaId: "exit-modal",
+          distinctId: "  anon-123  ",
+          landingPage: "https://example.com/pricing?utm_source=google",
+          referrer: "https://google.com/",
+          utmSource: "google",
+          utmMedium: "cpc",
+          utmCampaign: "spring",
+          utmContent: "ad-1",
+          utmTerm: "sales-tool",
+        },
+        { "x-forwarded-for": "1.2.3.4, 203.0.113.9", "user-agent": "Mozilla/5.0 Test" },
       ),
     );
     expect(res.status).toBe(201);
@@ -97,6 +109,15 @@ describe("POST /api/leads", () => {
         email: "new-user@example.com",
         source: "pricing",
         ctaId: "exit-modal",
+        distinctId: "anon-123",
+        landingPage: "https://example.com/pricing?utm_source=google",
+        referrer: "https://google.com/",
+        utmSource: "google",
+        utmMedium: "cpc",
+        utmCampaign: "spring",
+        utmContent: "ad-1",
+        utmTerm: "sales-tool",
+        userAgent: "Mozilla/5.0 Test",
         status: "pending",
       },
     });
@@ -137,6 +158,94 @@ describe("POST /api/leads", () => {
     expect(await res.json()).toEqual({ ok: true, id: "lead-9" });
     expect(mocks.emailLead.update).not.toHaveBeenCalled();
     expect(mocks.emailLead.create).not.toHaveBeenCalled();
+  });
+
+  it("rejects overlong attribution fields with 400", async () => {
+    const res = await POST(
+      makeRequest({
+        email: "a@example.com",
+        distinctId: "x".repeat(129),
+        landingPage: "y".repeat(1025),
+        utmSource: "z".repeat(129),
+      }),
+    );
+    expect(res.status).toBe(400);
+    expect(mocks.emailLead.create).not.toHaveBeenCalled();
+    expect(mocks.emailLead.findUnique).not.toHaveBeenCalled();
+  });
+
+  it("refreshes attribution on idempotent re-POST only for provided values", async () => {
+    mocks.emailLead.findUnique.mockResolvedValue({ id: "lead-9" });
+    mocks.emailLead.update.mockResolvedValue({ id: "lead-9" });
+
+    const res = await POST(
+      makeRequest(
+        {
+          email: "returning@example.com",
+          distinctId: "anon-999",
+          landingPage: "https://example.com/blog",
+          utmSource: "newsletter",
+        },
+        { "user-agent": "AttributionBot/1.0" },
+      ),
+    );
+    expect(res.status).toBe(200);
+    expect(await res.json()).toEqual({ ok: true, id: "lead-9" });
+    expect(mocks.emailLead.create).not.toHaveBeenCalled();
+    expect(mocks.emailLead.update).toHaveBeenCalledWith({
+      where: { email: "returning@example.com" },
+      data: {
+        distinctId: "anon-999",
+        landingPage: "https://example.com/blog",
+        utmSource: "newsletter",
+        userAgent: "AttributionBot/1.0",
+      },
+    });
+    // No raw email in audit payload.
+    expect(JSON.stringify(mocks.auditLog.create.mock.calls)).not.toContain(
+      "returning@example.com",
+    );
+  });
+
+  it("derives userAgent server-side from header and ignores any client field", async () => {
+    mocks.emailLead.findUnique.mockResolvedValue(null);
+    mocks.emailLead.create.mockResolvedValue({ id: "lead-ua" });
+
+    const res = await POST(
+      makeRequest(
+        // userAgent is not part of the public schema — zod strips it.
+        { email: "ua@example.com", userAgent: "Evil-Client-UA" },
+        { "user-agent": "Real-Browser/2.0" },
+      ),
+    );
+    expect(res.status).toBe(201);
+    expect(await res.json()).toEqual({ ok: true, id: "lead-ua" });
+    expect(mocks.emailLead.create).toHaveBeenCalledWith({
+      data: expect.objectContaining({
+        email: "ua@example.com",
+        userAgent: "Real-Browser/2.0",
+      }),
+    });
+    expect(JSON.stringify(mocks.emailLead.create.mock.calls)).not.toContain(
+      "Evil-Client-UA",
+    );
+  });
+
+  it("caps a header-derived userAgent at 512 chars", async () => {
+    mocks.emailLead.findUnique.mockResolvedValue(null);
+    mocks.emailLead.create.mockResolvedValue({ id: "lead-ua-long" });
+    const longUa = `A`.repeat(600);
+
+    const res = await POST(
+      makeRequest({ email: "ua-long@example.com" }, { "user-agent": longUa }),
+    );
+    expect(res.status).toBe(201);
+    expect(mocks.emailLead.create).toHaveBeenCalledWith({
+      data: expect.objectContaining({
+        email: "ua-long@example.com",
+        userAgent: "A".repeat(512),
+      }),
+    });
   });
 
   it("returns 429 without DB writes when the leads bucket is exhausted", async () => {

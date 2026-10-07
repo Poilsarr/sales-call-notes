@@ -10,10 +10,18 @@ const LeadSchema = z.object({
   ctaId: z.string().trim().max(64).optional(),
   // Honeypot: never rendered to humans; bots fill it, real clients omit it.
   website: z.string().max(500).optional(),
-  // Anonymous PostHog distinct_id for client-side $identify (Executor B).
-  // Accepted here for forward-compat; identification happens client-side,
-  // so the server intentionally does not persist it.
+  // Anonymous PostHog distinct_id joining EmailLead <-> PostHog person.
   distinctId: z.string().trim().max(128).optional(),
+  // Visitor attribution (Executor B). Trimmed, length-capped, all optional.
+  landingPage: z.string().trim().max(1024).optional(),
+  referrer: z.string().trim().max(1024).optional(),
+  utmSource: z.string().trim().max(128).optional(),
+  utmMedium: z.string().trim().max(128).optional(),
+  utmCampaign: z.string().trim().max(128).optional(),
+  utmContent: z.string().trim().max(128).optional(),
+  utmTerm: z.string().trim().max(128).optional(),
+  // NOTE: userAgent is never accepted from the client body — it is derived
+  // server-side from the `user-agent` request header (see below).
 });
 
 function getClientIp(req: Request): string {
@@ -88,15 +96,53 @@ export async function POST(req: Request) {
   const email = parsed.data.email.trim().toLowerCase();
   const source = parsed.data.source || undefined;
   const ctaId = parsed.data.ctaId || undefined;
+  const distinctId = parsed.data.distinctId || undefined;
+  const landingPage = parsed.data.landingPage || undefined;
+  const referrer = parsed.data.referrer || undefined;
+  const utmSource = parsed.data.utmSource || undefined;
+  const utmMedium = parsed.data.utmMedium || undefined;
+  const utmCampaign = parsed.data.utmCampaign || undefined;
+  const utmContent = parsed.data.utmContent || undefined;
+  const utmTerm = parsed.data.utmTerm || undefined;
+  // Derive userAgent server-side from the request header. Never trust a
+  // client-supplied field (LeadSchema has no userAgent input). Cap at 512
+  // chars to match the DB column; empty/missing header -> undefined.
+  const rawUserAgent = req.headers.get("user-agent")?.trim();
+  const userAgent =
+    rawUserAgent && rawUserAgent.length > 0
+      ? rawUserAgent.slice(0, 512)
+      : undefined;
 
   try {
     const existing = await prisma.emailLead.findUnique({ where: { email } });
     if (existing) {
       // Idempotent re-POST: same email → 200 with the same id; refresh
-      // source/ctaId only when the caller actually provided new values.
-      const data: { source?: string; ctaId?: string } = {};
+      // source/ctaId/attribution only when the caller actually provided new
+      // values. userAgent refreshes whenever a (new) header value is present.
+      const data: {
+        source?: string;
+        ctaId?: string;
+        distinctId?: string;
+        landingPage?: string;
+        referrer?: string;
+        utmSource?: string;
+        utmMedium?: string;
+        utmCampaign?: string;
+        utmContent?: string;
+        utmTerm?: string;
+        userAgent?: string;
+      } = {};
       if (source !== undefined) data.source = source;
       if (ctaId !== undefined) data.ctaId = ctaId;
+      if (distinctId !== undefined) data.distinctId = distinctId;
+      if (landingPage !== undefined) data.landingPage = landingPage;
+      if (referrer !== undefined) data.referrer = referrer;
+      if (utmSource !== undefined) data.utmSource = utmSource;
+      if (utmMedium !== undefined) data.utmMedium = utmMedium;
+      if (utmCampaign !== undefined) data.utmCampaign = utmCampaign;
+      if (utmContent !== undefined) data.utmContent = utmContent;
+      if (utmTerm !== undefined) data.utmTerm = utmTerm;
+      if (userAgent !== undefined) data.userAgent = userAgent;
       const lead =
         Object.keys(data).length > 0
           ? await prisma.emailLead.update({ where: { email }, data })
@@ -108,7 +154,21 @@ export async function POST(req: Request) {
     let lead;
     try {
       lead = await prisma.emailLead.create({
-        data: { email, source, ctaId, status: "pending" },
+        data: {
+          email,
+          source,
+          ctaId,
+          distinctId,
+          landingPage,
+          referrer,
+          utmSource,
+          utmMedium,
+          utmCampaign,
+          utmContent,
+          utmTerm,
+          userAgent,
+          status: "pending",
+        },
       });
     } catch (e) {
       // Concurrent double-submit race: unique violation → treat as idempotent.
