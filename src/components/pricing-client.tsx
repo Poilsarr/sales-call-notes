@@ -676,13 +676,32 @@ export default function PricingClient({
                     </div>
                   ))}
                 </div>
-                {/* Migration visual — 3-step coded mock (export → import →
-                    searchable) on film tokens. Copy above kept verbatim. */}
-                <div className="mt-8 rounded-2xl bg-film-cream border border-film-ink/10 p-5 sm:p-6">
+                {/* Migration visual — product still inside .product-chrome
+                    proving CRM carryover; export → import → searchable steps
+                    kept verbatim as text (no coded mock cards, no film
+                    tokens). Copy above kept verbatim. */}
+                <div className="mt-8 rounded-2xl bg-white border border-black/[0.06] p-5 sm:p-6">
                   <p className="text-[10px] font-mono uppercase tracking-[0.18em] text-gray-500 mb-4 text-center">
                     How migration works
                   </p>
-                  <ol className="grid grid-cols-1 sm:grid-cols-[1fr_auto_1fr_auto_1fr] items-center gap-3">
+                  <div
+                    data-testid="pricing-migration-visual"
+                    className="product-chrome"
+                  >
+                    {/* eslint-disable-next-line @next/next/no-img-element -- img keeps vitest free of next/image mocks */}
+                    <img
+                      src={PRODUCT_STILLS.crm}
+                      alt="Sample CRM sync still with HubSpot and Salesforce fields"
+                      width={640}
+                      height={400}
+                      loading="lazy"
+                      className="block w-full h-auto"
+                    />
+                  </div>
+                  <p className="mt-3 text-center text-[10px] font-mono text-gray-500">
+                    sample CRM sync · keep your HubSpot + Salesforce workflow
+                  </p>
+                  <ol className="mt-4 grid grid-cols-1 sm:grid-cols-3 gap-4">
                     {[
                       {
                         step: "01",
@@ -699,26 +718,14 @@ export default function PricingClient({
                         title: "Searchable",
                         body: "Summaries, quotes, and action items in one search.",
                       },
-                    ].map((s, i) => (
-                      <li key={s.step} className="contents">
-                        <div className="rounded-xl bg-white border border-film-ink/10 px-4 py-3">
-                          <p className="text-[10px] font-mono text-[#F26522] font-semibold mb-1">
-                            {s.step}
-                          </p>
-                          <p className="text-[13px] font-semibold text-gray-900 mb-1">
-                            {s.title}
-                          </p>
-                          <p className="text-[12px] text-gray-500 leading-relaxed">
-                            {s.body}
-                          </p>
-                        </div>
-                        {i < 2 && (
-                          <ArrowRight
-                            size={16}
-                            className="text-gray-400 hidden sm:block shrink-0"
-                            aria-hidden
-                          />
-                        )}
+                    ].map((s) => (
+                      <li key={s.step} className="px-2 text-center">
+                        <p className="text-[10px] font-mono text-[#F26522] font-semibold mb-1">
+                          {s.step} · {s.title}
+                        </p>
+                        <p className="text-[12px] text-gray-500 leading-relaxed">
+                          {s.body}
+                        </p>
                       </li>
                     ))}
                   </ol>
@@ -756,7 +763,7 @@ export default function PricingClient({
                   ].map((pill) => (
                     <span
                       key={pill}
-                      className="inline-flex items-center gap-1.5 rounded-full border border-film-ink/15 bg-film-cream px-3 py-1 font-mono text-[11px] text-gray-700"
+                      className="inline-flex items-center gap-1.5 rounded-full border border-black/[0.06] bg-white px-3 py-1 font-mono text-[11px] text-gray-700"
                     >
                       <span aria-hidden className="w-1.5 h-1.5 rounded-full bg-[#F26522]" />
                       {pill}

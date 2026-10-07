@@ -192,7 +192,7 @@ export function HeroScrubbableVideo() {
               className="absolute inset-0 scale-110 bg-cover bg-center blur-md"
               style={{ backgroundImage: `url(${HERO_SCRUBBABLE_POSTER_SRC})` }}
             />
-            <span aria-hidden className="absolute inset-0 bg-film-cream/40" />
+            <span aria-hidden className="absolute inset-0 bg-white/40" />
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               src={HERO_SCRUBBABLE_POSTER_SRC}
