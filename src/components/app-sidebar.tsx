@@ -15,6 +15,7 @@ import {
   Settings,
   LogOut,
   Calendar,
+  ShieldCheck,
 } from 'lucide-react';
 import GaugeLogo from '@/components/gauge-logo';
 
@@ -39,6 +40,7 @@ const navItems = [
   { href: '/dashboard', label: 'Analytics', icon: BarChart3 },
   { href: '/integrations', label: 'Integrations', icon: Plug },
   { href: '/settings', label: 'Settings', icon: Settings },
+  { href: '/admin', label: 'Admin', icon: ShieldCheck },
 ];
 
 export function AppSidebar({ user }: AppSidebarProps) {
