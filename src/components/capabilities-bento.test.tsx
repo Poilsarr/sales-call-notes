@@ -52,67 +52,67 @@ describe("CapabilitiesBento", () => {
         `expected verbatim body: ${body.slice(0, 40)}…`,
       ).toBeGreaterThanOrEqual(1);
     }
-    // One doppel card shell per capability, in a 2-col bento grid.
-    expect(
-      el.querySelectorAll(".doppel-outer.border-2.border-film-ink").length,
-    ).toBe(4);
+    // One soft doppel card shell per capability, in a 2-col bento grid.
+    const shells = el.querySelectorAll(".doppel-outer");
+    expect(shells.length).toBe(4);
+    expect(el.innerHTML).not.toContain("shadow-[8px_8px_0_#131316]");
+    for (const shell of shells) {
+      expect(shell.className).not.toMatch(/border-2/);
+      expect(shell.className).not.toMatch(/shadow-\[8px_8px_0_#131316\]/);
+    }
     expect(el.querySelector(".grid.md\\:grid-cols-2")).not.toBeNull();
   });
 
-  it("renders the upload dropzone visual (MP3 / Record / Meet / no-bot)", () => {
-    const { scope } = section();
+  it("renders the upload visual as a product still (meet-extension)", () => {
+    const { container } = section();
     const visual = screen.getByTestId("capability-upload-visual");
     expect(visual).toBeDefined();
-    const v = within(visual as HTMLElement);
-    expect(v.getByText("MP3")).toBeDefined();
-    expect(v.getByText("Record")).toBeDefined();
-    expect(v.getByText("Google Meet")).toBeDefined();
-    expect(
-      v.getByText(/no bot ever joins the call/i),
-    ).toBeDefined();
-    expect(visual.querySelector(".border-dashed")).not.toBeNull();
-  });
-
-  it("renders the slack-mini visual (rival signal + confidence bar)", () => {
-    const { container } = section();
-    const visual = screen.getByTestId("capability-track-visual");
-    expect(visual).toBeDefined();
-    const v = within(visual as HTMLElement);
-    expect(v.getByText("Rival signal")).toBeDefined();
-    expect(v.getByText("Rival: Gong")).toBeDefined();
-    expect(v.getByText("#deal-room-acme")).toBeDefined();
-    expect(v.getAllByText(/Slack ping/).length).toBeGreaterThanOrEqual(1);
-    const bar = v.getByRole("progressbar", { name: /Gong confidence/ });
-    expect(bar.getAttribute("aria-valuenow")).toBe("96");
-    expect(bar.getAttribute("aria-valuemin")).toBe("0");
-    expect(bar.getAttribute("aria-valuemax")).toBe("100");
+    expect(visual.querySelector(".product-chrome")).not.toBeNull();
+    const img = visual.querySelector("img");
+    expect(img).not.toBeNull();
+    expect(img?.getAttribute("src")).toContain("/product/meet-extension.svg");
+    expect(img?.getAttribute("alt")).toBeTruthy();
+    expect(img?.getAttribute("width")).toBeTruthy();
+    expect(img?.getAttribute("height")).toBeTruthy();
+    expect(img?.getAttribute("loading")).toBe("lazy");
     expect(container.querySelector('[id="demo"]')).toBeNull();
   });
 
-  it("renders the CRM visual (field rows + Health 8.2)", () => {
+  it("renders the track visual as a product still (radar-board)", () => {
+    const { container } = section();
+    const visual = screen.getByTestId("capability-track-visual");
+    expect(visual).toBeDefined();
+    expect(visual.querySelector(".product-chrome")).not.toBeNull();
+    const img = visual.querySelector("img");
+    expect(img).not.toBeNull();
+    expect(img?.getAttribute("src")).toContain("/product/radar-board.svg");
+    expect(img?.getAttribute("alt")).toBeTruthy();
+    expect(img?.getAttribute("loading")).toBe("lazy");
+    expect(container.querySelector('[id="demo"]')).toBeNull();
+  });
+
+  it("renders the CRM visual as a product still (summary-owners)", () => {
     section();
     const visual = screen.getByTestId("capability-crm-visual");
     expect(visual).toBeDefined();
-    const v = within(visual as HTMLElement);
-    expect(v.getByText("CRM sync")).toBeDefined();
-    expect(v.getByText("HubSpot → Salesforce")).toBeDefined();
-    for (const label of ["Deal", "Owner", "Close date", "Next step"]) {
-      expect(v.getByText(label)).toBeDefined();
-    }
-    expect(v.getByText(/Health 8\.2/)).toBeDefined();
+    expect(visual.querySelector(".product-chrome")).not.toBeNull();
+    const img = visual.querySelector("img");
+    expect(img).not.toBeNull();
+    expect(img?.getAttribute("src")).toContain("/product/summary-owners.svg");
+    expect(img?.getAttribute("alt")).toBeTruthy();
+    expect(img?.getAttribute("loading")).toBe("lazy");
   });
 
-  it("renders the privacy visual (shield + mono pills from the desc)", () => {
+  it("renders the privacy visual as a product still (coach-talk)", () => {
     section();
     const visual = screen.getByTestId("capability-privacy-visual");
     expect(visual).toBeDefined();
-    const v = within(visual as HTMLElement);
-    expect(v.getByText("Never trains")).toBeDefined();
-    expect(v.getByText("Export + deletion")).toBeDefined();
-    expect(v.getByText("Disclosed providers")).toBeDefined();
-    expect(
-      v.getByText(/never used to train our models/i),
-    ).toBeDefined();
+    expect(visual.querySelector(".product-chrome")).not.toBeNull();
+    const img = visual.querySelector("img");
+    expect(img).not.toBeNull();
+    expect(img?.getAttribute("src")).toContain("/product/coach-talk.svg");
+    expect(img?.getAttribute("alt")).toBeTruthy();
+    expect(img?.getAttribute("loading")).toBe("lazy");
   });
 
   it("killed the old theoretical look: no peach icon chips, no id=demo", () => {
@@ -123,5 +123,8 @@ describe("CapabilitiesBento", () => {
     expect(src).not.toContain("w-10 h-10");
     expect(src).not.toContain("bg-[#F26522]/10");
     expect(src).not.toContain('id="demo"');
+    expect(src).not.toContain("shadow-[8px_8px_0_#131316]");
+    expect(src).toContain("doppel-outer");
   });
 });
+

@@ -58,7 +58,7 @@ export function PricingTeaser() {
               </p>
               <Link
                 href="/sign-up"
-                className="mt-5 pt-4 border-t border-gray-100 inline-flex items-center gap-1.5 text-[12px] font-semibold text-[#C94F17] hover:underline"
+                className="mt-5 pt-4 border-t border-gray-100 inline-flex items-center gap-1.5 text-[12px] font-semibold text-[#F26522] hover:underline"
               >
                 Start free →
               </Link>
@@ -66,30 +66,30 @@ export function PricingTeaser() {
           </div>
 
           {/* Pro — emphasized middle column */}
-          <div className="doppel-outer h-full ring-2 ring-[#C94F17] ring-offset-2">
-            <div className="doppel-inner p-6 h-full flex flex-col bg-[#0a0a0b] text-white rounded-[inherit]">
+          <div className="doppel-outer h-full ring-2 ring-[#F26522] ring-offset-2">
+            <div className="doppel-inner p-6 h-full flex flex-col bg-white rounded-[inherit]">
               <div className="flex items-center justify-between">
                 <h3 className="text-[15px] font-semibold tracking-tight">
                   {pro.name}
                 </h3>
-                <span className="text-[10px] font-bold uppercase tracking-wide px-2 py-0.5 rounded-full bg-[#C94F17] text-white">
+                <span className="text-[10px] font-bold uppercase tracking-wide px-2 py-0.5 rounded-full bg-[#F26522] text-white">
                   Most popular
                 </span>
               </div>
               <p className="mt-2 text-[28px] font-medium tracking-tight">
                 {pro.priceLabel}
-                <span className="text-[13px] font-normal text-white/60">
+                <span className="text-[13px] font-normal text-gray-500">
                   {" "}
                   / month
                 </span>
               </p>
-              <p className="mt-1 text-[13px] text-white/60">
+              <p className="mt-1 text-[13px] text-gray-500">
                 {formatMinutes(pro.minuteLimit)} minutes / month ·{" "}
                 {pro.teamMemberLimit} seats included
               </p>
               <Link
                 href="/sign-up"
-                className="mt-5 pt-4 border-t border-white/10 inline-flex items-center gap-1.5 text-[12px] font-semibold text-white hover:underline"
+                className="mt-5 pt-4 border-t border-gray-100 inline-flex items-center gap-1.5 text-[12px] font-semibold text-[#F26522] hover:underline"
               >
                 Start free →
               </Link>
@@ -115,7 +115,7 @@ export function PricingTeaser() {
               </p>
               <a
                 href="mailto:sales@usegauge.com?subject=Enterprise%20Plan%20Inquiry"
-                className="mt-5 pt-4 border-t border-gray-100 inline-flex items-center gap-1.5 text-[12px] font-semibold text-[#C94F17] hover:underline"
+                className="mt-5 pt-4 border-t border-gray-100 inline-flex items-center gap-1.5 text-[12px] font-semibold text-[#F26522] hover:underline"
               >
                 Contact sales →
               </a>

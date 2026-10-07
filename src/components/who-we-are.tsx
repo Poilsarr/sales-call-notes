@@ -16,7 +16,7 @@ const PILLARS = [
     desc: "Gauge turns every sales call into structured notes, owners, and follow-ups — with a virtual competitor signal the second a rival is named.",
     tint: "section-tint-blue",
     tile: "bg-[#DBE7FF]",
-    iconColor: "text-[#1D4ED8]",
+    iconColor: "text-[#F26522]",
   },
   {
     icon: Target,
@@ -24,7 +24,7 @@ const PILLARS = [
     desc: "No rep ever loses a deal to a competitor nobody wrote down. Every mention becomes evidence, every deal stays visible.",
     tint: "section-tint-peach",
     tile: "bg-[#FFE3D1]",
-    iconColor: "text-[#C94F17]",
+    iconColor: "text-[#F26522]",
   },
   {
     icon: Crosshair,
@@ -32,7 +32,7 @@ const PILLARS = [
     desc: "12 beta teams run 500+ calls through Gauge — summaries in under 60 seconds, Slack pings with exact quotes, one-click CRM push.",
     tint: "section-tint-mint",
     tile: "bg-[#C9F0DE]",
-    iconColor: "text-[#047857]",
+    iconColor: "text-[#F26522]",
   },
 ];
 

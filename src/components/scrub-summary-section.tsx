@@ -69,7 +69,7 @@ export function ScrubSummarySection() {
           </div>
           <div className="doppel-outer">
             <div
-              className="doppel-inner flex flex-col gap-3 p-4 sm:p-6 bg-[#FFFDF7]"
+              className="doppel-inner flex flex-col gap-3 p-4 sm:p-6 bg-white"
               role="group"
               aria-label="Scrubbable story lines"
             >
@@ -88,8 +88,8 @@ export function ScrubSummarySection() {
                     aria-pressed={active}
                     className={`w-full text-left flex items-center gap-3 p-4 sm:p-5 rounded-2xl border-2 transition min-h-[64px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#F26522] focus-visible:ring-offset-2 focus-visible:ring-offset-white ${
                       active
-                        ? "border-gray-900 bg-white shadow-[4px_4px_0_#131316]"
-                        : "border-gray-900/10 bg-white hover:border-gray-900/40 hover:shadow-[4px_4px_0_rgba(19,19,22,0.12)]"
+                        ? "border-gray-900 bg-white shadow-[0_1px_2px_rgba(16,24,40,0.06)] ring-1 ring-black/[0.04]"
+                        : "border-gray-900/10 bg-white hover:border-gray-900/40 hover:shadow-[0_1px_2px_rgba(16,24,40,0.06)] ring-1 ring-black/[0.04]"
                     }`}
                   >
                     <span

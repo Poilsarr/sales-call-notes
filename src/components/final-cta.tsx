@@ -12,22 +12,22 @@ export default function FinalCta() {
     <section className="bg-white py-16 sm:py-20 lg:py-28">
       <div className="max-w-[1440px] mx-auto px-5 sm:px-8 lg:px-12">
         <div className="doppel-outer">
-          <div className="doppel-inner bg-gradient-to-br from-[#0a0a0b] via-[#0a0a0b] to-[#1a0f08] p-10 sm:p-14 lg:p-20 text-center relative overflow-hidden">
+          <div className="doppel-inner bg-white p-10 sm:p-14 lg:p-20 text-center relative overflow-hidden">
             <div
               className="absolute inset-0 opacity-60 pointer-events-none"
               style={{
                 background:
-                  "radial-gradient(ellipse at 50% 0%, rgba(242,101,34,0.18), transparent 60%)",
+                  "radial-gradient(ellipse at 50% 0%, rgba(242,101,34,0.12), transparent 60%)",
               }}
             />
             <div className="relative z-10">
               <p className="text-[11px] uppercase tracking-[0.18em] text-[#F26522] mb-5 font-mono">
                 Start today
               </p>
-              <h2 className="text-[clamp(1.5rem,4vw,2.6rem)] font-medium leading-[1.1] tracking-[-0.02em] text-white mb-4 max-w-2xl mx-auto">
+              <h2 className="text-[clamp(1.5rem,4vw,2.6rem)] font-medium leading-[1.1] tracking-[-0.02em] text-gray-900 mb-4 max-w-2xl mx-auto">
                 Stop writing call notes. Start closing more deals.
               </h2>
-              <p className="text-white/50 text-[14px] sm:text-[15px] max-w-xl mx-auto mb-8 leading-relaxed">
+              <p className="text-gray-500 text-[14px] sm:text-[15px] max-w-xl mx-auto mb-8 leading-relaxed">
                 Free forever for solo SDRs. $9/mo when your team grows. No
                 credit traps, no per-minute AI tax, no bots in your meetings.
               </p>
@@ -37,18 +37,18 @@ export default function FinalCta() {
                   className="group inline-flex items-center gap-2 bg-gradient-to-r from-[#F26522] to-[#E8442E] hover:brightness-95 shadow-[0_8px_24px_-8px_rgba(242,101,34,0.5)] text-white text-[14px] font-medium rounded-full pl-6 pr-2 py-2.5 transition-all duration-300"
                 >
                   <span>Start free</span>
-                  <span className="w-8 h-8 bg-white rounded-full flex items-center justify-center group-hover:rotate-45 transition-transform duration-500">
+                  <span className="w-8 h-8 bg-white rounded-full flex items-center justify-center motion-safe:group-hover:rotate-45 transition-transform duration-500">
                     <ArrowRight size={15} className="text-[#F26522]" />
                   </span>
                 </Link>
                 <Link
                   href="/demo"
-                  className="text-[14px] text-white/70 hover:text-white font-medium underline underline-offset-4 px-4 py-2.5"
+                  className="text-[14px] text-gray-600 hover:text-gray-900 font-medium underline underline-offset-4 px-4 py-2.5"
                 >
                   See live demo →
                 </Link>
               </div>
-              <p className="text-white/30 text-[12px] mt-6">
+              <p className="text-gray-400 text-[12px] mt-6">
                 No credit card. Cancel anytime. Annual billing available.
               </p>
             </div>

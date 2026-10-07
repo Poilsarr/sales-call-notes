@@ -71,34 +71,35 @@ const BRANDS = [
 /**
  * Differentiators — Gauge vs Otter vs manual notes.
  *
- * Dark section (pairs against light UseCases to break the double-dark tunnel).
+ * Light section (soft doppel shell; the single dark band lives in RadarMoat).
  * Values reuse src/components/features-page-client.tsx compare rows (read-only).
  *
  * Server component — no JS shipped.
  */
 export default function Differentiators() {
   return (
-    <section className="bg-[#0a0a0b] text-white py-16 sm:py-20 lg:py-28 border-t border-white/5">
+    <section className="bg-white text-gray-900 py-16 sm:py-20 lg:py-28 border-t border-gray-200">
       <div className="max-w-[1440px] mx-auto px-5 sm:px-8 lg:px-12">
         <div className="max-w-2xl mb-12">
-          <p className="text-[11px] uppercase tracking-[0.18em] text-white/60 mb-3">
+          <p className="text-[11px] uppercase tracking-[0.18em] text-gray-500 mb-3">
             Why not Otter?
           </p>
           <h2 className="text-[clamp(1.5rem,4vw,2.6rem)] font-medium leading-[1.1] tracking-[-0.02em] mb-3">
             Built for the rival mention. Not the meeting minutes.
           </h2>
-          <p className="text-white/50 text-[14px]">
+          <p className="text-gray-500 text-[14px]">
             Generic notetakers summarize. Gauge catches the exact moment a
             competitor enters the deal — with the quote, the speaker, and a
             push to where you work.
           </p>
         </div>
 
-        <div className="rounded-2xl border border-white/5 bg-white/[0.02] overflow-hidden">
+        <div className="doppel-outer overflow-hidden">
+          <div className="doppel-inner overflow-hidden">
           <div className="overflow-x-auto">
             <table className="w-full min-w-[640px] text-left text-[13px]">
               <thead>
-                <tr className="border-b border-white/10 font-mono text-[11px] uppercase tracking-[0.14em] text-white/40">
+                <tr className="border-b border-gray-200 font-mono text-[11px] uppercase tracking-[0.14em] text-gray-500">
                   <th scope="col" className="px-5 sm:px-6 py-4 font-medium">
                     Capability
                   </th>
@@ -120,21 +121,21 @@ export default function Differentiators() {
                 {ROWS.map((row) => (
                   <tr
                     key={row.label}
-                    className="border-b border-white/5 last:border-0"
+                    className="border-b border-gray-100 last:border-0"
                   >
                     <th
                       scope="row"
-                      className="px-5 sm:px-6 py-4 font-medium text-white/70 whitespace-nowrap"
+                      className="px-5 sm:px-6 py-4 font-medium text-gray-700 whitespace-nowrap"
                     >
                       {row.label}
                     </th>
-                    <td className="px-5 sm:px-6 py-4 text-white font-medium">
+                    <td className="px-5 sm:px-6 py-4 text-gray-900 font-medium">
                       {row.gauge}
                     </td>
-                    <td className="px-5 sm:px-6 py-4 text-white/45">
+                    <td className="px-5 sm:px-6 py-4 text-gray-500">
                       {row.otter}
                     </td>
-                    <td className="px-5 sm:px-6 py-4 text-white/45">
+                    <td className="px-5 sm:px-6 py-4 text-gray-500">
                       {row.manual}
                     </td>
                   </tr>
@@ -142,21 +143,22 @@ export default function Differentiators() {
               </tbody>
             </table>
           </div>
+          </div>
         </div>
 
-        <p className="text-[11px] text-white/30 mt-4 max-w-2xl">
+        <p className="text-[11px] text-gray-400 mt-4 max-w-2xl">
           Free 300 min/mo on both Gauge and Otter. Pro comparison at team size
           5. Public pricing side by side — see{" "}
           <Link
             href="/otter-alternative"
-            className="underline underline-offset-2 hover:text-white/60"
+            className="underline underline-offset-2 hover:text-gray-600"
           >
             /otter-alternative
           </Link>{" "}
           and{" "}
           <Link
             href="/vs/otter-ai"
-            className="underline underline-offset-2 hover:text-white/60"
+            className="underline underline-offset-2 hover:text-gray-600"
           >
             /vs/otter-ai
           </Link>
@@ -164,8 +166,8 @@ export default function Differentiators() {
         </p>
 
         {/* Integration strip — honest, existing assets only */}
-        <div className="mt-12 border-t border-white/5 pt-8">
-          <p className="text-[11px] uppercase tracking-[0.18em] text-white/60 mb-5 text-center">
+        <div className="mt-12 border-t border-gray-200 pt-8">
+          <p className="text-[11px] uppercase tracking-[0.18em] text-gray-500 mb-5 text-center">
             Works with your stack
           </p>
           <div className="flex flex-wrap items-center justify-center gap-x-8 gap-y-4">
@@ -197,7 +199,7 @@ export default function Differentiators() {
           <p className="text-center mt-6">
             <Link
               href="/integrations"
-              className="text-[13px] text-white/70 hover:text-white font-medium underline underline-offset-4"
+              className="text-[13px] text-gray-600 hover:text-gray-900 font-medium underline underline-offset-4"
             >
               View all integrations →
             </Link>

@@ -26,7 +26,8 @@ import { ProductVisualsSection } from "@/components/product-visuals-section";
 import CapabilitiesBento from "@/components/capabilities-bento";
 import RadarMoat from "@/components/radar-moat";
 import { HOMEPAGE_COPY } from "@/lib/homepage-copy";
-import { Crosshair, Check, ArrowRight, Play } from "lucide-react";
+import { FILM_HERO_ALERT } from "@/lib/demo-call-fiction";
+import { Crosshair, Play } from "lucide-react";
 
 export const metadata = {
   title: "Gauge — AI Sales Call Notes & Competitive Intelligence",
@@ -53,16 +54,7 @@ export default function Home() {
             aria-hidden
             className="absolute top-1/3 -right-24 h-96 w-96 rounded-full bg-[#EFF4FF] blur-3xl pointer-events-none"
           />
-          {/* Film-world dressing — waveform ribbon echo + paper grain */}
-          <div
-            className="absolute inset-0 opacity-[0.5] pointer-events-none"
-            style={{
-              backgroundImage:
-                "radial-gradient(rgba(19,19,22,0.055) 1px, transparent 1px)",
-              backgroundSize: "5px 5px",
-            }}
-            aria-hidden
-          />
+          {/* Soft atmosphere — single peach ribbon (Gauge Radar; no film grain) */}
           <svg
             className="absolute inset-x-0 top-[8%] w-full h-[420px] pointer-events-none"
             viewBox="0 0 1440 420"
@@ -70,19 +62,11 @@ export default function Home() {
             aria-hidden
           >
             <path
-              d="M-20,300 C200,120 360,120 520,260 C680,400 840,400 1000,260 C1160,120 1300,140 1460,260"
-              fill="none"
-              stroke="#131316"
-              strokeWidth="5"
-              opacity="0.10"
-              strokeLinecap="round"
-            />
-            <path
               d="M-20,330 C200,170 360,170 520,290 C680,410 840,410 1000,290 C1160,170 1300,190 1460,290"
               fill="none"
-              stroke="#E8442E"
-              strokeWidth="5"
-              opacity="0.16"
+              stroke="#F26522"
+              strokeWidth="4"
+              opacity="0.10"
               strokeLinecap="round"
             />
           </svg>
@@ -96,7 +80,7 @@ export default function Home() {
               <p className="text-[13px] leading-[14px] text-gray-700 font-medium tracking-wide mb-5 sm:mb-8">{HOMEPAGE_COPY.eyebrow}</p>
               <h1 className="text-[clamp(1.75rem,7vw,4.2rem)] sm:text-[clamp(2.5rem,5vw,4.2rem)] font-semibold sm:font-medium leading-[1.08] tracking-[-0.03em] text-gray-900 text-balance">
                 {HOMEPAGE_COPY.heroH1.split(HOMEPAGE_COPY.heroH1Highlight)[0]}
-                <span className="text-[#C94F17] underline decoration-[#F26522]/50 decoration-[0.08em] underline-offset-[0.12em]">
+                <span className="text-[#F26522] underline decoration-[#F26522]/50 decoration-[0.08em] underline-offset-[0.12em]">
                   {HOMEPAGE_COPY.heroH1Highlight}
                 </span>
                 {HOMEPAGE_COPY.heroH1.split(HOMEPAGE_COPY.heroH1Highlight)[1]}
@@ -104,8 +88,8 @@ export default function Home() {
               <p className="text-[15px] sm:text-base text-gray-700 max-w-xl mt-4 mb-3 leading-relaxed">
                 {HOMEPAGE_COPY.heroSub}
               </p>
-              <div className="inline-flex items-center gap-2 text-[11px] font-mono font-medium text-film-ink bg-film-cream border-2 border-film-ink rounded-full px-3 py-1 mb-5 shadow-[3px_3px_0_#131316]">
-                <span className="w-1.5 h-1.5 rounded-full bg-film-vermilion animate-pulse" />
+              <div className="inline-flex items-center gap-2 text-[11px] font-mono font-medium bg-white border border-black/[0.06] text-gray-700 rounded-full px-3 py-1 mb-5 shadow-none">
+                <span className="w-1.5 h-1.5 rounded-full bg-[#F26522]" />
                 {HOMEPAGE_COPY.betaLine}
               </div>
               <div className="flex flex-row items-center gap-3 sm:gap-4 flex-wrap">
@@ -181,71 +165,7 @@ export default function Home() {
 
       <PricingTeaser />
 
-      {/* PRICING + CTA */}
-      <section data-track-section="pricing" className="bg-white pt-16 sm:pt-20 lg:pt-28 pb-16 sm:pb-20 lg:pb-28 border-t border-gray-200">
-        <div className="max-w-[1440px] mx-auto px-5 sm:px-8 lg:px-12">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-center">
-            <div>
-              <p className="text-[11px] uppercase tracking-[0.18em] text-gray-600 mb-3">Pricing</p>
-              <h2 className="text-[clamp(1.5rem,4vw,2.6rem)] font-medium leading-[1.1] tracking-[-0.02em] text-gray-900 mb-4">
-                Free 300 minutes a month. $9 flat when you scale — up to 5 seats, 1,200 minutes.
-              </h2>
-              <ul className="space-y-2 text-[14px] text-gray-600 mb-6">
-                {[
-                  "Unlimited uploads, 1,200 min/mo on Pro",
-                  "Competitive intel + Slack alerts from day one on Pro",
-                  "HubSpot + Salesforce CRM push, one click",
-                  "Cancel anytime. Annual available.",
-                ].map((line, i) => (
-                  <li key={i} className="flex items-start gap-2">
-                    <Check size={16} className="text-[#F26522] mt-0.5 shrink-0" />
-                    <span>{line}</span>
-                  </li>
-                ))}
-              </ul>
-              <div className="flex flex-col sm:flex-row gap-3">
-                <Link href="/pricing" className="inline-flex items-center gap-2 bg-[#F26522] hover:bg-[#e05a1a] text-white text-[13px] rounded-full pl-5 pr-2 py-2 w-fit">
-                  <span>See full pricing</span>
-                  <span className="w-7 h-7 bg-white rounded-full flex items-center justify-center">
-                    <ArrowRight size={14} className="text-[#F26522]" />
-                  </span>
-                </Link>
-                <Link href="/features" className="text-[13px] text-gray-600 hover:text-gray-900 font-medium self-center underline-offset-4 hover:underline">
-                  See all features →
-                </Link>
-              </div>
-            </div>
-            <div className="doppel-outer">
-              <div className="doppel-inner p-6 sm:p-8">
-                <div className="flex items-baseline gap-2 mb-2">
-                  <span className="text-4xl font-semibold tracking-tight">$9</span>
-                  <span className="text-gray-600 text-[14px]">/month per user</span>
-                </div>
-                <p className="text-[12px] text-gray-500 mb-6">Pro plan. Yearly = $7.50/mo.</p>
-                <div className="space-y-2 text-[13px]">
-                  {[
-                    "1,200 transcription minutes/mo",
-                    "Unlimited AI summaries",
-                    "HubSpot + Salesforce sync",
-                    "Competitive intelligence + Slack alerts",
-                    "Team workspace (up to 5)",
-                    "Priority support",
-                  ].map((f, i) => (
-                    <div key={i} className="flex items-center gap-2 text-gray-700">
-                      <Check size={14} className="text-[#F26522]" />
-                      <span>{f}</span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* COMPETITIVE INTEL DEMO — live alert feed.
-          Stacked halves (HOMEPAGE-V2 shell): copy header top, film middle,
-          alert cards grid bottom. Player internals owned by E2. */}
+      {/* COMPETITIVE INTEL DEMO — one hero sample alert (fiction SSOT). */}
       <section data-track-section="film" className="bg-[#0a0a0b] text-white pt-16 sm:pt-20 lg:pt-28 pb-16 sm:pb-20 lg:pb-28 scroll-mt-24">
         <div className="max-w-[1440px] mx-auto px-5 sm:px-8 lg:px-12">
           <div className="max-w-2xl mb-10 lg:mb-14">
@@ -262,94 +182,63 @@ export default function Home() {
           </div>
           <HeroVideoPlayer fullBleed />
 
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 mt-10 lg:mt-14">
-            {[
-              {
-                time: "00:14:22",
-                call: "Acme Corp · Discovery",
-                speaker: "Sarah Chen",
-                quote: "We're also evaluating Gong and Chorus for the rollout.",
-                detected: "Gong",
-                confidence: 0.96,
-                slack: "#deal-room-acme",
-                age: "2 min ago",
-                accent: "#F26522",
-              },
-              {
-                time: "11:42:08",
-                call: "Vandelay Industries · Demo",
-                speaker: "Priya Shah",
-                quote: "Our current contract with Otter expires in Q3 — what would migration look like?",
-                detected: "Otter.ai",
-                confidence: 0.91,
-                slack: "#deal-room-vandelay",
-                age: "18 min ago",
-                accent: "#2563eb",
-              },
-              {
-                time: "09:03:51",
-                call: "Stark Industries · Closing",
-                speaker: "Marcus Lee",
-                quote: "Fireflies is cheaper but your competitive-intel alerts are the deciding factor for us.",
-                detected: "Fireflies.ai",
-                confidence: 0.99,
-                slack: "#deal-room-stark",
-                age: "1 hr ago",
-                accent: "#7c3aed",
-              },
-            ].map((alert, i) => (
-              <div key={i} className="doppel-outer-dark">
-                <div className="doppel-inner-dark p-5 sm:p-6 h-full flex flex-col">
-                  <div className="flex items-center gap-2 mb-5">
-                    <div
-                      className="w-2 h-2 rounded-full animate-pulse"
-                      style={{ backgroundColor: alert.accent }}
-                    />
-                    <span className="text-[10px] uppercase tracking-[0.18em] text-white/70 font-mono">
-                      Live alert
-                    </span>
-                    <span className="ml-auto text-[10px] font-mono text-white/60">
-                      {alert.age}
-                    </span>
-                  </div>
+          <div className="mt-10 lg:mt-14 max-w-xl">
+            <div className="doppel-outer-dark">
+              <div className="doppel-inner-dark p-5 sm:p-6 h-full flex flex-col">
+                <div className="flex items-center gap-2 mb-5">
+                  <div
+                    className="w-2 h-2 rounded-full animate-pulse"
+                    style={{ backgroundColor: FILM_HERO_ALERT.accent }}
+                  />
+                  <span className="text-[10px] uppercase tracking-[0.18em] text-white/70 font-mono">
+                    Live alert
+                  </span>
+                  <span className="ml-auto text-[10px] font-mono text-white/60">
+                    {FILM_HERO_ALERT.age}
+                  </span>
+                </div>
 
-                  <div className="font-mono text-[12px] space-y-2.5 mb-5">
-                    <div className="flex items-start gap-3">
-                      <span className="text-white/60 shrink-0 w-14">{alert.time}</span>
-                      <div>
-                        <span className="text-white/85">{alert.speaker}: </span>
-                        <span className="text-white/90">&ldquo;{alert.quote}&rdquo;</span>
-                      </div>
+                <div className="font-mono text-[12px] space-y-2.5 mb-5">
+                  <div className="flex items-start gap-3">
+                    <span className="text-white/60 shrink-0 w-14">
+                      {FILM_HERO_ALERT.timestamp}
+                    </span>
+                    <div>
+                      <span className="text-white/85">{FILM_HERO_ALERT.speaker}: </span>
+                      <span className="text-white/90">
+                        &ldquo;{FILM_HERO_ALERT.quote}&rdquo;
+                      </span>
                     </div>
                   </div>
+                </div>
 
-                  <div className="border-t border-white/10 pt-4 mt-auto">
-                    <div className="flex items-start gap-2.5 text-[11.5px]">
-                      <Crosshair
-                        size={13}
-                        className="mt-0.5 shrink-0"
-                        style={{ color: alert.accent }}
-                      />
-                      <div className="flex-1 min-w-0">
-                        <div className="text-white font-semibold mb-0.5">
-                          Competitor detected: {alert.detected}
-                        </div>
-                        <div className="text-white/70 text-[10.5px]">
-                          {alert.call} · confidence {alert.confidence}
-                        </div>
-                        <div className="text-white/60 text-[10.5px] mt-0.5 truncate">
-                          Slack ping → {alert.slack}
-                        </div>
+                <div className="border-t border-white/10 pt-4 mt-auto">
+                  <div className="flex items-start gap-2.5 text-[11.5px]">
+                    <Crosshair
+                      size={13}
+                      className="mt-0.5 shrink-0"
+                      style={{ color: FILM_HERO_ALERT.accent }}
+                    />
+                    <div className="flex-1 min-w-0">
+                      <div className="text-white font-semibold mb-0.5">
+                        Competitor detected: {FILM_HERO_ALERT.rival}
+                      </div>
+                      <div className="text-white/70 text-[10.5px]">
+                        {FILM_HERO_ALERT.callName} · confidence{" "}
+                        {FILM_HERO_ALERT.confidence}
+                      </div>
+                      <div className="text-white/60 text-[10.5px] mt-0.5 truncate">
+                        Slack ping → {FILM_HERO_ALERT.slackChannel}
                       </div>
                     </div>
                   </div>
                 </div>
               </div>
-            ))}
+            </div>
           </div>
 
           <p className="text-[12px] text-white/75 mt-6 max-w-2xl">
-            Sample alerts — shown for product demo. In production,
+            Sample alert — shown for product demo. In production,
             alerts fire in real time across all your active calls.
           </p>
         </div>
@@ -365,34 +254,37 @@ export default function Home() {
 
       <SeoLinks />
 
-      {/* CHROME EXTENSION — for users who don't want to upload/record */}
+      {/* CHROME EXTENSION — Meet still + copy */}
       <section className="px-5 sm:px-8 lg:px-12 py-12 sm:py-16">
-        <div className="max-w-[1100px] mx-auto p-6 sm:p-8 rounded-2xl border border-zinc-200 bg-zinc-50 flex flex-col sm:flex-row items-start sm:items-center gap-6">
-          <div className="w-12 h-12 rounded-xl bg-white border border-zinc-200 flex items-center justify-center shrink-0">
-            <svg className="w-6 h-6" viewBox="0 0 24 24" fill="none">
-              <circle cx="12" cy="12" r="11" fill="#fff" stroke="#4285F4" strokeWidth="1.5" />
-              <circle cx="12" cy="12" r="3.5" fill="#4285F4" />
-              <path d="M12 8.5 L20.5 12 L12 15.5 Z" fill="#EA4335" />
-              <path d="M12 8.5 L3.5 12 L12 15.5 Z" fill="#FBBC04" />
-              <path d="M12 8.5 L12 1 L18 12 Z" fill="#34A853" />
-            </svg>
+        <div className="max-w-[1100px] mx-auto doppel-outer">
+          <div className="doppel-inner p-5 sm:p-6 bg-white flex flex-col sm:flex-row items-start sm:items-center gap-6">
+            <div className="product-chrome w-full sm:w-[220px] shrink-0">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src="/product/meet-extension.svg"
+                alt="Google Meet caption capture"
+                width={440}
+                height={280}
+                className="block w-full h-auto"
+              />
+            </div>
+            <div className="flex-1 min-w-0">
+              <h3 className="text-[16px] font-semibold tracking-tight text-zinc-900 mb-1">
+                New: Chrome extension for Google Meet
+              </h3>
+              <p className="text-[13px] text-zinc-600 mb-4">
+                Captures live captions automatically. Your call appears in the
+                dashboard seconds after the meeting ends — no upload, no
+                post-call work.
+              </p>
+              <a
+                href="/extension"
+                className="inline-flex items-center gap-1.5 px-5 py-2.5 rounded-full bg-[#F26522] text-white text-[12px] font-semibold hover:bg-[#e05a1a] transition shrink-0"
+              >
+                Get the extension →
+              </a>
+            </div>
           </div>
-          <div className="flex-1 min-w-0">
-            <h3 className="text-[16px] font-semibold tracking-tight text-zinc-900 mb-1">
-              New: Chrome extension for Google Meet
-            </h3>
-            <p className="text-[13px] text-zinc-600">
-              Captures live captions automatically. Your call appears in the
-              dashboard seconds after the meeting ends — no upload, no
-              post-call work.
-            </p>
-          </div>
-          <a
-            href="/extension"
-            className="inline-flex items-center gap-1.5 px-5 py-2.5 rounded-full bg-zinc-900 text-white text-[12px] font-semibold hover:bg-zinc-700 transition shrink-0"
-          >
-            Get the extension →
-          </a>
         </div>
       </section>
 

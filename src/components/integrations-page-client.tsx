@@ -344,7 +344,7 @@ function IntegrationsContent() {
                       <div className="mt-5 pt-4 border-t border-gray-100 flex justify-end">
                         <a
                           href={int.href}
-                          className="inline-flex items-center gap-1.5 text-[11px] font-semibold text-[#C94F17] hover:underline"
+                          className="inline-flex items-center gap-1.5 text-[11px] font-semibold text-[#F26522] hover:underline"
                         >
                           Set up →
                         </a>
@@ -410,7 +410,7 @@ function IntegrationsContent() {
                               onClick={() => connectProvider(int.provider)}
                               disabled={providerLoading[int.provider] || !isConfigured}
                               title={!isConfigured ? "OAuth credentials not configured" : undefined}
-                              className="shrink-0 inline-flex items-center gap-2 px-4 py-2 rounded-full bg-[#C94F17] text-white text-[11px] font-semibold hover:bg-[#A84310] transition-all disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-[#C94F17]"
+                              className="shrink-0 inline-flex items-center gap-2 px-4 py-2 rounded-full bg-[#F26522] text-white text-[11px] font-semibold hover:bg-[#e05a1a] transition-all disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-[#F26522]"
                             >
                               {providerLoading[int.provider] ? (
                                 <Loader2 size={14} className="animate-spin" />

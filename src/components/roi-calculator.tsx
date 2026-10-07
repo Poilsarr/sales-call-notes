@@ -28,16 +28,16 @@ export default function RoiCalculator() {
   }
 
   return (
-    <section className="bg-[#0a0a0b] text-white py-16 sm:py-20 lg:py-28 border-t border-white/5">
+    <section className="section-tint-peach text-gray-900 py-16 sm:py-20 lg:py-28 border-t border-gray-200">
       <div className="max-w-[1440px] mx-auto px-5 sm:px-8 lg:px-12">
         <div className="max-w-2xl mb-12">
-          <p className="text-[11px] uppercase tracking-[0.18em] text-white/60 mb-3">
+          <p className="text-[11px] uppercase tracking-[0.18em] text-gray-500 mb-3">
             Calculator
           </p>
           <h2 className="text-[clamp(1.5rem,4vw,2.6rem)] font-medium leading-[1.1] tracking-[-0.02em]">
             What does an SDR hour cost you?
           </h2>
-          <p className="text-[14px] text-white/50 mt-3">
+          <p className="text-[14px] text-gray-500 mt-3">
             Every number below is yours. Change any input and the math
             updates instantly. Estimates only — your actual time will vary.
           </p>
@@ -77,10 +77,11 @@ export default function RoiCalculator() {
           </div>
 
           {/* OUTPUT */}
-          <div className="rounded-2xl border border-white/10 bg-zinc-900/60 p-6 sm:p-8 flex flex-col">
+          <div className="doppel-outer h-full">
+            <div className="doppel-inner p-6 sm:p-8 flex flex-col h-full">
             <div className="flex items-center gap-2 mb-6">
               <Calculator size={18} className="text-[#F26522]" />
-              <span className="text-[11px] uppercase tracking-[0.18em] text-white/40">
+              <span className="text-[11px] uppercase tracking-[0.18em] text-gray-500">
                 Your estimate
               </span>
             </div>
@@ -109,11 +110,11 @@ export default function RoiCalculator() {
               }
             />
 
-            <div className="mt-6 pt-6 border-t border-white/10">
+            <div className="mt-6 pt-6 border-t border-gray-100">
               {result.breakEven ? (
-                <p className="text-[13px] text-white/70">
+                <p className="text-[13px] text-gray-600">
                   At these numbers, Pro pays for itself in{" "}
-                  <span className="text-white font-semibold">
+                  <span className="text-gray-900 font-semibold">
                     {result.paybackDays === null
                       ? "—"
                       : result.paybackDays < 1
@@ -123,14 +124,14 @@ export default function RoiCalculator() {
                   .
                 </p>
               ) : (
-                <p className="text-[13px] text-white/50">
+                <p className="text-[13px] text-gray-500">
                   At these numbers, Pro doesn&apos;t pay for itself yet.
                   Try the free tier and revisit when your call volume grows.
                 </p>
               )}
               <Link
                 href="/sign-up"
-                className="mt-5 inline-flex items-center gap-2 bg-[#C94F17] hover:bg-[#A84310] text-white text-[13px] rounded-full pl-5 pr-2 py-2"
+                className="mt-5 inline-flex items-center gap-2 bg-[#F26522] hover:bg-[#e05a1a] text-white text-[13px] rounded-full pl-5 pr-2 py-2"
               >
                 <span>Start free</span>
                 <span className="w-7 h-7 bg-white rounded-full flex items-center justify-center">
@@ -138,10 +139,11 @@ export default function RoiCalculator() {
                 </span>
               </Link>
             </div>
+            </div>
           </div>
         </div>
 
-        <p className="text-[11px] text-white/30 mt-8 max-w-2xl">
+        <p className="text-[11px] text-gray-400 mt-8 max-w-2xl">
           Estimates only. Your actual time savings will vary based on
           call complexity, note format, and workflow. The math above
           is the same math, just done for you.
@@ -167,10 +169,10 @@ function Field({
   return (
     <label className="block">
       <div className="flex items-center justify-between mb-2">
-        <span className="text-[12px] uppercase tracking-[0.12em] text-white/40">
+        <span className="text-[12px] uppercase tracking-[0.12em] text-gray-500">
           {label}
         </span>
-        <span className="text-[11px] text-white/30 font-mono">{value}</span>
+        <span className="text-[11px] text-gray-400 font-mono">{value}</span>
       </div>
       <input
         type="range"
@@ -195,9 +197,9 @@ function Row({
 }) {
   return (
     <div className="flex items-baseline justify-between py-2">
-      <span className="text-[12px] text-white/50">{label}</span>
+      <span className="text-[12px] text-gray-500">{label}</span>
       <span
-        className={`tabular-nums ${accent ? "text-[#F26522] text-2xl font-semibold" : "text-white text-lg font-medium"}`}
+        className={`tabular-nums ${accent ? "text-[#F26522] text-2xl font-semibold" : "text-gray-900 text-lg font-medium"}`}
       >
         {value}
       </span>

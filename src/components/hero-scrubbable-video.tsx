@@ -157,7 +157,7 @@ export function HeroScrubbableVideo() {
   return (
     <div
       id="hero-video"
-      className="relative h-full min-h-[440px] lg:min-h-[600px] doppel-outer border-2 border-film-ink shadow-[8px_8px_0_#131316] overflow-hidden"
+      className="relative h-full min-h-[440px] lg:min-h-[600px] doppel-outer overflow-hidden hero-plane-enter"
     >
       <p id="hero-video-caption" className="sr-only">
         39-second management demo with captions: hook, how it works, notes,

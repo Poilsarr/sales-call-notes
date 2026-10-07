@@ -5,8 +5,8 @@ import * as path from "path";
 /**
  * Pins the Q1 pricing visual-proof redesign
  * (PRICING-FEATURES-REDESIGN-PLAN §2 Q1): visual treatment may evolve,
- * but the structure must stay — single CTA headline, coded proof
- * visuals, mono trust strip, migration steps, honest stat cards —
+ * but the structure must stay — single CTA headline, product-still proof
+ * visual, mono trust strip, migration steps, honest stat cards —
  * and the auth-gate hrefs must stay byte-identical.
  */
 
@@ -50,14 +50,17 @@ describe("pricing CTA is a single headline + motif", () => {
   });
 });
 
-describe("pricing hero-right is a coded Pro proof visual", () => {
-  it("renders a confidence bar + Slack motif on film tokens, no binaries", () => {
+describe("pricing hero-right is a product still (no coded mock, no washi)", () => {
+  it("renders summary-owners still inside product-chrome with caption, no binaries beyond /product/", () => {
     const src = read(PRICING_CLIENT);
-    expect(src).toMatch(/role="progressbar"/);
-    expect(src).toMatch(/#deal-room-acme/);
-    expect(src).toMatch(/bg-film-cream/);
-    expect(src).toMatch(/bg-film-amber\/60/);
+    expect(src).toMatch(/pricing-pro-visual/);
+    expect(src).toMatch(/product-chrome/);
+    expect(src).toMatch(/PRODUCT_STILLS\.summary/);
+    expect(src).toMatch(/Pro · \$9\/mo flat/);
+    expect(src).not.toMatch(/bg-film-amber\/60/);
+    expect(src).not.toMatch(/animate-pulse.*Pro|Pro.*animate-pulse/);
     expect(src).not.toMatch(/<Image|<video/);
+    expect(src).not.toMatch(/\.png|\.jpg/);
   });
 });
 

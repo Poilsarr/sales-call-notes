@@ -1,43 +1,45 @@
 "use client";
 
 import { useState } from "react";
+import {
+  DEMO_ACME,
+  DEMO_STARK,
+  DEMO_VANDELAY,
+} from "@/lib/demo-call-fiction";
 
 const TABS = [
   {
     id: "acme",
     label: "Acme",
-    call: "Acme Corp · Discovery",
-    time: "00:14:22",
-    speaker: "Sarah Chen",
-    rival: "Gong",
-    confidence: 0.96,
-    quote:
-      "We're also evaluating Gong and Chorus for the rollout.",
-    slack: "#deal-room-acme",
+    call: DEMO_ACME.callName,
+    time: DEMO_ACME.timestamp,
+    speaker: DEMO_ACME.speaker,
+    rival: DEMO_ACME.rival,
+    confidence: DEMO_ACME.confidence,
+    quote: DEMO_ACME.quote,
+    slack: DEMO_ACME.slackChannel,
   },
   {
     id: "vandelay",
     label: "Vandelay",
-    call: "Vandelay Industries · Demo",
-    time: "11:42:08",
-    speaker: "Priya Shah",
-    rival: "Otter.ai",
-    confidence: 0.91,
-    quote:
-      "Our current contract with Otter expires in Q3 — what would migration look like?",
-    slack: "#deal-room-vandelay",
+    call: DEMO_VANDELAY.callName,
+    time: DEMO_VANDELAY.timestamp,
+    speaker: DEMO_VANDELAY.speaker,
+    rival: DEMO_VANDELAY.rival,
+    confidence: DEMO_VANDELAY.confidence,
+    quote: DEMO_VANDELAY.quote,
+    slack: DEMO_VANDELAY.slackChannel,
   },
   {
     id: "stark",
     label: "Stark",
-    call: "Stark Industries · Closing",
-    time: "09:03:51",
-    speaker: "Marcus Lee",
-    rival: "Fireflies.ai",
-    confidence: 0.99,
-    quote:
-      "Fireflies is cheaper but your competitive-intel alerts are the deciding factor.",
-    slack: "#deal-room-stark",
+    call: DEMO_STARK.callName,
+    time: DEMO_STARK.timestamp,
+    speaker: DEMO_STARK.speaker,
+    rival: DEMO_STARK.rival,
+    confidence: DEMO_STARK.confidence,
+    quote: DEMO_STARK.quote,
+    slack: DEMO_STARK.slackChannel,
   },
 ] as const;
 
@@ -90,11 +92,10 @@ export default function LiveProofStrip() {
             </div>
 
             <div className="relative">
-              <div className="absolute -top-3 left-1/2 -translate-x-1/2 rotate-[-2deg] w-24 h-6 bg-film-amber/60 border border-black/10 z-10" aria-hidden />
-              <div className="doppel-outer border-2 border-film-ink shadow-[8px_8px_0_#131316]">
+              <div className="doppel-outer">
                 <div className="doppel-inner p-5 sm:p-6">
                   <div className="flex items-center gap-2 mb-4">
-                    <div className="w-2 h-2 rounded-full bg-[#F26522] animate-pulse" />
+                    <div className="w-2 h-2 rounded-full bg-[#F26522]" />
                     <span className="text-[10px] font-mono tracking-wider text-gray-600 font-medium uppercase">Live summary</span>
                     <span className="ml-auto text-[9px] font-mono text-gray-500">{active.call}</span>
                   </div>
@@ -155,13 +156,13 @@ export default function LiveProofStrip() {
           </div>
 
           <div
-            className="doppel-outer border-2 border-film-ink shadow-[8px_8px_0_#131316]"
+            className="doppel-outer"
             aria-live="polite"
             aria-label={`Rival signal for ${active.label}`}
           >
             <div className="doppel-inner p-5 sm:p-6">
               <div className="flex items-center gap-2 mb-4">
-                <div className="w-2 h-2 rounded-full bg-[#F26522] animate-pulse" />
+                <div className="w-2 h-2 rounded-full bg-[#F26522]" />
                 <span className="text-[10px] font-mono tracking-wider text-gray-600 font-medium uppercase">Rival signal</span>
                 <span className="ml-auto text-[9px] font-mono text-gray-500">{active.call}</span>
               </div>

@@ -58,7 +58,7 @@ export default function VsTeaser() {
                 </p>
                 <Link
                   href={c.href}
-                  className="mt-5 pt-4 border-t border-gray-100 inline-flex items-center gap-1.5 text-[12px] font-semibold text-[#C94F17] hover:underline"
+                  className="mt-5 pt-4 border-t border-gray-100 inline-flex items-center gap-1.5 text-[12px] font-semibold text-[#F26522] hover:underline"
                 >
                   Read comparison →
                 </Link>

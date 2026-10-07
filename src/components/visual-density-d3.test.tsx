@@ -4,18 +4,10 @@ import PersonasTabs, { PERSONAS } from "@/components/personas-tabs";
 import SocialProof from "@/components/social-proof";
 
 /**
- * VISUAL-DENSITY D3 — every tab pane / proof block gets a coded visual.
+ * VISUAL-DENSITY D3 — tab pane is calm text + max one product still.
  * Copy is verbatim (pinned by personas-tabs.test + SSOT); this file pins
- * only the new visuals so the pins stay green.
+ * only the single still so the pins stay green.
  */
-
-const PERSONA_VISUALS: Record<string, string> = {
-  "solo-sdr": "persona-visual-transcript",
-  "ae-discovery": "persona-visual-slack",
-  revops: "persona-visual-crm",
-  "sales-managers": "persona-visual-bars",
-  founder: "persona-visual-stat",
-};
 
 describe("D3 Personas visuals (2-col tab pane)", () => {
   it("renders the tab pane as a 2-col grid with text left + visual right", () => {
@@ -27,7 +19,7 @@ describe("D3 Personas visuals (2-col tab pane)", () => {
     expect(grid?.className).toMatch(/md:grid-cols-2/);
   });
 
-  it("shows the matching coded mini visual per tab, keeping all text markers", () => {
+  it("shows the single product still on every tab, keeping all text markers", () => {
     const { container } = render(<PersonasTabs />);
     for (const p of PERSONAS) {
       fireEvent.click(
@@ -43,39 +35,38 @@ describe("D3 Personas visuals (2-col tab pane)", () => {
       expect(link).not.toBeNull();
       expect(["/features", "/demo"]).toContain(link?.getAttribute("href"));
 
-      // Visual column shows exactly the mini for this persona.
-      const visualId = PERSONA_VISUALS[p.id];
-      expect(screen.getByTestId(visualId)).toBeInTheDocument();
-      for (const other of Object.values(PERSONA_VISUALS)) {
-        if (other === visualId) continue;
-        expect(screen.queryByTestId(other)).not.toBeInTheDocument();
-      }
+      // Visual column shows the single shared still (max one).
+      const visual = screen.getByTestId("persona-visual-proof");
+      expect(visual).toBeInTheDocument();
+      expect(visual.getAttribute("class")).toMatch(/product-chrome/);
+      const img = visual.querySelector("img");
+      expect(img).not.toBeNull();
+      expect(img?.getAttribute("src")).toMatch(/^\/product\//);
     }
   });
 
-  it("keeps the peach icon chip as the single F26522 marker (visuals use neutral accents)", () => {
+  it("keeps the peach icon chip as the single F26522 marker", () => {
     const { container } = render(<PersonasTabs />);
     for (const p of PERSONAS) {
       fireEvent.click(
         screen.getByRole("button", { name: `Show ${p.label} workflow` })
       );
-      const visual = screen.getByTestId(PERSONA_VISUALS[p.id]);
+      const visual = screen.getByTestId("persona-visual-proof");
       expect(visual.innerHTML).not.toMatch(/F26522/);
     }
     // The pinned chip itself is still there.
     expect(container.querySelector('[class*="F26522"]')).not.toBeNull();
   });
 
-  it("managers visual shows per-rep talk-ratio bars", () => {
+  it("retired per-rep coded bars: single still has honest alt, no invented reps", () => {
     render(<PersonasTabs />);
     fireEvent.click(
       screen.getByRole("button", { name: "Show Sales managers workflow" })
     );
-    const visual = screen.getByTestId("persona-visual-bars");
-    expect(visual.getAttribute("aria-label")).toMatch(/Talk ratio/i);
-    for (const rep of ["Maya", "Jon", "Pri"]) {
-      expect(within(visual).getByText(rep)).toBeInTheDocument();
-    }
+    const visual = screen.getByTestId("persona-visual-proof");
+    const img = visual.querySelector("img");
+    expect(img?.getAttribute("alt")).toBeTruthy();
+    expect(visual.textContent).not.toMatch(/Maya|Jon/);
   });
 });
 

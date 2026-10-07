@@ -1,11 +1,13 @@
 import Link from "next/link";
 import { Crosshair } from "lucide-react";
+import { DEMO_ACME, PRODUCT_STILLS } from "@/lib/demo-call-fiction";
 
 /**
  * RadarMoat — dark band ("Surface no notetaker has").
  *
  * Dark tokens only (pairs against light sections to break the
  * double-dark tunnel once mounted before the film wedge).
+ * Fiction SSOT + radar still (GAUGE-MASTERPIECE).
  * Server component — no JS shipped.
  */
 export default function RadarMoat() {
@@ -40,13 +42,13 @@ export default function RadarMoat() {
                 Live flag
               </span>
               <p className="mt-4 font-mono text-[12px] text-white/85">
-                Rival: Gong · 0.96
+                Rival: {DEMO_ACME.rival} · {DEMO_ACME.confidence}
               </p>
               <blockquote className="mt-2 text-[14px] leading-relaxed text-white/90">
                 &ldquo;We&rsquo;re also evaluating Gong for the rollout.&rdquo;
               </blockquote>
               <p className="mt-3 font-mono text-[11px] text-white/60">
-                Sarah Chen · 00:14:22
+                {DEMO_ACME.speaker} · {DEMO_ACME.timestamp}
               </p>
             </div>
           </div>
@@ -63,64 +65,32 @@ export default function RadarMoat() {
               <div className="mt-4 space-y-2 font-mono text-[12px]">
                 <p className="text-white/85">
                   Slack ping →{" "}
-                  <span className="text-white">#deal-room-acme</span>
+                  <span className="text-white">{DEMO_ACME.slackChannel}</span>
                 </p>
                 <p className="text-white/60">
-                  Salesforce field: Competitor__c = Gong
+                  Salesforce field: Competitor__c = {DEMO_ACME.rival}
                 </p>
               </div>
             </div>
           </div>
 
-          {/* (c) Cross-call aggregation chart (inline SVG, no chart lib) */}
+          {/* (c) Radar board still */}
           <div className="doppel-outer-dark">
-            <div className="doppel-inner-dark p-6 h-full flex flex-col">
-              <p className="text-[11px] uppercase tracking-[0.18em] text-white/60 font-mono mb-3">
-                Cross-call trends
-              </p>
-              <svg
-                viewBox="0 0 300 160"
-                role="img"
-                aria-label="Competitor mentions across calls: Gong 12, Chorus 7, Fireflies 4"
-                className="w-full h-auto"
-              >
-                <line
-                  x1="32"
-                  y1="8"
-                  x2="32"
-                  y2="140"
-                  stroke="rgba(255,255,255,0.15)"
-                  strokeWidth="1"
-                />
-                <line
-                  x1="32"
-                  y1="140"
-                  x2="292"
-                  y2="140"
-                  stroke="rgba(255,255,255,0.15)"
-                  strokeWidth="1"
-                />
-                <rect x="52" y="44" width="56" height="96" rx="6" fill="#0E7C6B" />
-                <rect x="122" y="84" width="56" height="56" rx="6" fill="#D9A21B" />
-                <rect x="192" y="108" width="56" height="32" rx="6" fill="#E8442E" />
-                <text x="80" y="152" textAnchor="middle" fontSize="10" fill="rgba(255,255,255,0.6)" fontFamily="monospace">
-                  Gong 12
-                </text>
-                <text x="150" y="152" textAnchor="middle" fontSize="10" fill="rgba(255,255,255,0.6)" fontFamily="monospace">
-                  Chorus 7
-                </text>
-                <text x="220" y="152" textAnchor="middle" fontSize="10" fill="rgba(255,255,255,0.6)" fontFamily="monospace">
-                  Fflies 4
-                </text>
-                <polyline
-                  points="80,44 150,84 220,108"
-                  fill="none"
-                  stroke="rgba(255,255,255,0.5)"
-                  strokeWidth="1.5"
-                  strokeDasharray="4 3"
-                />
-              </svg>
-              <p className="mt-3 text-[12px] text-white/60">
+            <div className="doppel-inner-dark p-0 overflow-hidden h-full flex flex-col">
+              <div className="p-6 pb-3">
+                <p className="text-[11px] uppercase tracking-[0.18em] text-white/60 font-mono mb-3">
+                  Cross-call trends
+                </p>
+              </div>
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={PRODUCT_STILLS.radar}
+                alt="Competitor mentions across calls: Gong 12, Chorus 7, Fireflies 4"
+                width={640}
+                height={400}
+                className="block w-full h-auto px-3"
+              />
+              <p className="px-6 pb-6 mt-3 text-[12px] text-white/60">
                 Rival share across your last 50 calls.
               </p>
             </div>

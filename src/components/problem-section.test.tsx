@@ -33,39 +33,34 @@ describe("ProblemSection D1 visuals", () => {
     expect(el.querySelectorAll(".doppel-inner").length).toBe(3);
   });
 
-  it("renders the redacted-transcript visual (black bar + timestamp)", () => {
+  it("renders the quiet missed-line visual (calm mono stamp, testid kept)", () => {
     section();
     const visual = screen.getByTestId("problem-visual-missed-line");
     expect(visual).toBeDefined();
-    const v = within(visual as HTMLElement);
-    expect(v.getByText("Discovery")).toBeDefined();
-    expect(v.getByText("30:42")).toBeDefined();
-    const bar = visual.querySelector(
-      '[data-testid="problem-redacted-bar"]',
-    ) as HTMLElement;
-    expect(bar).not.toBeNull();
-    expect(bar.className).toContain("bg-film-ink");
-    expect(visual.className).toContain("bg-film-cream");
+    expect(visual.querySelector("svg")).toBeNull();
+    expect(visual.querySelector("img")).toBeNull();
+    expect(visual.className).not.toContain("bg-film-cream");
+    expect(within(visual as HTMLElement).getByText(/rival named/i)).toBeDefined();
   });
 
-  it("renders the clock/5h dial visual", () => {
+  it("renders the quiet hours visual (calm mono stamp, testid kept)", () => {
     section();
     const visual = screen.getByTestId("problem-visual-hours-dial");
     expect(visual).toBeDefined();
-    const v = within(visual as HTMLElement);
-    expect(v.getByText("5h")).toBeDefined();
-    expect(visual.querySelector("svg")).not.toBeNull();
-    expect(visual.className).toContain("bg-film-cream");
+    expect(visual.querySelector("svg")).toBeNull();
+    expect(visual.querySelector("img")).toBeNull();
+    expect(visual.className).not.toContain("bg-film-cream");
+    expect(within(visual as HTMLElement).getByText(/5h/i)).toBeDefined();
   });
 
-  it("renders the slipping-calendar visual with late badge", () => {
+  it("renders the quiet follow-ups visual (calm mono stamp, testid kept)", () => {
     section();
     const visual = screen.getByTestId("problem-visual-slipping-calendar");
     expect(visual).toBeDefined();
-    const v = within(visual as HTMLElement);
-    expect(v.getByText("LATE")).toBeDefined();
-    expect(v.getByText("one-pager")).toBeDefined();
-    expect(v.getByText("Q3 review invite")).toBeDefined();
+    expect(visual.querySelector("svg")).toBeNull();
+    expect(visual.querySelector("img")).toBeNull();
+    expect(visual.className).not.toContain("bg-film-cream");
+    expect(within(visual as HTMLElement).getByText(/follow-ups/i)).toBeDefined();
   });
 
   it("stays a coded server component: no client JS, no binaries", () => {
