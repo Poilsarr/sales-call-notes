@@ -5,6 +5,7 @@ import PersonasTabs from "@/components/personas-tabs";
 import RoiCalculator from "@/components/roi-calculator";
 import HowItWorks from "@/components/how-it-works";
 import Differentiators from "@/components/differentiators";
+import IntegrationsBand from "@/components/integrations-band";
 import VsTeaser from "@/components/vs-teaser";
 import UseCases from "@/components/use-cases";
 import FinalCta from "@/components/final-cta";
@@ -157,6 +158,7 @@ export default function Home() {
       <LiveProofStrip />
 
       <Differentiators />
+      <IntegrationsBand />
       <VsTeaser />
       <UseCases />
 
