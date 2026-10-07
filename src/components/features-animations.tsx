@@ -165,7 +165,7 @@ function HeroMockup() {
           </div>
           <div className="space-y-2.5">
             <div className="flex items-start gap-2.5">
-              <span className="shrink-0 text-[10px] font-mono font-medium text-[#C94F17] bg-[#C94F17]/8 px-2 py-0.5 rounded-full leading-none mt-0.5">
+              <span className="shrink-0 text-[10px] font-mono font-medium text-[#F26522] bg-[#F26522]/8 px-2 py-0.5 rounded-full leading-none mt-0.5">
                 Sarah
               </span>
               <p className="text-[13px] text-gray-600 leading-relaxed">
@@ -376,7 +376,7 @@ function FeatureCard({ feature, index }: { feature: typeof features[0]; index: n
             <span className="flex items-center gap-3">
               <Link
                 href={cardLinks[index]?.href ?? "/api-docs/v1"}
-                className="text-[10px] font-mono uppercase tracking-[0.15em] text-[#C94F17] hover:underline"
+                className="text-[10px] font-mono uppercase tracking-[0.15em] text-[#F26522] hover:underline"
               >
                 {cardLinks[index]?.label ?? "API docs"} →
               </Link>

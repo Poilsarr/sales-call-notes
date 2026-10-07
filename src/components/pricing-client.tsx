@@ -7,6 +7,7 @@ import { CheckCircle, Loader2, ArrowRight, Zap, Plus, Minus, ShieldCheck, Rotate
 import Link from "next/link";
 import { trackEvent } from "@/lib/analytics";
 import type { Tier } from "@/lib/pricing-tiers";
+import { PRODUCT_STILLS } from "@/lib/demo-call-fiction";
 import PricingCalculator from "@/components/pricing-calculator";
 import ExitIntentModal from "@/components/exit-intent-modal";
 import StickyPricingCta from "@/components/sticky-pricing-cta";
@@ -114,7 +115,7 @@ function BillingToggle({
         Annual
         <span
           className={`text-[9px] font-bold uppercase tracking-wide px-1.5 py-0.5 rounded-full ${
-            cycle === "annual" ? "bg-[#C94F17] text-white" : "bg-[#C94F17]/10 text-[#C94F17]"
+            cycle === "annual" ? "bg-[#F26522] text-white" : "bg-[#F26522]/10 text-[#F26522]"
           }`}
         >
           Save 17%
@@ -311,78 +312,41 @@ export default function PricingClient({
               </div>
             </div>
 
-            {/* RIGHT: Pro proof visual — coded mock (no binaries) built from
-                film/accent tokens. Tier summary on top, mini rival-signal +
-                Slack motif below, so visitors see what Pro actually buys.
-                Mock literals (Sarah Chen / Gong / #deal-room-acme) reuse the
-                shipped live-proof TABS set — no new invented content. */}
+            {/* RIGHT: Pro proof visual — product still inside .product-chrome,
+                so visitors see what Pro actually buys. Caption reuses honest
+                plan facts only. */}
             <div className="relative">
-              <div
-                aria-hidden
-                className="absolute -top-3 left-1/2 -translate-x-1/2 rotate-[-2deg] w-24 h-6 bg-film-amber/60 border border-black/10 z-10"
-              />
-              <div className="doppel-outer border-2 border-film-ink shadow-[8px_8px_0_#131316]">
+              <div className="doppel-outer">
                 <div className="doppel-inner bg-white p-0 overflow-hidden">
-                  <div className="bg-film-cream p-5 sm:p-6">
-                    <div className="flex items-center gap-2 mb-4">
-                      <div className="w-2 h-2 rounded-full bg-[#F26522] animate-pulse" />
-                      <span className="text-[10px] font-mono tracking-wider text-gray-600 font-medium uppercase">
-                        Pro · $9/mo flat
-                      </span>
-                      <span className="ml-auto text-[9px] font-mono text-gray-500">
-                        5 seats included
-                      </span>
-                    </div>
-
-                    <div className="flex items-center justify-between mb-2">
-                      <span className="text-[13px] font-medium text-gray-900">
-                        Rival: Gong
-                      </span>
-                      <span className="text-[10px] font-mono text-gray-500">0.96</span>
-                    </div>
-                    <div
-                      className="h-2 rounded-full bg-gray-200 overflow-hidden mb-4"
-                      role="progressbar"
-                      aria-valuenow={96}
-                      aria-valuemin={0}
-                      aria-valuemax={100}
-                      aria-label="Gong confidence"
-                    >
-                      <div
-                        className="h-full rounded-full"
-                        style={{ width: "96%", backgroundColor: "#F26522" }}
-                      />
-                    </div>
-
-                    <blockquote className="text-[13px] text-gray-700 leading-snug border-l-2 border-film-ink pl-3 mb-3">
-                      &ldquo;We&rsquo;re also evaluating Gong and Chorus for the rollout.&rdquo;
-                    </blockquote>
-                    <p className="text-[11.5px] text-gray-600 mb-4">
-                      <span
-                        className="shrink-0 text-[10px] font-mono font-medium px-2 py-0.5 rounded-full leading-none"
-                        style={{ backgroundColor: "#F26522", color: "#fff" }}
-                      >
-                        Sarah Chen
-                      </span>{" "}
-                      <span className="text-[10px] font-mono text-gray-500">
-                        · 00:14:22
-                      </span>
+                  <div
+                    data-testid="pricing-pro-visual"
+                    className="product-chrome m-2 mb-0"
+                  >
+                    {/* eslint-disable-next-line @next/next/no-img-element -- img keeps vitest free of next/image mocks */}
+                    <img
+                      src={PRODUCT_STILLS.summary}
+                      alt="Sample call summary still with owners and due dates"
+                      width={640}
+                      height={400}
+                      className="block w-full h-auto"
+                    />
+                  </div>
+                  <div className="px-5 sm:px-6 py-4">
+                    <p className="text-[13px] font-medium text-gray-900">
+                      Pro · $9/mo flat · 5 seats included
                     </p>
-
-                    <div className="mb-1">
-                      <span className="inline-flex items-center gap-1.5 rounded-full border-2 border-film-ink px-3 py-1 text-[11px] font-medium text-gray-900 bg-white">
-                        #deal-room-acme
-                      </span>
-                    </div>
+                    <p className="text-[10px] font-mono text-gray-500 mt-1">
+                      sample summary · owners + dates · 1,200 min/mo
+                    </p>
                   </div>
 
-                  <div className="px-5 sm:px-6 py-3 border-t border-film-ink/10 flex items-center justify-between text-[10px] text-gray-500">
+                  <div className="px-5 sm:px-6 py-3 border-t border-black/[0.06] flex items-center justify-between text-[10px] text-gray-500">
                     <span className="flex items-center gap-1.5">
-                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+                      <span aria-hidden className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
                       1,200 min/mo
                     </span>
                     <span className="flex items-center gap-1.5">
-                      <span className="w-1.5 h-1.5 rounded-full bg-[#F26522]" />
+                      <span aria-hidden className="w-1.5 h-1.5 rounded-full bg-[#F26522]" />
                       HubSpot + Salesforce
                     </span>
                     <span className="hidden sm:flex items-center gap-1.5">
@@ -399,13 +363,13 @@ export default function PricingClient({
       {/* Plans */}
       <section className="pt-8 pb-16 sm:pt-12 sm:pb-20 lg:pt-16 lg:pb-28 px-5 sm:px-8 lg:px-12">
         <div className="max-w-[1440px] mx-auto mb-8 flex flex-col items-center gap-3 text-center">
-          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#C94F17]/10 text-[#C94F17] text-[11px] font-semibold">
+          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#F26522]/10 text-[#F26522] text-[11px] font-semibold">
             <CheckCircle size={11} /> Flat-rate pricing
           </span>
           <p className="text-[15px] text-gray-700 max-w-2xl">
             Fireflies is <strong className="text-gray-900">$10/rep/mo</strong> for a 5-rep team — that&apos;s{" "}
             <strong className="text-gray-900">$50/mo</strong>. Gauge Pro is{" "}
-            <strong className="text-[#C94F17]">$9/mo flat for 5 seats</strong>. Same team, ~82% less.
+            <strong className="text-[#F26522]">$9/mo flat for 5 seats</strong>. Same team, ~82% less.
           </p>
           <p className="text-[12px] text-gray-500 max-w-xl">
             No per-seat math at any tier. Pro caps at 5 seats so the price stays a price. Business is flat for unlimited seats.
@@ -438,7 +402,7 @@ export default function PricingClient({
                   }`}
                 >
                   {isPopular && (
-                    <div className="absolute -top-3 left-1/2 -translate-x-1/2 px-4 py-1 rounded-full bg-[#C94F17] text-[12px] font-bold uppercase tracking-[0.15em] text-white whitespace-nowrap">
+                    <div className="absolute -top-3 left-1/2 -translate-x-1/2 px-4 py-1 rounded-full bg-[#F26522] text-[12px] font-bold uppercase tracking-[0.15em] text-white whitespace-nowrap">
                       Most popular
                     </div>
                   )}
@@ -502,7 +466,7 @@ export default function PricingClient({
                       disabled={checkingOut || !!paddleError || pricesLoading}
                       className={`block w-full text-center py-3 rounded-full text-[12px] font-semibold transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed ${
                         isPopular
-                          ? "bg-[#C94F17] text-white hover:bg-[#A84310] border border-transparent"
+                          ? "bg-[#F26522] text-white hover:bg-[#e05a1a] border border-transparent"
                           : "bg-white text-gray-900 border border-gray-300 hover:border-gray-900 hover:bg-gray-50"
                       }`}
                     >
@@ -712,13 +676,32 @@ export default function PricingClient({
                     </div>
                   ))}
                 </div>
-                {/* Migration visual — 3-step coded mock (export → import →
-                    searchable) on film tokens. Copy above kept verbatim. */}
-                <div className="mt-8 rounded-2xl bg-film-cream border border-film-ink/10 p-5 sm:p-6">
+                {/* Migration visual — product still inside .product-chrome
+                    proving CRM carryover; export → import → searchable steps
+                    kept verbatim as text (no coded mock cards, no film
+                    tokens). Copy above kept verbatim. */}
+                <div className="mt-8 rounded-2xl bg-white border border-black/[0.06] p-5 sm:p-6">
                   <p className="text-[10px] font-mono uppercase tracking-[0.18em] text-gray-500 mb-4 text-center">
                     How migration works
                   </p>
-                  <ol className="grid grid-cols-1 sm:grid-cols-[1fr_auto_1fr_auto_1fr] items-center gap-3">
+                  <div
+                    data-testid="pricing-migration-visual"
+                    className="product-chrome"
+                  >
+                    {/* eslint-disable-next-line @next/next/no-img-element -- img keeps vitest free of next/image mocks */}
+                    <img
+                      src={PRODUCT_STILLS.crm}
+                      alt="Sample CRM sync still with HubSpot and Salesforce fields"
+                      width={640}
+                      height={400}
+                      loading="lazy"
+                      className="block w-full h-auto"
+                    />
+                  </div>
+                  <p className="mt-3 text-center text-[10px] font-mono text-gray-500">
+                    sample CRM sync · keep your HubSpot + Salesforce workflow
+                  </p>
+                  <ol className="mt-4 grid grid-cols-1 sm:grid-cols-3 gap-4">
                     {[
                       {
                         step: "01",
@@ -735,26 +718,14 @@ export default function PricingClient({
                         title: "Searchable",
                         body: "Summaries, quotes, and action items in one search.",
                       },
-                    ].map((s, i) => (
-                      <li key={s.step} className="contents">
-                        <div className="rounded-xl bg-white border border-film-ink/10 px-4 py-3">
-                          <p className="text-[10px] font-mono text-[#F26522] font-semibold mb-1">
-                            {s.step}
-                          </p>
-                          <p className="text-[13px] font-semibold text-gray-900 mb-1">
-                            {s.title}
-                          </p>
-                          <p className="text-[12px] text-gray-500 leading-relaxed">
-                            {s.body}
-                          </p>
-                        </div>
-                        {i < 2 && (
-                          <ArrowRight
-                            size={16}
-                            className="text-gray-400 hidden sm:block shrink-0"
-                            aria-hidden
-                          />
-                        )}
+                    ].map((s) => (
+                      <li key={s.step} className="px-2 text-center">
+                        <p className="text-[10px] font-mono text-[#F26522] font-semibold mb-1">
+                          {s.step} · {s.title}
+                        </p>
+                        <p className="text-[12px] text-gray-500 leading-relaxed">
+                          {s.body}
+                        </p>
                       </li>
                     ))}
                   </ol>
@@ -792,7 +763,7 @@ export default function PricingClient({
                   ].map((pill) => (
                     <span
                       key={pill}
-                      className="inline-flex items-center gap-1.5 rounded-full border border-film-ink/15 bg-film-cream px-3 py-1 font-mono text-[11px] text-gray-700"
+                      className="inline-flex items-center gap-1.5 rounded-full border border-black/[0.06] bg-white px-3 py-1 font-mono text-[11px] text-gray-700"
                     >
                       <span aria-hidden className="w-1.5 h-1.5 rounded-full bg-[#F26522]" />
                       {pill}

@@ -99,7 +99,7 @@ export function TrustStrip() {
           <span className="flex items-center gap-1.5">
             <span
               aria-hidden
-              className="w-1.5 h-1.5 rounded-full animate-pulse"
+              className="w-1.5 h-1.5 rounded-full"
               style={{ backgroundColor: ACCENT }}
             />
             Health 8.2

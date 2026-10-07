@@ -117,7 +117,6 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <a href="#main" className="skip-link">
           Skip to content
         </a>
-        <div className="noise-overlay" />
         <CommandMenu />
         <ClerkProvider signInUrl="/sign-in" signUpUrl="/sign-up" afterSignUpUrl="/app" afterSignInUrl="/app">
           <GaugePostHogProvider>{children}</GaugePostHogProvider>

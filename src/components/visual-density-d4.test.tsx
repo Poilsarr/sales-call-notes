@@ -142,51 +142,35 @@ describe("VISUAL-DENSITY D4 — HeroEvidenceStack", () => {
     }
   });
 
-  it("renders a mini mock strip atop each of the 3 cards", () => {
+  it("renders product stills atop each of the 3 cards", () => {
     evidenceSection();
     const transcript = screen.getByTestId("evidence-visual-transcript");
     const slack = screen.getByTestId("evidence-visual-slack");
     const crm = screen.getByTestId("evidence-visual-crm");
-    // Condensed product-visual patterns: cream strip + mono header.
     for (const visual of [transcript, slack, crm]) {
-      expect(visual.getAttribute("class")).toMatch(/bg-film-cream/);
+      expect(visual.getAttribute("class")).toMatch(/product-chrome/);
+      const img = visual.querySelector("img");
+      expect(img).not.toBeNull();
+      expect(img?.getAttribute("src")).toMatch(/^\/product\//);
     }
-    // Transcript line: quote + speaker pill + timestamp.
-    expect(
-      within(transcript).getByText("Live summary")
-    ).toBeDefined();
-    expect(
-      within(transcript).getByText("Sarah Chen")
-    ).toBeDefined();
-    // Slack message: channel + rival + confidence bar.
-    expect(
-      within(slack).getByText("Rival signal")
-    ).toBeDefined();
-    expect(
-      within(slack).getByText("Rival: Gong")
-    ).toBeDefined();
-    expect(
-      within(slack).getByText("#deal-room-acme")
-    ).toBeDefined();
-    const bar = within(slack).getByRole("progressbar", {
-      name: /Gong confidence/,
-    });
-    expect(bar.getAttribute("aria-valuenow")).toBe("96");
-    // CRM field rows.
-    const crmScope = within(crm);
-    expect(crmScope.getByText("CRM sync")).toBeDefined();
-    expect(crmScope.getByText("HubSpot → Salesforce")).toBeDefined();
-    for (const label of ["Deal", "Owner", "Next step"]) {
-      expect(crmScope.getByText(label)).toBeDefined();
-    }
+    expect(transcript.querySelector("img")?.getAttribute("src")).toContain(
+      "transcript-proof"
+    );
+    expect(slack.querySelector("img")?.getAttribute("src")).toContain(
+      "slack-ping"
+    );
+    expect(crm.querySelector("img")?.getAttribute("src")).toContain("crm-sync");
   });
 
-  it("keeps doppel shells, stagger, and accent (no icon tiles)", () => {
+  it("keeps doppel shells, single grid reveal, and accent (no icon tiles)", () => {
     const { el } = evidenceSection();
     expect(el.querySelectorAll(".doppel-outer").length).toBe(3);
-    expect(el.querySelector(".animate-stagger-1")).not.toBeNull();
-    expect(el.querySelector(".animate-stagger-2")).not.toBeNull();
-    expect(el.querySelector(".animate-stagger-3")).not.toBeNull();
+    // Dead stagger classes removed (zero defs in globals); single grid-level reveal.
+    expect(el.querySelector(".animate-stagger-1")).toBeNull();
+    expect(el.querySelector(".animate-stagger-2")).toBeNull();
+    expect(el.querySelector(".animate-stagger-3")).toBeNull();
+    expect(el.querySelector(".product-still-reveal")).not.toBeNull();
+    expect(el.querySelector(".animate-pulse")).toBeNull();
     const src = readFileSync(
       join(process.cwd(), "src/components/hero-evidence-stack.tsx"),
       "utf8"
@@ -194,5 +178,6 @@ describe("VISUAL-DENSITY D4 — HeroEvidenceStack", () => {
     expect(src).toContain("#F26522");
     expect(src).not.toContain("use client");
     expect(src).not.toContain("lucide-react");
+    expect(src).not.toContain("shadow-[8px_8px_0_#131316]");
   });
 });

@@ -1,0 +1,81 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 480" fill="none" role="img" aria-label="Coaching panel with talk-time bars mood and missed steps">
+  <defs>
+    <filter id="softShadow" x="-8%" y="-8%" width="116%" height="116%">
+      <feDropShadow dx="0" dy="8" stdDeviation="16" flood-color="#131316" flood-opacity="0.08"/>
+    </filter>
+    <filter id="cardShadow" x="-4%" y="-4%" width="108%" height="112%">
+      <feDropShadow dx="0" dy="2" stdDeviation="6" flood-color="#131316" flood-opacity="0.06"/>
+    </filter>
+    <linearGradient id="bgGrad" x1="0" y1="0" x2="720" y2="480" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#F7F7F8"/>
+      <stop offset="1" stop-color="#EEEEF0"/>
+    </linearGradient>
+  </defs>
+
+  <rect width="720" height="480" fill="url(#bgGrad)"/>
+
+  <!-- Browser chrome -->
+  <g filter="url(#softShadow)">
+    <rect x="40" y="28" width="640" height="424" rx="14" fill="#FFFFFF" stroke="#E4E4E7" stroke-width="1"/>
+    <rect x="40" y="28" width="640" height="40" rx="14" fill="#FAFAFA"/>
+    <rect x="40" y="54" width="640" height="14" fill="#FAFAFA"/>
+    <circle cx="62" cy="48" r="5" fill="#FF5F57"/>
+    <circle cx="80" cy="48" r="5" fill="#FEBC2E"/>
+    <circle cx="98" cy="48" r="5" fill="#28C840"/>
+    <rect x="220" y="38" width="280" height="20" rx="6" fill="#FFFFFF" stroke="#E4E4E7"/>
+    <text x="360" y="52" text-anchor="middle" font-family="ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="10" fill="#71717A">app.gauge.ai / coach / acme-discovery</text>
+  </g>
+
+  <!-- Header -->
+  <text x="64" y="100" font-family="ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="11" font-weight="600" fill="#A1A1AA" letter-spacing="0.04em">CALL COACHING</text>
+  <text x="64" y="126" font-family="ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="20" font-weight="600" fill="#131316">Acme Corp · Discovery</text>
+  <rect x="520" y="104" width="136" height="26" rx="13" fill="#FFF4ED" stroke="#F26522"/>
+  <text x="588" y="121" text-anchor="middle" font-family="ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="11" font-weight="600" fill="#F26522">Score 74 / 100</text>
+
+  <!-- Talk time card -->
+  <g filter="url(#cardShadow)">
+    <rect x="64" y="152" width="300" height="260" rx="12" fill="#FFFFFF" stroke="#E4E4E7"/>
+  </g>
+  <text x="84" y="184" font-family="ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="12" font-weight="600" fill="#131316">Talk time</text>
+  <text x="84" y="204" font-family="ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="11" fill="#71717A">Ideal: 40% you · 60% them</text>
+
+  <!-- AE bar -->
+  <text x="84" y="244" font-family="ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="12" font-weight="600" fill="#52525B">Maya Kim (AE)</text>
+  <text x="320" y="244" text-anchor="end" font-family="ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace" font-size="12" font-weight="600" fill="#131316">58%</text>
+  <rect x="84" y="256" width="256" height="14" rx="7" fill="#F4F4F5"/>
+  <rect x="84" y="256" width="148" height="14" rx="7" fill="#F26522"/>
+
+  <!-- Buyer bar -->
+  <text x="84" y="304" font-family="ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="12" font-weight="600" fill="#52525B">Sarah Chen (Buyer)</text>
+  <text x="320" y="304" text-anchor="end" font-family="ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace" font-size="12" font-weight="600" fill="#131316">42%</text>
+  <rect x="84" y="316" width="256" height="14" rx="7" fill="#F4F4F5"/>
+  <rect x="84" y="316" width="108" height="14" rx="7" fill="#131316"/>
+
+  <!-- Tip -->
+  <rect x="84" y="354" width="256" height="40" rx="8" fill="#FFF8F4"/>
+  <text x="100" y="378" font-family="ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="11" fill="#9A3412">Talk less  leave room for discovery.</text>
+
+  <!-- Mood + missed steps -->
+  <g filter="url(#cardShadow)">
+    <rect x="384" y="152" width="272" height="120" rx="12" fill="#FFFFFF" stroke="#E4E4E7"/>
+  </g>
+  <text x="404" y="184" font-family="ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="12" font-weight="600" fill="#131316">Buyer mood</text>
+  <rect x="404" y="200" width="72" height="28" rx="14" fill="#ECFDF5" stroke="#86EFAC"/>
+  <text x="440" y="218" text-anchor="middle" font-family="ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="12" font-weight="600" fill="#15803D">Curious</text>
+  <rect x="488" y="200" width="64" height="28" rx="14" fill="#FEF3C7" stroke="#FCD34D"/>
+  <text x="520" y="218" text-anchor="middle" font-family="ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="12" font-weight="600" fill="#B45309">Cautious</text>
+  <text x="404" y="252" font-family="ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="11" fill="#71717A">Shifted positive after pricing clarity.</text>
+
+  <g filter="url(#cardShadow)">
+    <rect x="384" y="292" width="272" height="120" rx="12" fill="#FFFFFF" stroke="#E4E4E7"/>
+  </g>
+  <text x="404" y="324" font-family="ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="12" font-weight="600" fill="#131316">Missed steps</text>
+
+  <circle cx="416" cy="352" r="8" fill="#FEE2E2" stroke="#F87171"/>
+  <text x="416" y="356" text-anchor="middle" font-family="ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="10" font-weight="700" fill="#DC2626">!</text>
+  <text x="434" y="356" font-family="ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="12" fill="#3F3F46">Budget confirmation</text>
+
+  <circle cx="416" cy="384" r="8" fill="#FEE2E2" stroke="#F87171"/>
+  <text x="416" y="388" text-anchor="middle" font-family="ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="10" font-weight="700" fill="#DC2626">!</text>
+  <text x="434" y="388" font-family="ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="12" fill="#3F3F46">Next-meeting lock</text>
+</svg>

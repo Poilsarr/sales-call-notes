@@ -1,0 +1,85 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 480" fill="none" role="img" aria-label="Call transcript with Gong competitor mention highlighted">
+  <defs>
+    <filter id="softShadow" x="-8%" y="-8%" width="116%" height="116%">
+      <feDropShadow dx="0" dy="8" stdDeviation="16" flood-color="#131316" flood-opacity="0.08"/>
+    </filter>
+    <filter id="cardShadow" x="-4%" y="-4%" width="108%" height="112%">
+      <feDropShadow dx="0" dy="2" stdDeviation="6" flood-color="#131316" flood-opacity="0.06"/>
+    </filter>
+    <linearGradient id="bgGrad" x1="0" y1="0" x2="720" y2="480" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#F7F7F8"/>
+      <stop offset="1" stop-color="#EEEEF0"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Page background -->
+  <rect width="720" height="480" fill="url(#bgGrad)"/>
+
+  <!-- Browser chrome -->
+  <g filter="url(#softShadow)">
+    <rect x="40" y="28" width="640" height="424" rx="14" fill="#FFFFFF" stroke="#E4E4E7" stroke-width="1"/>
+    <!-- Title bar -->
+    <rect x="40" y="28" width="640" height="40" rx="14" fill="#FAFAFA"/>
+    <rect x="40" y="54" width="640" height="14" fill="#FAFAFA"/>
+    <circle cx="62" cy="48" r="5" fill="#FF5F57"/>
+    <circle cx="80" cy="48" r="5" fill="#FEBC2E"/>
+    <circle cx="98" cy="48" r="5" fill="#28C840"/>
+    <rect x="220" y="38" width="280" height="20" rx="6" fill="#FFFFFF" stroke="#E4E4E7"/>
+    <text x="360" y="52" text-anchor="middle" font-family="ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="10" fill="#71717A">app.gauge.ai / calls / acme-discovery</text>
+  </g>
+
+  <!-- App header -->
+  <text x="64" y="98" font-family="ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="11" font-weight="600" fill="#A1A1AA" letter-spacing="0.04em">TRANSCRIPT</text>
+  <text x="64" y="122" font-family="ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="18" font-weight="600" fill="#131316">Acme Corp · Discovery</text>
+  <rect x="540" y="100" width="116" height="26" rx="13" fill="#FFF4ED" stroke="#F26522" stroke-width="1"/>
+  <circle cx="556" cy="113" r="4" fill="#F26522"/>
+  <text x="568" y="117" font-family="ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="11" font-weight="600" fill="#F26522">Live · 00:14:22</text>
+
+  <!-- Sidebar speakers -->
+  <g filter="url(#cardShadow)">
+    <rect x="64" y="148" width="160" height="268" rx="12" fill="#FAFAFA" stroke="#E4E4E7"/>
+  </g>
+  <text x="80" y="176" font-family="ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="10" font-weight="600" fill="#A1A1AA" letter-spacing="0.06em">SPEAKERS</text>
+
+  <circle cx="92" cy="210" r="14" fill="#F26522"/>
+  <text x="92" y="214" text-anchor="middle" font-family="ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="10" font-weight="700" fill="#FFFFFF">SC</text>
+  <text x="114" y="208" font-family="ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="12" font-weight="600" fill="#131316">Sarah Chen</text>
+  <text x="114" y="224" font-family="ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="10" fill="#71717A">Buyer · VP Sales</text>
+
+  <circle cx="92" cy="262" r="14" fill="#E4E4E7"/>
+  <text x="92" y="266" text-anchor="middle" font-family="ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="10" font-weight="700" fill="#52525B">MK</text>
+  <text x="114" y="260" font-family="ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="12" font-weight="600" fill="#131316">Maya Kim</text>
+  <text x="114" y="276" font-family="ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="10" fill="#71717A">AE · Gauge</text>
+
+  <rect x="80" y="304" width="128" height="1" fill="#E4E4E7"/>
+  <text x="80" y="330" font-family="ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="10" font-weight="600" fill="#A1A1AA" letter-spacing="0.06em">SIGNALS</text>
+  <rect x="80" y="344" width="128" height="28" rx="8" fill="#FFF4ED"/>
+  <text x="96" y="362" font-family="ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="11" font-weight="600" fill="#F26522">Rival: Gong</text>
+  <text x="80" y="396" font-family="ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="10" fill="#71717A">Confidence 0.96</text>
+
+  <!-- Transcript panel -->
+  <g filter="url(#cardShadow)">
+    <rect x="240" y="148" width="416" height="268" rx="12" fill="#FFFFFF" stroke="#E4E4E7"/>
+  </g>
+
+  <!-- Older line -->
+  <text x="260" y="180" font-family="ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace" font-size="10" fill="#A1A1AA">00:13:48</text>
+  <text x="320" y="180" font-family="ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="11" font-weight="600" fill="#52525B">Maya Kim</text>
+  <text x="260" y="202" font-family="ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="13" fill="#3F3F46">How are you thinking about rollout timing for Q3?</text>
+
+  <!-- Highlighted Gong line -->
+  <rect x="252" y="224" width="392" height="108" rx="10" fill="#FFF8F4" stroke="#F26522" stroke-width="1.5"/>
+  <rect x="252" y="224" width="4" height="108" rx="2" fill="#F26522"/>
+  <text x="272" y="252" font-family="ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace" font-size="10" fill="#F26522">00:14:22</text>
+  <text x="340" y="252" font-family="ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="11" font-weight="600" fill="#131316">Sarah Chen</text>
+  <rect x="420" y="240" width="52" height="18" rx="9" fill="#F26522"/>
+  <text x="446" y="252" text-anchor="middle" font-family="ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="10" font-weight="700" fill="#FFFFFF">Gong</text>
+  <text x="272" y="282" font-family="ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="14" fill="#131316">We're also evaluating</text>
+  <text x="272" y="304" font-family="ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="14" font-weight="600" fill="#F26522">Gong</text>
+  <text x="312" y="304" font-family="ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="14" fill="#131316">and Chorus for the rollout.</text>
+
+  <!-- Next line faded -->
+  <text x="260" y="368" font-family="ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace" font-size="10" fill="#D4D4D8">00:14:41</text>
+  <text x="320" y="368" font-family="ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="11" font-weight="600" fill="#A1A1AA">Maya Kim</text>
+  <text x="260" y="390" font-family="ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="13" fill="#A1A1AA">Got it  I can put a side-by-side together for you.</text>
+</svg>

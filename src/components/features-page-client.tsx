@@ -154,7 +154,7 @@ function ComparisonSection() {
                   <th className="py-4 pl-6 pr-3 text-[11px] uppercase tracking-[0.12em] text-gray-500 font-medium">
                     Capability
                   </th>
-                  <th className="py-4 px-3 text-[12px] uppercase tracking-[0.12em] text-[#C94F17] font-semibold">
+                  <th className="py-4 px-3 text-[12px] uppercase tracking-[0.12em] text-[#F26522] font-semibold">
                     Gauge
                   </th>
                   <th className="py-4 px-3 text-[11px] uppercase tracking-[0.12em] text-gray-500 font-medium">
@@ -199,21 +199,21 @@ function ComparisonSection() {
         <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
           <Link
             href="/vs/otter-ai"
-            className="inline-flex items-center gap-1.5 text-[12px] font-semibold text-[#C94F17] hover:underline"
+            className="inline-flex items-center gap-1.5 text-[12px] font-semibold text-[#F26522] hover:underline"
           >
             Gauge vs Otter.ai — Read comparison →
           </Link>
           <span className="text-gray-200" aria-hidden="true">|</span>
           <Link
             href="/vs/fireflies"
-            className="inline-flex items-center gap-1.5 text-[12px] font-semibold text-[#C94F17] hover:underline"
+            className="inline-flex items-center gap-1.5 text-[12px] font-semibold text-[#F26522] hover:underline"
           >
             Gauge vs Fireflies.ai — Read comparison →
           </Link>
           <span className="text-gray-200" aria-hidden="true">|</span>
           <Link
             href="/vs/gong"
-            className="inline-flex items-center gap-1.5 text-[12px] font-semibold text-[#C94F17] hover:underline"
+            className="inline-flex items-center gap-1.5 text-[12px] font-semibold text-[#F26522] hover:underline"
           >
             Gauge vs Gong — Read comparison →
           </Link>
@@ -342,7 +342,7 @@ export default function FeaturesPageClient() {
           <div className="flex flex-wrap items-center justify-center gap-3">
             <Link
               href="/sign-up"
-              className="group inline-flex items-center gap-2 bg-[#C94F17] hover:bg-[#A84310] text-white text-[13px] rounded-full pl-5 pr-2 py-2 transition-colors duration-300"
+              className="group inline-flex items-center gap-2 bg-[#F26522] hover:bg-[#e05a1a] text-white text-[13px] rounded-full pl-5 pr-2 py-2 transition-colors duration-300"
             >
               <span className="flex flex-col overflow-hidden h-[20px]">
                 <span className="transition-transform duration-500 ease-[cubic-bezier(0.25,0.1,0.25,1)] group-hover:-translate-y-1/2 leading-[20px]">
@@ -396,7 +396,7 @@ export default function FeaturesPageClient() {
                 <p className="text-gray-500 mb-8 text-[14px]">Join SDRs who cut their note-taking time by 80%.</p>
                 {isSignedIn ? (
                   <Link href="/app"
-                    className="group inline-flex items-center gap-2 bg-[#C94F17] hover:bg-[#A84310] text-white text-[13px] rounded-full pl-5 pr-2 py-2 transition-colors duration-300">
+                    className="group inline-flex items-center gap-2 bg-[#F26522] hover:bg-[#e05a1a] text-white text-[13px] rounded-full pl-5 pr-2 py-2 transition-colors duration-300">
                     <span className="flex flex-col overflow-hidden h-[20px]">
                       <span className="transition-transform duration-500 ease-[cubic-bezier(0.25,0.1,0.25,1)] group-hover:-translate-y-1/2 leading-[20px]">
                         Open Dashboard
@@ -409,7 +409,7 @@ export default function FeaturesPageClient() {
                   </Link>
                 ) : (
                   <SignInButton mode="modal">
-                    <button className="group inline-flex items-center gap-2 bg-[#C94F17] hover:bg-[#A84310] text-white text-[13px] rounded-full pl-5 pr-2 py-2 transition-colors duration-300 cursor-pointer">
+                    <button className="group inline-flex items-center gap-2 bg-[#F26522] hover:bg-[#e05a1a] text-white text-[13px] rounded-full pl-5 pr-2 py-2 transition-colors duration-300 cursor-pointer">
                       <span className="flex flex-col overflow-hidden h-[20px]">
                         <span className="transition-transform duration-500 ease-[cubic-bezier(0.25,0.1,0.25,1)] group-hover:-translate-y-1/2 leading-[20px]">
                           Get Started Free

@@ -56,45 +56,54 @@ describe("HowItWorks D1 visuals", () => {
     expect(el.querySelector(".grid.md\\:grid-cols-3")).not.toBeNull();
   });
 
-  it("renders the dropzone mini (MP3 / Record / Google Meet)", () => {
+  it("renders the dropzone visual as a product still (crm-sync)", () => {
     section();
     const visual = screen.getByTestId("how-visual-dropzone");
     expect(visual).toBeDefined();
-    const v = within(visual as HTMLElement);
-    expect(v.getByText("MP3")).toBeDefined();
-    expect(v.getByText("Record")).toBeDefined();
-    expect(v.getByText("Google Meet")).toBeDefined();
-    expect(visual.querySelector(".border-dashed")).not.toBeNull();
-    expect(visual.className).toContain("bg-film-cream");
+    expect(visual.getAttribute("class")).toMatch(/product-chrome/);
+    const img = visual.querySelector("img");
+    expect(img).not.toBeNull();
+    expect(img?.getAttribute("src")).toMatch(/^\/product\//);
+    expect(img?.getAttribute("src")).toContain("crm-sync");
+    expect(img?.getAttribute("alt")).toBeTruthy();
+    expect(img?.getAttribute("loading")).toBe("lazy");
   });
 
-  it("renders the transcript-lines mini (Transcript / Summary / Owners + dates)", () => {
+  it("renders the transcript visual as a product still (transcript-proof)", () => {
     section();
     const visual = screen.getByTestId("how-visual-transcript");
     expect(visual).toBeDefined();
-    const v = within(visual as HTMLElement);
-    expect(v.getByText("Transcript")).toBeDefined();
-    expect(v.getByText("Summary")).toBeDefined();
-    expect(v.getByText("Owners + dates")).toBeDefined();
+    expect(visual.getAttribute("class")).toMatch(/product-chrome/);
+    const img = visual.querySelector("img");
+    expect(img).not.toBeNull();
+    expect(img?.getAttribute("src")).toContain("transcript-proof");
+    expect(img?.getAttribute("alt")).toBeTruthy();
+    expect(img?.getAttribute("loading")).toBe("lazy");
   });
 
-  it("renders the slack-ping mini (Slack + channel chip + CRM stamp)", () => {
+  it("renders the slack-ping visual as a product still (slack-ping)", () => {
     section();
     const visual = screen.getByTestId("how-visual-slack-ping");
     expect(visual).toBeDefined();
-    const v = within(visual as HTMLElement);
-    expect(v.getByText("Slack")).toBeDefined();
-    expect(v.getByText("#deal-room")).toBeDefined();
-    expect(v.getByText("HubSpot · Salesforce")).toBeDefined();
+    expect(visual.getAttribute("class")).toMatch(/product-chrome/);
+    const img = visual.querySelector("img");
+    expect(img).not.toBeNull();
+    expect(img?.getAttribute("src")).toContain("slack-ping");
+    expect(img?.getAttribute("alt")).toBeTruthy();
+    expect(img?.getAttribute("loading")).toBe("lazy");
   });
 
-  it("stays a coded server component: no client JS, no binaries", () => {
+  it("stays a still-led server component: no client JS, product stills only", () => {
     const src = readFileSync(
       join(process.cwd(), "src/components/how-it-works.tsx"),
       "utf8",
     );
     expect(src).not.toContain('"use client"');
     expect(src).not.toContain("use client");
-    expect(src).not.toMatch(/<img|<Image|\.png|\.jpg/);
+    expect(src).toContain("PRODUCT_STILLS");
+    expect(src).toContain("product-chrome");
+    expect(src).not.toContain("bg-film-cream");
+    expect(src).not.toContain("animate-pulse");
+    expect(src).not.toMatch(/\.png|\.jpg|<video/);
   });
 });

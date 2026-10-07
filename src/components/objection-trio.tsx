@@ -7,8 +7,11 @@ import { Crosshair, ShieldCheck, Download } from "lucide-react";
  * from the ROWS table in src/components/differentiators.tsx
  * (No-bot capture / Data used to train models / CRM push).
  *
+ * Calm cards: one icon per card, no coded minis.
+ *
  * Server component — no JS shipped.
  */
+
 export function ObjectionTrio() {
   return (
     <section
@@ -32,7 +35,7 @@ export function ObjectionTrio() {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <div className="doppel-outer h-full">
             <div className="doppel-inner p-6 h-full flex flex-col">
-              <Crosshair size={20} className="text-[#C94F17] mb-4" aria-hidden />
+              <Crosshair size={20} className="text-[#F26522] mb-4" aria-hidden />
               <h3 className="text-[15px] font-semibold tracking-tight mb-1.5">
                 No-bot capture
               </h3>
@@ -46,7 +49,7 @@ export function ObjectionTrio() {
             <div className="doppel-inner p-6 h-full flex flex-col">
               <ShieldCheck
                 size={20}
-                className="text-[#C94F17] mb-4"
+                className="text-[#F26522] mb-4"
                 aria-hidden
               />
               <h3 className="text-[15px] font-semibold tracking-tight mb-1.5">
@@ -60,7 +63,7 @@ export function ObjectionTrio() {
 
           <div className="doppel-outer h-full">
             <div className="doppel-inner p-6 h-full flex flex-col">
-              <Download size={20} className="text-[#C94F17] mb-4" aria-hidden />
+              <Download size={20} className="text-[#F26522] mb-4" aria-hidden />
               <h3 className="text-[15px] font-semibold tracking-tight mb-1.5">
                 CRM push
               </h3>

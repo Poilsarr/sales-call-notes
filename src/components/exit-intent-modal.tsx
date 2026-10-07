@@ -127,7 +127,7 @@ export default function ExitIntentModal() {
               <Link
                 href="/sign-up"
                 onClick={() => trackEvent("pricing_exit_intent_click")}
-                className="inline-flex items-center justify-center gap-2 bg-[#C94F17] hover:bg-[#A84310] text-white text-[13px] font-medium rounded-full px-6 py-2.5 transition-colors"
+                className="inline-flex items-center justify-center gap-2 bg-[#F26522] hover:bg-[#e05a1a] text-white text-[13px] font-medium rounded-full px-6 py-2.5 transition-colors"
               >
                 Start free
               </Link>
@@ -158,7 +158,7 @@ export default function ExitIntentModal() {
               <button
                 type="submit"
                 disabled={status === "submitting"}
-                className="inline-flex items-center justify-center gap-2 bg-[#C94F17] hover:bg-[#A84310] disabled:opacity-50 disabled:cursor-not-allowed text-white text-[13px] font-medium rounded-full px-6 py-2.5 transition-colors"
+                className="inline-flex items-center justify-center gap-2 bg-[#F26522] hover:bg-[#e05a1a] disabled:opacity-50 disabled:cursor-not-allowed text-white text-[13px] font-medium rounded-full px-6 py-2.5 transition-colors"
               >
                 {status === "submitting" ? "Saving…" : "Email me my free minutes"}
               </button>
@@ -167,7 +167,7 @@ export default function ExitIntentModal() {
               <Link
                 href="/sign-up"
                 onClick={() => trackEvent("pricing_exit_intent_click")}
-                className="text-[13px] font-medium text-[#C94F17] hover:text-[#A84310] transition-colors"
+                className="text-[13px] font-medium text-[#F26522] hover:text-[#e05a1a] transition-colors"
               >
                 Start free now
               </Link>

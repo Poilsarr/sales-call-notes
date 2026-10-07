@@ -72,7 +72,7 @@ export default function PricingSocialProof() {
           {stats.map((stat) => (
             <div
               key={stat.value}
-              className="rounded-2xl border border-film-ink/10 bg-film-cream p-5 text-center"
+              className="rounded-2xl border border-black/[0.06] bg-white p-5 text-center"
             >
               <p className="text-[clamp(1.5rem,3vw,2rem)] font-semibold tracking-tight text-gray-900">
                 {stat.value}
@@ -88,8 +88,8 @@ export default function PricingSocialProof() {
           {segments.map((seg) => (
             <div key={seg.title} className="doppel-outer h-full">
               <div className="doppel-inner p-6 h-full flex flex-col">
-                <div className="w-10 h-10 rounded-full bg-film-cream border border-film-ink/10 flex items-center justify-center mb-4">
-                  <seg.icon size={20} className="text-film-ink" />
+                <div className="w-10 h-10 rounded-full section-tint-peach border border-black/[0.06] flex items-center justify-center mb-4">
+                  <seg.icon size={20} className="text-gray-700" />
                 </div>
                 <h4 className="text-[14px] font-semibold text-gray-900 mb-3">{seg.title}</h4>
                 <ul className="space-y-2.5 flex-1">

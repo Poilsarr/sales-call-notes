@@ -1,13 +1,16 @@
 /**
- * ProductVisualsSection — photo-real coded mocks (GAUGE-REDESIGN Part 1, E2).
+ * ProductVisualsSection — soft doppel + product stills (Gauge Radar).
  *
- * Three ProductVisualCards (transcript / slack / crm) on a film-cream
- * band. Card data uses import-free literals matching the live-proof
- * TABS (Acme/Gong 0.96, Vandelay/Otter.ai 0.91, Stark/Fireflies.ai 0.99).
- * Server component, display only — NOT mounted in page.tsx here (E1 owns
- * wiring); just export default + named.
+ * Three ProductVisualCards (transcript / slack / crm) on a soft tint
+ * band. Card data from demo-call-fiction DEMO_ACME / DEMO_VANDELAY /
+ * DEMO_STARK. Server component, display only.
  */
 
+import {
+  DEMO_ACME,
+  DEMO_STARK,
+  DEMO_VANDELAY,
+} from "@/lib/demo-call-fiction";
 import { ProductVisualCard } from "./product-visual-card";
 
 export function ProductVisualsSection() {
@@ -15,7 +18,7 @@ export function ProductVisualsSection() {
     <section
       data-track-section="product-visuals"
       aria-labelledby="product-visuals-heading"
-      className="bg-film-cream border-y border-film-ink/10 py-16 sm:py-20 lg:py-28"
+      className="section-tint-peach border-y border-black/[0.04] py-16 sm:py-20 lg:py-28"
     >
       <div className="max-w-[1440px] mx-auto px-5 sm:px-8 lg:px-12">
         <div className="max-w-2xl mb-8">
@@ -35,48 +38,48 @@ export function ProductVisualsSection() {
           </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 items-start">
+        <div className="product-still-reveal grid grid-cols-1 md:grid-cols-3 gap-4 items-start">
           <ProductVisualCard
             variant="transcript"
             eyebrow="01 · Transcript proof"
             title="The exact line, with speaker and timestamp"
-            body="Sarah Chen · 00:14:22 — “We're also evaluating Gong and Chorus for the rollout.” Rival names highlighted the second they drop."
-            footer="Acme Corp · Discovery · conf 0.96"
-            confidence={0.96}
-            callName="Acme Corp · Discovery"
-            speaker="Sarah Chen"
-            timestamp="00:14:22"
-            rival="Gong"
-            quote="We're also evaluating Gong and Chorus for the rollout."
-            slackChannel="#deal-room-acme"
+            body={`${DEMO_ACME.speaker} · ${DEMO_ACME.timestamp} — “${DEMO_ACME.quote}” Rival names highlighted the second they drop.`}
+            footer={`${DEMO_ACME.callName} · conf ${DEMO_ACME.confidence}`}
+            confidence={DEMO_ACME.confidence}
+            callName={DEMO_ACME.callName}
+            speaker={DEMO_ACME.speaker}
+            timestamp={DEMO_ACME.timestamp}
+            rival={DEMO_ACME.rival}
+            quote={DEMO_ACME.quote}
+            slackChannel={DEMO_ACME.slackChannel}
           />
           <ProductVisualCard
             variant="slack"
             eyebrow="02 · Slack ping"
-            title="#deal-room-vandelay · Competitor detected: Otter.ai (0.91)"
-            body="Priya Shah · 11:42:08 — “Our current contract with Otter expires in Q3.” Exact quote, speaker, and call link land in the deal room mid-call."
-            footer="Vandelay Industries · Demo · conf 0.91"
-            confidence={0.91}
-            callName="Vandelay Industries · Demo"
-            speaker="Priya Shah"
-            timestamp="11:42:08"
-            rival="Otter.ai"
-            quote="Our current contract with Otter expires in Q3 — what would migration look like?"
-            slackChannel="#deal-room-vandelay"
+            title={`${DEMO_VANDELAY.slackChannel} · Competitor detected: ${DEMO_VANDELAY.rival} (${DEMO_VANDELAY.confidence})`}
+            body={`${DEMO_VANDELAY.speaker} · ${DEMO_VANDELAY.timestamp} — “${DEMO_VANDELAY.quote}” Exact quote, speaker, and call link land in the deal room mid-call.`}
+            footer={`${DEMO_VANDELAY.callName} · conf ${DEMO_VANDELAY.confidence}`}
+            confidence={DEMO_VANDELAY.confidence}
+            callName={DEMO_VANDELAY.callName}
+            speaker={DEMO_VANDELAY.speaker}
+            timestamp={DEMO_VANDELAY.timestamp}
+            rival={DEMO_VANDELAY.rival}
+            quote={DEMO_VANDELAY.quote}
+            slackChannel={DEMO_VANDELAY.slackChannel}
           />
           <ProductVisualCard
             variant="crm"
             eyebrow="03 · CRM sync"
             title="1-click HubSpot → Salesforce"
-            body="Marcus Lee · 09:03:51 — summary, owners, due dates, and the follow-up draft land in your CRM. Deal health 8.2, rival tracked call-over-call."
-            footer="Stark Industries · Closing · conf 0.99"
-            confidence={0.99}
-            callName="Stark Industries · Closing"
-            speaker="Marcus Lee"
-            timestamp="09:03:51"
-            rival="Fireflies.ai"
-            quote="Fireflies is cheaper but your competitive-intel alerts are the deciding factor."
-            slackChannel="#deal-room-stark"
+            body={`${DEMO_STARK.speaker} · ${DEMO_STARK.timestamp} — summary, owners, due dates, and the follow-up draft land in your CRM. Deal health 8.2, rival tracked call-over-call.`}
+            footer={`${DEMO_STARK.callName} · conf ${DEMO_STARK.confidence}`}
+            confidence={DEMO_STARK.confidence}
+            callName={DEMO_STARK.callName}
+            speaker={DEMO_STARK.speaker}
+            timestamp={DEMO_STARK.timestamp}
+            rival={DEMO_STARK.rival}
+            quote={DEMO_STARK.quote}
+            slackChannel={DEMO_STARK.slackChannel}
           />
         </div>
       </div>

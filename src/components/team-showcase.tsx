@@ -14,7 +14,7 @@ import { TEAM_MEMBERS, ADVISORY_NOTE } from "@/lib/team";
 
 /** Distinct gradient hue per seat — orange / blue / teal / violet. */
 const AVATAR_GRADIENTS = [
-  "from-[#F26522] to-[#A84310]",
+  "from-[#F26522] to-[#E8442E]",
   "from-[#2563EB] to-[#1E3A8A]",
   "from-[#0D9488] to-[#134E4A]",
   "from-[#7C3AED] to-[#4C1D95]",
@@ -41,7 +41,7 @@ export function TeamShowcase() {
           <p className="text-gray-700 text-[14px]">{ADVISORY_NOTE}</p>
           <a
             href="mailto:hello@usegauge.com"
-            className="inline-flex items-center min-h-[44px] min-w-[44px] text-[14px] font-medium text-[#A84310] underline underline-offset-4 mt-2"
+            className="inline-flex items-center min-h-[44px] min-w-[44px] text-[14px] font-medium text-[#F26522] underline underline-offset-4 mt-2"
           >
             Talk to the team →
           </a>

@@ -1,23 +1,20 @@
 /**
  * CapabilitiesBento — visual bento replacing the theoretical Capabilities cards.
  *
- * Server component, display only: no client JS, no images/video, and no demo
- * anchor id anywhere in the markup.
+ * Server component, display only: no client JS, no demo anchor id anywhere
+ * in the markup. Product stills (SSOT PRODUCT_STILLS) inside .product-chrome.
  * Section shell (data-track-section, container, eyebrow, H2, sub) is kept from
  * the inline `src/app/page.tsx` block it replaces; titles/bodies below are
  * VERBATIM copies of that block's strings.
  *
- * The four TOP visuals are hand-coded product mocks (no binaries) on the same
- * tokens as `product-visual-card.tsx` (bg-film-cream, Rival-signal header,
- * confidence progressbar a11y from live-proof-strip, Health 8.2 footer, CRM
- * field rows). ProductVisualCard itself is deliberately NOT reused here: it
- * bundles its own bottom copy + tape overlay + outer doppel shell, which would
+ * ProductVisualCard itself is deliberately NOT reused here: it bundles its
+ * own bottom copy + tape overlay + outer doppel shell, which would
  * double-nest shells and duplicate non-verbatim copy inside a bento card.
  */
 
-import { Mic, Shield, Upload, Video } from "lucide-react";
+import { PRODUCT_STILLS } from "@/lib/demo-call-fiction";
 
-const ACCENT = "#F26522";
+const STILL_SIZE = { width: 640, height: 400 } as const;
 
 const TITLES = {
   upload: "Upload or record",
@@ -45,7 +42,7 @@ function CardShell({
 }) {
   return (
     <div
-      className="doppel-outer border-2 border-film-ink shadow-[8px_8px_0_#131316]"
+      className="doppel-outer"
       aria-label={label}
     >
       <div className="doppel-inner bg-white p-0 overflow-hidden">{children}</div>
@@ -70,134 +67,69 @@ function UploadVisual() {
   return (
     <div
       data-testid="capability-upload-visual"
-      className="bg-film-cream p-5 min-h-[200px] flex flex-col justify-center"
+      className="bg-white p-5"
     >
-      <div className="rounded-xl border-2 border-dashed border-film-ink/20 bg-white p-4">
-        <div className="flex items-center justify-center gap-2 mb-3">
-          <Upload size={14} className="text-gray-500" aria-hidden />
-          <span className="text-[12px] font-medium text-gray-900">
-            Drop in an MP3
-          </span>
-          <span className="text-[10px] font-mono font-medium px-2 py-0.5 rounded-full leading-none bg-film-ink text-white">
-            MP3
-          </span>
-        </div>
-        <div className="flex items-center justify-center gap-2">
-          <span className="inline-flex items-center gap-1.5 rounded-full bg-film-ink text-white px-3 py-1 text-[11px] font-medium">
-            <Mic size={12} aria-hidden />
-            Record
-          </span>
-          <span className="inline-flex items-center gap-1.5 rounded-full border-2 border-film-ink px-3 py-1 text-[11px] font-medium text-gray-900 bg-white">
-            <Video size={12} aria-hidden />
-            Google Meet
-          </span>
-        </div>
+      <div className="product-chrome product-still-reveal">
+        {/* eslint-disable-next-line @next/next/no-img-element -- img keeps vitest free of next/image mocks */}
+        <img
+          src={PRODUCT_STILLS.meet}
+          alt="Sample meeting capture still — record without a bot joining"
+          width={STILL_SIZE.width}
+          height={STILL_SIZE.height}
+          loading="lazy"
+          className="block w-full h-auto"
+        />
       </div>
       <p className="text-center text-[10px] font-mono text-gray-500 mt-3">
-        no bot ever joins the call
+        sample capture · no bot ever joins the call
       </p>
     </div>
   );
 }
 
 function TrackVisual() {
-  const pct = 96;
   return (
     <div
       data-testid="capability-track-visual"
-      className="bg-film-cream p-5 min-h-[200px]"
+      className="bg-white p-5"
     >
-      <div className="flex items-center gap-2 mb-4">
-        <div
-          aria-hidden
-          className="w-2 h-2 rounded-full animate-pulse"
-          style={{ backgroundColor: ACCENT }}
-        />
-        <span className="text-[10px] font-mono tracking-wider text-gray-600 font-medium uppercase">
-          Rival signal
-        </span>
-        <span className="ml-auto text-[9px] font-mono text-gray-500">
-          Acme Corp · Discovery
-        </span>
-      </div>
-
-      <div className="flex items-center justify-between mb-2">
-        <span className="text-[13px] font-medium text-gray-900">
-          Rival: Gong
-        </span>
-        <span className="text-[10px] font-mono text-gray-500">0.96</span>
-      </div>
-      <div
-        className="h-2 rounded-full bg-gray-200 overflow-hidden mb-4"
-        role="progressbar"
-        aria-valuenow={pct}
-        aria-valuemin={0}
-        aria-valuemax={100}
-        aria-label="Gong confidence"
-      >
-        <div
-          className="h-full rounded-full"
-          style={{ width: `${pct}%`, backgroundColor: ACCENT }}
+      <div className="product-chrome product-still-reveal">
+        {/* eslint-disable-next-line @next/next/no-img-element -- img keeps vitest free of next/image mocks */}
+        <img
+          src={PRODUCT_STILLS.radar}
+          alt="Sample competitor radar board still"
+          width={STILL_SIZE.width}
+          height={STILL_SIZE.height}
+          loading="lazy"
+          className="block w-full h-auto"
         />
       </div>
-
-      <blockquote className="text-[13px] text-gray-700 leading-snug border-l-2 border-film-ink pl-3 mb-3">
-        &ldquo;We&rsquo;re also evaluating Gong and Chorus for the
-        rollout.&rdquo;
-      </blockquote>
-
-      <div className="flex items-center gap-2">
-        <span className="shrink-0 text-[10px] font-mono font-medium px-2 py-0.5 rounded-full leading-none bg-emerald-700 text-white">
-          #deal-room-acme
-        </span>
-        <span className="text-[10px] font-mono text-gray-500">Slack ping</span>
-      </div>
+      <p className="text-center text-[10px] font-mono text-gray-500 mt-3">
+        sample signal · Acme Corp · Discovery
+      </p>
     </div>
   );
 }
 
 function CrmVisual() {
-  const fields = [
-    { label: "Deal", value: "Acme Corp · Discovery" },
-    { label: "Owner", value: "Sarah Chen" },
-    { label: "Close date", value: "2026-10-14" },
-    { label: "Next step", value: "Send competitive one-pager · THU" },
-  ];
   return (
     <div
       data-testid="capability-crm-visual"
-      className="bg-film-cream p-5 min-h-[200px]"
+      className="bg-white p-5"
     >
-      <div className="flex items-center gap-2 mb-4">
-        <div
-          aria-hidden
-          className="w-2 h-2 rounded-full animate-pulse"
-          style={{ backgroundColor: ACCENT }}
+      <div className="product-chrome product-still-reveal">
+        {/* eslint-disable-next-line @next/next/no-img-element -- img keeps vitest free of next/image mocks */}
+        <img
+          src={PRODUCT_STILLS.summary}
+          alt="Sample call summary still with owners and due dates"
+          width={STILL_SIZE.width}
+          height={STILL_SIZE.height}
+          loading="lazy"
+          className="block w-full h-auto"
         />
-        <span className="text-[10px] font-mono tracking-wider text-gray-600 font-medium uppercase">
-          CRM sync
-        </span>
-        <span className="ml-auto text-[9px] font-mono text-gray-500">
-          HubSpot → Salesforce
-        </span>
       </div>
-
-      <dl className="rounded-xl border border-film-ink/10 bg-white divide-y divide-gray-100 mb-3">
-        {fields.map((field) => (
-          <div key={field.label} className="flex items-baseline gap-3 px-3 py-2">
-            <dt className="shrink-0 w-20 text-[10px] font-mono uppercase tracking-wider text-gray-500">
-              {field.label}
-            </dt>
-            <dd className="text-[12px] font-medium text-gray-900 truncate">
-              {field.value}
-            </dd>
-          </div>
-        ))}
-      </dl>
-
-      <p className="flex items-center gap-1.5 text-[10px] text-gray-500">
-        <span aria-hidden className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
-        Health 8.2
+      <p className="text-center text-[10px] font-mono text-gray-500 mt-3">
+        sample summary · HubSpot → Salesforce
       </p>
     </div>
   );
@@ -207,24 +139,21 @@ function PrivacyVisual() {
   return (
     <div
       data-testid="capability-privacy-visual"
-      className="bg-film-cream p-5 min-h-[200px] flex flex-col items-center justify-center text-center"
+      className="bg-white p-5"
     >
-      <div className="w-12 h-12 rounded-xl bg-film-ink flex items-center justify-center mb-4">
-        <Shield size={20} className="text-white" strokeWidth={1.5} aria-hidden />
+      <div className="product-chrome product-still-reveal">
+        {/* eslint-disable-next-line @next/next/no-img-element -- img keeps vitest free of next/image mocks */}
+        <img
+          src={PRODUCT_STILLS.coach}
+          alt="Sample coaching talk-time still"
+          width={STILL_SIZE.width}
+          height={STILL_SIZE.height}
+          loading="lazy"
+          className="block w-full h-auto"
+        />
       </div>
-      <div className="flex flex-wrap items-center justify-center gap-1.5 mb-3">
-        <span className="text-[10px] font-mono font-medium px-2.5 py-1 rounded-full border border-film-ink/20 bg-white text-gray-900">
-          Never trains
-        </span>
-        <span className="text-[10px] font-mono font-medium px-2.5 py-1 rounded-full border border-film-ink/20 bg-white text-gray-900">
-          Export + deletion
-        </span>
-        <span className="text-[10px] font-mono font-medium px-2.5 py-1 rounded-full border border-film-ink/20 bg-white text-gray-900">
-          Disclosed providers
-        </span>
-      </div>
-      <p className="text-[10px] font-mono text-gray-500">
-        never used to train our models
+      <p className="text-center text-[10px] font-mono text-gray-500 mt-3">
+        sample view · never used to train our models
       </p>
     </div>
   );

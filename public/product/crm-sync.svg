@@ -1,0 +1,86 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 480" fill="none" role="img" aria-label="CRM sync panel HubSpot to Salesforce">
+  <defs>
+    <filter id="softShadow" x="-8%" y="-8%" width="116%" height="116%">
+      <feDropShadow dx="0" dy="8" stdDeviation="16" flood-color="#131316" flood-opacity="0.08"/>
+    </filter>
+    <filter id="cardShadow" x="-4%" y="-4%" width="108%" height="112%">
+      <feDropShadow dx="0" dy="2" stdDeviation="6" flood-color="#131316" flood-opacity="0.06"/>
+    </filter>
+    <linearGradient id="bgGrad" x1="0" y1="0" x2="720" y2="480" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#F7F7F8"/>
+      <stop offset="1" stop-color="#EEEEF0"/>
+    </linearGradient>
+  </defs>
+
+  <rect width="720" height="480" fill="url(#bgGrad)"/>
+
+  <!-- Browser chrome -->
+  <g filter="url(#softShadow)">
+    <rect x="40" y="28" width="640" height="424" rx="14" fill="#FFFFFF" stroke="#E4E4E7" stroke-width="1"/>
+    <rect x="40" y="28" width="640" height="40" rx="14" fill="#FAFAFA"/>
+    <rect x="40" y="54" width="640" height="14" fill="#FAFAFA"/>
+    <circle cx="62" cy="48" r="5" fill="#FF5F57"/>
+    <circle cx="80" cy="48" r="5" fill="#FEBC2E"/>
+    <circle cx="98" cy="48" r="5" fill="#28C840"/>
+    <rect x="220" y="38" width="280" height="20" rx="6" fill="#FFFFFF" stroke="#E4E4E7"/>
+    <text x="360" y="52" text-anchor="middle" font-family="ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="10" fill="#71717A">app.gauge.ai / integrations / crm</text>
+  </g>
+
+  <!-- Header -->
+  <text x="64" y="100" font-family="ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="11" font-weight="600" fill="#A1A1AA" letter-spacing="0.04em">CRM SYNC</text>
+  <text x="64" y="126" font-family="ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="20" font-weight="600" fill="#131316">Deal field write-back</text>
+  <rect x="520" y="102" width="136" height="28" rx="14" fill="#ECFDF5" stroke="#86EFAC"/>
+  <circle cx="538" cy="116" r="4" fill="#16A34A"/>
+  <text x="550" y="120" font-family="ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="11" font-weight="600" fill="#15803D">Synced · 12s ago</text>
+
+  <!-- Pipeline visual HubSpot ’ Salesforce -->
+  <g filter="url(#cardShadow)">
+    <rect x="64" y="152" width="592" height="88" rx="12" fill="#FAFAFA" stroke="#E4E4E7"/>
+  </g>
+  <rect x="88" y="172" width="140" height="48" rx="10" fill="#FFFFFF" stroke="#E4E4E7"/>
+  <text x="158" y="192" text-anchor="middle" font-family="ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="10" font-weight="600" fill="#A1A1AA">SOURCE</text>
+  <text x="158" y="210" text-anchor="middle" font-family="ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="14" font-weight="700" fill="#FF7A59">HubSpot</text>
+
+  <path d="M248 196 H320" stroke="#D4D4D8" stroke-width="2" stroke-dasharray="4 4"/>
+  <polygon points="320,190 332,196 320,202" fill="#F26522"/>
+  <rect x="348" y="178" width="72" height="36" rx="18" fill="#FFF4ED" stroke="#F26522"/>
+  <text x="384" y="200" text-anchor="middle" font-family="ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="11" font-weight="700" fill="#F26522">Gauge</text>
+  <path d="M436 196 H508" stroke="#D4D4D8" stroke-width="2" stroke-dasharray="4 4"/>
+  <polygon points="508,190 520,196 508,202" fill="#F26522"/>
+
+  <rect x="536" y="172" width="100" height="48" rx="10" fill="#FFFFFF" stroke="#E4E4E7"/>
+  <text x="586" y="192" text-anchor="middle" font-family="ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="10" font-weight="600" fill="#A1A1AA">TARGET</text>
+  <text x="586" y="210" text-anchor="middle" font-family="ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="13" font-weight="700" fill="#00A1E0">Salesforce</text>
+
+  <!-- Field cards -->
+  <g filter="url(#cardShadow)">
+    <rect x="64" y="260" width="184" height="160" rx="12" fill="#FFFFFF" stroke="#E4E4E7"/>
+  </g>
+  <text x="84" y="292" font-family="ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="11" font-weight="600" fill="#A1A1AA" letter-spacing="0.04em">OWNER</text>
+  <circle cx="100" cy="330" r="18" fill="#F26522"/>
+  <text x="100" y="335" text-anchor="middle" font-family="ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="11" font-weight="700" fill="#FFFFFF">ML</text>
+  <text x="128" y="328" font-family="ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="14" font-weight="600" fill="#131316">Marcus Lee</text>
+  <text x="128" y="346" font-family="ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="11" fill="#71717A">Account Executive</text>
+  <rect x="84" y="372" width="144" height="28" rx="8" fill="#F4F4F5"/>
+  <text x="156" y="390" text-anchor="middle" font-family="ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="11" fill="#52525B">Stark Industries</text>
+
+  <g filter="url(#cardShadow)">
+    <rect x="268" y="260" width="184" height="160" rx="12" fill="#FFFFFF" stroke="#E4E4E7"/>
+  </g>
+  <text x="288" y="292" font-family="ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="11" font-weight="600" fill="#A1A1AA" letter-spacing="0.04em">CLOSE DATE</text>
+  <text x="288" y="336" font-family="ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="28" font-weight="600" fill="#131316">Oct 31</text>
+  <text x="288" y="362" font-family="ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="13" fill="#71717A">2026 · Stage: Closing</text>
+  <rect x="288" y="380" width="88" height="22" rx="11" fill="#EEF2FF"/>
+  <text x="332" y="395" text-anchor="middle" font-family="ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="10" font-weight="600" fill="#4F46E5">24 days left</text>
+
+  <g filter="url(#cardShadow)">
+    <rect x="472" y="260" width="184" height="160" rx="12" fill="#FFFFFF" stroke="#E4E4E7"/>
+  </g>
+  <text x="492" y="292" font-family="ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="11" font-weight="600" fill="#A1A1AA" letter-spacing="0.04em">HEALTH</text>
+  <text x="492" y="340" font-family="ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="36" font-weight="700" fill="#16A34A">8.2</text>
+  <text x="560" y="340" font-family="ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="14" fill="#A1A1AA">/ 10</text>
+  <!-- Rival chip -->
+  <rect x="492" y="368" width="144" height="28" rx="14" fill="#F5F3FF" stroke="#C4B5FD"/>
+  <circle cx="510" cy="382" r="5" fill="#7C3AED"/>
+  <text x="522" y="386" font-family="ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="11" font-weight="600" fill="#7C3AED">Rival: Fireflies</text>
+</svg>
