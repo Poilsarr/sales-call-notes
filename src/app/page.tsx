@@ -14,6 +14,7 @@ import { HeroScrubbableVideo } from "@/components/hero-scrubbable-video";
 import { ScrubSummarySection } from "@/components/scrub-summary-section";
 import { HeroEvidenceStack } from "@/components/hero-evidence-stack";
 import { HeroVideoPlayer } from "@/components/hero-video-player";
+import { PictorialAppShowcase } from "@/components/pictorial-app-showcase";
 import { TeamShowcase } from "@/components/team-showcase";
 import { WhoWeAre } from "@/components/who-we-are";
 import StickyMarketingCta from "@/components/sticky-marketing-cta";
@@ -106,7 +107,24 @@ export default function Home() {
                   {HOMEPAGE_COPY.ctas.tertiary}
                 </Link>
               </div>
-              <ul className="mt-5 space-y-1.5 text-[13px] text-gray-600">
+
+              {/* Pictorial trust pill row */}
+              <div className="mt-5 flex flex-wrap items-center gap-x-4 gap-y-2 text-[12px] text-gray-700">
+                <span className="inline-flex items-center gap-1.5 font-medium">
+                  <span className="w-4 h-4 rounded-full bg-emerald-100 text-emerald-700 flex items-center justify-center text-[10px] font-bold">✓</span>
+                  <span>0 bots in meetings</span>
+                </span>
+                <span className="inline-flex items-center gap-1.5 font-medium">
+                  <span className="w-4 h-4 rounded-full bg-[#F26522]/15 text-[#F26522] flex items-center justify-center text-[10px] font-bold">✓</span>
+                  <span>Instant Slack rival alerts</span>
+                </span>
+                <span className="inline-flex items-center gap-1.5 font-medium">
+                  <span className="w-4 h-4 rounded-full bg-blue-100 text-blue-700 flex items-center justify-center text-[10px] font-bold">✓</span>
+                  <span>60s notes to HubSpot & Salesforce</span>
+                </span>
+              </div>
+
+              <ul className="mt-4 space-y-1.5 text-[13px] text-gray-600">
                 {HOMEPAGE_COPY.heroManagerBullets.map((bullet) => (
                   <li key={bullet} className="flex items-start gap-2">
                     <span className="mt-[7px] w-1.5 h-1.5 shrink-0 rounded-full bg-emerald-500" aria-hidden />
@@ -131,7 +149,8 @@ export default function Home() {
       <ScrubSummarySection />
       <TrustStrip />
 
-      <HeroEvidenceStack />
+      {/* PICTORIAL APP SHOWCASE — Interactive product demo right after trust */}
+      <PictorialAppShowcase />
 
       {/* PROOF STRIP + PROBLEM — FRONTPAGE-PITCH-PLAN §2-3 (Uber-deck slides 2-3).
           Rendered directly below the hero; sections 5-9 below are untouched. */}
@@ -246,16 +265,6 @@ export default function Home() {
         </div>
       </section>
 
-      {/* TEAM — frontal: trust right after the pitch */}
-      <TeamShowcase />
-
-      <WhoWeAre />
-
-      {/* FINAL CTA — closing conversion touchpoint before footer */}
-      <FinalCta />
-
-      <SeoLinks />
-
       {/* CHROME EXTENSION — Meet still + copy */}
       <section className="px-5 sm:px-8 lg:px-12 py-12 sm:py-16">
         <div className="max-w-[1100px] mx-auto doppel-outer">
@@ -289,6 +298,16 @@ export default function Home() {
           </div>
         </div>
       </section>
+
+      {/* TEAM — frontal: trust right after the pitch */}
+      <TeamShowcase />
+
+      <WhoWeAre />
+
+      {/* FINAL CTA — closing conversion touchpoint before footer */}
+      <FinalCta />
+
+      <SeoLinks />
 
       {/* STICKY MOBILE CTA — bottom bar, hidden on lg+. Always-visible
           conversion touchpoint. Reuses the existing HeroCTA island (it

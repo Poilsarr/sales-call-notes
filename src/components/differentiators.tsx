@@ -105,9 +105,12 @@ export default function Differentiators() {
                   </th>
                   <th
                     scope="col"
-                    className="px-5 sm:px-6 py-4 font-medium text-[#F26522]"
+                    className="px-5 sm:px-6 py-4 font-bold text-[#F26522] bg-orange-500/[0.06] border-x border-orange-500/20"
                   >
-                    Gauge
+                    <span className="inline-flex items-center gap-1.5">
+                      <span>Gauge</span>
+                      <span className="text-[9px] font-mono bg-[#F26522] text-white px-1.5 py-0.5 rounded-full font-semibold uppercase">Winner</span>
+                    </span>
                   </th>
                   <th scope="col" className="px-5 sm:px-6 py-4 font-medium">
                     Otter.ai
@@ -121,7 +124,7 @@ export default function Differentiators() {
                 {ROWS.map((row) => (
                   <tr
                     key={row.label}
-                    className="border-b border-gray-100 last:border-0"
+                    className="border-b border-gray-100 last:border-0 hover:bg-gray-50/50 transition-colors"
                   >
                     <th
                       scope="row"
@@ -129,8 +132,11 @@ export default function Differentiators() {
                     >
                       {row.label}
                     </th>
-                    <td className="px-5 sm:px-6 py-4 text-gray-900 font-medium">
-                      {row.gauge}
+                    <td className="px-5 sm:px-6 py-4 text-gray-900 font-semibold bg-orange-500/[0.04] border-x border-orange-500/20">
+                      <div className="flex items-center gap-1.5">
+                        <span className="w-4 h-4 rounded-full bg-[#F26522]/15 text-[#F26522] flex items-center justify-center text-[10px] shrink-0 font-bold">✓</span>
+                        <span>{row.gauge}</span>
+                      </div>
                     </td>
                     <td className="px-5 sm:px-6 py-4 text-gray-500">
                       {row.otter}

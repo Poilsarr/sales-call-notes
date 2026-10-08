@@ -25,3 +25,21 @@ scripts/test-calls/results/
 graphify-out/
 scripts/.fixtures/
 scripts/test-calls/
+.neon
+
+# Parked in sales-call-notes-gtm/_parked-from-repo — do not re-crowd the repo.
+# Video renders / strategy outputs / bulky exports live in the GTM folder.
+out/
+out-final/
+hyperframes-gauge-*/
+docs/video/
+assets/
+dbg-probe.mjs
+twitter-header-*.png
+
+# Tooling and agent work dirs
+.cursor/
+.claude/
+.claude-flow/
+.swarm/
+dist/

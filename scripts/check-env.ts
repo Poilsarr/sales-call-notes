@@ -24,7 +24,8 @@ export const ENV_GROUPS: readonly EnvGroup[] = [
     vars: [
       { key: "NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY", level: "required" },
       { key: "CLERK_SECRET_KEY", level: "required" },
-      { key: "CLERK_WEBHOOK_SECRET", level: "optional" },
+      { key: "CLERK_WEBHOOK_SIGNING_SECRET", level: "optional", description: "Clerk webhook signature (user sync)" },
+      { key: "ADMIN_EMAILS", level: "optional", description: "Comma-separated allowlist for /admin" },
     ],
   },
   {
@@ -128,6 +129,14 @@ export const ENV_GROUPS: readonly EnvGroup[] = [
       { key: "SENTRY_AUTH_TOKEN", level: "optional" },
       { key: "SENTRY_ORG", level: "optional" },
       { key: "SENTRY_PROJECT", level: "optional" },
+    ],
+  },
+  {
+    name: "PostHog",
+    description: "User-level funnels (optional)",
+    vars: [
+      { key: "NEXT_PUBLIC_POSTHOG_KEY", level: "optional" },
+      { key: "NEXT_PUBLIC_POSTHOG_HOST", level: "optional" },
     ],
   },
 ];

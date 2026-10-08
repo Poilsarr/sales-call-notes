@@ -95,20 +95,40 @@ export default function LiveProofStrip() {
               <div className="doppel-outer">
                 <div className="doppel-inner p-5 sm:p-6">
                   <div className="flex items-center gap-2 mb-4">
-                    <div className="w-2 h-2 rounded-full bg-[#F26522]" />
+                    <div className="w-2 h-2 rounded-full bg-[#F26522] animate-pulse" />
                     <span className="text-[10px] font-mono tracking-wider text-gray-600 font-medium uppercase">Live summary</span>
                     <span className="ml-auto text-[9px] font-mono text-gray-500">{active.call}</span>
                   </div>
 
+                  {/* Audio Waveform Player Bar */}
+                  <div className="mb-4 p-2.5 rounded-xl bg-gray-50 border border-gray-200/80 flex items-center justify-between gap-3">
+                    <div className="flex items-center gap-2">
+                      <span className="w-6 h-6 rounded-full bg-[#F26522] text-white flex items-center justify-center text-[10px] shadow-sm font-bold">
+                        ▶
+                      </span>
+                      <span className="text-[11px] font-mono font-medium text-gray-700">Audio Preview</span>
+                    </div>
+                    <div className="flex items-center gap-1 h-3.5 flex-1 max-w-[140px] justify-center">
+                      {[40, 70, 30, 90, 60, 100, 45, 80, 50, 75, 95, 30, 85, 60].map((h, idx) => (
+                        <span
+                          key={idx}
+                          className="w-1 bg-[#F26522]/70 rounded-full"
+                          style={{ height: `${h}%` }}
+                        />
+                      ))}
+                    </div>
+                    <span className="text-[10px] font-mono text-gray-500 tabular-nums">{active.time}</span>
+                  </div>
+
                   <div className="space-y-2.5">
-                    <div className="flex items-start gap-2.5">
+                    <div className="flex items-start gap-2.5 bg-orange-50/50 p-2 rounded-lg border border-orange-500/10">
                       <span className="shrink-0 text-[10px] font-mono font-medium text-[#F26522] bg-[#F26522]/[0.08] px-2 py-0.5 rounded-full leading-none mt-0.5">{active.speaker}</span>
-                      <p className="text-[12.5px] text-gray-600 leading-snug">
+                      <p className="text-[12.5px] text-gray-800 leading-snug">
                         {active.quote}{" "}
                         <span className="text-[10px] font-mono text-gray-500">· {active.time}</span>
                       </p>
                     </div>
-                    <div className="flex items-start gap-2.5">
+                    <div className="flex items-start gap-2.5 px-2">
                       <span className="shrink-0 text-[10px] font-mono font-medium text-[#2563eb] bg-[#2563eb]/[0.08] px-2 py-0.5 rounded-full leading-none mt-0.5">You</span>
                       <p className="text-[12.5px] text-gray-600 leading-snug">Understood. Want me to loop in your procurement lead next call, or send a one-pager for the consolidation review?</p>
                     </div>
