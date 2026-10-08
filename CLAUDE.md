@@ -70,6 +70,12 @@
   (error rates, perf scores) are not accessible via the REST
   API — only via the web UI. If the user references one,
   ask them to look it up.
+- **Neon skills: `neon-postgres` adopted (audited 2026-10-08), parent
+  `neon` skill dropped.** Conditions: allow diagnostics / branching /
+  connection guidance; NO `CREATE EXTENSION lakebase_vector/text`
+  or pgvector migration without a separate owner decision; never run
+  `neon skills update` per-session; never `env pull` into the real
+  `.env` (use `--no-env-pull`); Clerk stays the auth system.
 
 ## Per-page notes
 
