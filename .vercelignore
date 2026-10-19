@@ -1,0 +1,8 @@
+.env
+.env*.local
+.env.development
+.env.test
+.git
+node_modules
+.next
+dist
