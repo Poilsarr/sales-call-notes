@@ -99,21 +99,28 @@ async function refreshAuthStatus() {
   // 3. If apiKey is present, verify and ensure plan info is fresh
   if (apiKey) {
     const stored = await getStored({ authStatus: { state: "unknown" } });
-    if (stored.authStatus?.state === "signed_in" && stored.authStatus?.plan) {
+    const isFresh = stored.authStatus?.at && (Date.now() - stored.authStatus.at < 60_000);
+    if (stored.authStatus?.state === "signed_in" && stored.authStatus?.plan && isFresh) {
       return stored.authStatus;
     }
     try {
       const session = await fetchSessionStatus(apiKey);
-      const plan = (session?.plan || "free").toLowerCase();
-      const email = session?.user?.email || "";
-      const status = { state: "signed_in", plan, email, at: Date.now() };
-      await setStored({ authStatus: status });
-      return status;
+      if (session && session.authenticated) {
+        const plan = (session.plan || "free").toLowerCase();
+        const email = session.user?.email || stored.authStatus?.email || "";
+        const status = { state: "signed_in", plan, email, at: Date.now() };
+        await setStored({ authStatus: status });
+        return status;
+      }
     } catch {
-      const status = { state: "signed_in", plan: "free", email: "", at: Date.now() };
-      await setStored({ authStatus: status });
-      return status;
+      // keep existing status on network failure
     }
+    if (stored.authStatus?.state === "signed_in") {
+      return stored.authStatus;
+    }
+    const status = { state: "signed_in", plan: "free", email: "", at: Date.now() };
+    await setStored({ authStatus: status });
+    return status;
   }
 
   // 4. No session or key found

@@ -56,6 +56,7 @@ export default function ConnectClient() {
       window.dispatchEvent(
         new CustomEvent("gauge:extension-sync", { detail: initialSync })
       );
+      window.postMessage({ type: "gauge:extension-sync", ...initialSync }, "*");
 
       try {
         localStorage.setItem("gauge_extension_auth", JSON.stringify(initialSync));
@@ -83,6 +84,7 @@ export default function ConnectClient() {
           window.dispatchEvent(
             new CustomEvent("gauge:extension-sync", { detail: keySync })
           );
+          window.postMessage({ type: "gauge:extension-sync", ...keySync }, "*");
 
           try {
             localStorage.setItem("gauge_extension_auth", JSON.stringify(keySync));

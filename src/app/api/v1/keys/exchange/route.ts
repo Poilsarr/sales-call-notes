@@ -86,17 +86,47 @@ export async function POST() {
  * GET /api/v1/keys/exchange
  *
  * Check session status and plan tier for the extension.
+ * Supports dual-auth:
+ * 1. Bearer API key (for Chrome Extension background & side panel)
+ * 2. Clerk session cookie (for the web app & connect page)
  */
-export async function GET() {
+export async function GET(req: Request) {
   try {
-    const { userId } = await auth();
-    if (!userId) return NextResponse.json({ authenticated: false, error: "Unauthorized" }, { status: 401 });
+    let user: { id: string; email: string; name: string | null; plan: string | null } | null = null;
+    let userId: string | null = null;
 
-    let user = null;
-    try {
-      user = await getUserByClerkId(userId);
-    } catch (e) {
-      console.warn("[GET /api/v1/keys/exchange] user lookup error:", e);
+    // 1. Try Bearer API key first
+    const authHeader = req.headers.get("authorization");
+    if (authHeader) {
+      const { resolveApiKey } = await import("@/lib/resolve-api-key");
+      const apiKeyResult = await resolveApiKey(authHeader);
+      if (apiKeyResult && apiKeyResult.kind === "ok") {
+        const dbUser = await prisma.user.findUnique({
+          where: { id: apiKeyResult.context.userId },
+          select: { id: true, email: true, name: true, plan: true },
+        });
+        if (dbUser) {
+          user = dbUser;
+          userId = dbUser.id;
+        }
+      }
+    }
+
+    // 2. Fall back to Clerk session cookie
+    if (!userId) {
+      const session = await auth();
+      userId = session.userId;
+      if (userId) {
+        try {
+          user = await getUserByClerkId(userId);
+        } catch (e) {
+          console.warn("[GET /api/v1/keys/exchange] user lookup error:", e);
+        }
+      }
+    }
+
+    if (!userId) {
+      return NextResponse.json({ authenticated: false, error: "Unauthorized" }, { status: 401 });
     }
 
     const planTier = (user?.plan || "free").toLowerCase();

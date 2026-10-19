@@ -9,20 +9,31 @@
 (function () {
   "use strict";
 
-  // Listen for custom events dispatched by the web app (e.g. /extension/connect)
-  window.addEventListener("gauge:extension-sync", function (event) {
-    if (!event.detail) return;
+  function handleSyncPayload(detail) {
+    if (!detail) return;
     try {
       if (typeof chrome !== "undefined" && chrome.runtime?.sendMessage) {
         chrome.runtime.sendMessage({
           type: "AUTH_SYNC",
-          apiKey: event.detail.apiKey,
-          plan: event.detail.plan,
-          user: event.detail.user,
+          apiKey: detail.apiKey,
+          plan: detail.plan,
+          user: detail.user,
         });
       }
     } catch (e) {
       // Extension context invalidated or not loaded
+    }
+  }
+
+  // Listen for custom events dispatched by the web app (e.g. /extension/connect)
+  window.addEventListener("gauge:extension-sync", function (event) {
+    handleSyncPayload(event.detail);
+  });
+
+  // Also listen for postMessage cross-world dispatches
+  window.addEventListener("message", function (event) {
+    if (event.data && event.data.type === "gauge:extension-sync") {
+      handleSyncPayload(event.data);
     }
   });
 

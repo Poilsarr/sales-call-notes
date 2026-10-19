@@ -15,6 +15,16 @@ import * as Sentry from "@sentry/nextjs";
 // Verify in Vercel Dashboard → Settings → Environment Variables and Clerk
 // Dashboard → API Keys that both keys share the same instance. Rotate as a pair.
 
+function extractBearerKey(authHeader: string | null | undefined): string | null {
+  if (!authHeader) return null;
+  const m = /^Bearer\s+(\S+)$/.exec(authHeader.trim());
+  if (!m) return null;
+  const candidate = m[1];
+  if (!candidate.startsWith("cn_live_") && !candidate.startsWith("cn_test_")) return null;
+  if (candidate.length < 20) return null;
+  return candidate;
+}
+
 const isPublicApi = createRouteMatcher([
   "/api/webhooks/hubspot",
   "/api/webhooks/salesforce",
@@ -26,6 +36,10 @@ const isPublicApi = createRouteMatcher([
   "/api/pricing-preview",
   "/api/billing/price-ids",
   "/api/v1/calls",
+  "/api/v1/keys/exchange",
+  "/api/upload-url",
+  "/api/analyze",
+  "/api/transcribe(.*)",
 ]);
 const isProtectedRoute = createRouteMatcher([
   "/api/(.*)",
@@ -71,7 +85,9 @@ export default clerkMiddleware(async (auth, req: NextRequest) => {
       if (rateLimitResponse) return rateLimitResponse;
     }
 
-    if (isProtectedRoute(req) && !isPublicApi(req)) {
+    const hasBearerKey = Boolean(extractBearerKey(req.headers.get("authorization")));
+
+    if (isProtectedRoute(req) && !isPublicApi(req) && !hasBearerKey) {
       const { userId } = await auth();
       if (!userId) {
         if (req.nextUrl.pathname.startsWith("/api/")) {
