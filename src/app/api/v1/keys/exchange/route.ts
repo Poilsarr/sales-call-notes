@@ -29,12 +29,23 @@ export async function POST() {
     // exchange calls count toward the same rotation-evasion limit.
     // Fail-open on Redis outage.
     const { success } = await checkRateLimit(`v1keys:${userId}`, "v1keys");
-    if (!success) {
-      return NextResponse.json({ error: "Rate limit exceeded" }, { status: 429 });
-    }
-
     const user = await getUserByClerkId(userId);
     const planTier = (user.plan || "free").toLowerCase();
+
+    if (!success) {
+      // Graceful fallback: return user & plan tier so extension auth succeeds even if key minting is throttled
+      return NextResponse.json({
+        ok: true,
+        rateLimited: true,
+        plan: planTier,
+        user: {
+          id: user.id,
+          email: user.email,
+          name: user.name,
+          plan: planTier,
+        },
+      }, { status: 200 });
+    }
 
     const name = `extension-${new Date().toISOString().slice(0, 10)}`;
     const { raw, prefix, hash } = generateApiKey();
@@ -81,16 +92,22 @@ export async function GET() {
     const { userId } = await auth();
     if (!userId) return NextResponse.json({ authenticated: false, error: "Unauthorized" }, { status: 401 });
 
-    const user = await getUserByClerkId(userId);
-    const planTier = (user.plan || "free").toLowerCase();
+    let user = null;
+    try {
+      user = await getUserByClerkId(userId);
+    } catch (e) {
+      console.warn("[GET /api/v1/keys/exchange] user lookup error:", e);
+    }
+
+    const planTier = (user?.plan || "free").toLowerCase();
 
     return NextResponse.json({
       authenticated: true,
       plan: planTier,
       user: {
-        id: user.id,
-        email: user.email,
-        name: user.name,
+        id: user?.id || userId,
+        email: user?.email || "",
+        name: user?.name || null,
         plan: planTier,
       },
     });

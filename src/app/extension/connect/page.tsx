@@ -1,6 +1,3 @@
-import { auth } from "@clerk/nextjs/server";
-import { redirect } from "next/navigation";
-import { getUserByClerkId } from "@/lib/get-user";
 import ConnectClient from "./connect-client";
 import Nav from "@/components/nav";
 
@@ -9,15 +6,7 @@ export const metadata = {
   description: "Connect your Gauge account with the Gauge Chrome Extension.",
 };
 
-export default async function ExtensionConnectPage() {
-  const { userId } = await auth();
-  if (!userId) {
-    redirect("/sign-in?redirect_url=/extension/connect");
-  }
-
-  const user = await getUserByClerkId(userId);
-  const plan = (user.plan || "free").toLowerCase();
-
+export default function ExtensionConnectPage() {
   return (
     <>
       <Nav />
@@ -27,7 +16,7 @@ export default async function ExtensionConnectPage() {
         <div className="absolute bottom-1/4 left-1/2 -translate-x-1/2 translate-y-1/2 w-[400px] h-[300px] bg-purple-600/10 rounded-full blur-[100px] pointer-events-none" />
 
         <div className="relative z-10 w-full max-w-md">
-          <ConnectClient user={{ id: user.id, email: user.email, name: user.name, plan }} />
+          <ConnectClient />
         </div>
       </main>
     </>

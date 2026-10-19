@@ -1,27 +1,15 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import Link from "next/link";
 import {
-  Play,
-  Pause,
   ArrowRight,
   Check,
 } from "lucide-react";
 
 
 export function StudioShowcaseBento() {
-  const [isPlaying, setIsPlaying] = useState(true);
-  const [waveformTime, setWaveformTime] = useState(14);
   const [activeChecklist, setActiveChecklist] = useState<number[]>([0, 1, 2]);
-
-  useEffect(() => {
-    if (!isPlaying) return;
-    const interval = setInterval(() => {
-      setWaveformTime((t) => (t >= 32 ? 14 : t + 1));
-    }, 1000);
-    return () => clearInterval(interval);
-  }, [isPlaying]);
 
   const toggleCheck = (idx: number) => {
     setActiveChecklist((prev) =>
@@ -112,140 +100,59 @@ export function StudioShowcaseBento() {
           {/* RIGHT COLUMN: 2 Stacked Cards (Screenshot 1 Right) */}
           <div className="lg:col-span-6 flex flex-col gap-6 lg:gap-8">
             {/* TOP CARD: A desktop app / Chrome extension for bot-free meetings */}
-            <div className="rounded-2xl p-7 sm:p-8 bg-[#F5F6F8] border border-black/[0.06] shadow-sm flex flex-col justify-between relative overflow-hidden group">
-              <div>
-                <div className="flex items-center gap-2 mb-2">
-                  <span className="text-[10px] font-mono uppercase tracking-[0.16em] text-emerald-700 bg-emerald-50 border border-emerald-200/50 px-2.5 py-0.5 rounded-full font-semibold">
-                    Client-Side Extension
-                  </span>
+            <div className="rounded-2xl p-7 sm:p-8 pb-0 bg-[#F5F6F8] border border-black/[0.06] shadow-sm flex flex-col relative overflow-hidden group">
+              <div className="flex items-end justify-between gap-6">
+                <div>
+                  <div className="flex items-center gap-2 mb-2">
+                    <span className="text-[10px] font-mono uppercase tracking-[0.16em] text-emerald-700 bg-emerald-50 border border-emerald-200/50 px-2.5 py-0.5 rounded-full font-semibold">
+                      Client-Side Extension
+                    </span>
+                  </div>
+                  <h3 className="text-[22px] sm:text-[24px] font-medium tracking-[-0.02em] text-gray-900 mb-1.5">
+                    A Chrome extension for bot-free meetings
+                  </h3>
+                  <p className="text-[13px] sm:text-[14px] text-gray-600 leading-relaxed">
+                    Record conversations directly from your Mac or Windows browser tab, without awkward bots joining the call or tripping IT bans.
+                  </p>
                 </div>
-                <h3 className="text-[22px] sm:text-[24px] font-medium tracking-[-0.02em] text-gray-900 mb-1.5">
-                  A Chrome extension for bot-free meetings
-                </h3>
-                <p className="text-[13px] sm:text-[14px] text-gray-600 leading-relaxed mb-6">
-                  Record conversations directly from your Mac or Windows browser tab, without awkward bots joining the call or tripping IT bans.
-                </p>
+                <Link
+                  href="/extension"
+                  className="hidden sm:inline-flex items-center gap-1 text-[12px] font-semibold text-[#F26522] hover:underline shrink-0 mb-1"
+                >
+                  <span>Get extension</span>
+                  <ArrowRight size={13} />
+                </Link>
               </div>
 
-              {/* Mac Dock / Toolbar Mockup with Gauge Extension Icon (Screenshot 1 Top Right) */}
-              <div className="rounded-xl bg-white border border-black/[0.08] p-4 shadow-sm relative">
-                {/* Browser Tab Header */}
-                <div className="flex items-center justify-between pb-3 border-b border-gray-100 text-[12px]">
-                  <div className="flex items-center gap-2">
-                    <span className="w-2 h-2 rounded-full bg-emerald-500" />
-                    <span className="font-semibold text-gray-800">meet.google.com/qxm-sales-call</span>
-                  </div>
-                  <span className="text-[11px] font-mono text-emerald-700 bg-emerald-50 border border-emerald-200/50 px-2 py-0.5 rounded-full font-medium">
-                    0 Bots in room
-                  </span>
-                </div>
-
-                {/* Simulated Dock / Extension Strip */}
-                <div className="mt-3.5 flex items-center justify-between gap-3">
-                  <div className="flex items-center gap-3">
-                    {/* Gauge Extension Icon with notification badge */}
-                    <div className="relative">
-                      <div className="w-11 h-11 rounded-xl bg-[#F26522] text-white flex items-center justify-center font-bold text-lg shadow-sm">
-                        G
-                      </div>
-                      <span className="absolute -top-1.5 -right-1.5 w-5 h-5 rounded-full bg-red-500 text-white text-[10px] font-bold flex items-center justify-center shadow-sm">
-                        1
-                      </span>
-                    </div>
-                    <div>
-                      <p className="text-[13px] font-semibold text-gray-900">Gauge Chrome Extension</p>
-                      <p className="text-[11px] text-gray-500">Capturing tab audio + live captions</p>
-                    </div>
-                  </div>
-
-                  <Link
-                    href="/extension"
-                    className="inline-flex items-center gap-1 text-[12px] font-semibold text-[#F26522] hover:underline"
-                  >
-                    <span>Get extension</span>
-                    <ArrowRight size={13} />
-                  </Link>
-                </div>
-              </div>
+              {/* Studio product plate: Meet call + Gauge extension, zero bots */}
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src="/studio/gauge_chrome_extension_studio.jpg"
+                alt="Gauge Chrome extension capturing a Google Meet sales call with zero bots in the room"
+                className="block w-full mt-6"
+                loading="lazy"
+              />
             </div>
 
             {/* BOTTOM CARD: See the words, as they're spoken (Screenshot 1 Bottom Right) */}
-            <div className="rounded-2xl p-7 sm:p-8 bg-[#FAF8F5] border border-orange-100/70 shadow-sm flex flex-col justify-between relative overflow-hidden">
+            <div className="rounded-2xl p-7 sm:p-8 pb-0 bg-[#FAF8F5] border border-orange-100/70 shadow-sm flex flex-col relative overflow-hidden">
               <div>
                 <h3 className="text-[22px] sm:text-[24px] font-medium tracking-[-0.02em] text-gray-900 mb-1.5">
                   See the words, as they&apos;re spoken
                 </h3>
-                <p className="text-[13px] sm:text-[14px] text-gray-600 leading-relaxed mb-5">
+                <p className="text-[13px] sm:text-[14px] text-gray-600 leading-relaxed">
                   Live transcription with speaker recognition, real-time competitor tags, and instant CRM sync.
                 </p>
               </div>
 
-              {/* Transcript Stream with Speaker Avatars & Waveform Pill (Screenshot 2 Right) */}
-              <div className="space-y-3 bg-white rounded-xl p-4 border border-black/[0.06] shadow-sm">
-                {/* Speaker 1 */}
-                <div className="flex items-start gap-3">
-                  <div className="w-7 h-7 rounded-full bg-neutral-200 text-neutral-800 text-[10px] font-bold flex items-center justify-center shrink-0">
-                    MR
-                  </div>
-                  <div className="flex-1 text-[12px]">
-                    <div className="flex items-center gap-1.5 text-gray-400 text-[10px] font-mono mb-0.5">
-                      <span className="font-semibold text-gray-800">Mark Roberts</span>
-                      <span>0:01</span>
-                    </div>
-                    <p className="text-gray-700">
-                      &ldquo;Good morning everyone. Let&apos;s dive into Q4 revenue goals. Are you evaluating Gong or Gauge?&rdquo;
-                    </p>
-                  </div>
-                </div>
-
-                {/* Speaker 2 with highlight */}
-                <div className="flex items-start gap-3 pt-2 border-t border-gray-100">
-                  <div className="w-7 h-7 rounded-full bg-[#F26522] text-white text-[10px] font-bold flex items-center justify-center shrink-0">
-                    SC
-                  </div>
-                  <div className="flex-1 text-[12px]">
-                    <div className="flex items-center gap-1.5 text-gray-400 text-[10px] font-mono mb-0.5">
-                      <span className="font-semibold text-gray-800">Sarah Chen</span>
-                      <span>0:14</span>
-                      <span className="text-[9px] font-mono text-emerald-700 bg-emerald-100 px-1.5 py-0.2 rounded font-semibold">
-                        Rival detected: Gong
-                      </span>
-                    </div>
-                    <p className="text-gray-900 font-medium">
-                      &ldquo;We looked at Gong, but their \$1,400 per seat minimum and mandatory recording bot didn&apos;t fit our team.&rdquo;
-                    </p>
-                  </div>
-                </div>
-
-                {/* Waveform audio player bar (Matching Screenshot 2 Audio Toolbar Pill) */}
-                <div className="mt-3 pt-3 border-t border-gray-100 flex items-center justify-between bg-neutral-50 rounded-xl px-3 py-2">
-                  <div className="flex items-center gap-2.5">
-                    <button
-                      type="button"
-                      onClick={() => setIsPlaying(!isPlaying)}
-                      className="w-7 h-7 rounded-full bg-gray-900 text-white flex items-center justify-center text-xs hover:bg-black transition-colors"
-                      aria-label={isPlaying ? "Pause playback" : "Play playback"}
-                    >
-                      {isPlaying ? <Pause size={12} /> : <Play size={12} className="ml-0.5" />}
-                    </button>
-                    <span className="font-mono text-[11px] text-gray-700 font-semibold">
-                      00:{waveformTime < 10 ? `0${waveformTime}` : waveformTime}
-                    </span>
-                    {/* Waveform bars */}
-                    <div className="flex items-center gap-0.5 h-4">
-                      <span className="w-1 bg-[#F26522] rounded-full animate-pulse h-2" />
-                      <span className="w-1 bg-[#F26522] rounded-full animate-pulse h-4" />
-                      <span className="w-1 bg-[#F26522] rounded-full animate-pulse h-3" />
-                      <span className="w-1 bg-[#F26522] rounded-full animate-pulse h-5" />
-                      <span className="w-1 bg-[#F26522] rounded-full animate-pulse h-2" />
-                      <span className="w-1 bg-gray-300 rounded-full h-1" />
-                      <span className="w-1 bg-gray-300 rounded-full h-2" />
-                      <span className="w-1 bg-gray-300 rounded-full h-1" />
-                    </div>
-                  </div>
-                  <span className="text-[10px] font-mono text-gray-400">32kbps Opus</span>
-                </div>
-              </div>
+              {/* Studio product plate: speaker-identified transcript + audio waveform */}
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src="/studio/gauge_transcription_studio.jpg"
+                alt="Live transcript with speaker recognition, a detected competitor tag for Gong, and synced CRM notes"
+                className="block w-full mt-5"
+                loading="lazy"
+              />
             </div>
           </div>
         </div>

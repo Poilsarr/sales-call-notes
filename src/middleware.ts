@@ -27,7 +27,18 @@ const isPublicApi = createRouteMatcher([
   "/api/billing/price-ids",
   "/api/v1/calls",
 ]);
-const isProtectedRoute = createRouteMatcher(["/api/(.*)", "/dashboard(.*)", "/app(.*)", "/team(.*)", "/integrations(.*)", "/settings(.*)", "/billing(.*)", "/live(.*)", "/admin(.*)"]);
+const isProtectedRoute = createRouteMatcher([
+  "/api/(.*)",
+  "/dashboard(.*)",
+  "/app(.*)",
+  "/team(.*)",
+  "/integrations(.*)",
+  "/settings(.*)",
+  "/billing(.*)",
+  "/live(.*)",
+  "/admin(.*)",
+  "/extension/connect(.*)",
+]);
 
 // Public marketing routes never see the Redis rate-limit hop. The previous
 // version ran `checkRateLimit` on every HTML request, which (a) added a
@@ -151,6 +162,8 @@ export const config = {
     "/live/:path*",
     "/admin/:path*",
     "/share/:path*",
+    "/extension/connect",
+    "/extension/connect/:path*",
     "/sign-in",
     "/sign-in/:path*",
     "/sign-up",
