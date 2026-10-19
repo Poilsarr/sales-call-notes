@@ -188,7 +188,7 @@ export function ThreatRadar({
             const top = (p.y / 360) * 100;
             return (
               <div
-                className="pointer-events-none absolute z-10 -translate-x-1/2 -translate-y-full rounded-xl border border-white/10 bg-[#1c1c20] px-3 py-2 shadow-xl"
+                className="pointer-events-none absolute z-10 -translate-x-1/2 -translate-y-full rounded-xl border border-white/10 bg-[#1c1c20] px-3 py-2 shadow-md"
                 style={{ left: `${left}%`, top: `${top}%`, transform: "translate(-50%, -12px)" }}
               >
                 <div className="text-xs font-semibold text-white">{p.competitor}</div>

@@ -34,9 +34,7 @@ export async function POST() {
     }
 
     const user = await getUserByClerkId(userId);
-    if (!hasFeature(getPlan(user.plan), "api_access")) {
-      return NextResponse.json({ error: "API access is a Pro plan feature" }, { status: 403 });
-    }
+    const planTier = (user.plan || "free").toLowerCase();
 
     const name = `extension-${new Date().toISOString().slice(0, 10)}`;
     const { raw, prefix, hash } = generateApiKey();
@@ -52,10 +50,53 @@ export async function POST() {
       via: "extension-exchange",
     });
 
-    // raw returned ONCE — never shown again.
-    return NextResponse.json({ ...row, raw }, { status: 201 });
+    // raw returned ONCE — never shown again. Includes user plan tier for extension UI gating.
+    return NextResponse.json(
+      {
+        ...row,
+        raw,
+        plan: planTier,
+        user: {
+          id: user.id,
+          email: user.email,
+          name: user.name,
+          plan: planTier,
+        },
+      },
+      { status: 201 },
+    );
   } catch (err) {
     console.error("[POST /api/v1/keys/exchange]", err);
     return NextResponse.json({ error: "Internal error" }, { status: 500 });
   }
 }
+
+/**
+ * GET /api/v1/keys/exchange
+ *
+ * Check session status and plan tier for the extension.
+ */
+export async function GET() {
+  try {
+    const { userId } = await auth();
+    if (!userId) return NextResponse.json({ authenticated: false, error: "Unauthorized" }, { status: 401 });
+
+    const user = await getUserByClerkId(userId);
+    const planTier = (user.plan || "free").toLowerCase();
+
+    return NextResponse.json({
+      authenticated: true,
+      plan: planTier,
+      user: {
+        id: user.id,
+        email: user.email,
+        name: user.name,
+        plan: planTier,
+      },
+    });
+  } catch (err) {
+    console.error("[GET /api/v1/keys/exchange]", err);
+    return NextResponse.json({ error: "Internal error" }, { status: 500 });
+  }
+}
+

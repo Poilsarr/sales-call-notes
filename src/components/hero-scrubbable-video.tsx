@@ -5,16 +5,17 @@ import { Play, VolumeX, Volume2 } from "lucide-react";
 import { trackEvent } from "@/lib/analytics";
 
 export const HERO_SCRUBBABLE_VIDEO_SRC =
-  process.env.NEXT_PUBLIC_DEMO_VIDEO_URL || "/videos/gauge-hero-mgmt-35s.mp4";
+  process.env.NEXT_PUBLIC_DEMO_VIDEO_URL || "/videos/gauge-hero-15s-loop.mp4";
 export const HERO_SCRUBBABLE_POSTER_SRC =
   process.env.NEXT_PUBLIC_DEMO_POSTER_URL ||
-  "/videos/gauge-hero-mgmt-poster.jpg";
-const CAPTIONS_SRC = "/videos/gauge-hero-mgmt-captions.vtt";
+  "/videos/gauge-hero-15s-poster.jpg";
+const CAPTIONS_SRC = "/videos/gauge-hero-15s-captions.vtt";
 
 export const HERO_SCRUBBABLE_FILM_SLUG = "hero-scrubbable";
-// Container truth: 39s (35s story + 4s pad/outro). Matches the 4-cue VTT
-// spanning 00:00–00:39 and the gauge-hero-mgmt-35s.mp4 container.
-export const HERO_SCRUBBABLE_DURATION_S = 39;
+// Container truth: 15s seamless loop (hook / Meet capture / notes / Slack
+// signal). Matches the 4-cue VTT spanning 00:00–00:15 and the
+// gauge-hero-15s-loop.mp4 container. t=15 matches t=0 for flawless looping.
+export const HERO_SCRUBBABLE_DURATION_S = 15;
 
 const ACCENT = "#F26522";
 
@@ -36,30 +37,30 @@ interface ScrubLine {
  */
 export const HERO_SCRUBBABLE_LINES: ScrubLine[] = [
   {
-    seekS: 2,
-    stamp: "00:02",
-    aria: "hook at 2 seconds",
+    seekS: 1.5,
+    stamp: "00:01",
+    aria: "hook at 1 second",
     speaker: "Customer",
     text: "We're also looking at Gong — the line nobody wrote down.",
   },
   {
-    seekS: 12,
-    stamp: "00:12",
-    aria: "how it works at 12 seconds",
+    seekS: 4.5,
+    stamp: "00:04",
+    aria: "Meet capture at 4 seconds",
     speaker: "Gauge",
-    text: "Drop in the MP3, hit record, or capture Meet — no bot ever joins.",
+    text: "Chrome extension captures Meet — browser audio, no bot ever joins.",
   },
   {
-    seekS: 22,
-    stamp: "00:22",
-    aria: "notes at 22 seconds",
+    seekS: 8.5,
+    stamp: "00:08",
+    aria: "notes at 8 seconds",
     speaker: "Gauge",
     text: "A clean summary, who does what by when, and a draft follow-up.",
   },
   {
-    seekS: 32,
-    stamp: "00:32",
-    aria: "Slack alert at 32 seconds",
+    seekS: 12,
+    stamp: "00:12",
+    aria: "Slack alert at 12 seconds",
     speaker: "Slack",
     text: "Rival named → exact quote, speaker, and call link ping #deal-room-acme.",
   },
@@ -160,7 +161,7 @@ export function HeroScrubbableVideo() {
       className="relative h-full min-h-[440px] lg:min-h-[600px] doppel-outer overflow-hidden hero-plane-enter"
     >
       <p id="hero-video-caption" className="sr-only">
-        39-second management demo with captions: hook, how it works, notes,
+        15-second Meet-capture loop with captions: hook, extension capture, notes,
         Slack alert.
       </p>
       {/* Chapter chips overlay — top-left, drive the same seek() as the scrub list */}
@@ -182,7 +183,7 @@ export function HeroScrubbableVideo() {
           <button
             type="button"
             onClick={handleActivate}
-            aria-label="Play management demo — 39 seconds, sound off"
+            aria-label="Play Meet-capture loop — 15 seconds, sound off"
             aria-describedby="hero-video-caption"
             className="group absolute inset-0 block w-full h-full cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#F26522] focus-visible:ring-offset-2 focus-visible:ring-offset-white"
           >
@@ -203,15 +204,30 @@ export function HeroScrubbableVideo() {
             />
             <span className="absolute inset-0 flex items-center justify-center">
               <span
-                className="w-16 h-16 rounded-full flex items-center justify-center text-white shadow-lg ring-2 ring-white/80 transition-transform duration-200 ease-out group-hover:scale-105"
+                className="w-16 h-16 rounded-full flex items-center justify-center text-white shadow-md ring-2 ring-white/60 transition-transform duration-300 ease-out group-hover:scale-105"
                 style={{ backgroundColor: ACCENT }}
               >
                 <Play size={22} className="ml-0.5" fill="currentColor" aria-hidden />
               </span>
             </span>
+
+            {/* Studio Floating Badges (Otter Style) */}
+            <span className="absolute top-4 left-4 hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-full bg-black/80 backdrop-blur-md border border-white/20 text-white text-[11px] font-mono shadow-sm animate-fade-in pointer-events-none">
+              <span className="w-2 h-2 rounded-full bg-red-500 animate-pulse" />
+              <span>LIVE · 00:14:22</span>
+            </span>
+
+            <span className="absolute top-4 right-4 hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-orange-950/85 backdrop-blur-md border border-[#F26522]/40 text-[#F26522] text-[11px] font-mono font-semibold shadow-sm pointer-events-none">
+              <span>⚡ Gong detected (0.96)</span>
+            </span>
+
+            <span className="absolute bottom-14 left-4 hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-emerald-950/85 backdrop-blur-md border border-emerald-500/40 text-emerald-400 text-[11px] font-mono shadow-sm pointer-events-none">
+              <span>✓ Auto-sync to CRM</span>
+            </span>
+
             <span className="absolute bottom-3 left-3 right-3 flex items-center justify-between gap-2">
               <span className="text-[11px] font-medium text-white bg-black/75 backdrop-blur-sm border border-white/20 rounded-full px-3 py-1.5">
-                For management — 0:39, sound off
+                Meet capture — 0:15 loop, sound off
               </span>
               <span className="shrink-0 w-11 h-11 rounded-full bg-black/70 backdrop-blur-sm border border-white/20 flex items-center justify-center text-white">
                 <VolumeX size={16} aria-hidden />
@@ -230,7 +246,7 @@ export function HeroScrubbableVideo() {
               poster={HERO_SCRUBBABLE_POSTER_SRC}
               className="absolute inset-0 w-full h-full object-contain bg-[#131316]"
               controls={controls}
-              aria-label="Management demo — 39 seconds"
+              aria-label="Meet-capture loop — 15 seconds"
               aria-describedby="hero-video-caption"
             >
               <source src={HERO_SCRUBBABLE_VIDEO_SRC} type="video/mp4" />
@@ -246,7 +262,7 @@ export function HeroScrubbableVideo() {
             {muted && (
               <div className="absolute bottom-3 left-3 right-3 flex items-center justify-between gap-2">
                 <span className="text-[11px] font-medium text-white bg-black/75 backdrop-blur-sm border border-white/20 rounded-full px-3 py-1.5">
-                  For management — 0:39, sound off
+                  Meet capture — 0:15 loop, sound off
                 </span>
                 <button
                   type="button"

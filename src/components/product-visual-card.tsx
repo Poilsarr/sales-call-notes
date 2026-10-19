@@ -100,9 +100,9 @@ export function ProductVisualCard({
   const stillSrc = PRODUCT_STILLS[variant];
 
   return (
-    <div className="doppel-outer">
+    <div className="doppel-outer transition-all duration-300 hover:-translate-y-1 hover:shadow-md group">
       <div className="doppel-inner bg-white p-0 overflow-hidden">
-        <div className="product-chrome product-still-reveal m-2 mb-0">
+        <div className="product-chrome product-still-reveal m-2 mb-0 rounded-xl overflow-hidden border border-black/[0.04] bg-neutral-50/50 transition-transform duration-500 group-hover:scale-[1.01]">
           {/* eslint-disable-next-line @next/next/no-img-element -- img keeps vitest free of next/image mocks */}
           <img
             src={stillSrc}

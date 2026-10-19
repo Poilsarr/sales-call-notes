@@ -19,7 +19,7 @@ export default function UsageDisplay({ used, limit, label, unit }: UsageDisplayP
 
   const pct = (used / limit) * 100;
   const barColor =
-    pct > 100 ? "bg-red-500" : pct >= 80 ? "bg-amber-500" : "bg-linear-indigo";
+    pct > 100 ? "bg-red-500" : pct >= 80 ? "bg-amber-500" : "bg-[#F26522]";
   const textColor =
     pct > 100 ? "text-red-400" : pct >= 80 ? "text-amber-400" : "text-white/40";
 

@@ -20,11 +20,24 @@ export async function POST(
     }
 
     const user = await getUserByClerkId(clerkUserId);
-    if (!user.teamId) {
-      return NextResponse.json({ error: "No team found" }, { status: 400 });
+    let userTeamId = user.teamId;
+    if (!userTeamId) {
+      const personalTeam = await prisma.team.create({
+        data: {
+          name: `${user.name || "Personal"}'s Workspace`,
+          slug: `team-${user.id.slice(0, 8)}-${Date.now().toString(36)}`,
+          ownerId: user.id,
+          companyName: user.companyName || "Gauge Workspace",
+        },
+      });
+      await prisma.user.update({
+        where: { id: user.id },
+        data: { teamId: personalTeam.id },
+      });
+      userTeamId = personalTeam.id;
     }
 
-    const { allowed } = await requireRole(clerkUserId, user.teamId, "ADMIN");
+    const { allowed } = await requireRole(clerkUserId, userTeamId, "ADMIN");
     if (!allowed) {
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
@@ -50,14 +63,18 @@ export async function POST(
       return NextResponse.json({ error: "Call not found" }, { status: 404 });
     }
 
-    // The call must belong to the admin's team — a null teamId on the call
-    // (or a different team) means it's not this team's data to sync.
-    if (!call.user?.teamId || call.user.teamId !== user.teamId) {
+    // The call must belong to the admin's team — auto-link if owner is solo
+    if (call.userId === user.id && (!call.teamId || !call.user?.teamId)) {
+      await prisma.call.update({
+        where: { id: call.id },
+        data: { teamId: userTeamId },
+      });
+    } else if (call.user?.teamId !== userTeamId && call.teamId !== userTeamId) {
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
 
     const integration = await prisma.integration.findFirst({
-      where: { teamId: user.teamId, provider },
+      where: { teamId: userTeamId, provider },
     });
 
     let instanceUrl: string | undefined;
@@ -84,10 +101,10 @@ export async function POST(
 
     let result;
     if (provider === "hubspot") {
-      const hubspot = new HubSpotService(user.teamId);
+      const hubspot = new HubSpotService(userTeamId);
       result = await hubspot.syncCall(crmCall);
     } else if (provider === "salesforce") {
-      const salesforce = new SalesforceService(user.teamId, instanceUrl);
+      const salesforce = new SalesforceService(userTeamId, instanceUrl);
       result = await salesforce.syncCall(crmCall);
     } else {
       const teams = new TeamsService();

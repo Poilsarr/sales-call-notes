@@ -32,10 +32,17 @@ import {
 
 let recorder = null;
 let mediaStream = null;
+let micStream = null;
+let audioContext = null;
 let slices = [];
 let recording = false;
 let meetingTitle = "";
 let startedAt = 0;
+let lastRecordedBlob = null;
+let lastDownloadUrl = null;
+let analyserInterval = null;
+let micAnalyser = null;
+let silentSince = null;
 
 function hasChrome() {
   return typeof chrome !== "undefined" && !!chrome.runtime;
@@ -102,10 +109,49 @@ async function startCapture({ streamId, meetingTitle: title }) {
     send({ type: MESSAGE_TYPES.OFFSCREEN_ERROR, message: error, manual: buildManualUploadInstructions() });
     return { ok: false, error };
   }
-  mediaStream = await acquireStream(streamId);
+  const rawTabStream = await acquireStream(streamId);
   meetingTitle = typeof title === "string" ? title.slice(0, 200) : "";
   slices = [];
   startedAt = Date.now();
+  lastRecordedBlob = null;
+  if (lastDownloadUrl) {
+    try { URL.revokeObjectURL(lastDownloadUrl); } catch {}
+    lastDownloadUrl = null;
+  }
+
+  // Audio pipeline:
+  // 1. Loopback rawTabStream to speakers so user can hear call participants.
+  // 2. Mix user's microphone with tab audio so both sides of the call are recorded.
+  let recordStream = rawTabStream;
+  try {
+    const AudioCtx = window.AudioContext || window.webkitAudioContext;
+    if (AudioCtx) {
+      audioContext = new AudioCtx();
+      const tabSource = audioContext.createMediaStreamSource(rawTabStream);
+      // Route tab audio to system destination (speakers/headphones):
+      tabSource.connect(audioContext.destination);
+
+      try {
+        if (navigator.mediaDevices?.getUserMedia) {
+          micStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+          const micSource = audioContext.createMediaStreamSource(micStream);
+          micAnalyser = audioContext.createAnalyser();
+          micAnalyser.fftSize = 64;
+          micSource.connect(micAnalyser);
+          const mixedDestination = audioContext.createMediaStreamDestination();
+          tabSource.connect(mixedDestination);
+          micSource.connect(mixedDestination);
+          recordStream = mixedDestination.stream;
+        }
+      } catch (micErr) {
+        console.warn("[Gauge:offscreen] Mic capture unavailable, recording tab audio only", micErr);
+      }
+    }
+  } catch (audioCtxErr) {
+    console.warn("[Gauge:offscreen] Web Audio setup failed, using raw stream", audioCtxErr);
+  }
+
+  mediaStream = recordStream;
 
   const mimeType = pickMimeType();
   recorder = new MediaRecorder(
@@ -129,13 +175,61 @@ async function startCapture({ streamId, meetingTitle: title }) {
         type: MESSAGE_TYPES.OFFSCREEN_ERROR,
         message: error?.message || "Upload failed",
         manual: buildManualUploadInstructions(),
+        downloadUrl: lastDownloadUrl,
       });
     });
   };
   recorder.start(CHUNK_TIMESLICE_MS);
   recording = true;
+  startAudioHealthMonitor();
   send({ type: MESSAGE_TYPES.RECORDING_STATUS, recording: true, meetingTitle });
   return { ok: true };
+}
+
+function startAudioHealthMonitor() {
+  if (analyserInterval) clearInterval(analyserInterval);
+  silentSince = null;
+  analyserInterval = setInterval(() => {
+    if (!recording) return;
+    let micLevel = 0;
+    let frequencyData = [0, 0, 0, 0, 0, 0];
+    let isMicSilent = false;
+
+    if (micAnalyser) {
+      const dataArray = new Uint8Array(micAnalyser.frequencyBinCount);
+      micAnalyser.getByteFrequencyData(dataArray);
+
+      let sum = 0;
+      for (let i = 0; i < dataArray.length; i++) {
+        sum += dataArray[i];
+      }
+      const avg = dataArray.length ? sum / dataArray.length : 0;
+      micLevel = Math.min(100, Math.round((avg / 255) * 100));
+
+      const binStep = Math.max(1, Math.floor(dataArray.length / 6));
+      frequencyData = [0, 1, 2, 3, 4, 5].map((idx) => {
+        const val = dataArray[idx * binStep] || 0;
+        return Math.min(100, Math.round((val / 255) * 100));
+      });
+
+      if (micLevel < 3) {
+        if (!silentSince) silentSince = Date.now();
+        else if (Date.now() - silentSince > 10000) {
+          isMicSilent = true;
+        }
+      } else {
+        silentSince = null;
+      }
+    }
+
+    send({
+      type: MESSAGE_TYPES.AUDIO_HEALTH_UPDATE,
+      micLevel,
+      frequencyData,
+      isMicSilent,
+      elapsedSeconds: Math.floor((Date.now() - startedAt) / 1000),
+    });
+  }, 100);
 }
 
 async function stopCapture() {
@@ -171,14 +265,34 @@ async function stopCapture() {
 }
 
 function teardown() {
+  if (analyserInterval) {
+    clearInterval(analyserInterval);
+    analyserInterval = null;
+  }
+  micAnalyser = null;
+  silentSince = null;
+
+  try {
+    if (micStream) {
+      for (const track of micStream.getTracks()) track.stop();
+    }
+  } catch {}
+  micStream = null;
+
   try {
     if (mediaStream) {
       for (const track of mediaStream.getTracks()) track.stop();
     }
-  } catch {
-    // best effort
-  }
+  } catch {}
   mediaStream = null;
+
+  try {
+    if (audioContext && audioContext.state !== "closed") {
+      audioContext.close();
+    }
+  } catch {}
+  audioContext = null;
+
   recorder = null;
   recording = false;
 }
@@ -186,68 +300,88 @@ function teardown() {
 async function finalizeUpload() {
   const apiKey = await getApiKeyFromSession();
   const blob = new Blob(slices, { type: AUDIO_CONTENT_TYPE });
-  slices = [];
+  lastRecordedBlob = blob;
   teardown();
   if (!apiKey) {
     send({ type: MESSAGE_TYPES.OFFSCREEN_ERROR, message: "API key missing at finalize", manual: buildManualUploadInstructions() });
     return;
   }
   if (blob.size === 0) {
+    slices = [];
     send({ type: MESSAGE_TYPES.OFFSCREEN_DONE, empty: true, meetingTitle });
     return;
   }
+
+  try {
+    lastDownloadUrl = URL.createObjectURL(blob);
+  } catch {}
 
   // Chunk plan drives progress reporting; the presigned PUT itself is atomic.
   const plan = getChunkPlan(blob.size);
   reportProgress(0, blob.size, plan.length);
 
   const filename = `meeting-${new Date(startedAt || Date.now()).toISOString().replace(/[:.]/g, "-")}.webm`;
-  const uploadRes = await fetchWithBackoff(
-    buildUploadUrlEndpoint(),
-    {
+  try {
+    const uploadRes = await fetchWithBackoff(
+      buildUploadUrlEndpoint(),
+      {
+        method: "POST",
+        headers: buildBearerHeaders(apiKey),
+        body: JSON.stringify({ filename, fileSize: blob.size, contentType: AUDIO_CONTENT_TYPE }),
+      },
+    );
+    if (!uploadRes.ok) {
+      throw new Error(
+        uploadRes.status === 401 || uploadRes.status === 403
+          ? "API key rejected (401/403). Re-paste a fresh key from POST /api/v1/keys/exchange."
+          : `upload-url failed (${uploadRes.status}). ${buildManualUploadInstructions()}`,
+      );
+    }
+    const { presignedUrl, blobUrl } = await uploadRes.json();
+    if (!presignedUrl || !blobUrl) throw new Error("upload-url returned no presignedUrl/blobUrl");
+
+    reportProgress(blob.size, blob.size, plan.length);
+    const putRes = await fetchWithBackoff(presignedUrl, {
+      method: "PUT",
+      headers: { "Content-Type": AUDIO_CONTENT_TYPE },
+      body: blob,
+    });
+    if (!putRes.ok) throw new Error(`audio PUT failed (${putRes.status})`);
+
+    const analyzeRes = await fetchWithBackoff(buildAnalyzeEndpoint(), {
       method: "POST",
       headers: buildBearerHeaders(apiKey),
-      body: JSON.stringify({ filename, fileSize: blob.size, contentType: AUDIO_CONTENT_TYPE }),
-    },
-  );
-  if (!uploadRes.ok) {
-    throw new Error(
-      uploadRes.status === 401 || uploadRes.status === 403
-        ? "API key rejected (401/403). Re-paste a fresh key from POST /api/v1/keys/exchange."
-        : `upload-url failed (${uploadRes.status}). ${buildManualUploadInstructions()}`,
-    );
+      body: JSON.stringify({ blobUrl, filename, meetingTitle }),
+    });
+    if (!analyzeRes.ok) {
+      throw new Error(
+        analyzeRes.status === 401 || analyzeRes.status === 403
+          ? "API key rejected by /api/analyze. Re-paste a fresh key."
+          : `analyze failed (${analyzeRes.status}). Audio is stored; retry Send from the side panel.`,
+      );
+    }
+    const result = await analyzeRes.json();
+    // On success: clear slices
+    slices = [];
+    send({
+      type: MESSAGE_TYPES.OFFSCREEN_DONE,
+      id: result?.id || null,
+      callUrl: result?.id ? buildCallDetailUrl(result.id) : "",
+      meetingTitle,
+      summary: result?.summary || "",
+      actionItems: result?.actionItems || [],
+      healthScore: result?.healthScore ?? null,
+    });
+  } catch (error) {
+    console.warn("[Gauge:offscreen] Upload error; retaining audio for download fallback", error);
+    send({
+      type: MESSAGE_TYPES.OFFSCREEN_ERROR,
+      message: error?.message || "Upload failed",
+      manual: buildManualUploadInstructions(),
+      downloadUrl: lastDownloadUrl,
+      filename,
+    });
   }
-  const { presignedUrl, blobUrl } = await uploadRes.json();
-  if (!presignedUrl || !blobUrl) throw new Error("upload-url returned no presignedUrl/blobUrl");
-
-  reportProgress(blob.size, blob.size, plan.length);
-  const putRes = await fetchWithBackoff(presignedUrl, {
-    method: "PUT",
-    headers: { "Content-Type": AUDIO_CONTENT_TYPE },
-    body: blob,
-  });
-  if (!putRes.ok) throw new Error(`audio PUT failed (${putRes.status})`);
-
-  const analyzeRes = await fetchWithBackoff(buildAnalyzeEndpoint(), {
-    method: "POST",
-    headers: buildBearerHeaders(apiKey),
-    body: JSON.stringify({ blobUrl, filename, meetingTitle }),
-  });
-  if (!analyzeRes.ok) {
-    throw new Error(
-      analyzeRes.status === 401 || analyzeRes.status === 403
-        ? "API key rejected by /api/analyze. Re-paste a fresh key."
-        : `analyze failed (${analyzeRes.status}). Audio is stored; retry Send from the side panel.`,
-    );
-  }
-  const result = await analyzeRes.json();
-  // Response shape incl. id (see src/app/api/analyze/route.ts).
-  send({
-    type: MESSAGE_TYPES.OFFSCREEN_DONE,
-    id: result?.id || null,
-    callUrl: result?.id ? buildCallDetailUrl(result.id) : "",
-    meetingTitle,
-  });
 }
 
 if (hasChrome() && chrome.runtime?.onMessage) {

@@ -6,11 +6,11 @@ type CardVariant = "default" | "elevated" | "ghost" | "inset" | "danger" | "acce
 
 const cardClasses: Record<CardVariant, string> = {
   default: "bg-linear-surface border-linear-secondary",
-  elevated: "bg-linear-surface border-linear-secondary shadow-[0_1px_3px_rgba(0,0,0,0.3)]",
+  elevated: "bg-linear-surface border-linear-secondary shadow-sm",
   ghost: "bg-transparent border-transparent",
   inset: "bg-linear-black border-linear-secondary",
   danger: "bg-red-500/[0.03] border-red-500/10",
-  accent: "bg-linear-indigo/[0.06] border-linear-indigo/20",
+  accent: "bg-[#F26522]/[0.06] border-[#F26522]/20",
 };
 
 interface CardProps extends React.HTMLAttributes<HTMLDivElement> {

@@ -368,7 +368,7 @@ export default function DashboardPage() {
           <Card className="lg:row-span-2">
             <CardHeader>
               <div className="flex items-center gap-3">
-                <div className="w-9 h-9 rounded-xl bg-linear-indigo/10 flex items-center justify-center text-linear-indigo">
+                <div className="w-9 h-9 rounded-xl bg-[#F26522]/10 flex items-center justify-center text-[#F26522]">
                   <Brain className="w-4 h-4" />
                 </div>
                 <div>
@@ -388,13 +388,13 @@ export default function DashboardPage() {
                   onChange={(e) => setChatQuery(e.target.value)}
                   onKeyDown={(e) => e.key === "Enter" && askChat()}
                   placeholder='e.g. "What objections came up last week?"'
-                  className="flex-1 px-4 py-2.5 rounded-xl bg-linear-black border border-linear-secondary text-sm text-white placeholder-white/50 focus:outline-none focus-visible:outline-2 focus-visible:outline-linear-indigo focus:border-linear-indigo/50"
+                  className="flex-1 px-4 py-2.5 rounded-xl bg-linear-black border border-linear-secondary text-sm text-white placeholder-white/50 focus:outline-none focus-visible:outline-2 focus-visible:outline-[#F26522] focus:border-[#F26522]/50"
                 />
                 <button
                   onClick={askChat}
                   disabled={chatLoading || !chatQuery.trim()}
                   aria-label="Send question"
-                  className="px-4 py-2.5 bg-linear-indigo rounded-xl text-xs font-semibold hover:bg-linear-indigo/80 transition disabled:opacity-50"
+                  className="px-4 py-2.5 bg-[#F26522] rounded-xl text-xs font-semibold hover:bg-[#e05a1a] transition disabled:opacity-50"
                 >
                   {chatLoading ? (
                     <div className="w-4 h-4 rounded-full border-2 border-white/70 border-t-transparent animate-spin" />
@@ -413,7 +413,7 @@ export default function DashboardPage() {
               {chatResult ? (
                 <div className="h-full p-4 rounded-xl bg-linear-black border border-linear-secondary overflow-y-auto max-h-[360px]">
                   <div className="flex items-start gap-2 mb-3">
-                    <MessageSquare className="w-4 h-4 text-linear-indigo shrink-0 mt-0.5" />
+                    <MessageSquare className="w-4 h-4 text-[#F26522] shrink-0 mt-0.5" />
                     <p className="text-sm text-white/80 leading-relaxed">{chatResult.answer}</p>
                   </div>
                   {chatResult.relevantCalls?.length > 0 && (
@@ -461,7 +461,7 @@ export default function DashboardPage() {
               </div>
             </CardHeader>
             <CardContent>
-              <AreaChart data={scoreTrendData} height={140} color="#22d3a8" />
+              <AreaChart data={scoreTrendData} height={140} color="#10b981" />
             </CardContent>
           </Card>
         </div>
@@ -472,7 +472,7 @@ export default function DashboardPage() {
           <Card>
             <CardHeader>
               <div className="flex items-center gap-3">
-                <Layers className="w-4 h-4 text-linear-indigo" />
+                <Layers className="w-4 h-4 text-[#F26522]" />
                 <CardTitle>Usage</CardTitle>
               </div>
             </CardHeader>
@@ -519,7 +519,7 @@ export default function DashboardPage() {
           <Card>
             <CardHeader>
               <div className="flex items-center gap-3">
-                <Zap className="w-4 h-4 text-linear-indigo" />
+                <Zap className="w-4 h-4 text-[#F26522]" />
                 <CardTitle>Buying signals</CardTitle>
               </div>
               <CardDescription>How often key intent signals appeared.</CardDescription>
@@ -535,7 +535,7 @@ export default function DashboardPage() {
           <Card>
             <CardHeader>
               <div className="flex items-center gap-3">
-                <Shield className="w-4 h-4 text-linear-indigo" />
+                <Shield className="w-4 h-4 text-[#F26522]" />
                 <CardTitle>Sentiment</CardTitle>
               </div>
             </CardHeader>
@@ -623,11 +623,11 @@ export default function DashboardPage() {
                       className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 px-6 py-4 hover:bg-white/[0.02] transition group"
                     >
                       <div className="flex items-center gap-4 min-w-0">
-                        <div className="w-9 h-9 rounded-xl bg-linear-indigo/10 flex items-center justify-center text-linear-indigo shrink-0">
+                        <div className="w-9 h-9 rounded-xl bg-[#F26522]/10 flex items-center justify-center text-[#F26522] shrink-0">
                           <Phone className="w-4 h-4" />
                         </div>
                         <div className="min-w-0">
-                          <p className="text-sm font-medium text-white truncate group-hover:text-linear-indigo transition">
+                          <p className="text-sm font-medium text-white truncate group-hover:text-[#F26522] transition">
                             {call.displayName ?? call.filename}
                           </p>
                           <p className="text-[11px] text-white/40">
@@ -643,7 +643,7 @@ export default function DashboardPage() {
                         )}
                         <span className="text-xs text-white/40">{call.actionItemCount} items</span>
                         {call.closeProbability && (
-                          <span className="text-xs text-linear-indigo">{Math.round(call.closeProbability)}% close</span>
+                          <span className="text-xs text-[#F26522]">{Math.round(call.closeProbability)}% close</span>
                         )}
                         {call.topObjection && (
                           <span className="text-xs text-red-400/70 flex items-center gap-1 truncate max-w-[200px]">
@@ -685,7 +685,7 @@ function SignalBar({
         </span>
       </div>
       <div className="h-2 rounded-full bg-white/5 overflow-hidden">
-        <div className="h-full rounded-full bg-linear-indigo transition-all duration-500" style={{ width: `${pct}%` }} />
+        <div className="h-full rounded-full bg-[#F26522] transition-all duration-500" style={{ width: `${pct}%` }} />
       </div>
     </div>
   );

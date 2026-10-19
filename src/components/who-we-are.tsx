@@ -55,9 +55,8 @@ export function WhoWeAre() {
             Reps talk. Gauge remembers everything.
           </h2>
           <p className="text-gray-700 text-[14px]">
-            We are the team behind the virtual competitor signal — built for
-            managers who need the truth from every call, not another dashboard
-            nobody opens.
+            We are the team behind the virtual competitor signal — delivering
+            concrete deal risks and competitor intelligence directly into your workflow.
           </p>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">

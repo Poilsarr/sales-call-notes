@@ -1,7 +1,11 @@
 import {
   APP_BASE_URL,
+  MESSAGE_TYPES,
+  buildConnectUrl,
   buildLiveRecordUrl,
+  buildPricingUrl,
   buildSignInUrl,
+  getPlanLimits,
 } from "./shared.js";
 
 const el = (id) => document.getElementById(id);
@@ -33,21 +37,43 @@ function formatRelativeTime(epochMs) {
 
 function renderAuth(authStatus) {
   const state = authStatus?.state || "unknown";
+  const planTier = (authStatus?.plan || "free").toLowerCase();
+  const limits = getPlanLimits(planTier);
+  const email = authStatus?.email || "";
+  const isPro = planTier === "pro" || planTier === "business" || planTier === "enterprise";
+
+  // Update brand header badge
+  const badge = el("planBadge");
+  if (badge) {
+    badge.textContent = limits.badgeText;
+    badge.className = `badge-tier ${
+      state === "signed_in" ? (isPro ? "badge-pro" : "badge-free") : "badge-guest"
+    }`;
+  }
+
   if (state === "signed_in") {
     setDot("authDot", "dot-success");
-    setText("authText", "Signed in");
-    setText("authSub", "Captions will upload to your Gauge account");
+    setText("authText", email ? `Signed in as ${email}` : "Signed in");
+    if (isPro) {
+      setText("authSub", "Pro Plan · Unlimited calls, CRM sync active");
+      setHidden("upgradeCard", true);
+    } else {
+      setText("authSub", "Free Plan · 30-min call limit (30MB)");
+      setHidden("upgradeCard", false);
+    }
     setHidden("signInBtn", true);
   } else if (state === "needs_sign_in") {
     setDot("authDot", "dot-needs");
     setText("authText", "Sign-in required");
-    setText("authSub", "Captions are saved locally. Sign in to sync them to Gauge.");
+    setText("authSub", "Connect your Gauge account to sync recordings and AI notes.");
     setHidden("signInBtn", false);
+    setHidden("upgradeCard", true);
   } else {
     setDot("authDot", "dot-idle");
     setText("authText", "Checking sign-in...");
     setText("authSub", "");
     setHidden("signInBtn", true);
+    setHidden("upgradeCard", true);
   }
 }
 
@@ -86,19 +112,45 @@ function renderMeetingContext(tab, data) {
   const info = el("meetingInfo");
   if (!info) return;
   const isMeet = tab?.url && tab.url.includes("meet.google.com");
+  const isTeams = tab?.url && tab.url.includes("teams.");
+  const isZoom = tab?.url && tab.url.includes("zoom.us");
   const liveTitle = data.liveMeetingTitle || data.lastMeetingTitle || "";
-  if (isMeet) {
+
+  if (isMeet || isTeams || isZoom) {
     setDot("statusDot", "dot-active");
-    setText("statusText", "Capturing Meeting");
+    setText("statusText", "Meeting Detected");
+    const appName = isMeet ? "Google Meet" : isTeams ? "Microsoft Teams" : "Zoom";
     if (liveTitle) {
-      info.textContent = `${liveTitle} is streaming to Gauge`;
+      info.textContent = `${liveTitle} (${appName}) ready to record`;
     } else {
-      info.textContent = "Google Meet detected - captions will be streamed live";
+      info.textContent = `${appName} active — click Open Recorder Panel to start`;
     }
   } else if (data.lastMeetingSessionId) {
-    info.textContent = "Open Gauge to follow the latest live session";
+    info.textContent = "Open Gauge to view the latest meeting summary";
   } else {
-    info.textContent = "Open Google Meet to start capturing";
+    info.textContent = "Open Google Meet, Teams, or Zoom to record notes";
+  }
+}
+
+function renderRecap(lastCall) {
+  if (!lastCall) {
+    setHidden("popupRecapCard", true);
+    return;
+  }
+  setHidden("popupRecapCard", false);
+  setText("popupRecapTitle", `⚡ ${lastCall.meetingTitle || "Recent Meeting"}`);
+  setText(
+    "popupRecapDesc",
+    lastCall.summary
+      ? lastCall.summary.slice(0, 95) + (lastCall.summary.length > 95 ? "..." : "")
+      : "Summary and action items ready to review.",
+  );
+  const recapBtn = el("popupRecapBtn");
+  if (recapBtn) {
+    recapBtn.onclick = () => {
+      const url = lastCall.callUrl || `${APP_BASE_URL}/app/calls/${lastCall.id}`;
+      chrome.tabs.create({ url });
+    };
   }
 }
 
@@ -117,13 +169,25 @@ async function refresh() {
         authStatus: { state: "unknown", at: 0 },
         lastUploadAt: null,
         lastUploadError: null,
+        lastAnalyzedCall: null,
       },
       resolve,
     );
   });
+
   renderAuth(data.authStatus);
   renderMeetingContext(tab, data);
   renderUploadStatus(data.uploadStatus, data.lastUploadAt, data.lastUploadError);
+  renderRecap(data.lastAnalyzedCall);
+
+  // Proactively ping background to re-validate auth via session / cookies
+  try {
+    chrome.runtime.sendMessage({ type: MESSAGE_TYPES.CHECK_AUTH }, (response) => {
+      if (response?.status) {
+        renderAuth(response.status);
+      }
+    });
+  } catch {}
 }
 
 el("openApp").addEventListener("click", () => {
@@ -132,11 +196,11 @@ el("openApp").addEventListener("click", () => {
     (data) => {
       const sessionId = data.liveSessionId || data.lastMeetingSessionId;
       if (data.authStatus?.state !== "signed_in") {
-        chrome.tabs.create({ url: buildSignInUrl(sessionId ? `?liveSessionId=${sessionId}` : "/app/record") });
+        chrome.tabs.create({ url: buildConnectUrl() });
         return;
       }
       chrome.tabs.create({
-        url: sessionId ? buildLiveRecordUrl(sessionId) : `${APP_BASE_URL}/app/record?source=extension`,
+        url: sessionId ? buildLiveRecordUrl(sessionId) : `${APP_BASE_URL}/app`,
       });
     },
   );
@@ -147,7 +211,6 @@ el("viewHistory").addEventListener("click", () => {
 });
 
 el("openPanel").addEventListener("click", async () => {
-  // Side panel hosts the Part 3B recorder (Bearer key + Record/Stop/Send).
   try {
     if (chrome.sidePanel?.open) {
       const currentWindow = await chrome.windows.getCurrent();
@@ -162,7 +225,15 @@ el("openPanel").addEventListener("click", async () => {
 });
 
 el("signInBtn").addEventListener("click", () => {
-  chrome.tabs.create({ url: buildSignInUrl("/app/record?source=extension") });
+  chrome.tabs.create({ url: buildConnectUrl() });
+});
+
+el("upgradeBtn")?.addEventListener("click", () => {
+  chrome.tabs.create({ url: buildPricingUrl() });
+});
+
+el("headerSettings")?.addEventListener("click", () => {
+  chrome.tabs.create({ url: `${APP_BASE_URL}/app` });
 });
 
 chrome.storage.onChanged.addListener((changes, area) => {

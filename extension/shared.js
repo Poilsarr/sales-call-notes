@@ -39,7 +39,7 @@ export function buildFinalizeEndpoint() {
   return `${APP_BASE_URL}/api/transcribe`;
 }
 
-export function buildSignInUrl(returnTo = "/app/record?source=extension") {
+export function buildSignInUrl(returnTo = "/extension/connect") {
   return `${APP_BASE_URL}/sign-in?redirect_url=${encodeURIComponent(returnTo)}`;
 }
 
@@ -210,7 +210,66 @@ export const MESSAGE_TYPES = {
   OFFSCREEN_ERROR: "OFFSCREEN_ERROR",
   CHECK_AUTH: "CHECK_AUTH",
   AUTH_STATUS: "AUTH_STATUS",
+  AUTH_SYNC: "AUTH_SYNC",
+  // In-Meeting & Accessibility events
+  AUDIO_HEALTH_UPDATE: "AUDIO_HEALTH_UPDATE",
+  BOOKMARK_MOMENT: "BOOKMARK_MOMENT",
+  TOGGLE_RECORDING_COMMAND: "TOGGLE_RECORDING_COMMAND",
+  LIVE_TRANSCRIPT_CHUNK: "LIVE_TRANSCRIPT_CHUNK",
+  TOGGLE_CAPTIONS_REQUEST: "TOGGLE_CAPTIONS_REQUEST",
 };
+
+export const MOMENT_CATEGORIES = {
+  DECISION: { id: "decision", label: "Key Decision", icon: "💡", prefix: "DECISION" },
+  OBJECTION: { id: "objection", label: "Objection", icon: "🛡️", prefix: "OBJECTION" },
+  PRICING: { id: "pricing", label: "Pricing / Budget", icon: "💰", prefix: "PRICING" },
+  ACTION: { id: "action", label: "Action Item", icon: "✅", prefix: "ACTION" },
+};
+
+export function formatDuration(seconds = 0) {
+  const s = Math.max(0, Math.floor(seconds));
+  const m = Math.floor(s / 60);
+  const remainingSecs = s % 60;
+  const pad = (n) => String(n).padStart(2, "0");
+  if (m >= 60) {
+    const h = Math.floor(m / 60);
+    const remainingMins = m % 60;
+    return `${pad(h)}:${pad(remainingMins)}:${pad(remainingSecs)}`;
+  }
+  return `${pad(m)}:${pad(remainingSecs)}`;
+}
+
+export function formatMomentTag(typeId, elapsedSec = 0) {
+  const cat = Object.values(MOMENT_CATEGORIES).find((c) => c.id === typeId) || MOMENT_CATEGORIES.DECISION;
+  return `[KEY MOMENT: ${cat.label} @ ${formatDuration(elapsedSec)}]`;
+}
+
+export function buildRecapMarkdown({ meetingTitle = "Meeting", summary = "", actionItems = [], callUrl = "" }) {
+  const lines = [
+    `# 📋 Call Summary: ${meetingTitle || "Sales Meeting"}`,
+    `_Captured via Gauge • ${new Date().toLocaleDateString(undefined, { dateStyle: "medium" })}_\n`,
+  ];
+  if (callUrl) {
+    lines.push(`🔗 **View Full Call & Analytics**: [Open in Gauge](${callUrl})\n`);
+  }
+  if (summary) {
+    lines.push(`## ⚡ Executive Summary\n${summary.trim()}\n`);
+  }
+  if (Array.isArray(actionItems) && actionItems.length > 0) {
+    lines.push(`## ✅ Action Items`);
+    for (const item of actionItems) {
+      const task = typeof item === "string" ? item : item.task || "";
+      const owner = typeof item === "object" && item.owner ? ` (@${item.owner})` : "";
+      const due = typeof item === "object" && item.due ? ` [Due: ${item.due}]` : "";
+      if (task) {
+        lines.push(`- [ ] ${task}${owner}${due}`);
+      }
+    }
+    lines.push("");
+  }
+  return lines.join("\n");
+}
+
 
 // --- Endpoints (Bearer `cn_live_` / `cn_test_`) ---
 export function buildUploadUrlEndpoint() {
@@ -232,9 +291,99 @@ export function buildCallDetailUrl(callId) {
   return `${APP_ORIGIN}/app/calls/${encodeURIComponent(String(callId))}`;
 }
 
+export function buildKeysExchangeEndpoint() {
+  return `${APP_ORIGIN}/api/v1/keys/exchange`;
+}
+
+export function buildConnectUrl() {
+  return `${APP_BASE_URL}/extension/connect`;
+}
+
+export function buildPricingUrl() {
+  return `${APP_BASE_URL}/pricing`;
+}
+
+export function getPlanLimits(tier = "free") {
+  const t = (tier || "free").toLowerCase();
+  if (t === "pro") {
+    return {
+      tier: "pro",
+      name: "Pro",
+      callDurationLimitMin: 90,
+      fileSizeLimitMB: 200,
+      crmSync: true,
+      slackSync: true,
+      aiChat: true,
+      unlimitedCalls: true,
+      badgeText: "PRO",
+    };
+  }
+  if (t === "business" || t === "enterprise") {
+    return {
+      tier: t,
+      name: t === "enterprise" ? "Enterprise" : "Business",
+      callDurationLimitMin: 240,
+      fileSizeLimitMB: 500,
+      crmSync: true,
+      slackSync: true,
+      aiChat: true,
+      unlimitedCalls: true,
+      badgeText: t.toUpperCase(),
+    };
+  }
+  return {
+    tier: "free",
+    name: "Free",
+    callDurationLimitMin: 30,
+    fileSizeLimitMB: 30,
+    crmSync: false,
+    slackSync: false,
+    aiChat: false,
+    unlimitedCalls: false,
+    badgeText: "FREE",
+  };
+}
+
+export async function exchangeSessionTokenForKey(token) {
+  try {
+    const headers = {
+      "Content-Type": "application/json",
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
+    };
+    const res = await fetch(buildKeysExchangeEndpoint(), {
+      method: "POST",
+      headers,
+      credentials: "include",
+    });
+    if (!res.ok) return null;
+    return await res.json();
+  } catch (err) {
+    console.warn("[Gauge] Key exchange network error", err);
+    return null;
+  }
+}
+
+export async function fetchSessionStatus(tokenOrKey) {
+  try {
+    const headers = {
+      "Content-Type": "application/json",
+      ...(tokenOrKey ? { Authorization: `Bearer ${tokenOrKey}` } : {}),
+    };
+    const res = await fetch(buildKeysExchangeEndpoint(), {
+      method: "GET",
+      headers,
+      credentials: "include",
+    });
+    if (!res.ok) return null;
+    return await res.json();
+  } catch (err) {
+    console.warn("[Gauge] Session status fetch error", err);
+    return null;
+  }
+}
+
 export function buildKeysExchangeDocsUrl() {
-  // Docs-only reference. Executor A owns POST /api/v1/keys/exchange; the
-  // extension must NOT call it — users paste a minted key into the panel.
+  // Docs reference for API keys
   return `${APP_ORIGIN}/api-docs/v1#post-api-v1-keys-exchange`;
 }
 

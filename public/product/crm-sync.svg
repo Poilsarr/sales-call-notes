@@ -31,9 +31,9 @@
   <text x="64" y="126" font-family="ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="20" font-weight="600" fill="#131316">Deal field write-back</text>
   <rect x="520" y="102" width="136" height="28" rx="14" fill="#ECFDF5" stroke="#86EFAC"/>
   <circle cx="538" cy="116" r="4" fill="#16A34A"/>
-  <text x="550" y="120" font-family="ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="11" font-weight="600" fill="#15803D">Synced · 12s ago</text>
+  <text x="550" y="120" font-family="ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="11" font-weight="600" fill="#15803D">Synced Ã‚Â· 12s ago</text>
 
-  <!-- Pipeline visual HubSpot ’ Salesforce -->
+  <!-- Pipeline visual HubSpot â€™ Salesforce -->
   <g filter="url(#cardShadow)">
     <rect x="64" y="152" width="592" height="88" rx="12" fill="#FAFAFA" stroke="#E4E4E7"/>
   </g>
@@ -69,7 +69,7 @@
   </g>
   <text x="288" y="292" font-family="ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="11" font-weight="600" fill="#A1A1AA" letter-spacing="0.04em">CLOSE DATE</text>
   <text x="288" y="336" font-family="ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="28" font-weight="600" fill="#131316">Oct 31</text>
-  <text x="288" y="362" font-family="ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="13" fill="#71717A">2026 · Stage: Closing</text>
+  <text x="288" y="362" font-family="ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="13" fill="#71717A">2026 Ã‚Â· Stage: Closing</text>
   <rect x="288" y="380" width="88" height="22" rx="11" fill="#EEF2FF"/>
   <text x="332" y="395" text-anchor="middle" font-family="ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="10" font-weight="600" fill="#4F46E5">24 days left</text>
 

@@ -85,7 +85,7 @@ export default function IntegrationsPanel() {
         <Card>
           <CardHeader>
             <div className="flex items-center gap-3">
-              <div className="w-9 h-9 rounded-xl bg-linear-indigo/10 flex items-center justify-center text-linear-indigo">
+              <div className="w-9 h-9 rounded-xl bg-[#F26522]/10 flex items-center justify-center text-[#F26522]">
                 <Calendar className="w-4 h-4" />
               </div>
               <div>

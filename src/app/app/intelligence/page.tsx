@@ -138,13 +138,14 @@ export default function IntelligencePage() {
           setData(json);
           // Keep header meta in sync with server truth (companyName/watchlistSize/mode)
           if (json?.meta) {
-            setMeta({
-              companyName: json.meta.companyName ?? null,
-              watchlistSize: typeof json.meta.watchlistSize === 'number' ? json.meta.watchlistSize : meta?.watchlistSize ?? 0,
-              mode: json.meta.mode ?? mode,
-            });
+            const serverMeta = json.meta;
+            setMeta((prev) => ({
+              companyName: serverMeta.companyName ?? null,
+              watchlistSize: typeof serverMeta.watchlistSize === 'number' ? serverMeta.watchlistSize : prev?.watchlistSize ?? 0,
+              mode: serverMeta.mode ?? mode,
+            }));
             // If server says mode differs (e.g., first bootstrap with watchlist on empty should be 'all'), sync UI without extra fetch
-            if (json.meta.mode && json.meta.mode !== mode) {
+            if (serverMeta.mode && serverMeta.mode !== mode) {
               // Avoid loop: only sync if we haven't already bootstrapped to that mode
               // The effect will re-run due to mode change, but server already returned correct data for its mode,
               // so the next fetch will be redundant but consistent. We let it re-run once.

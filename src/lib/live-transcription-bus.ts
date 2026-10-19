@@ -26,7 +26,6 @@ type SessionState = {
 const MAX_BACKLOG_ITEMS = 100;
 
 declare global {
-  // eslint-disable-next-line no-var
   var __liveTranscriptionSessions: Map<string, SessionState> | undefined;
 }
 

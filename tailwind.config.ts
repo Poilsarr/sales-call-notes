@@ -33,9 +33,9 @@ const config: Config = {
           panel: "#0a0a0b",
           surface: "#141416",
           secondary: "#1c1c20",
-          indigo: "#5e6ad2",
-          violet: "#7170ff",
-          accent: "#22d3a8",
+          indigo: "#F26522",
+          violet: "#e05a1a",
+          accent: "#10b981",
         },
         axion: {
           orange: "#F26522",

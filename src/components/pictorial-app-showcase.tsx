@@ -8,7 +8,6 @@ import {
   CheckCircle2,
   FileText,
   MessageSquare,
-  Sparkles,
   ArrowRight,
   ShieldCheck,
   Volume2,
@@ -31,7 +30,7 @@ export function PictorialAppShowcase() {
         {/* Section Header */}
         <div className="text-center max-w-2xl mx-auto mb-8 sm:mb-12">
           <div className="inline-flex items-center gap-2 text-[11px] font-mono uppercase tracking-[0.18em] text-[#F26522] bg-[#F26522]/10 border border-[#F26522]/20 px-3 py-1 rounded-full mb-3">
-            <Sparkles size={12} />
+            <Crosshair size={12} />
             <span>Interactive product preview</span>
           </div>
           <h2 className="text-[clamp(1.75rem,4vw,2.75rem)] font-medium tracking-[-0.03em] text-gray-900 leading-[1.12]">
@@ -43,14 +42,14 @@ export function PictorialAppShowcase() {
         </div>
 
         {/* Tab Selector */}
-        <div className="flex flex-wrap items-center justify-center gap-2 mb-8" role="tablist">
+        <div className="flex flex-wrap items-center justify-center gap-3 mb-10" role="tablist">
           <button
             role="tab"
             aria-selected={activeTab === "alert"}
             onClick={() => setActiveTab("alert")}
-            className={`inline-flex items-center gap-2 px-5 py-2.5 rounded-full text-[13px] font-medium transition-all ${
+            className={`inline-flex items-center gap-2.5 px-6 py-3 rounded-full text-[13px] font-medium transition-all duration-300 ${
               activeTab === "alert"
-                ? "bg-gray-900 text-white shadow-md"
+                ? "bg-gray-900 text-white shadow-lg shadow-black/10 scale-[1.02] ring-2 ring-[#F26522]/30"
                 : "bg-gray-100 text-gray-600 hover:text-gray-900 hover:bg-gray-200/80"
             }`}
           >
@@ -61,46 +60,54 @@ export function PictorialAppShowcase() {
             role="tab"
             aria-selected={activeTab === "nobot"}
             onClick={() => setActiveTab("nobot")}
-            className={`inline-flex items-center gap-2 px-5 py-2.5 rounded-full text-[13px] font-medium transition-all ${
+            className={`inline-flex items-center gap-2.5 px-6 py-3 rounded-full text-[13px] font-medium transition-all duration-300 ${
               activeTab === "nobot"
-                ? "bg-gray-900 text-white shadow-md"
+                ? "bg-gray-900 text-white shadow-lg shadow-black/10 scale-[1.02] ring-2 ring-emerald-500/30"
                 : "bg-gray-100 text-gray-600 hover:text-gray-900 hover:bg-gray-200/80"
             }`}
           >
-            <ShieldCheck size={15} className={activeTab === "nobot" ? "text-emerald-500" : ""} />
+            <ShieldCheck size={15} className={activeTab === "nobot" ? "text-emerald-400" : ""} />
             <span>2. Zero Bots in Your Call</span>
           </button>
           <button
             role="tab"
             aria-selected={activeTab === "crm"}
             onClick={() => setActiveTab("crm")}
-            className={`inline-flex items-center gap-2 px-5 py-2.5 rounded-full text-[13px] font-medium transition-all ${
+            className={`inline-flex items-center gap-2.5 px-6 py-3 rounded-full text-[13px] font-medium transition-all duration-300 ${
               activeTab === "crm"
-                ? "bg-gray-900 text-white shadow-md"
+                ? "bg-gray-900 text-white shadow-lg shadow-black/10 scale-[1.02] ring-2 ring-blue-500/30"
                 : "bg-gray-100 text-gray-600 hover:text-gray-900 hover:bg-gray-200/80"
             }`}
           >
-            <FileText size={15} className={activeTab === "crm" ? "text-blue-500" : ""} />
+            <FileText size={15} className={activeTab === "crm" ? "text-blue-400" : ""} />
             <span>3. 60-Second CRM Notes</span>
           </button>
         </div>
 
         {/* The Window Frame */}
-        <div className="doppel-outer max-w-5xl mx-auto overflow-hidden">
-          <div className="doppel-inner bg-[#121316] text-white overflow-hidden shadow-2xl">
-            {/* Window Top Bar (macOS Style) */}
-            <div className="flex items-center justify-between px-5 py-3.5 border-b border-white/10 bg-[#17181c]">
+        <div className="doppel-outer max-w-5xl mx-auto overflow-hidden shadow-sm">
+          <div className="doppel-inner bg-[#121316] text-white overflow-hidden shadow-sm">
+            {/* Window Top Bar (Clean Branded Address Bar) */}
+            <div className="flex items-center justify-between px-5 py-3 border-b border-white/10 bg-[#17181c]">
               <div className="flex items-center gap-2">
-                <span className="w-3 h-3 rounded-full bg-[#FF5F56] inline-block" />
-                <span className="w-3 h-3 rounded-full bg-[#FFBD2E] inline-block" />
-                <span className="w-3 h-3 rounded-full bg-[#27C93F] inline-block" />
-                <span className="ml-3 font-mono text-[11px] text-white/50 hidden sm:inline">
-                  Gauge Sales Intelligence Studio · Call #0492-ACME
+                <span className="w-2 h-2 rounded-full bg-[#F26522]" />
+                <span className="font-mono text-[11px] text-white/70">
+                  usegauge.com/intel/deal-402
+                </span>
+                <span className="ml-3 font-mono text-[11px] text-white/40 hidden sm:inline">
+                  · Call #0492-ACME
                 </span>
               </div>
-              <div className="flex items-center gap-2">
-                <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-                <span className="text-[11px] font-mono text-emerald-400">Live Recording</span>
+              <div className="flex items-center gap-3">
+                <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20">
+                  <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+                  <span className="text-[11px] font-mono text-emerald-400">Live Recording</span>
+                  <div className="flex items-center gap-0.5 ml-1 h-3">
+                    <span className="w-0.5 h-2 bg-emerald-400 rounded-full animate-bounce" style={{ animationDelay: "0ms" }} />
+                    <span className="w-0.5 h-3 bg-emerald-400 rounded-full animate-bounce" style={{ animationDelay: "150ms" }} />
+                    <span className="w-0.5 h-1.5 bg-emerald-400 rounded-full animate-bounce" style={{ animationDelay: "300ms" }} />
+                  </div>
+                </div>
               </div>
             </div>
 
@@ -133,7 +140,7 @@ export function PictorialAppShowcase() {
                           <span className="font-semibold text-white/90">Alex R.</span>
                           <span className="text-[10px] text-[#F26522] font-mono">Account Exec</span>
                         </div>
-                        <p className="text-white/60 leading-relaxed pl-2 border-l-2 border-[#F26522]">
+                        <p className="text-white/60 leading-relaxed pl-2">
                           &ldquo;Understood. Are you looking for their conversation intelligence dashboard, or strictly note-taking and CRM hygiene?&rdquo;
                         </p>
                       </div>

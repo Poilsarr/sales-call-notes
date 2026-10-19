@@ -5,7 +5,7 @@ import { useMemo } from "react";
 type Trend = { competitor: string; count: number };
 type Mention = { competitor: string; sentiment: string | null };
 
-const COLORS = ["#5e6ad2", "#7170ff", "#22d3a8", "#F26522", "#e879f9", "#38bdf8", "#fbbf24", "#f87171"];
+const COLORS = ["#F26522", "#3b82f6", "#10b981", "#f59e0b", "#6366f1", "#06b6d4", "#8b5cf6", "#ef4444"];
 
 export function ShareTreemap({
   trend,

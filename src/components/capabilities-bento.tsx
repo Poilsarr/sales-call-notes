@@ -173,7 +173,7 @@ export function CapabilitiesBento() {
           </p>
           <h2
             id="capabilities-heading"
-            className="text-[clamp(1.5rem,4vw,3rem)] font-medium leading-[1.1] tracking-[-0.02em] text-gray-900 mb-3"
+            className="text-[clamp(1.75rem,4vw,3.2rem)] font-film leading-[1.1] tracking-normal text-gray-900 mb-3"
           >
             Built for SDRs who lose deals to competitors they never saw coming.
           </h2>

@@ -43,12 +43,16 @@ const ALLOWED_PERMISSIONS = new Set([
   "offscreen",
   "sidePanel",
   "alarms",
+  "cookies",
+  "notifications",
 ]);
 
 // Meeting providers + Gauge app origin. Keep in sync with manifest.json.
 const ALLOWED_HOST_PERMISSIONS = new Set([
   "https://meet.google.com/*",
   "https://teams.microsoft.com/*",
+  "https://teams.cloud.microsoft/*",
+  "https://teams.live.com/*",
   "https://*.zoom.us/*",
   "https://usegauge.vercel.app/*",
 ]);

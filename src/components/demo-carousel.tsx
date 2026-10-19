@@ -209,7 +209,7 @@ export default function DemoCarousel() {
 
           {/* CTA */}
           <div className="doppel-outer">
-            <div className="doppel-inner bg-gradient-to-br from-zinc-900 to-zinc-900/50 p-6 sm:p-8 text-center">
+            <div className="doppel-inner bg-zinc-900 p-6 sm:p-8 text-center">
               <Radio size={20} className="text-[#F26522] mx-auto mb-3" />
               <h2 className="text-[20px] sm:text-[24px] font-medium tracking-tight mb-2">
                 Get this on your calls.

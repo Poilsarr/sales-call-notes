@@ -9,7 +9,7 @@ const badgeClasses: Record<BadgeVariant, string> = {
   success: "bg-emerald-500/10 text-emerald-400 border-emerald-500/20",
   warning: "bg-amber-500/10 text-amber-400 border-amber-500/20",
   danger: "bg-red-500/10 text-red-400 border-red-500/20",
-  info: "bg-linear-indigo/10 text-linear-indigo border-linear-indigo/20",
+  info: "bg-[#F26522]/10 text-[#F26522] border-[#F26522]/20",
   outline: "bg-transparent text-white/50 border-white/10",
 };
 

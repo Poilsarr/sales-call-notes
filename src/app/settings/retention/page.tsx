@@ -83,7 +83,7 @@ export default function RetentionSettingsPage() {
               ← Back to Settings · Security
             </Link>
             <h1 className="text-2xl font-medium tracking-tight mt-2 flex items-center gap-2">
-              <ShieldCheck className="w-5 h-5 text-linear-indigo" />
+              <ShieldCheck className="w-5 h-5 text-[#F26522]" />
               Retention
             </h1>
             <p className="text-sm text-white/50 mt-1">
@@ -94,7 +94,7 @@ export default function RetentionSettingsPage() {
           <Card>
             <CardHeader>
               <div className="flex items-center gap-3">
-                <Clock className="w-5 h-5 text-linear-indigo" />
+                <Clock className="w-5 h-5 text-[#F26522]" />
                 <div>
                   <CardTitle>Effective defaults</CardTitle>
                   <CardDescription>

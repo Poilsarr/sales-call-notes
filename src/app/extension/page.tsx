@@ -73,7 +73,7 @@ export default function ExtensionPage() {
                   >
                     <Globe size={16} className="text-white/90" />
                     <span>Install the extension</span>
-                    <span className="w-7 h-7 sm:w-8 sm:h-8 bg-white rounded-full flex items-center justify-center group-hover:rotate-45 transition-transform duration-500">
+                    <span className="w-7 h-7 sm:w-8 sm:h-8 bg-white rounded-full flex items-center justify-center group-hover:translate-x-0.5 transition-transform duration-300">
                       <ArrowRight size={14} className="text-[#F26522]" />
                     </span>
                   </a>
@@ -671,7 +671,7 @@ export default function ExtensionPage() {
                     className="group inline-flex items-center gap-2 bg-[#F26522] hover:bg-[#e05a1a] text-white text-[13px] rounded-full pl-5 pr-2 py-2"
                   >
                     <span>Open the manual fallback</span>
-                    <span className="w-7 h-7 bg-white rounded-full flex items-center justify-center group-hover:rotate-45 transition-transform duration-500">
+                    <span className="w-7 h-7 bg-white rounded-full flex items-center justify-center group-hover:translate-x-0.5 transition-transform duration-300">
                       <ArrowRight size={14} className="text-[#F26522]" />
                     </span>
                   </Link>

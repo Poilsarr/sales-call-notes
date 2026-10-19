@@ -116,7 +116,7 @@ export default function SupportChatbot() {
         <dialog
           open
           aria-label={`${BOT_NAME} support chat`}
-          className="fixed bottom-24 right-4 sm:right-5 z-[90] m-0 p-0 start-auto flex flex-col overflow-hidden rounded-2xl border border-black/10 bg-white shadow-2xl w-[calc(100vw-2rem)] max-w-[370px] h-[520px] max-h-[70vh]"
+          className="fixed bottom-24 right-4 sm:right-5 z-[90] m-0 p-0 start-auto flex flex-col overflow-hidden rounded-2xl border border-black/10 bg-white shadow-lg w-[calc(100vw-2rem)] max-w-[370px] h-[520px] max-h-[70vh]"
         >
           {/* Header */}
           <div className="flex items-center gap-3 bg-[#0a0a0b] px-4 py-3.5 shrink-0">
@@ -210,7 +210,7 @@ export default function SupportChatbot() {
         onClick={() => setOpen((v) => !v)}
         aria-label={open ? 'Close support chat' : 'Open support chat'}
         aria-expanded={open}
-        className="fixed bottom-20 right-4 sm:bottom-5 sm:right-5 z-[90] flex h-14 w-14 items-center justify-center rounded-full bg-[#0a0a0b] text-white shadow-[0_8px_30px_rgba(0,0,0,0.3)] hover:bg-[#F26522] transition-colors"
+        className="fixed bottom-20 right-4 sm:bottom-5 sm:right-5 z-[90] flex h-14 w-14 items-center justify-center rounded-full bg-[#0a0a0b] text-white shadow-lg hover:bg-[#F26522] transition-colors"
       >
         {open ? <X className="h-6 w-6" /> : <MessageCircle className="h-6 w-6" />}
         {!open && (

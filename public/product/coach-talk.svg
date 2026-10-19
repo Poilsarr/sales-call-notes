@@ -28,7 +28,7 @@
 
   <!-- Header -->
   <text x="64" y="100" font-family="ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="11" font-weight="600" fill="#A1A1AA" letter-spacing="0.04em">CALL COACHING</text>
-  <text x="64" y="126" font-family="ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="20" font-weight="600" fill="#131316">Acme Corp � Discovery</text>
+  <text x="64" y="126" font-family="ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="20" font-weight="600" fill="#131316">Acme Corp Â· Discovery</text>
   <rect x="520" y="104" width="136" height="26" rx="13" fill="#FFF4ED" stroke="#F26522"/>
   <text x="588" y="121" text-anchor="middle" font-family="ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="11" font-weight="600" fill="#F26522">Score 74 / 100</text>
 
@@ -37,7 +37,7 @@
     <rect x="64" y="152" width="300" height="260" rx="12" fill="#FFFFFF" stroke="#E4E4E7"/>
   </g>
   <text x="84" y="184" font-family="ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="12" font-weight="600" fill="#131316">Talk time</text>
-  <text x="84" y="204" font-family="ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="11" fill="#71717A">Ideal: 40% you � 60% them</text>
+  <text x="84" y="204" font-family="ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="11" fill="#71717A">Ideal: 40% you Â· 60% them</text>
 
   <!-- AE bar -->
   <text x="84" y="244" font-family="ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="12" font-weight="600" fill="#52525B">Maya Kim (AE)</text>
@@ -53,7 +53,7 @@
 
   <!-- Tip -->
   <rect x="84" y="354" width="256" height="40" rx="8" fill="#FFF8F4"/>
-  <text x="100" y="378" font-family="ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="11" fill="#9A3412">Talk less  leave room for discovery.</text>
+  <text x="100" y="378" font-family="ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="11" fill="#9A3412">Talk less — leave room for discovery.</text>
 
   <!-- Mood + missed steps -->
   <g filter="url(#cardShadow)">

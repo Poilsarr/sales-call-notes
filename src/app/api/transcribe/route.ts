@@ -7,6 +7,7 @@ import { detectAudioType } from "@/lib/audio-types";
 import { getSecret } from "@/lib/secrets";
 import { captureApiError } from "@/lib/sentry";
 import { isQuotaError, quotaErrorResponse, captureQuotaEvent } from "@/lib/quota-guard";
+import { resolveRequestUser } from "@/lib/resolve-request-user";
 import {
   EXTENSION_MAX_TRANSCRIPT_CHARS,
   clampTranscriptText,
@@ -16,8 +17,18 @@ import {
 } from "@/lib/extension-upload";
 
 export async function POST(req: NextRequest) {
-  const { userId } = await auth();
-  if (!userId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  const resolved = await resolveRequestUser(req, 'POST');
+  if (!resolved.ok) {
+    return NextResponse.json(
+      { error: resolved.error },
+      {
+        status: resolved.status,
+        ...(resolved.retryAfterSec
+          ? { headers: { 'Retry-After': String(resolved.retryAfterSec) } }
+          : {}),
+      },
+    );
+  }
 
   let tempFilePath: string | null = null;
 

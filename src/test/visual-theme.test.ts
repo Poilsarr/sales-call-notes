@@ -37,11 +37,11 @@ describe("visual theme V1 — class names unchanged", () => {
 });
 
 describe("visual theme V1 — doppel light softened", () => {
-  it(".doppel-outer uses 1.75rem radius + soft shadow + faint ring", () => {
+  it(".doppel-outer uses 2xl radius + soft shadow + ring", () => {
     const src = css();
-    expect(src).toContain("rounded-[1.75rem]");
-    expect(src).toContain("ring-black/[0.04]");
-    expect(src).toContain("0_12px_32px_-12px");
+    expect(src).toContain("rounded-2xl");
+    expect(src).toContain("ring-black/[0.06]");
+    expect(src).toContain("shadow-sm");
   });
 
   it(".doppel-inner drops inner shadow for a hairline border", () => {
@@ -55,31 +55,29 @@ describe("visual theme V1 — doppel light softened", () => {
   });
 });
 
-describe("visual theme V1 — dark doppel byte-identical", () => {
-  it("keeps .doppel-outer-dark rules untouched", () => {
+describe("visual theme V1 — dark doppel refined", () => {
+  it("keeps .doppel-outer-dark rules intact", () => {
     expect(css()).toContain(
-      "@apply p-1.5 rounded-[2rem] ring-1 ring-white/[0.08] bg-white/[0.02] transition-all duration-300 hover:ring-white/[0.14];"
+      "@apply p-1.5 rounded-2xl ring-1 ring-white/[0.08] bg-white/[0.02] transition-all duration-300 hover:ring-white/[0.14];"
     );
   });
 
-  it("keeps .doppel-inner-dark rules untouched", () => {
+  it("keeps .doppel-inner-dark rules intact", () => {
     expect(css()).toContain(
-      "@apply rounded-[calc(2rem-0.375rem)] bg-linear-surface border border-linear-secondary shadow-[inset_0_1px_1px_rgba(255,255,255,0.04)] transition-colors;"
+      "@apply rounded-[calc(1rem-0.25rem)] bg-linear-surface border border-linear-secondary shadow-[inset_0_1px_1px_rgba(255,255,255,0.04)] transition-colors;"
     );
   });
 });
 
-describe("visual theme V1 — btn-primary gradient + glow", () => {
-  it("uses an orange→rose gradient with a warm glow shadow", () => {
+describe("visual theme V1 — btn-primary solid brand orange", () => {
+  it("uses solid brand orange with subtle elevation", () => {
     const src = css();
     const start = src.indexOf(".btn-primary {");
     expect(start).toBeGreaterThan(-1);
     const block = src.slice(start, src.indexOf("}", start));
     expect(block).toContain("bg-[#F26522]");
-    expect(block).toContain("bg-gradient-to-r");
-    expect(block).toContain("from-[#F26522]");
-    expect(block).toContain("to-[#E63E7A]");
-    expect(block).toContain("0_8px_24px_-8px_rgba(242,101,34,0.5)");
+    expect(block).toContain("hover:bg-[#e05a1a]");
+    expect(block).toContain("shadow-sm");
   });
 });
 

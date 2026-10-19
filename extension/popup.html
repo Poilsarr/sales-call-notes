@@ -1,77 +1,439 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Gauge</title>
   <style>
+    :root {
+      --bg-base: #090a0f;
+      --card-bg: rgba(255, 255, 255, 0.038);
+      --card-border: rgba(255, 255, 255, 0.08);
+      --card-hover: rgba(255, 255, 255, 0.065);
+      --primary: #6366f1;
+      --primary-hover: #4f46e5;
+      --accent-grad: linear-gradient(135deg, #6366f1 0%, #4f46e5 50%, #7c3aed 100%);
+      --text-main: #f8fafc;
+      --text-muted: rgba(255, 255, 255, 0.65);
+      --text-dim: #94a3b8;
+    }
     * { margin: 0; padding: 0; box-sizing: border-box; }
+    :focus-visible {
+      outline: 2px solid #818cf8;
+      outline-offset: 2px;
+    }
     body {
-      width: 320px;
-      padding: 16px;
-      font-family: -apple-system, BlinkMacSystemFont, "Inter", sans-serif;
-      background: #0a0a0a;
+      width: 360px;
+      padding: 18px 16px 14px;
+      font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Inter", system-ui, sans-serif;
+      background: radial-gradient(140% 90% at 50% -15%, rgba(99, 102, 241, 0.2) 0%, rgba(9, 10, 15, 0.98) 60%), #090a0f;
+      color: var(--text-main);
+      -webkit-font-smoothing: antialiased;
+      letter-spacing: -0.01em;
+    }
+
+    /* Top Brand Bar */
+    .header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 14px;
+      padding: 0 2px;
+    }
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .brand-icon {
+      width: 28px;
+      height: 28px;
+      border-radius: 8px;
+      background: linear-gradient(135deg, #6366f1 0%, #4f46e5 50%, #7c3aed 100%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 4px 12px rgba(99, 102, 241, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.3);
+    }
+    .brand-icon svg {
+      width: 17px;
+      height: 17px;
+    }
+    .brand-title {
+      font-size: 15px;
+      font-weight: 700;
       color: #fff;
+      display: flex;
+      align-items: center;
+      gap: 7px;
     }
-    .logo { display: flex; align-items: center; gap: 8px; margin-bottom: 16px; }
-    .logo-icon { width: 20px; height: 20px; background: #6366f1; border-radius: 4px; transform: rotate(45deg); }
-    .logo-text { font-size: 14px; font-weight: 500; }
-    .logo-text span { color: rgba(255,255,255,0.5); }
+    .badge-tier {
+      font-size: 9px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      padding: 2px 7px;
+      border-radius: 999px;
+      transition: all 0.2s ease;
+    }
+    .badge-pro {
+      background: rgba(99, 102, 241, 0.2);
+      border: 1px solid rgba(99, 102, 241, 0.45);
+      color: #c7d2fe;
+      box-shadow: 0 0 10px rgba(99, 102, 241, 0.25);
+    }
+    .badge-free {
+      background: rgba(148, 163, 184, 0.12);
+      border: 1px solid rgba(148, 163, 184, 0.25);
+      color: #94a3b8;
+    }
+    .badge-guest {
+      background: rgba(255, 255, 255, 0.06);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      color: rgba(255, 255, 255, 0.5);
+    }
+    .plan-card {
+      background: linear-gradient(135deg, rgba(99, 102, 241, 0.14) 0%, rgba(124, 58, 237, 0.06) 100%);
+      border: 1px solid rgba(99, 102, 241, 0.28);
+      padding: 12px 13px;
+    }
+    .upgrade-header {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      margin-bottom: 5px;
+    }
+    .upgrade-icon { font-size: 13px; }
+    .upgrade-title {
+      font-size: 12px;
+      font-weight: 700;
+      color: #e0e7ff;
+    }
+    .upgrade-price {
+      margin-left: auto;
+      font-size: 10px;
+      font-weight: 700;
+      color: #c7d2fe;
+      background: rgba(99, 102, 241, 0.25);
+      padding: 2px 6px;
+      border-radius: 4px;
+    }
+    .upgrade-desc {
+      font-size: 11px;
+      color: rgba(255, 255, 255, 0.65);
+      line-height: 1.35;
+      margin-bottom: 9px;
+    }
+    .btn-upgrade {
+      background: linear-gradient(135deg, #6366f1 0%, #7c3aed 100%);
+      color: #fff;
+      padding: 7px 12px;
+      font-size: 11px;
+      font-weight: 600;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(99, 102, 241, 0.3);
+      cursor: pointer;
+    }
+    .btn-upgrade:hover {
+      background: linear-gradient(135deg, #4f46e5 0%, #6d28d9 100%);
+    }
+    .header-link {
+      font-size: 11px;
+      color: var(--text-dim);
+      text-decoration: none;
+      transition: color 0.2s;
+      cursor: pointer;
+    }
+    .header-link:hover { color: #cbd5e1; }
+
+    /* Frosted Cards */
     .card {
-      padding: 12px; border-radius: 12px;
-      background: rgba(255,255,255,0.05);
-      border: 1px solid rgba(255,255,255,0.1);
-      margin-bottom: 12px;
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 14px;
+      padding: 13px 14px;
+      margin-bottom: 11px;
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.05);
+      transition: border-color 0.2s, background 0.2s;
     }
-    .row { display: flex; align-items: center; gap: 8px; }
-    .dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
-    .dot-active { background: #22c55e; }
-    .dot-idle { background: #6b7280; }
-    .dot-uploading { background: #eab308; }
-    .dot-success { background: #22c55e; }
-    .dot-error { background: #ef4444; }
-    .dot-needs { background: #f59e0b; }
-    .label { font-size: 13px; font-weight: 500; }
-    .sub { font-size: 11px; color: rgba(255,255,255,0.4); margin-top: 4px; word-break: break-word; }
+    .card:hover {
+      border-color: rgba(255, 255, 255, 0.13);
+    }
+
+    /* Auth Banner */
+    .auth-card {
+      background: linear-gradient(135deg, rgba(245, 158, 11, 0.09) 0%, rgba(245, 158, 11, 0.02) 100%);
+      border: 1px solid rgba(245, 158, 11, 0.28);
+    }
+    .row {
+      display: flex;
+      align-items: center;
+      gap: 9px;
+    }
+    .dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      flex-shrink: 0;
+      position: relative;
+    }
+    .dot-active {
+      background: #22c55e;
+      box-shadow: 0 0 10px #22c55e;
+    }
+    .dot-idle { background: #64748b; }
+    .dot-uploading {
+      background: #eab308;
+      box-shadow: 0 0 8px #eab308;
+    }
+    .dot-success {
+      background: #22c55e;
+      box-shadow: 0 0 8px #22c55e;
+    }
+    .dot-error {
+      background: #ef4444;
+      box-shadow: 0 0 8px #ef4444;
+    }
+    .dot-needs {
+      background: #f59e0b;
+      box-shadow: 0 0 8px #f59e0b;
+    }
+
+    .label {
+      font-size: 13px;
+      font-weight: 600;
+      color: #f1f5f9;
+      letter-spacing: -0.01em;
+    }
+    .sub {
+      font-size: 11.5px;
+      color: var(--text-muted);
+      margin-top: 5px;
+      line-height: 1.4;
+      word-break: break-word;
+    }
+
+    /* Platform Pills */
+    .provider-row {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      margin-top: 10px;
+      padding-top: 9px;
+      border-top: 1px solid rgba(255, 255, 255, 0.06);
+    }
+    .provider-tag {
+      font-size: 10px;
+      font-weight: 500;
+      color: rgba(255, 255, 255, 0.5);
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      padding: 2px 7px;
+      border-radius: 6px;
+    }
+
+    /* Buttons */
     .btn {
-      width: 100%; padding: 10px; border-radius: 12px; border: none;
-      font-size: 12px; font-weight: 600; cursor: pointer; transition: all 0.2s;
+      width: 100%;
+      padding: 10px 14px;
+      border-radius: 11px;
+      border: none;
+      font-size: 12.5px;
+      font-weight: 600;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+      text-decoration: none;
     }
-    .btn-primary { background: #6366f1; color: white; }
-    .btn-primary:hover { background: #4f46e5; }
-    .btn-secondary { background: rgba(255,255,255,0.1); color: white; margin-top: 8px; }
-    .btn-secondary:hover { background: rgba(255,255,255,0.15); }
-    .btn-warn { background: #f59e0b; color: #1a1a1a; }
-    .btn-warn:hover { background: #d97706; }
-    .hidden { display: none; }
-    .footer { margin-top: 16px; text-align: center; font-size: 10px; color: rgba(255,255,255,0.3); }
+    .btn:active {
+      transform: scale(0.985);
+    }
+    .btn-hero {
+      background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
+      color: #ffffff;
+      padding: 12px 16px;
+      font-size: 13px;
+      box-shadow: 0 4px 18px rgba(99, 102, 241, 0.38), inset 0 1px 0 rgba(255, 255, 255, 0.25);
+      margin-bottom: 9px;
+    }
+    .btn-hero:hover {
+      background: linear-gradient(135deg, #4f46e5 0%, #4338ca 100%);
+      box-shadow: 0 6px 24px rgba(99, 102, 241, 0.5);
+      transform: translateY(-1px);
+    }
+    .btn-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+    }
+    .btn-glass {
+      background: rgba(255, 255, 255, 0.05);
+      color: #e2e8f0;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      font-size: 11.5px;
+      font-weight: 500;
+    }
+    .btn-glass:hover {
+      background: rgba(255, 255, 255, 0.09);
+      border-color: rgba(255, 255, 255, 0.16);
+      color: #fff;
+      transform: translateY(-1px);
+    }
+    .btn-warn {
+      background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+      color: #0f172a;
+      font-weight: 700;
+      margin-top: 10px;
+      box-shadow: 0 3px 12px rgba(245, 158, 11, 0.3);
+    }
+    .btn-warn:hover {
+      background: linear-gradient(135deg, #fbbf24 0%, #b45309 100%);
+    }
+
+    .shortcut-pill {
+      font-size: 10px;
+      font-weight: 600;
+      background: rgba(255, 255, 255, 0.15);
+      padding: 1px 6px;
+      border-radius: 5px;
+      color: #ffffff;
+      margin-left: auto;
+    }
+
+    .hidden { display: none !important; }
+
+    /* Footer */
+    .footer {
+      margin-top: 13px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 4px;
+      font-size: 10px;
+      color: var(--text-dim);
+    }
+    .footer-secure {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
   </style>
 </head>
 <body>
-  <div class="logo">
-    <div class="logo-icon"></div>
-    <div class="logo-text">Gauge</div>
+  <!-- Brand Header -->
+  <div class="header">
+    <div class="brand">
+      <div class="brand-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/>
+        </svg>
+      </div>
+      <div class="brand-title">
+        <span>Gauge</span>
+        <span class="badge-tier badge-guest" id="planBadge">FREE</span>
+      </div>
+    </div>
+    <span class="header-link" id="headerSettings">Web App ↗</span>
   </div>
 
-  <div class="card" id="authCard">
+  <!-- Auth Card -->
+  <div class="card auth-card" id="authCard">
     <div class="row">
       <span class="dot dot-idle" id="authDot"></span>
       <span class="label" id="authText">Checking sign-in...</span>
     </div>
     <div class="sub" id="authSub"></div>
-    <button class="btn btn-warn hidden" id="signInBtn">Sign in to Gauge</button>
+    <button class="btn btn-warn hidden" id="signInBtn">Sign in with Gauge</button>
   </div>
 
+  <!-- Plan Perks / Upgrade Banner (conditional) -->
+  <div class="card plan-card hidden" id="upgradeCard">
+    <div class="upgrade-header">
+      <span class="upgrade-icon">⚡</span>
+      <span class="upgrade-title">Upgrade to Pro</span>
+      <span class="upgrade-price">$9/mo</span>
+    </div>
+    <div class="upgrade-desc">
+      Unlock unlimited call recording, HubSpot &amp; Salesforce CRM sync, and AI deal intelligence.
+    </div>
+    <button class="btn btn-upgrade" id="upgradeBtn">Upgrade Plan ↗</button>
+  </div>
+
+  <!-- Status Card -->
   <div class="card" id="statusCard">
     <div class="row">
       <span class="dot dot-idle" id="statusDot"></span>
       <span class="label" id="statusText">Extension Idle</span>
     </div>
     <div class="sub" id="meetingInfo">Open Google Meet to start capturing</div>
+    <div class="provider-row">
+      <span class="provider-tag">Google Meet</span>
+      <span class="provider-tag">MS Teams</span>
+      <span class="provider-tag">Zoom</span>
+    </div>
   </div>
 
-  <button class="btn btn-primary" id="openApp">Open Gauge</button>
-  <button class="btn btn-secondary" id="openPanel">Open Recorder Panel</button>
-  <button class="btn btn-secondary" id="viewHistory">View Recent Notes</button>
+  <!-- Latest Call Recap Card -->
+  <div class="card plan-card hidden" id="popupRecapCard" style="border-color: rgba(99, 102, 241, 0.4);">
+    <div class="upgrade-header">
+      <span class="upgrade-icon">⚡</span>
+      <span class="upgrade-title" id="popupRecapTitle">Call Notes Ready</span>
+    </div>
+    <div class="upgrade-desc" id="popupRecapDesc">
+      Your call summary and action items are ready.
+    </div>
+    <button class="btn btn-upgrade" id="popupRecapBtn">Open Call Summary ↗</button>
+  </div>
 
-  <div class="footer">Captures Google Meet captions for AI analysis</div>
+  <!-- Primary Flagship Action -->
+  <button class="btn btn-hero" id="openPanel">
+    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+      <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
+      <line x1="15" y1="3" x2="15" y2="21"/>
+    </svg>
+    <span>Open Recorder Panel</span>
+    <span class="shortcut-pill">Side Panel ↗</span>
+  </button>
+
+  <!-- Quick Action Grid -->
+  <div class="btn-grid">
+    <button class="btn btn-glass" id="openApp">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
+      </svg>
+      <span>Dashboard</span>
+    </button>
+    <button class="btn btn-glass" id="viewHistory">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+        <polyline points="14 2 14 8 20 8"/>
+        <line x1="16" y1="13" x2="8" y2="13"/>
+        <line x1="16" y1="17" x2="8" y2="17"/>
+      </svg>
+      <span>Recent Notes</span>
+    </button>
+  </div>
+
+  <div style="font-size: 10.5px; color: var(--text-dim); text-align: center; margin: 10px 0 2px;">
+    ⌨️ <code style="background: rgba(255,255,255,0.06); padding: 1px 4px; border-radius: 4px; color: #cbd5e1;">Alt+Shift+R</code> Record · <code style="background: rgba(255,255,255,0.06); padding: 1px 4px; border-radius: 4px; color: #cbd5e1;">Alt+Shift+B</code> Bookmark
+  </div>
+
+  <!-- Footer -->
+  <div class="footer">
+    <span class="footer-secure">
+      <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+        <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+        <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+      </svg>
+      32kbps Opus · In-Memory
+    </span>
+    <span>Captions + Audio Sync</span>
+  </div>
 
   <script type="module" src="popup.js"></script>
 </body>

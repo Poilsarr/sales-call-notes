@@ -3,26 +3,37 @@
 import { useEffect, useState, useCallback, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { cn } from "@/lib/cn";
+import {
+  LayoutDashboard,
+  Plug,
+  CreditCard,
+  FileCode,
+  Mic,
+  Settings,
+  Users,
+  History,
+  Activity,
+} from "lucide-react";
 
 interface Command {
   id: string;
   label: string;
-  icon: string;
+  icon: React.ComponentType<{ className?: string; size?: number }>;
   href: string;
   shortcut?: string;
 }
 
 const commands: Command[] = [
-  { id: "dashboard", label: "Go to Dashboard", icon: "🚀", href: "/dashboard" },
-  { id: "integrations", label: "Configure Integrations (Salesforce / HubSpot)", icon: "🔌", href: "/integrations" },
-  { id: "pricing", label: "View Pricing", icon: "💳", href: "/pricing" },
-  { id: "docs", label: "Documentation", icon: "📄", href: "/api-docs" },
-  { id: "app", label: "Open App", icon: "🎙️", href: "/app" },
-  { id: "settings", label: "Settings", icon: "⚙️", href: "/settings" },
-  { id: "billing", label: "Billing", icon: "💳", href: "/billing" },
-  { id: "team", label: "Team", icon: "👥", href: "/team" },
-  { id: "changelog", label: "Changelog", icon: "📋", href: "/changelog" },
-  { id: "status", label: "System Status", icon: "🔵", href: "/status" },
+  { id: "dashboard", label: "Go to Dashboard", icon: LayoutDashboard, href: "/dashboard" },
+  { id: "integrations", label: "Configure Integrations (Salesforce / HubSpot)", icon: Plug, href: "/integrations" },
+  { id: "pricing", label: "View Pricing", icon: CreditCard, href: "/pricing" },
+  { id: "docs", label: "Documentation", icon: FileCode, href: "/api-docs" },
+  { id: "app", label: "Open App", icon: Mic, href: "/app" },
+  { id: "settings", label: "Settings", icon: Settings, href: "/settings" },
+  { id: "billing", label: "Billing", icon: CreditCard, href: "/billing" },
+  { id: "team", label: "Team", icon: Users, href: "/team" },
+  { id: "changelog", label: "Changelog", icon: History, href: "/changelog" },
+  { id: "status", label: "System Status", icon: Activity, href: "/status" },
 ];
 
 export function CommandMenu() {
@@ -89,7 +100,7 @@ export function CommandMenu() {
         onClick={(e) => e.stopPropagation()}
         className={cn(
           "relative w-full max-w-lg overflow-hidden",
-          "bg-gray-950 border border-gray-800 rounded-xl shadow-2xl",
+          "bg-gray-950 border border-gray-800 rounded-xl shadow-lg",
           "animate-in fade-in zoom-in-95 duration-150",
         )}
       >
@@ -119,7 +130,7 @@ export function CommandMenu() {
                 "text-white/70 hover:text-white hover:bg-white/5",
               )}
             >
-              <span className="text-base leading-none">{cmd.icon}</span>
+              <cmd.icon size={16} className="text-white/60 shrink-0" />
               <span className="flex-1">{cmd.label}</span>
             </button>
           ))}

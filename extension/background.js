@@ -19,10 +19,15 @@ import {
   buildFinalizeTranscriptText,
   classifyUploadStatus,
   createLiveSessionId,
+  exchangeSessionTokenForKey,
+  fetchSessionStatus,
+  formatMomentTag,
   getApiKeyFromSession,
+  getClerkSessionToken,
   nextBackoffDelay,
   normalizeCaptionBatch,
   recordUploadError,
+  setApiKeyInSession,
 } from "./shared.js";
 
 const STORAGE_DEFAULTS = {
@@ -37,6 +42,9 @@ const STORAGE_DEFAULTS = {
   pendingRetries: 0,
   lastUploadAt: null,
   lastUploadError: null,
+  recording: false,
+  pendingBookmarks: [],
+  lastAnalyzedCall: null,
 };
 
 const PENDING_FLUSH_KEY = "pendingFinalize";
@@ -64,12 +72,54 @@ async function setStored(values) {
 }
 
 async function refreshAuthStatus() {
-  // Bearer world: "signed in" == a key is present in session storage.
-  // The key itself is never copied into local storage or messages.
-  const apiKey = await getApiKeyFromSession();
-  const state = apiKey ? "signed_in" : "needs_sign_in";
-  await setStored({ authStatus: { state, at: Date.now() } });
-  return { state };
+  // 1. Check if an API key is already saved in session memory
+  let apiKey = await getApiKeyFromSession();
+
+  // 2. If no key, attempt seamless auto-exchange using Clerk cookie
+  if (!apiKey) {
+    const clerkToken = await getClerkSessionToken();
+    if (clerkToken) {
+      try {
+        const exchange = await exchangeSessionTokenForKey(clerkToken);
+        if (exchange && exchange.raw) {
+          apiKey = exchange.raw;
+          await setApiKeyInSession(apiKey);
+          const plan = (exchange.plan || "free").toLowerCase();
+          const email = exchange.user?.email || "";
+          const status = { state: "signed_in", plan, email, at: Date.now() };
+          await setStored({ authStatus: status });
+          return status;
+        }
+      } catch (err) {
+        console.warn("[Gauge] Cookie key exchange failed", err);
+      }
+    }
+  }
+
+  // 3. If apiKey is present, verify and ensure plan info is fresh
+  if (apiKey) {
+    const stored = await getStored({ authStatus: { state: "unknown" } });
+    if (stored.authStatus?.state === "signed_in" && stored.authStatus?.plan) {
+      return stored.authStatus;
+    }
+    try {
+      const session = await fetchSessionStatus(apiKey);
+      const plan = (session?.plan || "free").toLowerCase();
+      const email = session?.user?.email || "";
+      const status = { state: "signed_in", plan, email, at: Date.now() };
+      await setStored({ authStatus: status });
+      return status;
+    } catch {
+      const status = { state: "signed_in", plan: "free", email: "", at: Date.now() };
+      await setStored({ authStatus: status });
+      return status;
+    }
+  }
+
+  // 4. No session or key found
+  const status = { state: "needs_sign_in", plan: "free", email: "", at: Date.now() };
+  await setStored({ authStatus: status });
+  return status;
 }
 
 // --- Offscreen lifecycle (lazy: only on the user's Record click) ---
@@ -236,6 +286,24 @@ if (hasChrome() && chrome.runtime?.onMessage) {
       return true;
     }
 
+    if (message.type === MESSAGE_TYPES.AUTH_SYNC) {
+      (async () => {
+        if (message.apiKey) {
+          await setApiKeyInSession(message.apiKey);
+        }
+        const stored = await getStored({ authStatus: {} });
+        const existingAuth = stored.authStatus || {};
+        const plan = (message.plan || existingAuth.plan || "free").toLowerCase();
+        const email = message.user?.email || existingAuth.email || "";
+        const status = { state: "signed_in", plan, email, at: Date.now() };
+        await setStored({ authStatus: status });
+        sendResponse?.({ ok: true, status });
+      })().catch((err) => {
+        sendResponse?.({ ok: false, error: err?.message });
+      });
+      return true;
+    }
+
     if (
       message.type === MESSAGE_TYPES.CAPTIONS_UPDATE ||
       message.type === MESSAGE_TYPES.MEETING_END
@@ -253,13 +321,40 @@ if (hasChrome() && chrome.runtime?.onMessage) {
           sendResponse?.({ ok: false, error: "offscreen unavailable" });
           return;
         }
-        const stored = await getStored({ lastMeetingTabId: null });
-        const streamId = await getTabStreamId(stored.lastMeetingTabId);
+        const stored = await getStored({ lastMeetingTabId: null, liveMeetingTitle: "" });
+        let targetTabId = stored.lastMeetingTabId;
+        if (!targetTabId && chrome.tabs?.query) {
+          try {
+            const tabs = await new Promise((res) => chrome.tabs.query({ active: true, currentWindow: true }, res));
+            if (tabs?.[0]?.id) {
+              targetTabId = tabs[0].id;
+              await setStored({ lastMeetingTabId: targetTabId });
+            }
+          } catch {}
+        }
+        const streamId = await getTabStreamId(targetTabId);
         chrome.runtime.sendMessage({
           type: MESSAGE_TYPES.OFFSCREEN_START_AUDIO,
           streamId,
           meetingTitle: message.meetingTitle || stored.liveMeetingTitle || "",
         });
+
+        // Relay to content script so in-meeting REC banner appears and caption scraper starts
+        if (targetTabId && chrome.tabs?.sendMessage) {
+          try {
+            chrome.tabs.sendMessage(
+              targetTabId,
+              {
+                type: MESSAGE_TYPES.START_RECORDING,
+                meetingTitle: message.meetingTitle || stored.liveMeetingTitle || "",
+              },
+              () => {
+                void chrome.runtime?.lastError;
+              },
+            );
+          } catch {}
+        }
+
         sendResponse?.({ ok: true, relayed: true });
       })().catch((error) => {
         console.warn("[Gauge] Record relay failed", error);
@@ -268,8 +363,77 @@ if (hasChrome() && chrome.runtime?.onMessage) {
       return true;
     }
 
+    if (message.type === MESSAGE_TYPES.RECORDING_STATUS) {
+      setStored({ recording: Boolean(message.recording) }).catch(() => {});
+      return false;
+    }
+
+    if (message.type === MESSAGE_TYPES.BOOKMARK_MOMENT) {
+      (async () => {
+        const stored = await getStored({ pendingBookmarks: [], lastMeetingCaptions: [] });
+        const bookmarks = stored.pendingBookmarks || [];
+        const bookmark = {
+          type: message.momentType || "decision",
+          elapsedSec: message.elapsedSec || 0,
+          timestamp: Date.now(),
+        };
+        bookmarks.push(bookmark);
+        const tagText = formatMomentTag(bookmark.type, bookmark.elapsedSec);
+        const markerCaption = {
+          text: tagText,
+          timestamp: Date.now(),
+          isMarker: true,
+        };
+        const updatedCaptions = (stored.lastMeetingCaptions || []).concat([markerCaption]);
+        await setStored({
+          pendingBookmarks: bookmarks,
+          lastMeetingCaptions: updatedCaptions,
+        });
+      })().catch(() => {});
+      return false;
+    }
+
+    if (message.type === MESSAGE_TYPES.OFFSCREEN_DONE) {
+      (async () => {
+        await setStored({ recording: false });
+        if (message.id) {
+          const lastAnalyzedCall = {
+            id: message.id,
+            callUrl: message.callUrl,
+            meetingTitle: message.meetingTitle,
+            summary: message.summary || "",
+            actionItems: message.actionItems || [],
+            healthScore: message.healthScore ?? null,
+            at: Date.now(),
+          };
+          await setStored({ lastAnalyzedCall });
+          if (chrome.notifications?.create) {
+            chrome.notifications.create(`gauge-call-${message.id}`, {
+              type: "basic",
+              iconUrl: "icon128.png",
+              title: "Gauge — Call Analysis Ready! ⚡",
+              message: `${message.meetingTitle || "Sales Call"} notes are ready to view. Click to open summary.`,
+              priority: 2,
+            });
+          }
+        }
+      })().catch((err) => console.warn("[Gauge] Failed to handle OFFSCREEN_DONE", err));
+      return false;
+    }
+
     if (message.type === MESSAGE_TYPES.STOP_RECORDING) {
       chrome.runtime?.sendMessage?.({ type: MESSAGE_TYPES.OFFSCREEN_STOP_AUDIO });
+      (async () => {
+        await setStored({ recording: false });
+        const stored = await getStored({ lastMeetingTabId: null });
+        if (stored.lastMeetingTabId && chrome.tabs?.sendMessage) {
+          try {
+            chrome.tabs.sendMessage(stored.lastMeetingTabId, { type: MESSAGE_TYPES.STOP_RECORDING }, () => {
+              void chrome.runtime?.lastError;
+            });
+          } catch {}
+        }
+      })().catch(() => {});
       sendResponse?.({ ok: true, relayed: true });
       return false;
     }
@@ -291,4 +455,48 @@ if (hasChrome() && chrome.runtime?.onMessage) {
   chrome.runtime.onStartup?.addListener(() => {
     refreshAuthStatus().catch(() => {});
   });
+
+  if (hasChrome() && chrome.cookies?.onChanged) {
+    chrome.cookies.onChanged.addListener((changeInfo) => {
+      const domain = changeInfo?.cookie?.domain || "";
+      const name = changeInfo?.cookie?.name || "";
+      if (name === "__session" || domain.includes("usegauge.vercel.app")) {
+        refreshAuthStatus().catch(() => {});
+      }
+    });
+  }
+
+  if (hasChrome() && chrome.commands?.onCommand) {
+    chrome.commands.onCommand.addListener(async (command) => {
+      if (command === "toggle-recording") {
+        const stored = await getStored({ recording: false });
+        if (stored.recording) {
+          chrome.runtime.sendMessage({ type: MESSAGE_TYPES.STOP_RECORDING });
+        } else {
+          chrome.runtime.sendMessage({ type: MESSAGE_TYPES.START_RECORDING });
+        }
+      } else if (command === "bookmark-moment") {
+        const stored = await getStored({ lastMeetingTabId: null });
+        if (stored.lastMeetingTabId && chrome.tabs?.sendMessage) {
+          chrome.tabs.sendMessage(
+            stored.lastMeetingTabId,
+            { type: MESSAGE_TYPES.BOOKMARK_MOMENT, momentType: "decision" },
+            () => {
+              void chrome.runtime?.lastError;
+            },
+          );
+        }
+      }
+    });
+  }
+
+  if (hasChrome() && chrome.notifications?.onClicked) {
+    chrome.notifications.onClicked.addListener(async () => {
+      const stored = await getStored({ lastAnalyzedCall: null });
+      if (stored.lastAnalyzedCall?.callUrl && chrome.tabs?.create) {
+        chrome.tabs.create({ url: stored.lastAnalyzedCall.callUrl });
+      }
+    });
+  }
 }
+

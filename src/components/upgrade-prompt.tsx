@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback, useRef } from "react";
 import Link from "next/link";
 import { useUser } from "@clerk/nextjs";
 import { initializePaddle } from "@paddle/paddle-js";
-import { Zap, Crown, Sparkles, X, Loader2, CheckCircle } from "lucide-react";
+import { Zap, Crown, X, Loader2, CheckCircle } from "lucide-react";
 import type { FeatureId, PlanTier } from "@/lib/plans";
 import {
   priceIdForCycle,
@@ -195,14 +195,14 @@ export default function UpgradePrompt({ feature, featureName, onClose, minimal, 
 
   return (
     <div className="fixed inset-0 z-[70] bg-black/60 backdrop-blur-sm flex items-center justify-center p-6">
-      <div className="w-full max-w-md p-8 rounded-3xl bg-zinc-900 border border-zinc-800 relative">
+      <div className="w-full max-w-md p-8 rounded-2xl bg-zinc-900 border border-zinc-800 relative">
         <button onClick={onClose} className="absolute top-4 right-4 p-1 hover:bg-white/5 rounded-lg transition">
           <X className="w-4 h-4 text-white/40" />
         </button>
 
         <div className="text-center mb-8">
-          <div className="w-14 h-14 rounded-2xl bg-indigo-500/20 flex items-center justify-center mx-auto mb-4">
-            <Sparkles className="w-7 h-7 text-indigo-400" />
+          <div className="w-14 h-14 rounded-2xl bg-[#F26522]/10 flex items-center justify-center mx-auto mb-4">
+            <Crown className="w-7 h-7 text-[#F26522]" />
           </div>
           <h3 className="text-xl font-medium mb-2">Upgrade to access {featureName}</h3>
           <p className="text-sm text-white/50">
@@ -218,13 +218,13 @@ export default function UpgradePrompt({ feature, featureName, onClose, minimal, 
               <div key={tier}
                 className={`p-4 rounded-xl border transition-all cursor-pointer ${
                   tier === neededPlan || currentPlan === "free"
-                    ? "border-linear-indigo/30 bg-linear-indigo/5"
+                    ? "border-[#F26522]/30 bg-[#F26522]/5"
                     : "border-white/10 bg-white/5 hover:border-white/20"
                 } ${hasFeature ? "opacity-100" : "opacity-40"}`}
                 onClick={() => hasFeature && openCheckout(tier)}>
                 <div className="flex items-center justify-between mb-2">
                   <div className="flex items-center gap-2">
-                    <Crown className={`w-4 h-4 ${tier === "business" ? "text-yellow-400" : "text-linear-indigo"}`} />
+                    <Crown className={`w-4 h-4 ${tier === "business" ? "text-yellow-400" : "text-[#F26522]"}`} />
                     <span className="font-medium text-sm">{plan.name}</span>
                   </div>
                   <span className="text-sm font-semibold">
@@ -240,7 +240,7 @@ export default function UpgradePrompt({ feature, featureName, onClose, minimal, 
                     <Link
                       href="/pricing"
                       onClick={(e) => e.stopPropagation()}
-                      className="mt-3 block w-full text-center py-2 rounded-full bg-linear-indigo text-white text-xs font-semibold hover:bg-linear-indigo/80 transition"
+                      className="mt-3 block w-full text-center py-2 rounded-full bg-[#F26522] text-white text-xs font-semibold hover:bg-[#e05a1a] transition"
                     >
                       See pricing
                     </Link>
@@ -248,7 +248,7 @@ export default function UpgradePrompt({ feature, featureName, onClose, minimal, 
                     <button
                       onClick={(e) => { e.stopPropagation(); openCheckout(tier); }}
                       disabled={upgrading === tier}
-                      className="mt-3 w-full py-2 rounded-full bg-linear-indigo text-white text-xs font-semibold hover:bg-linear-indigo/80 transition disabled:opacity-50">
+                      className="mt-3 w-full py-2 rounded-full bg-[#F26522] text-white text-xs font-semibold hover:bg-[#e05a1a] transition disabled:opacity-50">
                       {upgrading === tier ? <Loader2 className="w-3 h-3 animate-spin mx-auto" /> : `Choose ${plan.name}`}
                     </button>
                   )
@@ -263,7 +263,7 @@ export default function UpgradePrompt({ feature, featureName, onClose, minimal, 
             <p className="text-xs text-red-400/70 mb-2">Payment system unavailable right now.</p>
             <Link
               href="/pricing"
-              className="inline-flex items-center gap-1 text-xs text-linear-indigo hover:text-white transition"
+              className="inline-flex items-center gap-1 text-xs text-[#F26522] hover:text-[#e05a1a] transition"
             >
               View pricing plans →
             </Link>

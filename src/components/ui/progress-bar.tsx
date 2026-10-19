@@ -13,7 +13,7 @@ interface ProgressBarProps {
 }
 
 const colorMap = {
-  indigo: "bg-linear-indigo",
+  indigo: "bg-[#F26522]",
   orange: "bg-[#F26522]",
   emerald: "bg-emerald-500",
   red: "bg-red-500",

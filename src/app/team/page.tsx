@@ -319,7 +319,7 @@ export default function TeamPage() {
               <Card>
                 <CardHeader>
                   <div className="flex items-center gap-3">
-                    <div className="w-9 h-9 rounded-xl bg-linear-indigo/10 flex items-center justify-center text-linear-indigo">
+                    <div className="w-9 h-9 rounded-xl bg-[#F26522]/10 flex items-center justify-center text-[#F26522]">
                       <UserPlus className="w-4 h-4" />
                     </div>
                     <div>
@@ -335,12 +335,12 @@ export default function TeamPage() {
                       onChange={(e) => setInviteEmail(e.target.value)}
                       onKeyDown={(e) => e.key === "Enter" && inviteMember()}
                       placeholder="colleague@company.com"
-                      className="flex-1 px-4 py-2.5 rounded-xl bg-linear-black border border-linear-secondary text-sm text-white placeholder-white/30 focus:outline-none focus:border-linear-indigo/50"
+                      className="flex-1 px-4 py-2.5 rounded-xl bg-linear-black border border-linear-secondary text-sm text-white placeholder-white/30 focus:outline-none focus:border-[#F26522]/50"
                     />
                     <button
                       onClick={inviteMember}
                       disabled={inviting}
-                      className="flex items-center gap-2 px-5 py-2.5 bg-linear-indigo rounded-xl text-xs font-semibold hover:bg-linear-indigo/80 transition disabled:opacity-50"
+                      className="flex items-center gap-2 px-5 py-2.5 bg-[#F26522] rounded-xl text-xs font-semibold hover:bg-[#e05a1a] transition disabled:opacity-50"
                     >
                       {inviting ? <Loader2 className="w-4 h-4 animate-spin" /> : <UserPlus className="w-4 h-4" />}
                       Invite
@@ -380,8 +380,8 @@ export default function TeamPage() {
 
                   {members.length === 0 && !error && (
                     <div className="flex flex-col items-center justify-center text-center py-12 px-4 rounded-xl bg-white/[0.02] border border-dashed border-white/10">
-                      <div className="w-12 h-12 rounded-full bg-linear-indigo/10 flex items-center justify-center mb-3">
-                        <UserPlus className="w-5 h-5 text-linear-indigo" />
+                      <div className="w-12 h-12 rounded-full bg-[#F26522]/10 flex items-center justify-center mb-3">
+                        <UserPlus className="w-5 h-5 text-[#F26522]" />
                       </div>
                       <p className="text-sm font-medium text-white/80 mb-1">No teammates yet</p>
                       <p className="text-xs text-white/40 mb-4 max-w-sm">
@@ -400,7 +400,7 @@ export default function TeamPage() {
             <Card>
               <CardHeader>
                 <div className="flex items-center gap-3">
-                  <Shield className="w-4 h-4 text-linear-indigo" />
+                  <Shield className="w-4 h-4 text-[#F26522]" />
                   <CardTitle>Roles</CardTitle>
                 </div>
               </CardHeader>
@@ -413,7 +413,7 @@ export default function TeamPage() {
                         <span className={perm.member ? "text-emerald-400 text-xs" : "text-white/20 text-xs"}>
                           Member
                         </span>
-                        <span className={perm.admin ? "text-linear-indigo text-xs" : "text-white/20 text-xs"}>
+                        <span className={perm.admin ? "text-[#F26522] text-xs" : "text-white/20 text-xs"}>
                           Admin
                         </span>
                       </div>
@@ -444,11 +444,11 @@ export default function TeamPage() {
                       className="flex items-center justify-between px-6 py-4 hover:bg-white/[0.02] transition group"
                     >
                       <div className="flex items-center gap-4 min-w-0">
-                        <div className="w-9 h-9 rounded-xl bg-linear-indigo/10 flex items-center justify-center text-linear-indigo">
+                        <div className="w-9 h-9 rounded-xl bg-[#F26522]/10 flex items-center justify-center text-[#F26522]">
                           <Phone className="w-4 h-4" />
                         </div>
                         <div className="min-w-0">
-                          <p className="text-sm font-medium text-white truncate group-hover:text-linear-indigo transition">
+                          <p className="text-sm font-medium text-white truncate group-hover:text-[#F26522] transition">
                             {call.displayName ?? call.filename}
                           </p>
                           <p className="text-xs text-white/40">
@@ -497,7 +497,7 @@ function MemberRow({
     <div
       className={`flex items-center justify-between p-3 rounded-xl border ${
         isCurrentUser
-          ? "bg-linear-indigo/[0.04] border-linear-indigo/20"
+          ? "bg-[#F26522]/[0.04] border-[#F26522]/20"
           : "bg-linear-black border-linear-secondary hover:border-white/10"
       } transition`}
     >

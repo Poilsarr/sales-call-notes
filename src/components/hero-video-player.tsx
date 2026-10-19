@@ -63,7 +63,7 @@ export function HeroVideoPlayer({ fullBleed = false }: { fullBleed?: boolean }) 
       {!playing ? (
         <button
           onClick={handlePlay}
-          className="group relative block w-full rounded-2xl overflow-hidden border border-gray-200 bg-[#F5F0E6] text-left shadow-[0_18px_60px_-24px_rgba(0,0,0,0.35)] hover:border-[#F26522]/50 hover:shadow-[0_24px_80px_-24px_rgba(242,101,34,0.45)] transition-[border-color,box-shadow] duration-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#F26522] focus-visible:ring-offset-2 focus-visible:ring-offset-[#0a0a0b]"
+          className="group relative block w-full rounded-2xl overflow-hidden border border-gray-200 bg-[#F5F0E6] text-left shadow-md hover:border-[#F26522]/50 hover:shadow-lg transition-[border-color,box-shadow] duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#F26522] focus-visible:ring-offset-2 focus-visible:ring-offset-[#0a0a0b]"
           aria-label="Play The 2:14pm Call — Gauge competitive-intel film (25 seconds)"
           aria-describedby="hero-film-caption"
         >
@@ -97,7 +97,7 @@ export function HeroVideoPlayer({ fullBleed = false }: { fullBleed?: boolean }) 
             <div className="relative z-10 flex flex-col items-center gap-3 sm:gap-4 px-6 text-center">
               <span className="relative flex">
                 <span className="absolute inline-flex h-full w-full rounded-full bg-[#F26522] opacity-30 motion-safe:animate-ping" />
-                <span className="relative w-16 h-16 sm:w-20 sm:h-20 rounded-full bg-[#F26522] flex items-center justify-center shadow-xl shadow-[#F26522]/30 group-hover:scale-110 group-hover:shadow-[#F26522]/50 transition-all duration-500">
+                <span className="relative w-16 h-16 sm:w-20 sm:h-20 rounded-full bg-[#F26522] flex items-center justify-center shadow-md group-hover:scale-105 transition-all duration-300">
                   <Play
                     size={28}
                     className="text-white ml-1"

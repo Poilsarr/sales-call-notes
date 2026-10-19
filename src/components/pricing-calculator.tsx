@@ -163,7 +163,7 @@ export default function PricingCalculator() {
                   className="mt-4 group inline-flex items-center gap-2 bg-[#F26522] hover:bg-[#e05a1a] text-white text-[13px] rounded-full pl-5 pr-2 py-2 transition-colors"
                 >
                   <span>Start free</span>
-                  <span className="w-7 h-7 bg-white rounded-full flex items-center justify-center transition-transform group-hover:-rotate-45">
+                  <span className="w-7 h-7 bg-white rounded-full flex items-center justify-center transition-transform group-hover:translate-x-0.5">
                     <ArrowRight size={13} className="text-[#F26522]" />
                   </span>
                 </Link>

@@ -60,7 +60,7 @@ const data: ComparisonData = {
     },
     {
       title: "Vertical specialization",
-      detail: "Built for recruiters, consultants, founders, therapists, journalists — not just generic meeting notes. Otter is horizontal.",
+      detail: "Specialized prompt pipelines for recruiters, consultants, founders, and sales teams. Tailored B2B extraction rather than one-size-fits-all transcription.",
     },
   ],
   pricing: [
@@ -78,10 +78,10 @@ const data: ComparisonData = {
   whoShouldPickUs: [
     "You care about privacy — Otter's 2025 lawsuit made you uneasy",
     "You have a small team and per-seat pricing hurts ($100/mo for 5 seats vs $9 flat)",
-    "You're in sales and want BANT/MEDDIC extraction, not generic summaries",
+    "You're in sales and require automated BANT/MEDDIC extraction",
     "You're a recruiter, consultant, founder, therapist, or journalist — we built for you",
     "You don't want a bot in your meeting, ever",
-    "You need 30+ languages, not just English",
+    "You need multi-language transcription across 30+ languages",
   ],
   faq: [
     {

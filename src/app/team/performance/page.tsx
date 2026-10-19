@@ -118,7 +118,7 @@ export default function TeamPerformancePage() {
 
         <div className="max-w-6xl mx-auto px-6 pt-32 pb-20">
           <div className="flex items-center justify-center h-64">
-            <Loader2 className="w-6 h-6 animate-spin text-linear-indigo" />
+            <Loader2 className="w-6 h-6 animate-spin text-[#F26522]" />
           </div>
         </div>
       </main>
@@ -228,7 +228,7 @@ export default function TeamPerformancePage() {
                         <td className="px-6 py-4">
                           <Link
                             href={`/app/calls/${call.id}`}
-                            className="text-sm font-medium text-white hover:text-linear-indigo transition"
+                            className="text-sm font-medium text-white hover:text-[#F26522] transition"
                           >
                             {call.displayName ?? call.filename}
                           </Link>

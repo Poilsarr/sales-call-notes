@@ -170,14 +170,24 @@ describe("Part 3A Bearer-key upload + extension exchange", () => {
     );
   });
 
-  it("exchange requires the api_access plan gate (free plan 403s)", async () => {
+  it("allows free plan users to exchange an extension key with free tier info", async () => {
     mockAuth.mockResolvedValue({ userId: "clerk-1" });
-    mockGetUser.mockResolvedValue({ id: "user-1", plan: "free" });
+    mockGetUser.mockResolvedValue({ id: "user-1", email: "free@example.com", plan: "free" });
+    mockPrisma.apiKey.create.mockImplementation(async (args: any) => ({
+      id: "key-free-1",
+      name: args.data.name,
+      prefix: args.data.prefix,
+      scope: args.data.scope,
+      createdAt: new Date("2026-09-27T00:00:00Z"),
+    }));
 
     const res = await exchangePost();
 
-    expect(res.status).toBe(403);
-    expect(mockPrisma.apiKey.create).not.toHaveBeenCalled();
+    expect(res.status).toBe(201);
+    const body = await res.json();
+    expect(body.scope).toBe("read_write");
+    expect(body.plan).toBe("free");
+    expect(body.user?.email).toBe("free@example.com");
   });
 
   it("Bearer read-scope key 403s on POST /api/upload-url", async () => {

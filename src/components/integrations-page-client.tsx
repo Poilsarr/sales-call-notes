@@ -6,7 +6,7 @@ import { useRouter, usePathname, useSearchParams } from "next/navigation";
 import { useAuth } from "@clerk/nextjs";
 import Nav from "@/components/nav";
 import {
-  Sparkles, Code, Layers, Users, Download, ArrowRight,
+  Code, Layers, Users, Download, ArrowRight,
   CheckCircle2, Loader2, Link2, Unplug, Zap, AlertCircle,
 } from "lucide-react";
 import { toast } from "sonner";
@@ -296,7 +296,7 @@ function IntegrationsContent() {
       <section className="pt-36 pb-16 sm:pt-40 sm:pb-20 px-5 sm:px-8 lg:px-12 bg-[#EFEFEF] overflow-hidden">
         <div className="max-w-[1440px] mx-auto text-center">
           <div className="eyebrow inline-flex items-center gap-2 mb-6 reveal">
-            <Sparkles size={12} /> Connect your stack
+            <Link2 size={12} /> Connect your stack
           </div>
           <h1 className="text-[clamp(2rem,5vw,4.5rem)] font-medium leading-[1.08] tracking-[-0.03em] mb-4">
             Works where<br />
@@ -449,7 +449,7 @@ function IntegrationsContent() {
                     </span>
                     <span className="leading-[20px]">Get started free</span>
                   </span>
-                  <span className="w-7 h-7 bg-white rounded-full flex items-center justify-center transition-transform duration-500 ease-[cubic-bezier(0.25,0.1,0.25,1)] group-hover:-rotate-45">
+                  <span className="w-7 h-7 bg-white rounded-full flex items-center justify-center transition-transform duration-300 group-hover:translate-x-0.5">
                     <ArrowRight size={14} className="text-[#F26522]" />
                   </span>
                 </Link>

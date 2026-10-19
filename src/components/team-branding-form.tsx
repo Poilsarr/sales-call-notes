@@ -62,7 +62,7 @@ export default function TeamBrandingForm() {
       <Card>
         <CardHeader>
           <div className="flex items-center gap-3">
-            <Palette className="w-5 h-5 text-linear-indigo" />
+            <Palette className="w-5 h-5 text-[#F26522]" />
             <CardTitle>Team branding</CardTitle>
           </div>
           <CardDescription>Join or create a team to set a custom brand color and logo.</CardDescription>
@@ -76,7 +76,7 @@ export default function TeamBrandingForm() {
       <form onSubmit={save}>
         <CardHeader>
           <div className="flex items-center gap-3">
-            <Palette className="w-5 h-5 text-linear-indigo" />
+            <Palette className="w-5 h-5 text-[#F26522]" />
             <div>
               <CardTitle>Team branding</CardTitle>
               <CardDescription>Customize how your workspace looks in shared exports.</CardDescription>
@@ -124,7 +124,7 @@ export default function TeamBrandingForm() {
             <button
               type="submit"
               disabled={saving}
-              className="px-4 py-2 rounded-full bg-linear-indigo text-white text-sm font-medium flex items-center gap-2 disabled:opacity-40 hover:bg-linear-indigo/80 transition"
+              className="px-4 py-2 rounded-full bg-[#F26522] text-white text-sm font-medium flex items-center gap-2 disabled:opacity-40 hover:bg-[#e05a1a] transition"
             >
               {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
               Save branding

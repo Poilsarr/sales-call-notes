@@ -111,7 +111,7 @@ export default function HowItWorks() {
           <p className="text-[11px] uppercase tracking-[0.18em] text-gray-600 mb-3">
             How it works
           </p>
-          <h2 className="text-[clamp(1.5rem,4vw,2.6rem)] font-medium leading-[1.1] tracking-[-0.02em] text-gray-900 mb-3">
+          <h2 className="text-[clamp(1.75rem,4vw,2.85rem)] font-film leading-[1.1] tracking-normal text-gray-900 mb-3">
             From raw recording to CRM-ready notes in under 60 seconds.
           </h2>
           <p className="text-gray-500 text-[14px]">

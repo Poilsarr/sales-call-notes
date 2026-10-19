@@ -91,7 +91,7 @@ export default function Nav() {
                 </span>
                 <span className="leading-[20px]">Start free</span>
               </span>
-              <span className="w-6 h-6 bg-white rounded-full flex items-center justify-center transition-transform duration-500 ease-[cubic-bezier(0.25,0.1,0.25,1)] group-hover:-rotate-45">
+              <span className="w-6 h-6 bg-white rounded-full flex items-center justify-center transition-transform duration-300 group-hover:translate-x-0.5">
                 <ArrowRight size={14} className="text-gray-900" />
               </span>
             </Link>
@@ -158,7 +158,7 @@ export default function Nav() {
                 </span>
                 <span className="leading-[20px]">Start free</span>
               </span>
-              <span className="w-6 h-6 bg-white rounded-full flex items-center justify-center transition-transform duration-500 ease-[cubic-bezier(0.25,0.1,0.25,1)] group-hover:-rotate-45">
+              <span className="w-6 h-6 bg-white rounded-full flex items-center justify-center transition-transform duration-300 group-hover:translate-x-0.5">
                 <ArrowRight size={14} className="text-gray-900" />
               </span>
             </Link>

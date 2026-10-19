@@ -445,7 +445,7 @@ export default function CallsPage() {
                         </span>
                       )}
                       {call.assigneeName && (
-                        <span className="px-3 py-1 rounded-full text-sm bg-violet-500/10 text-violet-300">
+                        <span className="px-3 py-1 rounded-full text-sm bg-[#F26522]/10 text-[#F26522]">
                           {call.assigneeName}
                         </span>
                       )}

@@ -144,7 +144,7 @@ function HeroMockup() {
 
   return (
     <div ref={mockupRef} className="w-full max-w-lg mx-auto mt-10 md:mt-14">
-      <div className="doppel-outer shadow-xl shadow-black/5">
+      <div className="doppel-outer">
         <div className="doppel-inner p-5 sm:p-6">
           <div className="flex items-center gap-2 mb-4">
             <span className="w-2 h-2 rounded-full bg-red-500 animate-pulse" />
@@ -326,12 +326,12 @@ function FeatureCard({ feature, index }: { feature: typeof features[0]; index: n
         transition: `opacity 0.9s cubic-bezier(0.16, 1, 0.3, 1) ${staggerDelay}, transform 0.9s cubic-bezier(0.16, 1, 0.3, 1) ${staggerDelay}`,
       }}>
       <div ref={cardRef}
-        className="group relative h-full cursor-default rounded-[2rem] overflow-hidden doppel-outer"
+        className="group relative h-full cursor-default rounded-2xl overflow-hidden doppel-outer"
         onMouseMove={handleMouseMove}
         onMouseEnter={() => setIsHovered(true)}
         onMouseLeave={handleMouseLeave}
       >
-        <div ref={glowRef} className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none rounded-[2rem]" />
+        <div ref={glowRef} className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none rounded-2xl" />
         <div className="absolute top-0 left-0 right-0 h-px opacity-0 group-hover:opacity-100 transition-all duration-700"
           style={{ background: `linear-gradient(90deg, transparent, ${feature.color}40, transparent)` }} />
         <div ref={innerRef}

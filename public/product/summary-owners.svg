@@ -28,9 +28,9 @@
 
   <!-- Header -->
   <text x="64" y="100" font-family="ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="11" font-weight="600" fill="#A1A1AA" letter-spacing="0.04em">CALL SUMMARY</text>
-  <text x="64" y="126" font-family="ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="20" font-weight="600" fill="#131316">Acme Corp � Discovery</text>
+  <text x="64" y="126" font-family="ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="20" font-weight="600" fill="#131316">Acme Corp Â· Discovery</text>
   <rect x="500" y="104" width="156" height="26" rx="13" fill="#F4F4F5"/>
-  <text x="578" y="121" text-anchor="middle" font-family="ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace" font-size="11" fill="#52525B">42 min � 3 owners</text>
+  <text x="578" y="121" text-anchor="middle" font-family="ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace" font-size="11" fill="#52525B">42 min Â· 3 owners</text>
 
   <!-- Summary body card -->
   <g filter="url(#cardShadow)">
@@ -48,7 +48,7 @@
   <text x="84" y="352" font-family="ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="12" font-weight="600" fill="#131316">Sentiment</text>
   <rect x="84" y="368" width="200" height="10" rx="5" fill="#F4F4F5"/>
   <rect x="84" y="368" width="148" height="10" rx="5" fill="#16A34A"/>
-  <text x="84" y="398" font-family="ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="11" fill="#71717A">Positive � high buying intent</text>
+  <text x="84" y="398" font-family="ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="11" fill="#71717A">Positive Â· high buying intent</text>
 
   <!-- Owners panel -->
   <g filter="url(#cardShadow)">
@@ -61,19 +61,19 @@
   <circle cx="486" cy="232" r="14" fill="#F26522"/>
   <text x="486" y="236" text-anchor="middle" font-family="ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="9" font-weight="700" fill="#FFFFFF">MK</text>
   <text x="508" y="226" font-family="ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="12" font-weight="600" fill="#131316">Maya Kim</text>
-  <text x="508" y="244" font-family="ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="10" fill="#71717A">Comp sheet � Oct 9</text>
+  <text x="508" y="244" font-family="ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="10" fill="#71717A">Comp sheet Â· Oct 9</text>
 
   <!-- Owner 2 -->
   <rect x="464" y="272" width="172" height="56" rx="10" fill="#FAFAFA" stroke="#E4E4E7"/>
   <circle cx="486" cy="300" r="14" fill="#131316"/>
   <text x="486" y="304" text-anchor="middle" font-family="ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="9" font-weight="700" fill="#FFFFFF">JR</text>
   <text x="508" y="294" font-family="ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="12" font-weight="600" fill="#131316">Jordan Rhee</text>
-  <text x="508" y="312" font-family="ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="10" fill="#71717A">Security pack � Oct 11</text>
+  <text x="508" y="312" font-family="ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="10" fill="#71717A">Security pack Â· Oct 11</text>
 
   <!-- Owner 3 -->
   <rect x="464" y="340" width="172" height="56" rx="10" fill="#FFF8F4" stroke="#F26522"/>
   <circle cx="486" cy="368" r="14" fill="#F26522"/>
   <text x="486" y="372" text-anchor="middle" font-family="ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="9" font-weight="700" fill="#FFFFFF">SC</text>
   <text x="508" y="362" font-family="ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="12" font-weight="600" fill="#131316">Sarah Chen</text>
-  <text x="508" y="380" font-family="ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="10" fill="#F26522">Confirm budget � Oct 14</text>
+  <text x="508" y="380" font-family="ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="10" fill="#F26522">Confirm budget Â· Oct 14</text>
 </svg>

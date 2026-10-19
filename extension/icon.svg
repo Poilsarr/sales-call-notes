@@ -1,26 +1,57 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
   <defs>
-    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
-      <stop offset="0%" stop-color="#6366F1"/>
-      <stop offset="100%" stop-color="#4F46E5"/>
+    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#4F46E5"/>
+      <stop offset="50%" stop-color="#6366F1"/>
+      <stop offset="100%" stop-color="#7C3AED"/>
     </linearGradient>
+    <linearGradient id="dialGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FFFFFF"/>
+      <stop offset="100%" stop-color="#E0E7FF"/>
+    </linearGradient>
+    <linearGradient id="needleGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#F97316"/>
+      <stop offset="100%" stop-color="#F43F5E"/>
+    </linearGradient>
+    <filter id="glow" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="16" result="blur"/>
+      <feComposite in="SourceGraphic" in2="blur" operator="over"/>
+    </filter>
   </defs>
-  <rect width="512" height="512" rx="96" fill="url(#bg)"/>
-  <g transform="translate(256,260)">
-    <rect x="-80" y="-100" width="160" height="190" rx="12" fill="white" opacity="0.95"/>
-    <rect x="-60" y="-72" width="120" height="8" rx="4" fill="#6366F1" opacity="0.3"/>
-    <rect x="-60" y="-52" width="90" height="8" rx="4" fill="#6366F1" opacity="0.2"/>
-    <rect x="-60" y="-32" width="105" height="8" rx="4" fill="#6366F1" opacity="0.3"/>
-    <rect x="-60" y="-12" width="75" height="8" rx="4" fill="#6366F1" opacity="0.2"/>
-    <rect x="-60" y="8" width="95" height="8" rx="4" fill="#6366F1" opacity="0.3"/>
-    <rect x="-60" y="28" width="60" height="8" rx="4" fill="#6366F1" opacity="0.2"/>
-    <path d="M80,-100 L80,-70 L50,-100 Z" fill="white" opacity="0.95"/>
-  </g>
-  <g transform="translate(256,140)">
-    <rect x="-28" y="-10" width="56" height="56" rx="28" fill="white"/>
-    <rect x="-18" y="0" width="36" height="36" rx="18" fill="#6366F1"/>
-    <path d="M-8,10 A14,14 0 0,0 8,10" stroke="white" stroke-width="3" fill="none"/>
-    <line x1="0" y1="24" x2="0" y2="36" stroke="white" stroke-width="3" stroke-linecap="round"/>
-    <line x1="-8" y1="36" x2="8" y2="36" stroke="white" stroke-width="3" stroke-linecap="round"/>
-  </g>
+
+  <!-- Squircle Base with Rim Light -->
+  <rect width="512" height="512" rx="116" fill="url(#bgGrad)"/>
+  <rect x="8" y="8" width="496" height="496" rx="108" fill="none" stroke="rgba(255,255,255,0.22)" stroke-width="4"/>
+
+  <!-- Gauge Circular Track -->
+  <path d="M 128 352 A 160 160 0 1 1 384 352" 
+        fill="none" 
+        stroke="rgba(255, 255, 255, 0.22)" 
+        stroke-width="36" 
+        stroke-linecap="round"/>
+
+  <!-- Active Gauge Accent Arc -->
+  <path d="M 128 352 A 160 160 0 0 1 360 170" 
+        fill="none" 
+        stroke="url(#dialGrad)" 
+        stroke-width="36" 
+        stroke-linecap="round"/>
+
+  <!-- Ticks -->
+  <circle cx="160" cy="200" r="8" fill="white" opacity="0.6"/>
+  <circle cx="256" cy="144" r="9" fill="white" opacity="0.8"/>
+  <circle cx="352" cy="200" r="8" fill="white" opacity="0.6"/>
+
+  <!-- Center Hub -->
+  <circle cx="256" cy="296" r="44" fill="#1E1B4B" stroke="white" stroke-width="12"/>
+
+  <!-- Precision Needle Pointer pointing at optimal sales zone -->
+  <line x1="256" y1="296" x2="336" y2="186" 
+        stroke="url(#needleGrad)" 
+        stroke-width="22" 
+        stroke-linecap="round" 
+        filter="url(#glow)"/>
+
+  <!-- Center Pivot Accent -->
+  <circle cx="256" cy="296" r="16" fill="white"/>
 </svg>

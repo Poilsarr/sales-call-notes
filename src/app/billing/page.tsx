@@ -8,7 +8,7 @@ import Link from "next/link";
 import Nav from "@/components/nav";
 import UsageDisplay from "@/components/usage-display";
 import {
-  Crown, CheckCircle, Sparkles, Loader2, AlertTriangle, Ban, Info, RefreshCw,
+  Crown, CheckCircle, Zap, Loader2, AlertTriangle, Ban, Info, RefreshCw,
 } from "lucide-react";
 import { PLANS, PlanTier } from "@/lib/plans";
 
@@ -145,7 +145,7 @@ export default function BillingPage() {
               <span>{usage} / {limit}</span>
             </div>
             <div className="h-1.5 rounded-full bg-white/5 overflow-hidden">
-              <div className="h-full rounded-full bg-linear-indigo transition-all" style={{ width: `${Math.min((usage / (limit as number)) * 100, 100)}%` }} />
+              <div className="h-full rounded-full bg-[#F26522] transition-all" style={{ width: `${Math.min((usage / (limit as number)) * 100, 100)}%` }} />
             </div>
           </div>
         )}
@@ -156,18 +156,18 @@ export default function BillingPage() {
             const isCurrent = currentPlan === tier;
             return (
               <div key={tier} className={`p-6 rounded-2xl bg-linear-surface border border-linear-secondary flex flex-col ${
-                isCurrent ? 'ring-1 ring-linear-indigo/50' : ''
+                isCurrent ? 'ring-1 ring-[#F26522]/50' : ''
               }`}>
                 <div className="mb-6">
                   <div className="flex items-center gap-2 mb-2">
                     {tier === "business" ? (
                       <Crown className="w-4 h-4 text-yellow-400" />
                     ) : tier === "pro" ? (
-                      <Sparkles className="w-4 h-4 text-linear-indigo" />
+                      <Zap className="w-4 h-4 text-[#F26522]" />
                     ) : null}
                     <h3 className="text-lg font-medium">{plan.name}</h3>
                     {isCurrent && (
-                      <span className="px-2 py-0.5 bg-linear-indigo/20 text-linear-indigo rounded-full text-[9px] font-bold uppercase tracking-wider">Active</span>
+                      <span className="px-2 py-0.5 bg-[#F26522]/20 text-[#F26522] rounded-full text-[9px] font-bold uppercase tracking-wider">Active</span>
                     )}
                   </div>
                   <div className="flex items-baseline gap-1">
@@ -224,7 +224,7 @@ export default function BillingPage() {
                 ) : (
                   <Link
                     href="/pricing"
-                    className="block w-full text-center py-3 rounded-full text-xs font-semibold bg-linear-indigo text-white hover:bg-linear-indigo/80 transition"
+                    className="block w-full text-center py-3 rounded-full text-xs font-semibold bg-[#F26522] text-white hover:bg-[#e05a1a] transition"
                   >
                     {loading ? <Loader2 className="w-3 h-3 animate-spin mx-auto" /> : `Upgrade - ${plan.priceLabel}/mo`}
                   </Link>

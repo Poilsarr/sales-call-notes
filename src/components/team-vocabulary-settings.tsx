@@ -99,7 +99,7 @@ export default function TeamVocabularySettings() {
     <Card>
       <CardHeader>
         <div className="flex items-center gap-3">
-          <div className="w-9 h-9 rounded-xl bg-linear-indigo/10 flex items-center justify-center text-linear-indigo">
+          <div className="w-9 h-9 rounded-xl bg-[#F26522]/10 flex items-center justify-center text-[#F26522]">
             <BookOpen className="w-4 h-4" />
           </div>
           <div>
@@ -118,7 +118,7 @@ export default function TeamVocabularySettings() {
             onChange={(e) => setTerm(e.target.value)}
             maxLength={TERM_MAX}
             placeholder="Term (e.g. Lighthouse deal)"
-            className="w-full bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-sm text-white placeholder:text-white/30 focus:outline-none focus:border-linear-indigo"
+            className="w-full bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-sm text-white placeholder:text-white/30 focus:outline-none focus:border-[#F26522]"
           />
           <textarea
             value={definition}
@@ -126,7 +126,7 @@ export default function TeamVocabularySettings() {
             maxLength={DEFINITION_MAX}
             rows={2}
             placeholder="What it means (e.g. our $50k+ enterprise expansion tier)"
-            className="w-full bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-sm text-white placeholder:text-white/30 focus:outline-none focus:border-linear-indigo resize-none"
+            className="w-full bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-sm text-white placeholder:text-white/30 focus:outline-none focus:border-[#F26522] resize-none"
           />
           <div className="flex items-center justify-between">
             <span className="text-[11px] text-white/30">
@@ -135,7 +135,7 @@ export default function TeamVocabularySettings() {
             <button
               type="submit"
               disabled={saving || !term.trim() || !definition.trim()}
-              className="inline-flex items-center gap-2 rounded-xl bg-linear-indigo px-4 py-2 text-sm font-medium text-white hover:bg-linear-indigo/90 disabled:opacity-40"
+              className="inline-flex items-center gap-2 rounded-xl bg-[#F26522] px-4 py-2 text-sm font-medium text-white hover:bg-[#e05a1a] disabled:opacity-40"
             >
               {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Plus className="w-4 h-4" />}
               Add term

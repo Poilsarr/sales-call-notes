@@ -262,7 +262,7 @@ function SettingsContent({ user }: { user: ReturnType<typeof useUser>["user"] })
                     <Card>
                       <CardHeader>
                         <div className="flex items-center gap-3">
-                          <div className="w-9 h-9 rounded-xl bg-linear-indigo/10 flex items-center justify-center text-linear-indigo">
+                          <div className="w-9 h-9 rounded-xl bg-[#F26522]/10 flex items-center justify-center text-[#F26522]">
                             <Download className="w-4 h-4" />
                           </div>
                           <div>
@@ -286,7 +286,7 @@ function SettingsContent({ user }: { user: ReturnType<typeof useUser>["user"] })
                         </button>
                         {exportStatus && <p className="text-xs text-white/50 mt-3">{exportStatus}</p>}
                         {exportDownloadUrl && (
-                          <a href={exportDownloadUrl} className="text-xs text-linear-indigo hover:underline mt-2 inline-block">
+                          <a href={exportDownloadUrl} className="text-xs text-[#F26522] hover:underline mt-2 inline-block">
                             Download JSON &darr;
                           </a>
                         )}
@@ -399,7 +399,7 @@ function SettingsContent({ user }: { user: ReturnType<typeof useUser>["user"] })
                     <CardHeader>
                       <div className="flex items-center gap-3">
                         <div className="w-9 h-9 rounded-xl bg-white/5 flex items-center justify-center">
-                          <Crown className="w-4 h-4 text-linear-indigo" />
+                          <Crown className="w-4 h-4 text-[#F26522]" />
                         </div>
                         <div>
                           <CardTitle>{plan.name} plan</CardTitle>
@@ -471,7 +471,7 @@ function SettingsContent({ user }: { user: ReturnType<typeof useUser>["user"] })
                     <Card>
                       <CardHeader>
                         <div className="flex items-center gap-3">
-                          <Sliders className="w-4 h-4 text-linear-indigo" />
+                          <Sliders className="w-4 h-4 text-[#F26522]" />
                           <CardTitle>Transcription</CardTitle>
                         </div>
                       </CardHeader>
@@ -517,7 +517,7 @@ function SettingsContent({ user }: { user: ReturnType<typeof useUser>["user"] })
                     <Card>
                       <CardHeader>
                         <div className="flex items-center gap-3">
-                          <Bell className="w-4 h-4 text-linear-indigo" />
+                          <Bell className="w-4 h-4 text-[#F26522]" />
                           <CardTitle>Notifications</CardTitle>
                         </div>
                       </CardHeader>

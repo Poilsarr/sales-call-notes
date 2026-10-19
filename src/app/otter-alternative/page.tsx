@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import Nav from "@/components/nav";
-import { ArrowRight, CheckCircle, Zap, Shield, Sparkles, X } from "lucide-react";
+import { ArrowRight, CheckCircle, Zap, Shield, Target, X } from "lucide-react";
 
 export const metadata: Metadata = {
   title: "Best Otter.ai Alternative in 2026: 7 Options Compared (With Pricing)",
@@ -127,7 +127,7 @@ export default function Page() {
       <section className="pt-36 pb-12 sm:pt-40 sm:pb-16 px-5 sm:px-8 lg:px-12 bg-[#EFEFEF]">
         <div className="max-w-[1100px] mx-auto">
           <div className="eyebrow inline-flex items-center gap-2 mb-6">
-            <Sparkles size={12} /> Honest ranking · {lastUpdated}
+            <CheckCircle size={12} className="text-[#F26522]" /> Honest ranking · {lastUpdated}
           </div>
           <h1 className="text-[clamp(2rem,5vw,4rem)] font-medium leading-[1.08] tracking-[-0.03em] mb-4">
             The 7 best Otter.ai alternatives in 2026
@@ -149,7 +149,7 @@ export default function Page() {
                 </span>
                 <span className="leading-[20px]">Start free</span>
               </span>
-              <span className="w-7 h-7 bg-white rounded-full flex items-center justify-center transition-transform duration-500 ease-[cubic-bezier(0.25,0.1,0.25,1)] group-hover:-rotate-45">
+              <span className="w-7 h-7 bg-white rounded-full flex items-center justify-center transition-transform duration-300 ease-[cubic-bezier(0.25,0.1,0.25,1)] group-hover:translate-x-0.5">
                 <ArrowRight size={14} className="text-[#F26522]" />
               </span>
             </Link>
@@ -255,7 +255,7 @@ export default function Page() {
             </div>
             <div className="doppel-outer">
               <div className="doppel-inner p-8">
-                <Sparkles size={24} className="text-[#F26522] mb-4" />
+                <Target size={24} className="text-[#F26522] mb-4" />
                 <h3 className="text-[16px] font-semibold mb-2">Built for verticals, not horizontal</h3>
                 <p className="text-[13px] text-gray-600 leading-relaxed">
                   Recruiters, consultants, founders, therapists, journalists. Otter is a generic
@@ -378,7 +378,7 @@ export default function Page() {
                     </span>
                     <span className="leading-[20px]">Start free</span>
                   </span>
-                  <span className="w-7 h-7 bg-white rounded-full flex items-center justify-center transition-transform duration-500 ease-[cubic-bezier(0.25,0.1,0.25,1)] group-hover:-rotate-45">
+                  <span className="w-7 h-7 bg-white rounded-full flex items-center justify-center transition-transform duration-300 ease-[cubic-bezier(0.25,0.1,0.25,1)] group-hover:translate-x-0.5">
                     <ArrowRight size={14} className="text-[#F26522]" />
                   </span>
                 </Link>

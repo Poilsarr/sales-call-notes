@@ -150,7 +150,7 @@ export default function ByokSettings() {
         <CardContent>
           <a
             href={status?.upgradeUrl || "/pricing"}
-            className="inline-flex items-center gap-2 px-4 py-2.5 rounded-full bg-linear-indigo text-white text-sm font-medium hover:bg-linear-indigo/80 transition"
+            className="inline-flex items-center gap-2 px-4 py-2.5 rounded-full bg-[#F26522] text-white text-sm font-medium hover:bg-[#e05a1a] transition"
           >
             <Crown className="w-4 h-4" /> Upgrade to use this
           </a>
@@ -163,7 +163,7 @@ export default function ByokSettings() {
     <Card>
       <CardHeader>
         <div className="flex items-center gap-3">
-          <KeyRound className="w-5 h-5 text-linear-indigo" />
+          <KeyRound className="w-5 h-5 text-[#F26522]" />
           <div>
             <CardTitle>Bring your own AI keys</CardTitle>
             <CardDescription>
@@ -216,13 +216,13 @@ export default function ByokSettings() {
                   autoComplete="off"
                   spellCheck={false}
                   aria-describedby={`byok-${row.id}-hint`}
-                  className="flex-1 px-3 py-2 rounded-xl bg-linear-black border border-linear-secondary text-white text-sm font-mono placeholder:text-white/50 focus-visible:outline-2 focus-visible:outline-linear-indigo"
+                  className="flex-1 px-3 py-2 rounded-xl bg-linear-black border border-linear-secondary text-white text-sm font-mono placeholder:text-white/50 focus-visible:outline-2 focus-visible:outline-[#F26522]"
                 />
                 <button
                   type="button"
                   onClick={() => save(row.id)}
                   disabled={busy || !values[row.id].trim()}
-                  className="px-4 py-2 rounded-full bg-linear-indigo text-white text-sm font-medium flex items-center gap-2 shrink-0 disabled:opacity-40 hover:bg-linear-indigo/80 transition focus-visible:outline-2 focus-visible:outline-linear-indigo"
+                  className="px-4 py-2 rounded-full bg-[#F26522] text-white text-sm font-medium flex items-center gap-2 shrink-0 disabled:opacity-40 hover:bg-[#e05a1a] transition focus-visible:outline-2 focus-visible:outline-[#F26522]"
                 >
                   {saving === row.id ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
                   Save

@@ -57,7 +57,7 @@ export default function SocialProof() {
         {/* Header — badge removed (lives in proof-strip); quote + stats kept */}
         <div className="max-w-2xl mb-12">
           <p className="text-[11px] uppercase tracking-[0.18em] text-gray-600 mb-3">Who it&apos;s for</p>
-          <h2 className="text-[clamp(1.5rem,4vw,2.6rem)] font-medium leading-[1.1] tracking-[-0.02em] text-gray-900">
+          <h2 className="text-[clamp(1.75rem,4vw,2.85rem)] font-film leading-[1.1] tracking-normal text-gray-900">
             Built for the people actually running the calls.
           </h2>
         </div>
@@ -160,7 +160,7 @@ export default function SocialProof() {
           >
             <Zap size={14} />
             <span>Join the beta — it&apos;s free</span>
-            <span className="w-7 h-7 bg-white rounded-full flex items-center justify-center group-hover:rotate-45 transition-transform duration-500">
+            <span className="w-7 h-7 bg-white rounded-full flex items-center justify-center group-hover:translate-x-0.5 transition-transform duration-300">
               <ArrowRight size={13} className="text-[#F26522]" />
             </span>
           </Link>

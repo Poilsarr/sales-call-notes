@@ -161,7 +161,7 @@ export function MomentumRiver({ mentions }: { mentions: Mention[] }) {
             const left = (hoverIdx / Math.max(1, days.length - 1)) * 100;
             return (
               <div
-                className="absolute z-10 -translate-x-1/2 rounded-xl border border-white/10 bg-[#1c1c20] px-3 py-2 shadow-xl pointer-events-none"
+                className="absolute z-10 -translate-x-1/2 rounded-xl border border-white/10 bg-[#1c1c20] px-3 py-2 shadow-md pointer-events-none"
                 style={{ left: `${left}%`, top: 8 }}
               >
                 <div className="text-xs font-semibold text-white">{d.label} · {d.total} {d.total === 1 ? "mention" : "mentions"} {delta !== 0 && <span className={delta > 0 ? "text-red-400" : "text-emerald-400"}>({delta > 0 ? "+" : ""}{delta})</span>}</div>

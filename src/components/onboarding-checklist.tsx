@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useCallback } from "react";
 import Link from "next/link";
-import { Check, X, Mic, FileText, Plug, Users, Sparkles } from "lucide-react";
+import { Check, X, Mic, FileText, Plug, Users, Target } from "lucide-react";
 
 type ProviderStatus = {
   connected: boolean;
@@ -188,7 +188,7 @@ export default function OnboardingChecklist() {
           <div className="flex items-start justify-between gap-4 mb-4">
             <div>
               <div className="inline-flex items-center gap-2 text-[11px] font-medium text-[#F26522] mb-1.5">
-                <Sparkles size={12} /> Get started
+                <Target size={12} /> Get started
               </div>
               <h3 className="text-[15px] font-semibold text-white">Finish your setup</h3>
               <p className="text-[12px] text-zinc-400 mt-0.5">

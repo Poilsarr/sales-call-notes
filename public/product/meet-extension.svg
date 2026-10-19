@@ -70,14 +70,14 @@
   <!-- Stats -->
   <text x="504" y="220" font-family="ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="10" font-weight="600" fill="#A1A1AA" letter-spacing="0.04em">THIS CALL</text>
   <text x="504" y="248" font-family="ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="22" font-weight="700" fill="#131316">00:14:22</text>
-  <text x="504" y="268" font-family="ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="11" fill="#71717A">Elapsed � live sync on</text>
+  <text x="504" y="268" font-family="ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="11" fill="#71717A">Elapsed Â· live sync on</text>
 
   <rect x="504" y="288" width="148" height="1" fill="#E4E4E7"/>
 
   <!-- Signal pill -->
   <text x="504" y="316" font-family="ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="10" font-weight="600" fill="#A1A1AA" letter-spacing="0.04em">LAST SIGNAL</text>
   <rect x="504" y="328" width="148" height="32" rx="8" fill="#FFF4ED" stroke="#F26522"/>
-  <text x="578" y="348" text-anchor="middle" font-family="ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="12" font-weight="700" fill="#F26522">Gong � 0.96</text>
+  <text x="578" y="348" text-anchor="middle" font-family="ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="12" font-weight="700" fill="#F26522">Gong Â· 0.96</text>
 
   <!-- CTA -->
   <rect x="504" y="376" width="148" height="36" rx="8" fill="#F26522"/>

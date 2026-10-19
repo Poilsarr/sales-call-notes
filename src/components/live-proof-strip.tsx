@@ -205,7 +205,7 @@ export default function LiveProofStrip() {
                 />
               </div>
 
-              <blockquote className="text-[13px] text-gray-700 leading-snug border-l-2 border-gray-900 pl-3 mb-4">
+              <blockquote className="italic text-[13px] text-gray-700 leading-snug pl-1 mb-4">
                 &ldquo;{active.quote}&rdquo;
               </blockquote>
 

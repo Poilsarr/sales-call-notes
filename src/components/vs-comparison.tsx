@@ -3,7 +3,7 @@ import Nav from "@/components/nav";
 import ProductVisualCard, {
   type ProductVisualVariant,
 } from "@/components/product-visual-card";
-import { CheckCircle, X, ArrowRight, Sparkles, Shield, Zap } from "lucide-react";
+import { CheckCircle, X, ArrowRight, Scale, Shield, Zap } from "lucide-react";
 
 export type ComparisonRow = { label: string; us: string; them: string };
 export type PricingRow = { tier: string; us: string; them: string };
@@ -65,7 +65,7 @@ export function VsComparisonPage({
       <section className="pt-36 pb-12 sm:pt-40 sm:pb-16 px-5 sm:px-8 lg:px-12 bg-[#EFEFEF]">
         <div className="max-w-[1100px] mx-auto">
           <div className="eyebrow inline-flex items-center gap-2 mb-6">
-            <Sparkles size={12} /> Honest comparison · {lastUpdated}
+            <Scale size={12} /> Honest comparison · {lastUpdated}
           </div>
           <h1 className="text-[clamp(2rem,5vw,4rem)] font-medium leading-[1.08] tracking-[-0.03em] mb-4">
             {data.heroHeadline}
@@ -84,7 +84,7 @@ export function VsComparisonPage({
                 </span>
                 <span className="leading-[20px]">Start free</span>
               </span>
-              <span className="w-7 h-7 bg-white rounded-full flex items-center justify-center transition-transform duration-500 ease-[cubic-bezier(0.25,0.1,0.25,1)] group-hover:-rotate-45">
+              <span className="w-7 h-7 bg-white rounded-full flex items-center justify-center transition-transform duration-300 group-hover:translate-x-0.5">
                 <ArrowRight size={14} className="text-[#F26522]" />
               </span>
             </Link>
@@ -374,7 +374,7 @@ export function VsComparisonPage({
                     </span>
                     <span className="leading-[20px]">Start free</span>
                   </span>
-                  <span className="w-7 h-7 bg-white rounded-full flex items-center justify-center transition-transform duration-500 ease-[cubic-bezier(0.25,0.1,0.25,1)] group-hover:-rotate-45">
+                  <span className="w-7 h-7 bg-white rounded-full flex items-center justify-center transition-transform duration-300 group-hover:translate-x-0.5">
                     <ArrowRight size={14} className="text-[#F26522]" />
                   </span>
                 </Link>

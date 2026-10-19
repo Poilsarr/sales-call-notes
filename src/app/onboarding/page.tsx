@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import { ArrowRight, Upload, Check, Mic, Sparkles } from "lucide-react";
+import { ArrowRight, Upload, Check, Mic, Zap } from "lucide-react";
 
 type Step = 0 | 1 | 2;
 
@@ -93,7 +93,7 @@ export default function OnboardingPage() {
         {step === 0 && (
           <div>
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-orange-50 text-[#F26522] text-[12px] font-medium mb-4">
-              <Sparkles className="h-3.5 w-3.5" />
+              <Zap className="h-3.5 w-3.5" />
               Welcome
             </div>
             <h1 className="text-[clamp(1.75rem,4vw,2.5rem)] font-medium tracking-tight mb-3">

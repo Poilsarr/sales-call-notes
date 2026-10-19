@@ -38,7 +38,7 @@ function DiscoveryVisual() {
       <p className="text-[9px] font-mono uppercase tracking-wider text-gray-500 mb-2">
         Rival signal
       </p>
-      <blockquote className="text-[12px] text-gray-800 leading-snug border-l-2 border-[#F26522] pl-2 mb-2">
+      <blockquote className="italic text-[12px] text-gray-800 leading-snug pl-1 mb-2">
         &ldquo;We&rsquo;re also evaluating Gong for the rollout.&rdquo;
       </blockquote>
       <div className="flex items-center gap-1.5">

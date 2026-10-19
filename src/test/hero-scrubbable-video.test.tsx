@@ -52,44 +52,44 @@ describe("HeroScrubbableVideo — duration truth + video-only facade", () => {
       .mockResolvedValue(undefined) as unknown as () => Promise<void>;
   });
 
-  it("pins container truth to 39s (35s story + 4s pad, VTT 00:00–00:39)", () => {
-    expect(HERO_SCRUBBABLE_DURATION_S).toBe(39);
+  it("pins container truth to 15s (seamless loop, VTT 00:00–00:15)", () => {
+    expect(HERO_SCRUBBABLE_DURATION_S).toBe(15);
   });
 
-  it("defaults VIDEO + POSTER to the mgmt-35s mp4 / poster pair", () => {
-    expect(HERO_SCRUBBABLE_VIDEO_SRC).toContain("gauge-hero-mgmt-35s.mp4");
+  it("defaults VIDEO + POSTER to the 15s loop mp4 / poster pair", () => {
+    expect(HERO_SCRUBBABLE_VIDEO_SRC).toContain("gauge-hero-15s-loop.mp4");
     expect(HERO_SCRUBBABLE_POSTER_SRC).toContain(
-      "gauge-hero-mgmt-poster.jpg",
+      "gauge-hero-15s-poster.jpg",
     );
   });
 
   it("keeps the LCP poster facade: high fetchPriority, async decoding, zero video bytes", () => {
     const { container } = render(<HeroScrubbableVideo />);
     const img = container.querySelector("img");
-    expect(img?.getAttribute("src")).toContain("gauge-hero-mgmt-poster.jpg");
+    expect(img?.getAttribute("src")).toContain("gauge-hero-15s-poster.jpg");
     expect(img?.getAttribute("fetchpriority")).toBe("high");
     expect(img?.getAttribute("decoding")).toBe("async");
     expect(container.querySelector("video")).toBeNull();
   });
 
-  it("labels the real 39s duration on the facade play button + pill", () => {
+  it("labels the real 15s duration on the facade play button + pill", () => {
     render(<HeroScrubbableVideo />);
     expect(
-      screen.getByRole("button", { name: /39 seconds, sound off/i }),
+      screen.getByRole("button", { name: /15 seconds, sound off/i }),
     ).toBeDefined();
-    expect(screen.getByText("For management — 0:39, sound off")).toBeDefined();
+    expect(screen.getByText("Meet capture — 0:15 loop, sound off")).toBeDefined();
   });
 
   it("activating the facade mounts <video> and fires film_play once", () => {
     const { container } = render(<HeroScrubbableVideo />);
     fireEvent.click(
-      screen.getByRole("button", { name: /39 seconds, sound off/i }),
+      screen.getByRole("button", { name: /15 seconds, sound off/i }),
     );
     expect(container.querySelector("video")).not.toBeNull();
     expect(mockTrackEvent).toHaveBeenCalledTimes(1);
     expect(mockTrackEvent).toHaveBeenCalledWith(
       "film_play",
-      expect.objectContaining({ film: "hero-scrubbable", duration_s: 39 }),
+      expect.objectContaining({ film: "hero-scrubbable", duration_s: 15 }),
     );
   });
 
@@ -97,7 +97,7 @@ describe("HeroScrubbableVideo — duration truth + video-only facade", () => {
     const { container } = render(<HeroScrubbableVideo />);
     act(() => {
       window.dispatchEvent(
-        new CustomEvent("gauge:scrub", { detail: { seekS: 32 } }),
+        new CustomEvent("gauge:scrub", { detail: { seekS: 12 } }),
       );
     });
 
@@ -106,11 +106,11 @@ describe("HeroScrubbableVideo — duration truth + video-only facade", () => {
       await vi.waitFor(() => {
         const video = container.querySelector("video");
         expect(video).not.toBeNull();
-        expect(video!.currentTime).toBe(32);
+        expect(video!.currentTime).toBe(12);
       });
       expect(mockTrackEvent).toHaveBeenCalledWith(
         "film_play",
-        expect.objectContaining({ film: "hero-scrubbable", duration_s: 39 }),
+        expect.objectContaining({ film: "hero-scrubbable", duration_s: 15 }),
       );
     } else {
       // Pre-rebuild: no listener yet — the event is a harmless no-op and
@@ -129,13 +129,13 @@ describe("Scrub summary surface — 4 lines + stamps + health/rival footer", () 
       .mockResolvedValue(undefined) as unknown as () => Promise<void>;
   });
 
-  it("keeps the data export at 4 lines (stamps 00:02/12/22/32)", () => {
-    expect(HERO_SCRUBBABLE_LINES.map((l) => l.seekS)).toEqual([2, 12, 22, 32]);
+  it("keeps the data export at 4 lines (stamps 00:01/04/08/12)", () => {
+    expect(HERO_SCRUBBABLE_LINES.map((l) => l.seekS)).toEqual([1.5, 4.5, 8.5, 12]);
     expect(HERO_SCRUBBABLE_LINES.map((l) => l.stamp)).toEqual([
-      "00:02",
+      "00:01",
+      "00:04",
+      "00:08",
       "00:12",
-      "00:22",
-      "00:32",
     ]);
   });
 
@@ -169,7 +169,7 @@ describe("Scrub summary surface — 4 lines + stamps + health/rival footer", () 
     expect(q.getByText("#deal-room-acme", { exact: true })).toBeDefined();
   });
 
-  it("tapping the 32s Slack line seeks the hero video (last scrub wins, film_play once)", async () => {
+  it("tapping the 12s Slack line seeks the hero video (last scrub wins, film_play once)", async () => {
     const scrub = await loadScrubSummary();
     if (scrub) {
       // Post-rebuild: section button dispatches gauge:scrub → hero seeks.
@@ -182,12 +182,12 @@ describe("Scrub summary surface — 4 lines + stamps + health/rival footer", () 
       await vi.waitFor(() => {
         const video = hero.container.querySelector("video");
         expect(video).not.toBeNull();
-        expect(video!.currentTime).toBe(32);
+        expect(video!.currentTime).toBe(12);
       });
       expect(mockTrackEvent).toHaveBeenCalledTimes(1);
       expect(mockTrackEvent).toHaveBeenCalledWith(
         "film_play",
-        expect.objectContaining({ film: "hero-scrubbable", duration_s: 39 }),
+        expect.objectContaining({ film: "hero-scrubbable", duration_s: 15 }),
       );
     } else {
       // Pre-rebuild: in-panel scrub buttons seek directly.
@@ -200,12 +200,12 @@ describe("Scrub summary surface — 4 lines + stamps + health/rival footer", () 
 
       const video = document.querySelector("video");
       expect(video).not.toBeNull();
-      // Last scrub wins: 32s Slack signal line.
-      expect(video?.currentTime).toBe(32);
+      // Last scrub wins: 12s Slack signal line.
+      expect(video?.currentTime).toBe(12);
       expect(mockTrackEvent).toHaveBeenCalledTimes(1);
       expect(mockTrackEvent).toHaveBeenCalledWith(
         "film_play",
-        expect.objectContaining({ film: "hero-scrubbable", duration_s: 39 }),
+        expect.objectContaining({ film: "hero-scrubbable", duration_s: 15 }),
       );
     }
   });

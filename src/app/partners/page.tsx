@@ -217,7 +217,7 @@ export default function PartnersPage() {
       {/* CTA */}
       <section>
         <div className="max-w-[1440px] mx-auto px-5 sm:px-8 lg:px-12 py-24 sm:py-32">
-          <div className="rounded-3xl bg-gradient-to-br from-[#F26522]/10 to-transparent border border-[#F26522]/20 p-10 sm:p-14 text-center">
+          <div className="rounded-2xl bg-white/[0.03] border border-white/10 p-10 sm:p-14 text-center">
             <Rocket className="w-10 h-10 text-[#F26522] mx-auto mb-6" />
             <h2 className="text-[clamp(26px,3.6vw,42px)] font-semibold tracking-tight leading-[1.05] text-white mb-4">
               Ready to start earning?

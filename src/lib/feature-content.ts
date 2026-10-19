@@ -73,7 +73,7 @@ export const featureContent: Record<number, FeatureContent> = {
       "Assigns owners using the speaker diarization map",
       "Infers due dates from 'by Friday', 'next week', etc",
       "One-click push to Linear, Asana, Notion, or HubSpot",
-      "Surfaces items mentioned in passing, not just TODOs",
+      "Surfaces implicit commitments and follow-up promises mentioned in passing",
     ],
     specs: [
       { label: "Owner inference", value: "Speaker map + name recognition" },

@@ -30,10 +30,10 @@
 
   <!-- App header -->
   <text x="64" y="98" font-family="ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="11" font-weight="600" fill="#A1A1AA" letter-spacing="0.04em">TRANSCRIPT</text>
-  <text x="64" y="122" font-family="ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="18" font-weight="600" fill="#131316">Acme Corp � Discovery</text>
+  <text x="64" y="122" font-family="ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="18" font-weight="600" fill="#131316">Acme Corp Â· Discovery</text>
   <rect x="540" y="100" width="116" height="26" rx="13" fill="#FFF4ED" stroke="#F26522" stroke-width="1"/>
   <circle cx="556" cy="113" r="4" fill="#F26522"/>
-  <text x="568" y="117" font-family="ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="11" font-weight="600" fill="#F26522">Live � 00:14:22</text>
+  <text x="568" y="117" font-family="ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="11" font-weight="600" fill="#F26522">Live Â· 00:14:22</text>
 
   <!-- Sidebar speakers -->
   <g filter="url(#cardShadow)">
@@ -44,12 +44,12 @@
   <circle cx="92" cy="210" r="14" fill="#F26522"/>
   <text x="92" y="214" text-anchor="middle" font-family="ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="10" font-weight="700" fill="#FFFFFF">SC</text>
   <text x="114" y="208" font-family="ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="12" font-weight="600" fill="#131316">Sarah Chen</text>
-  <text x="114" y="224" font-family="ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="10" fill="#71717A">Buyer � VP Sales</text>
+  <text x="114" y="224" font-family="ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="10" fill="#71717A">Buyer Â· VP Sales</text>
 
   <circle cx="92" cy="262" r="14" fill="#E4E4E7"/>
   <text x="92" y="266" text-anchor="middle" font-family="ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="10" font-weight="700" fill="#52525B">MK</text>
   <text x="114" y="260" font-family="ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="12" font-weight="600" fill="#131316">Maya Kim</text>
-  <text x="114" y="276" font-family="ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="10" fill="#71717A">AE � Gauge</text>
+  <text x="114" y="276" font-family="ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="10" fill="#71717A">AE Â· Gauge</text>
 
   <rect x="80" y="304" width="128" height="1" fill="#E4E4E7"/>
   <text x="80" y="330" font-family="ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="10" font-weight="600" fill="#A1A1AA" letter-spacing="0.06em">SIGNALS</text>
@@ -74,12 +74,12 @@
   <text x="340" y="252" font-family="ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="11" font-weight="600" fill="#131316">Sarah Chen</text>
   <rect x="420" y="240" width="52" height="18" rx="9" fill="#F26522"/>
   <text x="446" y="252" text-anchor="middle" font-family="ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="10" font-weight="700" fill="#FFFFFF">Gong</text>
-  <text x="272" y="282" font-family="ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="14" fill="#131316">We're also evaluating</text>
+  <text x="272" y="282" font-family="ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="14" fill="#131316">“We're also evaluating</text>
   <text x="272" y="304" font-family="ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="14" font-weight="600" fill="#F26522">Gong</text>
-  <text x="312" y="304" font-family="ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="14" fill="#131316">and Chorus for the rollout.</text>
+  <text x="312" y="304" font-family="ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="14" fill="#131316">and Chorus for the rollout.”</text>
 
   <!-- Next line faded -->
   <text x="260" y="368" font-family="ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace" font-size="10" fill="#D4D4D8">00:14:41</text>
   <text x="320" y="368" font-family="ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="11" font-weight="600" fill="#A1A1AA">Maya Kim</text>
-  <text x="260" y="390" font-family="ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="13" fill="#A1A1AA">Got it  I can put a side-by-side together for you.</text>
+  <text x="260" y="390" font-family="ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="13" fill="#A1A1AA">Got it — I can put a side-by-side together for you.</text>
 </svg>

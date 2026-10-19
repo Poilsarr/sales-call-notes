@@ -52,6 +52,8 @@ Host permissions:
 |---|---|
 | https://meet.google.com/* | Meeting pages where caption scraping + tab audio capture run — and only there. |
 | https://teams.microsoft.com/* | Meeting pages where caption scraping + tab audio capture run — and only there. |
+| https://teams.cloud.microsoft/* | Modern Microsoft Teams domain where caption scraping + tab audio capture run. |
+| https://teams.live.com/* | Microsoft Teams personal/live meetings where capture runs. |
 | https://*.zoom.us/* | Meeting pages where caption scraping + tab audio capture run — and only there. |
 | https://usegauge.vercel.app/* | Gauge API origin: /api/upload-url, /api/analyze, /api/v1/calls with the user's Bearer key. No other origin receives extension traffic. |
 

@@ -80,7 +80,7 @@ const data: ComparisonData = {
     "You want flat $9/mo, not $20/mo Pro or $60/mo for 3 users",
     "Reliability matters — 'lost recordings' is a deal-breaker for you",
     "You want unlimited AI summaries, not throttled AI credits",
-    "You're in sales and want BANT/MEDDIC extraction, not just generic summaries",
+    "You're in sales and need structured BANT and MEDDIC deal extraction",
     "You're price-sensitive and a small team — per-seat pricing hurts you",
   ],
   faq: [

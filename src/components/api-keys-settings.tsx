@@ -130,7 +130,7 @@ export default function APIKeysSettings() {
         <form onSubmit={create}>
           <CardHeader>
             <div className="flex items-center gap-3">
-              <Plus className="w-5 h-5 text-linear-indigo" />
+              <Plus className="w-5 h-5 text-[#F26522]" />
               <div>
                 <CardTitle>Create a new key</CardTitle>
                 <CardDescription>You will see the full key once. We store only a hash.</CardDescription>
@@ -165,7 +165,7 @@ export default function APIKeysSettings() {
             <button
               type="submit"
               disabled={creating}
-              className="px-4 py-2.5 rounded-full bg-linear-indigo text-white text-sm font-medium flex items-center gap-2 disabled:opacity-40 hover:bg-linear-indigo/80 transition"
+              className="px-4 py-2.5 rounded-full bg-[#F26522] text-white text-sm font-medium flex items-center gap-2 disabled:opacity-40 hover:bg-[#e05a1a] transition"
             >
               {creating ? <Loader2 className="w-4 h-4 animate-spin" /> : <Key className="w-4 h-4" />}
               Generate key
@@ -201,7 +201,7 @@ export default function APIKeysSettings() {
               <button
                 type="button"
                 onClick={() => copy(justCreated.raw)}
-                className="px-3 py-2 rounded-xl bg-linear-indigo text-white text-sm flex items-center gap-2 shrink-0 hover:bg-linear-indigo/80 transition"
+                className="px-3 py-2 rounded-xl bg-[#F26522] text-white text-sm flex items-center gap-2 shrink-0 hover:bg-[#e05a1a] transition"
               >
                 <Copy className="w-4 h-4" /> Copy
               </button>
@@ -225,7 +225,7 @@ export default function APIKeysSettings() {
       <Card>
         <CardHeader>
           <div className="flex items-center gap-3">
-            <Key className="w-5 h-5 text-linear-indigo" />
+            <Key className="w-5 h-5 text-[#F26522]" />
             <CardTitle>Active keys</CardTitle>
           </div>
           <span className="text-xs text-white/40">{keys.length} active</span>

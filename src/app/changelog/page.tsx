@@ -1,5 +1,5 @@
 import Nav from "@/components/nav";
-import { Sparkles } from "lucide-react";
+import { GitCommit } from "lucide-react";
 import fs from "fs";
 import path from "path";
 
@@ -68,7 +68,7 @@ export default function ChangelogPage() {
         <div className="max-w-3xl mx-auto px-6 py-20">
           <div className="eyebrow inline-flex items-center gap-2 mb-6">
             <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#F26522]/10 text-[#F26522] text-[11px] font-semibold">
-              <Sparkles className="w-3.5 h-3.5" />
+              <GitCommit className="w-3.5 h-3.5" />
               Changelog
             </span>
           </div>

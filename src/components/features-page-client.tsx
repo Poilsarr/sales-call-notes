@@ -6,7 +6,7 @@ import dynamic from "next/dynamic";
 import Link from "next/link";
 import Nav from "@/components/nav";
 import { useUser, SignInButton } from "@clerk/nextjs";
-import { Sparkles, ArrowRight, Zap, Cpu, Lock, BarChart3 } from "lucide-react";
+import { ArrowRight, Zap, Cpu, Lock, BarChart3, Layers } from "lucide-react";
 import StickyMarketingCta from "@/components/sticky-marketing-cta";
 import { ProductVisualsSection } from "@/components/product-visuals-section";
 
@@ -306,16 +306,14 @@ export default function FeaturesPageClient() {
 
       <section ref={heroRef} className="relative min-h-[90dvh] flex flex-col items-center justify-center px-5 sm:px-8 lg:px-12 pt-32 pb-24 sm:pb-32 bg-[#EFEFEF] overflow-hidden">
         <ParticleCanvas />
-        <div className="radial-glow top-[-10%] left-[10%]" style={{ background: "#F26522" }} />
-        <div className="radial-glow bottom-[-10%] right-[5%]" style={{ background: "#2563eb" }} />
 
         <div className="relative z-10 max-w-5xl mx-auto text-center">
           <div className="hero-eyebrow eyebrow inline-flex items-center gap-2 mb-8">
-            <Sparkles size={12} /> Everything you need
+            <Layers size={12} /> Everything you need
           </div>
           <h1 className="hero-title text-[clamp(2rem,5vw,4.5rem)] font-medium leading-[1.08] tracking-[-0.03em] mb-5">
             Features built for<br />
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-gray-900 via-gray-600 to-gray-400">
+            <span className="text-gray-900">
               the modern SDR
             </span>
           </h1>
@@ -350,7 +348,7 @@ export default function FeaturesPageClient() {
                 </span>
                 <span className="leading-[20px]">Start free</span>
               </span>
-              <span className="w-7 h-7 bg-white rounded-full flex items-center justify-center transition-transform duration-500 ease-[cubic-bezier(0.25,0.1,0.25,1)] group-hover:-rotate-45">
+              <span className="w-7 h-7 bg-white rounded-full flex items-center justify-center transition-transform duration-300 group-hover:translate-x-0.5">
                 <ArrowRight size={14} className="text-[#F26522]" />
               </span>
             </Link>
@@ -403,7 +401,7 @@ export default function FeaturesPageClient() {
                       </span>
                       <span className="leading-[20px]">Open Dashboard</span>
                     </span>
-                    <span className="w-7 h-7 bg-white rounded-full flex items-center justify-center transition-transform duration-500 ease-[cubic-bezier(0.25,0.1,0.25,1)] group-hover:-rotate-45">
+                    <span className="w-7 h-7 bg-white rounded-full flex items-center justify-center transition-transform duration-300 group-hover:translate-x-0.5">
                       <ArrowRight size={14} className="text-[#F26522]" />
                     </span>
                   </Link>
@@ -416,7 +414,7 @@ export default function FeaturesPageClient() {
                         </span>
                         <span className="leading-[20px]">Get Started Free</span>
                       </span>
-                      <span className="w-7 h-7 bg-white rounded-full flex items-center justify-center transition-transform duration-500 ease-[cubic-bezier(0.25,0.1,0.25,1)] group-hover:-rotate-45">
+                      <span className="w-7 h-7 bg-white rounded-full flex items-center justify-center transition-transform duration-300 group-hover:translate-x-0.5">
                         <ArrowRight size={14} className="text-[#F26522]" />
                       </span>
                     </button>

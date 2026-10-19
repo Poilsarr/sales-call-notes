@@ -79,10 +79,10 @@ const data: ComparisonData = {
   whoShouldPickUs: [
     "You want private meetings by default — your calls aren't marketing assets",
     "You have a 5+ person team and per-seat pricing hurts ($75/mo vs $9 flat)",
-    "You need 30+ languages, not just English",
+    "You need multi-language transcription across 30+ languages",
     "You want BANT/MEDDIC sales AI at $9 flat, not $15/seat",
     "You want a sustainable indie vendor — not VC-funded free that may repricing",
-    "You're a recruiter, consultant, founder, therapist — not just a sales team",
+    "You need versatile interview pipelines for recruiting, consulting, or client discovery",
   ],
   faq: [
     {
