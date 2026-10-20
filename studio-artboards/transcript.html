@@ -1,0 +1,230 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Gauge — Live Transcription Studio Plate</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body { background: #efe9e2; }
+  body {
+    font-family: -apple-system, "SF Pro Text", "Helvetica Neue", "Segoe UI", Arial, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+  .mono { font-family: ui-monospace, "SF Mono", Menlo, monospace; }
+
+  .artboard {
+    position: relative;
+    width: 800px;
+    height: 520px;
+    overflow: hidden;
+    background: #f7f3ee;
+  }
+
+  .abs { position: absolute; }
+
+  .tint-lav { left: -120px; top: -110px; width: 440px; height: 440px;
+    background: radial-gradient(closest-side, rgba(206,182,255,0.58), rgba(206,182,255,0) 72%); }
+  .tint-blush { right: -60px; top: -80px; width: 500px; height: 500px;
+    background: radial-gradient(closest-side, rgba(255,196,192,0.48), rgba(255,196,192,0) 72%); }
+  .tint-peach { right: -140px; bottom: -170px; width: 580px; height: 580px;
+    background: radial-gradient(closest-side, rgba(255,178,108,0.6), rgba(255,178,108,0) 72%); }
+  .glow-core { left: 110px; top: 60px; width: 600px; height: 460px;
+    background: radial-gradient(closest-side, rgba(255,248,240,0.95), rgba(255,248,240,0) 70%); }
+  .vignette { inset: 0;
+    background: radial-gradient(130% 120% at 50% 42%, rgba(0,0,0,0) 58%, rgba(74,45,20,0.10) 100%); }
+  .grain { inset: 0; opacity: 0.55; mix-blend-mode: overlay;
+    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='260' height='260'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/><feColorMatrix type='matrix' values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.05 0'/></filter><rect width='260' height='260' filter='url(%23n)'/></svg>");
+    background-size: 260px 260px; }
+
+  .shadow-floor { border-radius: 50%;
+    background: radial-gradient(closest-side, rgba(58,34,10,0.30), rgba(58,34,10,0) 72%);
+    filter: blur(6px); }
+
+  .glass {
+    background: linear-gradient(180deg, #ffffff 0%, #fefdfc 55%, #f8f4ef 100%);
+    border: 1px solid rgba(31,22,10,0.08);
+    box-shadow:
+      inset 0 1px 0 rgba(255,255,255,0.9),
+      0 2px 6px rgba(56,32,8,0.06),
+      0 18px 34px -12px rgba(56,32,8,0.18),
+      0 48px 90px -24px rgba(56,32,8,0.28);
+    border-radius: 16px;
+  }
+  .sheen { position: absolute; inset: 0; border-radius: inherit; pointer-events: none;
+    background: linear-gradient(118deg, rgba(255,255,255,0.42) 0%, rgba(255,255,255,0) 30%); }
+  .edgeglow { position: absolute; inset: 0; border-radius: inherit; pointer-events: none;
+    box-shadow: inset -14px -18px 34px rgba(242,101,34,0.05), inset 12px 12px 28px rgba(212,193,255,0.07); }
+
+  .avatar { border-radius: 50%; flex-shrink: 0; display: flex; align-items: center; justify-content: center;
+    color: #fff; font-weight: 800; }
+  .av-mr { background: linear-gradient(155deg, #8d97a4 0%, #5b6472 60%, #464e5b 100%);
+    box-shadow: inset 0 1.5px 2px rgba(255,255,255,0.45), inset 0 -3px 6px rgba(20,26,34,0.35), 0 4px 10px -2px rgba(40,46,58,0.4); }
+  .av-sc { background: radial-gradient(circle at 32% 24%, #ffa066 0%, #f26522 56%, #d85612 100%);
+    box-shadow: inset 0 1.5px 2px rgba(255,255,255,0.5), inset 0 -3px 6px rgba(150,50,0,0.35), 0 5px 12px -2px rgba(216,86,18,0.5); }
+
+  .b1 {
+    left: 86px; top: 84px; width: 432px;
+    transform: rotate(-2.4deg);
+    padding: 14px 16px;
+    filter: blur(0.25px);
+  }
+  .b1 .avatar { width: 30px; height: 30px; font-size: 10.5px; }
+  .b1 .who { display: flex; align-items: baseline; gap: 7px; margin-bottom: 5px; }
+  .b1 .name { font-size: 12px; font-weight: 700; color: #23282f; }
+  .b1 .ts { font-size: 10px; color: #9aa0a8; }
+  .b1 .quote { font-size: 13px; line-height: 1.52; color: #4b5560; }
+
+  .b2 {
+    left: 288px; top: 212px; width: 476px;
+    transform: rotate(1.8deg);
+    padding: 16px 18px;
+    z-index: 5;
+  }
+  .b2 .avatar { width: 34px; height: 34px; font-size: 11.5px; }
+  .b2 .who { display: flex; align-items: center; gap: 7px; margin-bottom: 6px; }
+  .b2 .name { font-size: 12.5px; font-weight: 700; color: #191d23; }
+  .b2 .ts { font-size: 10px; color: #9aa0a8; }
+  .rival { display: inline-flex; align-items: center; gap: 4px; font-size: 9px; font-weight: 800; letter-spacing: 0.04em;
+    color: #065f46; background: linear-gradient(180deg, #e9fbf1, #d7f5e4); border: 1px solid rgba(16,185,129,0.35);
+    padding: 2.5px 8px; border-radius: 999px; box-shadow: inset 0 1px 0 rgba(255,255,255,0.9), 0 2px 6px rgba(16,120,80,0.15); }
+  .rival .rdot3 { width: 4px; height: 4px; border-radius: 50%; background: #10b981; }
+  .b2 .quote { font-size: 14px; line-height: 1.5; color: #1f2430; font-weight: 600; }
+  .b2 .quote .money { color: #e05612; font-weight: 700; }
+  .b2 .quote em { font-style: normal; color: #e05612; }
+
+  .wave {
+    left: 196px; top: 394px; width: 480px; height: 64px;
+    transform: rotate(-1.2deg);
+    border-radius: 32px;
+    display: flex; align-items: center; gap: 12px;
+    padding: 0 16px 0 12px;
+    z-index: 6;
+  }
+  .play { width: 40px; height: 40px; border-radius: 50%; flex-shrink: 0;
+    background: radial-gradient(circle at 34% 28%, #3a3f47, #16181d 66%);
+    box-shadow: inset 0 1.5px 2px rgba(255,255,255,0.28), 0 6px 14px -3px rgba(22,24,29,0.55);
+    display: flex; align-items: center; justify-content: center; }
+  .play svg { width: 14px; height: 14px; color: #fff; margin-left: 2px; }
+  .wtime { font-size: 12px; font-weight: 800; color: #23282f; letter-spacing: 0.03em; }
+  .bars { display: flex; align-items: center; gap: 3px; height: 30px; flex: 1; overflow: hidden; }
+  .bars i { width: 3px; border-radius: 2px; display: block; }
+  .bar-hot { background: linear-gradient(180deg, #ff8a4d, #f26522); box-shadow: 0 0 6px rgba(242,101,34,0.35); }
+  .bar-dim { background: #e3dfd9; }
+  .wmeta { display: flex; flex-direction: column; align-items: flex-end; gap: 3px; }
+  .wbit { font-size: 10px; color: #9aa0a8; letter-spacing: 0.03em; }
+  .wlive { display: flex; align-items: center; gap: 4px; font-size: 9px; font-weight: 800; color: #0e9f6e;
+    letter-spacing: 0.08em; }
+  .wlive .ldot { width: 5px; height: 5px; border-radius: 50%; background: #10b981; box-shadow: 0 0 5px rgba(16,185,129,0.8); }
+
+  .chipVoice {
+    right: 70px; top: 64px; transform: rotate(2.2deg); z-index: 4;
+    display: flex; align-items: center; gap: 9px; padding: 9px 14px;
+  }
+  .chipVoice .avs { display: flex; }
+  .chipVoice .avs .avatar { width: 22px; height: 22px; font-size: 8px; border: 2px solid #fff; }
+  .chipVoice .avs .avatar + .avatar { margin-left: -7px; }
+  .chipVoice .txt { font-size: 11px; color: #3f454e; font-weight: 600; }
+  .chipVoice .txt b { color: #191d23; font-weight: 800; }
+
+  .chipCRM {
+    left: 96px; top: 40px; transform: rotate(-3deg); z-index: 4;
+    display: flex; align-items: center; gap: 7px; padding: 8px 13px;
+    filter: blur(0.2px);
+  }
+  .hubdot { width: 15px; height: 15px; border-radius: 50%; flex-shrink: 0;
+    background: radial-gradient(circle at 34% 28%, #ffb09a, #ff7a59 62%, #e85c33);
+    box-shadow: inset 0 1px 1.5px rgba(255,255,255,0.55), 0 2px 5px rgba(232,92,51,0.45);
+    display: flex; align-items: center; justify-content: center; color: #fff; font-size: 8px; font-weight: 900; }
+  .chipCRM .txt { font-size: 10.5px; color: #3f454e; font-weight: 600; display: flex; align-items: center; gap: 5px; }
+  .chipCRM .txt svg { width: 10px; height: 10px; color: #e05612; }
+
+  .tagchips { left: 120px; top: 330px; transform: rotate(-2deg); display: flex; gap: 8px; z-index: 7; }
+  .tagchip { font-size: 10px; font-weight: 700; padding: 4px 10px; border-radius: 999px; letter-spacing: 0.01em;
+    backdrop-filter: blur(3px); }
+  .tg1 { color: #b34a0e; background: rgba(255,228,209,0.92); border: 1px solid rgba(242,101,34,0.35);
+    box-shadow: 0 2px 6px rgba(216,86,18,0.18), inset 0 1px 0 rgba(255,255,255,0.8); }
+  .tg2 { color: #7a4a2e; background: rgba(255,238,222,0.88); border: 1px solid rgba(242,101,34,0.22);
+    box-shadow: 0 2px 6px rgba(216,86,18,0.12), inset 0 1px 0 rgba(255,255,255,0.8); filter: blur(0.4px); }
+</style>
+</head>
+<body>
+  <div class="artboard">
+    <div class="abs tint-lav"></div>
+    <div class="abs tint-blush"></div>
+    <div class="abs tint-peach"></div>
+    <div class="abs glow-core"></div>
+
+    <div class="abs shadow-floor" style="left:150px; top:452px; width:500px; height:64px;"></div>
+    <div class="abs shadow-floor" style="left:96px; top:230px; width:420px; height:56px; opacity:0.6;"></div>
+
+    <div class="abs glass chipCRM">
+      <div class="sheen"></div>
+      <span class="hubdot">H</span>
+      <span class="txt">Synced to HubSpot <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h12m-5-5 5 5-5 5"/></svg></span>
+    </div>
+
+    <div class="abs glass chipVoice">
+      <div class="sheen"></div>
+      <div class="avs">
+        <span class="avatar av-sc">SC</span>
+        <span class="avatar av-mr">MR</span>
+      </div>
+      <span class="txt"><b>Speaker recognition</b> · 2 voices</span>
+    </div>
+
+    <div class="abs glass b1">
+      <div class="sheen"></div>
+      <div class="edgeglow"></div>
+      <div style="display:flex; gap:11px;">
+        <span class="avatar av-mr">MR</span>
+        <div style="flex:1; min-width:0;">
+          <div class="who">
+            <span class="name">Mark Roberts</span>
+            <span class="ts mono">0:01</span>
+          </div>
+          <p class="quote">&ldquo;Good morning everyone. Let&rsquo;s dive into Q4 revenue goals. Are you evaluating Gong or Gauge?&rdquo;</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="abs glass b2">
+      <div class="sheen"></div>
+      <div class="edgeglow"></div>
+      <div style="display:flex; gap:12px;">
+        <span class="avatar av-sc">SC</span>
+        <div style="flex:1; min-width:0;">
+          <div class="who">
+            <span class="name">Sarah Chen</span>
+            <span class="ts mono">0:14</span>
+            <span class="rival"><span class="rdot3"></span>Rival detected: Gong</span>
+          </div>
+          <p class="quote">&ldquo;We looked at Gong, but their <span class="money">$1,400 per seat minimum</span> and mandatory recording bot didn&rsquo;t fit our team.&rdquo;</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="abs tagchips">
+      <span class="tagchip tg1 mono">#CompetitorGong</span>
+      <span class="tagchip tg2 mono">#BudgetRisk</span>
+    </div>
+
+    <div class="abs glass wave">
+      <div class="sheen"></div>
+      <div class="edgeglow"></div>
+      <div class="play"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7Z"/></svg></div>
+      <span class="wtime mono">00:14</span>
+      <div class="bars">
+        <i class="bar-hot" style="height:10px"></i><i class="bar-hot" style="height:18px"></i><i class="bar-hot" style="height:8px"></i><i class="bar-hot" style="height:24px"></i><i class="bar-hot" style="height:13px"></i><i class="bar-hot" style="height:27px"></i><i class="bar-hot" style="height:9px"></i><i class="bar-hot" style="height:19px"></i><i class="bar-hot" style="height:14px"></i><i class="bar-hot" style="height:25px"></i><i class="bar-hot" style="height:17px"></i><i class="bar-hot" style="height:29px"></i><i class="bar-hot" style="height:11px"></i><i class="bar-hot" style="height:22px"></i><i class="bar-hot" style="height:15px"></i><i class="bar-dim" style="height:8px"></i><i class="bar-dim" style="height:14px"></i><i class="bar-dim" style="height:6px"></i><i class="bar-dim" style="height:18px"></i><i class="bar-dim" style="height:10px"></i><i class="bar-dim" style="height:16px"></i><i class="bar-dim" style="height:7px"></i><i class="bar-dim" style="height:12px"></i><i class="bar-dim" style="height:20px"></i><i class="bar-dim" style="height:9px"></i><i class="bar-dim" style="height:5px"></i>
+      </div>
+      <div class="wmeta">
+        <span class="wbit mono">32kbps · Opus</span>
+        <span class="wlive"><span class="ldot"></span>LIVE CAPTIONS</span>
+      </div>
+    </div>
+
+    <div class="abs grain"></div>
+    <div class="abs vignette"></div>
+  </div>
+</body>
+</html>
