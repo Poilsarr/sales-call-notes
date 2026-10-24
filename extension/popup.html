@@ -162,10 +162,15 @@
       border-color: rgba(255, 255, 255, 0.13);
     }
 
-    /* Auth Banner */
+    /* Auth Plate */
     .auth-card {
-      background: linear-gradient(135deg, rgba(245, 158, 11, 0.09) 0%, rgba(245, 158, 11, 0.02) 100%);
-      border: 1px solid rgba(245, 158, 11, 0.28);
+      background: rgba(255, 255, 255, 0.035);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      transition: all 0.25s ease;
+    }
+    .auth-card.signed-in {
+      background: radial-gradient(130% 130% at 0% 0%, rgba(34, 197, 94, 0.07) 0%, rgba(255, 255, 255, 0.025) 70%);
+      border-color: rgba(34, 197, 94, 0.25);
     }
     .row {
       display: flex;
@@ -284,15 +289,18 @@
       color: #fff;
       transform: translateY(-1px);
     }
-    .btn-warn {
-      background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
-      color: #0f172a;
-      font-weight: 700;
+    .btn-connect {
+      background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
+      color: #ffffff;
+      font-weight: 600;
       margin-top: 10px;
-      box-shadow: 0 3px 12px rgba(245, 158, 11, 0.3);
+      box-shadow: 0 4px 14px rgba(99, 102, 241, 0.35);
+      border: 1px solid rgba(255, 255, 255, 0.15);
     }
-    .btn-warn:hover {
-      background: linear-gradient(135deg, #fbbf24 0%, #b45309 100%);
+    .btn-connect:hover {
+      background: linear-gradient(135deg, #4f46e5 0%, #4338ca 100%);
+      box-shadow: 0 6px 20px rgba(99, 102, 241, 0.5);
+      transform: translateY(-1px);
     }
 
     .shortcut-pill {
@@ -358,17 +366,17 @@
         <span class="badge-tier badge-guest" id="planBadge">FREE</span>
       </div>
     </div>
-    <span class="header-link" id="headerSettings">Web App ↗</span>
+    <span class="header-link" id="headerSettings">Dashboard ↗</span>
   </div>
 
   <!-- Auth Card -->
   <div class="card auth-card" id="authCard">
     <div class="row">
       <span class="dot dot-idle" id="authDot"></span>
-      <span class="label" id="authText">Checking sign-in...</span>
+      <span class="label" id="authText">Checking connection...</span>
     </div>
     <div class="sub" id="authSub"></div>
-    <button class="btn btn-warn hidden" id="signInBtn">Sign in with Gauge</button>
+    <button class="btn btn-connect hidden" id="signInBtn">Connect with Gauge ↗</button>
   </div>
 
   <!-- Plan Perks / Upgrade Banner (conditional) -->

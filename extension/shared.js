@@ -87,6 +87,18 @@ export async function getClerkSessionToken() {
   } catch (error) {
     console.warn("[Gauge] Failed to read Clerk session cookie", error);
   }
+  // Fallback candidate origins (e.g. local dev / preview environments)
+  const fallbackUrls = [
+    "http://localhost:3000",
+    "http://localhost:3003",
+    "http://127.0.0.1:3000",
+  ];
+  for (const url of fallbackUrls) {
+    try {
+      const cookie = await c.cookies.get({ url, name: AUTH_COOKIE_NAME });
+      if (cookie && cookie.value) return cookie.value;
+    } catch {}
+  }
   return null;
 }
 

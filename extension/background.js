@@ -72,8 +72,27 @@ async function setStored(values) {
 }
 
 async function refreshAuthStatus() {
-  // 1. Check if an API key is already saved in session memory
+  const stored = await getStored({ authStatus: { state: "unknown" } });
   let apiKey = await getApiKeyFromSession();
+
+  // 1. If already signed in with a user email, PRESERVE IT and avoid clobbering!
+  if (stored.authStatus?.state === "signed_in" && stored.authStatus?.email) {
+    if (apiKey) {
+      try {
+        const session = await fetchSessionStatus(apiKey);
+        if (session && session.authenticated) {
+          const plan = (session.plan || stored.authStatus.plan || "free").toLowerCase();
+          const email = session.user?.email || stored.authStatus.email;
+          const status = { state: "signed_in", plan, email, at: Date.now() };
+          await setStored({ authStatus: status });
+          return status;
+        }
+      } catch {
+        // network failure — preserve existing signed-in status
+      }
+    }
+    return stored.authStatus;
+  }
 
   // 2. If no key, attempt seamless auto-exchange using Clerk cookie
   if (!apiKey) {
@@ -81,9 +100,11 @@ async function refreshAuthStatus() {
     if (clerkToken) {
       try {
         const exchange = await exchangeSessionTokenForKey(clerkToken);
-        if (exchange && exchange.raw) {
-          apiKey = exchange.raw;
-          await setApiKeyInSession(apiKey);
+        if (exchange && (exchange.raw || exchange.user)) {
+          if (exchange.raw) {
+            apiKey = exchange.raw;
+            await setApiKeyInSession(apiKey);
+          }
           const plan = (exchange.plan || "free").toLowerCase();
           const email = exchange.user?.email || "";
           const status = { state: "signed_in", plan, email, at: Date.now() };
@@ -98,11 +119,6 @@ async function refreshAuthStatus() {
 
   // 3. If apiKey is present, verify and ensure plan info is fresh
   if (apiKey) {
-    const stored = await getStored({ authStatus: { state: "unknown" } });
-    const isFresh = stored.authStatus?.at && (Date.now() - stored.authStatus.at < 60_000);
-    if (stored.authStatus?.state === "signed_in" && stored.authStatus?.plan && isFresh) {
-      return stored.authStatus;
-    }
     try {
       const session = await fetchSessionStatus(apiKey);
       if (session && session.authenticated) {
@@ -123,7 +139,7 @@ async function refreshAuthStatus() {
     return status;
   }
 
-  // 4. No session or key found
+  // 4. Truly no session, key, or cookie found
   const status = { state: "needs_sign_in", plan: "free", email: "", at: Date.now() };
   await setStored({ authStatus: status });
   return status;

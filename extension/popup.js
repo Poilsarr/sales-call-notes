@@ -51,26 +51,30 @@ function renderAuth(authStatus) {
     }`;
   }
 
+  const authCard = el("authCard");
   if (state === "signed_in") {
+    if (authCard) authCard.classList.add("signed-in");
     setDot("authDot", "dot-success");
-    setText("authText", email ? `Signed in as ${email}` : "Signed in");
+    setText("authText", email ? email : "Connected");
     if (isPro) {
       setText("authSub", "Pro Plan · Unlimited calls, CRM sync active");
       setHidden("upgradeCard", true);
     } else {
-      setText("authSub", "Free Plan · 30-min call limit (30MB)");
+      setText("authSub", "Free Plan · 30-min call limit");
       setHidden("upgradeCard", false);
     }
     setHidden("signInBtn", true);
   } else if (state === "needs_sign_in") {
-    setDot("authDot", "dot-needs");
-    setText("authText", "Sign-in required");
-    setText("authSub", "Connect your Gauge account to sync recordings and AI notes.");
+    if (authCard) authCard.classList.remove("signed-in");
+    setDot("authDot", "dot-idle");
+    setText("authText", "Connect Gauge Account");
+    setText("authSub", "Connect your account to sync recordings and AI notes seamlessly.");
     setHidden("signInBtn", false);
     setHidden("upgradeCard", true);
   } else {
+    if (authCard) authCard.classList.remove("signed-in");
     setDot("authDot", "dot-idle");
-    setText("authText", "Checking sign-in...");
+    setText("authText", "Checking connection...");
     setText("authSub", "");
     setHidden("signInBtn", true);
     setHidden("upgradeCard", true);
@@ -180,14 +184,16 @@ async function refresh() {
   renderUploadStatus(data.uploadStatus, data.lastUploadAt, data.lastUploadError);
   renderRecap(data.lastAnalyzedCall);
 
-  // Proactively ping background to re-validate auth via session / cookies
-  try {
-    chrome.runtime.sendMessage({ type: MESSAGE_TYPES.CHECK_AUTH }, (response) => {
-      if (response?.status) {
-        renderAuth(response.status);
-      }
-    });
-  } catch {}
+  // Ping background to validate auth only if not already actively signed in
+  if (data.authStatus?.state !== "signed_in" || !data.authStatus?.email) {
+    try {
+      chrome.runtime.sendMessage({ type: MESSAGE_TYPES.CHECK_AUTH }, (response) => {
+        if (response?.status) {
+          renderAuth(response.status);
+        }
+      });
+    } catch {}
+  }
 }
 
 el("openApp").addEventListener("click", () => {
