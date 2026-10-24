@@ -55,6 +55,8 @@ const ALLOWED_HOST_PERMISSIONS = new Set([
   "https://teams.live.com/*",
   "https://*.zoom.us/*",
   "https://usegauge.vercel.app/*",
+  "http://localhost/*",
+  "http://127.0.0.1/*",
 ]);
 
 const SEMVER_RE =

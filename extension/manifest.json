@@ -29,7 +29,9 @@
     "https://teams.cloud.microsoft/*",
     "https://teams.live.com/*",
     "https://*.zoom.us/*",
-    "https://usegauge.vercel.app/*"
+    "https://usegauge.vercel.app/*",
+    "http://localhost/*",
+    "http://127.0.0.1/*"
   ],
   "action": {
     "default_popup": "popup.html",
@@ -60,7 +62,9 @@
     },
     {
       "matches": [
-        "https://usegauge.vercel.app/*"
+        "https://usegauge.vercel.app/*",
+        "http://localhost/*",
+        "http://127.0.0.1/*"
       ],
       "js": ["bridge.js"],
       "run_at": "document_idle"

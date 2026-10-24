@@ -105,9 +105,7 @@ async function startCapture({ streamId, meetingTitle: title }) {
   if (recording) return { ok: true, already: true };
   const apiKey = await getApiKeyFromSession();
   if (!apiKey) {
-    const error = "No API key in session storage. Paste your Bearer key in the side panel first.";
-    send({ type: MESSAGE_TYPES.OFFSCREEN_ERROR, message: error, manual: buildManualUploadInstructions() });
-    return { ok: false, error };
+    console.warn("[Gauge:offscreen] Starting capture without API key; will record locally");
   }
   const rawTabStream = await acquireStream(streamId);
   meetingTitle = typeof title === "string" ? title.slice(0, 200) : "";
@@ -302,10 +300,7 @@ async function finalizeUpload() {
   const blob = new Blob(slices, { type: AUDIO_CONTENT_TYPE });
   lastRecordedBlob = blob;
   teardown();
-  if (!apiKey) {
-    send({ type: MESSAGE_TYPES.OFFSCREEN_ERROR, message: "API key missing at finalize", manual: buildManualUploadInstructions() });
-    return;
-  }
+
   if (blob.size === 0) {
     slices = [];
     send({ type: MESSAGE_TYPES.OFFSCREEN_DONE, empty: true, meetingTitle });
@@ -316,11 +311,23 @@ async function finalizeUpload() {
     lastDownloadUrl = URL.createObjectURL(blob);
   } catch {}
 
+  const filename = `meeting-${new Date(startedAt || Date.now()).toISOString().replace(/[:.]/g, "-")}.webm`;
+
+  if (!apiKey) {
+    send({
+      type: MESSAGE_TYPES.OFFSCREEN_ERROR,
+      message: "Audio recording saved locally. Connect your Gauge account to generate AI notes.",
+      manual: "Click 'Connect Gauge Account' in the side panel or download the recording.",
+      downloadUrl: lastDownloadUrl,
+      filename,
+    });
+    return;
+  }
+
   // Chunk plan drives progress reporting; the presigned PUT itself is atomic.
   const plan = getChunkPlan(blob.size);
   reportProgress(0, blob.size, plan.length);
 
-  const filename = `meeting-${new Date(startedAt || Date.now()).toISOString().replace(/[:.]/g, "-")}.webm`;
   try {
     const uploadRes = await fetchWithBackoff(
       buildUploadUrlEndpoint(),

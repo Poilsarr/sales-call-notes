@@ -387,8 +387,9 @@ export function buildKeysExchangeDocsUrl() {
   return `${APP_ORIGIN}/api-docs/v1#post-api-v1-keys-exchange`;
 }
 
-// --- Bearer API key (session storage only, never local) ---
+// --- Bearer API key (session storage + persistent fallback) ---
 export const API_KEY_SESSION_KEY = "gaugeApiKey";
+export const API_KEY_PERSISTENT_KEY = "gaugeApiKeyPersistent";
 export const API_KEY_PREFIXES = ["cn_live_", "cn_test_"];
 
 export function isValidApiKeyFormat(key) {
@@ -408,32 +409,50 @@ export function buildBearerHeaders(apiKey, extra = {}) {
 
 export async function getApiKeyFromSession() {
   const c = getChrome();
-  if (!c?.storage?.session?.get) return null;
+  if (!c?.storage) return null;
   try {
-    const data = await c.storage.session.get({ [API_KEY_SESSION_KEY]: null });
-    const key = data?.[API_KEY_SESSION_KEY];
-    return typeof key === "string" && key ? key : null;
+    if (c.storage.session?.get) {
+      const data = await c.storage.session.get({ [API_KEY_SESSION_KEY]: null });
+      const key = data?.[API_KEY_SESSION_KEY];
+      if (typeof key === "string" && key) return key;
+    }
   } catch (error) {
     console.warn("[Gauge] Failed to read session API key", error);
-    return null;
   }
+  try {
+    if (c.storage.local?.get) {
+      const data = await c.storage.local.get({ [API_KEY_PERSISTENT_KEY]: null });
+      const key = data?.[API_KEY_PERSISTENT_KEY];
+      if (typeof key === "string" && key) return key;
+    }
+  } catch (error) {
+    console.warn("[Gauge] Failed to read persistent API key", error);
+  }
+  return null;
 }
 
 export async function setApiKeyInSession(apiKey) {
   const c = getChrome();
-  if (!c?.storage?.session?.set) return false;
+  if (!c?.storage) return false;
+  let ok = false;
   try {
     if (!apiKey) {
-      await c.storage.session.remove(API_KEY_SESSION_KEY);
+      if (c.storage.session?.remove) await c.storage.session.remove(API_KEY_SESSION_KEY);
+      if (c.storage.local?.remove) await c.storage.local.remove(API_KEY_PERSISTENT_KEY);
       return true;
     }
-    // Session storage only — the key lives in memory and never hits disk.
-    await c.storage.session.set({ [API_KEY_SESSION_KEY]: apiKey });
-    return true;
+    if (c.storage.session?.set) {
+      await c.storage.session.set({ [API_KEY_SESSION_KEY]: apiKey });
+      ok = true;
+    }
+    if (c.storage.local?.set) {
+      await c.storage.local.set({ [API_KEY_PERSISTENT_KEY]: apiKey });
+      ok = true;
+    }
   } catch (error) {
-    console.warn("[Gauge] Failed to write session API key", error);
-    return false;
+    console.warn("[Gauge] Failed to write API key", error);
   }
+  return ok;
 }
 
 // --- Audio capture constants (32kbps Opus, chunked) ---

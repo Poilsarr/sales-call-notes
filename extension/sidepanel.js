@@ -528,7 +528,18 @@ if (hasChrome() && chrome.runtime?.onMessage) {
         }
       }
     } else if (message.type === MESSAGE_TYPES.RECORDING_STATUS) {
-      if (message.recording) setRecState("dot-rec", "Recording…");
+      if (message.recording) {
+        setRecState("dot-rec", "Recording…");
+        setHidden("durationTracker", false);
+      } else if (message.finalizing) {
+        setRecState("dot-ok", "Finalizing…");
+        setStatus("Meeting ended. Finalizing audio & generating AI meeting notes…");
+        setHidden("durationTracker", true);
+        setHidden("micSilentBanner", true);
+      } else {
+        setRecState("dot-idle", "Ready");
+        setHidden("durationTracker", true);
+      }
     }
   });
 }

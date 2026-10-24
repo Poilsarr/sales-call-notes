@@ -250,18 +250,6 @@
     }, 2200);
   }
 
-  function updateCcAlertStatus() {
-    if (!hudShadow) return;
-    var ccAlert = hudShadow.querySelector('[data-id="hudCcAlert"]');
-    if (!ccAlert) return;
-    var elapsed = Math.floor((Date.now() - recordingStartTime) / 1000);
-    if (recording && totalCaptionsCount === 0 && elapsed >= 8) {
-      ccAlert.style.display = "flex";
-    } else {
-      ccAlert.style.display = "none";
-    }
-  }
-
   function makeDraggable(container) {
     var startX = 0, startY = 0, initialLeft = 0, initialTop = 0;
     var isDragging = false;
@@ -325,24 +313,26 @@
       hudShadow = hudElement.attachShadow({ mode: "closed" });
       var style = document.createElement("style");
       style.textContent =
-        "@keyframes hudPulse{50%{opacity:0.35;}}" +
-        "@keyframes hudBlink{50%{transform:scale(1.05);}}" +
+        "@keyframes hudPulse{0%,100%{opacity:1;transform:scale(1);}50%{opacity:0.4;transform:scale(0.9);}}" +
+        "@keyframes hudWave{0%,100%{transform:scaleY(0.35);}50%{transform:scaleY(1);}}" +
         "[data-hud-root]{all:initial;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;-webkit-font-smoothing:antialiased;user-select:none;}" +
-        "[data-id='hudContainer']{display:flex;align-items:center;gap:9px;background:rgba(15,23,42,0.95);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);border:1px solid rgba(255,255,255,0.15);box-shadow:0 12px 32px -4px rgba(0,0,0,0.65),0 0 0 1px rgba(255,255,255,0.08);border-radius:9999px;padding:6px 14px;color:#ffffff;cursor:grab;transition:box-shadow 0.2s,transform 0.15s;}" +
-        "[data-id='hudDot']{width:8px;height:8px;border-radius:50%;background:#ef4444;box-shadow:0 0 10px #ef4444;animation:hudPulse 1.2s infinite;flex-shrink:0;}" +
-        "[data-id='hudBrand']{font-size:11px;font-weight:700;letter-spacing:0.06em;color:#818cf8;text-transform:uppercase;}" +
-        "[data-id='hudTimer']{font-size:12.5px;font-weight:600;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;color:#f1f5f9;min-width:44px;text-align:center;}" +
-        "[data-id='hudDivider']{width:1px;height:16px;background:rgba(255,255,255,0.14);}" +
-        "[data-id='hudTagGroup']{display:flex;align-items:center;gap:4px;}" +
-        "[data-tag-btn]{background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.1);color:#e2e8f0;border-radius:9999px;padding:3px 7px;font-size:10.5px;font-weight:500;cursor:pointer;display:inline-flex;align-items:center;gap:3px;transition:all 0.15s;}" +
-        "[data-tag-btn]:hover{background:rgba(255,255,255,0.18);border-color:rgba(255,255,255,0.25);transform:translateY(-1px);color:#ffffff;}" +
-        "[data-id='hudCcAlert']{display:none;align-items:center;gap:4px;background:rgba(245,158,11,0.22);border:1px solid rgba(245,158,11,0.45);color:#fcd34d;padding:3px 9px;border-radius:9999px;font-size:10.5px;font-weight:600;cursor:pointer;animation:hudBlink 2s infinite;}" +
-        "[data-id='hudCcAlert']:hover{background:rgba(245,158,11,0.38);}" +
-        "[data-id='hudStopBtn']{background:rgba(239,68,68,0.2);border:1px solid rgba(239,68,68,0.4);color:#fca5a5;border-radius:9999px;padding:4px 9px;font-size:11px;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:4px;transition:all 0.15s;}" +
-        "[data-id='hudStopBtn']:hover{background:rgba(239,68,68,0.35);border-color:rgba(239,68,68,0.7);color:#ffffff;transform:translateY(-1px);}" +
+        "[data-id='hudContainer']{display:flex;align-items:center;gap:10px;background:rgba(9,10,15,0.92);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border:1px solid rgba(255,255,255,0.12);box-shadow:0 16px 36px -4px rgba(0,0,0,0.7),0 0 0 1px rgba(255,255,255,0.06);border-radius:9999px;padding:6px 14px;color:#ffffff;cursor:grab;transition:all 0.2s cubic-bezier(0.16,1,0.3,1);}" +
+        "[data-id='hudDot']{width:8px;height:8px;border-radius:50%;background:#ef4444;box-shadow:0 0 10px rgba(239,68,68,0.8);animation:hudPulse 1.4s ease-in-out infinite;flex-shrink:0;}" +
+        "[data-id='hudBrand']{font-size:11px;font-weight:700;letter-spacing:0.08em;color:#f8fafc;text-transform:uppercase;}" +
+        "[data-id='hudTimer']{font-size:12px;font-weight:600;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;color:#e2e8f0;min-width:42px;text-align:center;}" +
+        "[data-id='hudDivider']{width:1px;height:14px;background:rgba(255,255,255,0.12);}" +
+        "[data-id='hudWave']{display:flex;align-items:center;gap:2.5px;height:12px;padding:0 2px;}" +
+        "[data-bar]{width:2.5px;background:#6366f1;border-radius:1px;animation:hudWave 1.1s ease-in-out infinite;}" +
+        "[data-bar='1']{height:5px;animation-delay:0s;}" +
+        "[data-bar='2']{height:11px;animation-delay:0.2s;background:#818cf8;}" +
+        "[data-bar='3']{height:7px;animation-delay:0.4s;}" +
+        "[data-id='hudBookmarkBtn']{background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.12);color:#e2e8f0;border-radius:9999px;padding:3px 9px;font-size:10.5px;font-weight:500;cursor:pointer;display:inline-flex;align-items:center;gap:4px;transition:all 0.15s;}" +
+        "[data-id='hudBookmarkBtn']:hover{background:rgba(255,255,255,0.14);border-color:rgba(255,255,255,0.22);color:#ffffff;transform:translateY(-1px);}" +
+        "[data-id='hudStopBtn']{background:rgba(239,68,68,0.18);border:1px solid rgba(239,68,68,0.4);color:#fca5a5;border-radius:9999px;padding:3px 10px;font-size:11px;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:4px;transition:all 0.15s;}" +
+        "[data-id='hudStopBtn']:hover{background:rgba(239,68,68,0.32);border-color:rgba(239,68,68,0.65);color:#ffffff;transform:translateY(-1px);}" +
         "[data-id='hudMinBtn']{background:transparent;border:none;color:#94a3b8;cursor:pointer;padding:2px 5px;font-size:12px;border-radius:4px;}" +
         "[data-id='hudMinBtn']:hover{color:#ffffff;background:rgba(255,255,255,0.1);}" +
-        "[data-id='hudToast']{display:none;background:#22c55e;color:#052e16;font-size:10px;font-weight:700;padding:2px 7px;border-radius:9999px;letter-spacing:0.04em;}";
+        "[data-id='hudToast']{display:none;background:#22c55e;color:#052e16;font-size:10px;font-weight:700;padding:2px 8px;border-radius:9999px;letter-spacing:0.04em;}";
 
       var container = document.createElement("div");
       container.setAttribute("data-hud-root", "true");
@@ -352,16 +342,15 @@
           '<span data-id="hudBrand">GAUGE</span>' +
           '<span data-id="hudTimer">00:00</span>' +
           '<div data-id="hudDivider"></div>' +
-          '<div data-id="hudTagGroup">' +
-            '<button type="button" data-tag-btn="decision" title="Bookmark Key Decision">💡 Decision</button>' +
-            '<button type="button" data-tag-btn="objection" title="Bookmark Objection">🛡️ Objection</button>' +
-            '<button type="button" data-tag-btn="pricing" title="Bookmark Pricing / Budget">💰 Pricing</button>' +
-            '<button type="button" data-tag-btn="action" title="Bookmark Action Item">✅ Action</button>' +
+          '<div data-id="hudWave">' +
+            '<span data-bar="1"></span>' +
+            '<span data-bar="2"></span>' +
+            '<span data-bar="3"></span>' +
           '</div>' +
-          '<button type="button" data-id="hudCcAlert" title="Live Captions are currently not detected. Click to turn on.">⚠️ CC Off — Enable</button>' +
-          '<span data-id="hudToast"></span>' +
           '<div data-id="hudDivider"></div>' +
-          '<button type="button" data-id="hudStopBtn" title="Stop recording meeting">■ Stop</button>' +
+          '<button type="button" data-id="hudBookmarkBtn" title="Bookmark critical moment (Alt+Shift+B)">★ Bookmark</button>' +
+          '<span data-id="hudToast"></span>' +
+          '<button type="button" data-id="hudStopBtn" title="Finish call and generate AI notes">■ Finish</button>' +
           '<button type="button" data-id="hudMinBtn" title="Minimize / Restore HUD">_</button>' +
         '</div>';
 
@@ -382,11 +371,10 @@
         });
       }
 
-      var ccAlertBtn = hudShadow.querySelector('[data-id="hudCcAlert"]');
-      if (ccAlertBtn) {
-        ccAlertBtn.addEventListener("click", function () {
-          tryEnableCaptions();
-          showHudToast("ENABLING CC...");
+      var bookmarkBtn = hudShadow.querySelector('[data-id="hudBookmarkBtn"]');
+      if (bookmarkBtn) {
+        bookmarkBtn.addEventListener("click", function () {
+          tagMoment("bookmark");
         });
       }
 
@@ -394,24 +382,16 @@
       if (minBtn) {
         minBtn.addEventListener("click", function () {
           isMinimized = !isMinimized;
-          var tagGroup = hudShadow.querySelector('[data-id="hudTagGroup"]');
+          var wave = hudShadow.querySelector('[data-id="hudWave"]');
+          var bookmark = hudShadow.querySelector('[data-id="hudBookmarkBtn"]');
           var dividers = hudShadow.querySelectorAll('[data-id="hudDivider"]');
-          if (tagGroup) tagGroup.style.display = isMinimized ? "none" : "flex";
+          if (wave) wave.style.display = isMinimized ? "none" : "flex";
+          if (bookmark) bookmark.style.display = isMinimized ? "none" : "inline-flex";
           for (var d = 0; d < dividers.length; d++) {
             dividers[d].style.display = isMinimized ? "none" : "block";
           }
           minBtn.textContent = isMinimized ? "□" : "_";
         });
-      }
-
-      var tagBtns = hudShadow.querySelectorAll('[data-tag-btn]');
-      for (var t = 0; t < tagBtns.length; t++) {
-        (function (btn) {
-          btn.addEventListener("click", function () {
-            var mType = btn.getAttribute("data-tag-btn");
-            tagMoment(mType || "decision");
-          });
-        })(tagBtns[t]);
       }
 
       // Start live timer interval
@@ -421,7 +401,6 @@
         var elapsed = Math.floor((Date.now() - recordingStartTime) / 1000);
         var timerSpan = hudShadow ? hudShadow.querySelector('[data-id="hudTimer"]') : null;
         if (timerSpan) timerSpan.textContent = formatTime(elapsed);
-        updateCcAlertStatus();
       }, 1000);
 
     } catch (err) {

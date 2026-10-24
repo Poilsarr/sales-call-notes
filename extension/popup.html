@@ -49,15 +49,15 @@
       width: 28px;
       height: 28px;
       border-radius: 8px;
-      background: linear-gradient(135deg, #6366f1 0%, #4f46e5 50%, #7c3aed 100%);
+      overflow: hidden;
       display: flex;
       align-items: center;
       justify-content: center;
-      box-shadow: 0 4px 12px rgba(99, 102, 241, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.3);
+      box-shadow: 0 4px 14px rgba(99, 102, 241, 0.4);
     }
     .brand-icon svg {
-      width: 17px;
-      height: 17px;
+      width: 28px;
+      height: 28px;
     }
     .brand-title {
       font-size: 15px;
@@ -329,8 +329,28 @@
   <div class="header">
     <div class="brand">
       <div class="brand-icon">
-        <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/>
+        <svg viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <linearGradient id="gPop" x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0%" stop-color="#6366F1"/>
+              <stop offset="100%" stop-color="#4F46E5"/>
+            </linearGradient>
+          </defs>
+          <rect width="64" height="64" rx="14" fill="url(#gPop)"/>
+          <g transform="translate(32,38)">
+            <rect x="-12" y="-16" width="24" height="28" rx="4" fill="white" opacity="0.95"/>
+            <rect x="-8" y="-11" width="16" height="2" rx="1" fill="#6366F1" opacity="0.3"/>
+            <rect x="-8" y="-7" width="12" height="2" rx="1" fill="#6366F1" opacity="0.2"/>
+            <rect x="-8" y="-3" width="14" height="2" rx="1" fill="#6366F1" opacity="0.3"/>
+            <rect x="-8" y="1" width="10" height="2" rx="1" fill="#6366F1" opacity="0.2"/>
+            <rect x="-8" y="5" width="8" height="2" rx="1" fill="#6366F1" opacity="0.15"/>
+          </g>
+          <g transform="translate(32,14)">
+            <rect x="-8" y="-4" width="16" height="16" rx="8" fill="white"/>
+            <rect x="-5" y="-1" width="10" height="10" rx="5" fill="#6366F1"/>
+            <line x1="0" y1="9" x2="0" y2="12" stroke="white" stroke-width="2" stroke-linecap="round"/>
+            <line x1="-3" y1="12" x2="3" y2="12" stroke="white" stroke-width="2" stroke-linecap="round"/>
+          </g>
         </svg>
       </div>
       <div class="brand-title">

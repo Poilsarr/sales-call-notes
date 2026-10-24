@@ -277,6 +277,14 @@ async function handleCaptionsMessage(message, sender) {
     lastMeetingTabId: sender?.tab?.id ?? data.lastMeetingTabId ?? null,
   });
 
+  if (isFinal) {
+    await setStored({ recording: false });
+    try {
+      chrome.runtime?.sendMessage?.({ type: MESSAGE_TYPES.OFFSCREEN_STOP_AUDIO });
+      chrome.runtime?.sendMessage?.({ type: MESSAGE_TYPES.RECORDING_STATUS, recording: false, finalizing: true });
+    } catch {}
+  }
+
   if (isFinal && lastCaptions.length > 0) {
     await queueFinalize({ sessionId, meetingTitle, captions: lastCaptions });
   }
@@ -455,6 +463,12 @@ if (hasChrome() && chrome.runtime?.onMessage) {
       });
     }
   });
+
+  if (hasChrome() && chrome.storage?.session?.setAccessLevel) {
+    chrome.storage.session
+      .setAccessLevel({ accessLevel: "TRUSTED_AND_UNTRUSTED_CONTEXTS" })
+      .catch(() => {});
+  }
 
   chrome.runtime.onInstalled?.addListener(() => {
     refreshAuthStatus().catch(() => {});
