@@ -158,7 +158,6 @@
         totalCaptionsCount += 1;
         emitLiveChunk(combined);
       }
-      updateCcAlertStatus();
     }
   }
 
