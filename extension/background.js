@@ -83,9 +83,12 @@ async function refreshAuthStatus() {
         if (session && session.authenticated) {
           const plan = (session.plan || stored.authStatus.plan || "free").toLowerCase();
           const email = session.user?.email || stored.authStatus.email;
-          const status = { state: "signed_in", plan, email, at: Date.now() };
-          await setStored({ authStatus: status });
-          return status;
+          if (stored.authStatus.plan !== plan || stored.authStatus.email !== email) {
+            const status = { state: "signed_in", plan, email, at: Date.now() };
+            await setStored({ authStatus: status });
+            return status;
+          }
+          return stored.authStatus;
         }
       } catch {
         // network failure — preserve existing signed-in status
@@ -494,11 +497,15 @@ if (hasChrome() && chrome.runtime?.onMessage) {
   });
 
   if (hasChrome() && chrome.cookies?.onChanged) {
+    let cookieDebounceTimer = null;
     chrome.cookies.onChanged.addListener((changeInfo) => {
       const domain = changeInfo?.cookie?.domain || "";
       const name = changeInfo?.cookie?.name || "";
       if (name === "__session" || domain.includes("usegauge.vercel.app")) {
-        refreshAuthStatus().catch(() => {});
+        if (cookieDebounceTimer) clearTimeout(cookieDebounceTimer);
+        cookieDebounceTimer = setTimeout(() => {
+          refreshAuthStatus().catch(() => {});
+        }, 1500);
       }
     });
   }

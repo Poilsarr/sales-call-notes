@@ -80,12 +80,12 @@ const isMarketingRoute = createRouteMatcher([
 
 export default clerkMiddleware(async (auth, req: NextRequest) => {
   try {
-    if (!isMarketingRoute(req)) {
+    const hasBearerKey = Boolean(extractBearerKey(req.headers.get("authorization")));
+
+    if (!isMarketingRoute(req) && !hasBearerKey) {
       const rateLimitResponse = await rateLimitMiddleware(req);
       if (rateLimitResponse) return rateLimitResponse;
     }
-
-    const hasBearerKey = Boolean(extractBearerKey(req.headers.get("authorization")));
 
     if (isProtectedRoute(req) && !isPublicApi(req) && !hasBearerKey) {
       const { userId } = await auth();

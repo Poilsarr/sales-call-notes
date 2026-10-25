@@ -265,38 +265,94 @@ function renderCalls(calls) {
   void escapeHtml;
 }
 
-async function loadCalls() {
-  const apiKey = await getApiKeyFromSession();
-  const list = el("callsList");
-  if (!apiKey) {
-    if (list) list.innerHTML = '<li class="sub">Connect your account or save a key to view recent calls.</li>';
+let inFlightLoadCalls = null;
+let lastLoadCallsAt = 0;
+let callsRateLimitedUntil = 0;
+
+async function loadCalls(options = {}) {
+  const force = options?.force === true;
+  const now = Date.now();
+
+  // If rate-limited, skip network fetch until backoff window elapses
+  if (now < callsRateLimitedUntil) {
     return;
   }
-  try {
-    const response = await fetch(buildCallsEndpoint(), {
-      headers: { Authorization: `Bearer ${apiKey}` },
-    });
-    if (response.status === 403) {
-      if (list) list.innerHTML = '<li class="sub">No calls found or plan restricted.</li>';
-      return;
-    }
-    if (response.status === 401) {
-      if (list) list.innerHTML = '<li class="sub">Key rejected (401). Connect your account again.</li>';
-      return;
-    }
-    if (!response.ok) throw new Error(`calls failed (${response.status})`);
-    const data = await response.json();
-    renderCalls(data?.calls);
-  } catch (error) {
-    console.warn("[Gauge:panel] calls load failed", error);
-    if (list) {
-      list.innerHTML = "";
-      const li = document.createElement("li");
-      li.className = "sub";
-      li.textContent = buildManualUploadInstructions(`${APP_ORIGIN}/app/calls`);
-      list.appendChild(li);
-    }
+
+  // Cooldown: skip if fetched within last 20 seconds unless forced (e.g. call completed)
+  if (!force && now - lastLoadCallsAt < 20000) {
+    return;
   }
+
+  // De-duplicate concurrent in-flight requests
+  if (inFlightLoadCalls) {
+    return inFlightLoadCalls;
+  }
+
+  inFlightLoadCalls = (async () => {
+    const apiKey = await getApiKeyFromSession();
+    const list = el("callsList");
+    if (!apiKey) {
+      if (list && list.children.length === 0) {
+        list.innerHTML = '<li class="sub">Connect your account or save a key to view recent calls.</li>';
+      }
+      return;
+    }
+    try {
+      const response = await fetch(buildCallsEndpoint(), {
+        headers: { Authorization: `Bearer ${apiKey}` },
+      });
+
+      if (response.status === 429) {
+        const retrySec = parseInt(response.headers?.get?.("Retry-After") || "30", 10) || 30;
+        callsRateLimitedUntil = Date.now() + retrySec * 1000;
+        if (list && list.children.length === 0) {
+          list.innerHTML = `<li class="sub">Recent calls sync paused (rate limit). Retrying in ${retrySec}s…</li>`;
+        }
+        return;
+      }
+
+      if (response.status === 403) {
+        if (list && list.children.length === 0) {
+          list.innerHTML = '<li class="sub">No calls found or plan restricted.</li>';
+        }
+        return;
+      }
+
+      if (response.status === 401) {
+        if (list && list.children.length === 0) {
+          list.innerHTML = '<li class="sub">Key rejected (401). Connect your account again.</li>';
+        }
+        return;
+      }
+
+      if (!response.ok) {
+        console.debug("[Gauge:panel] calls fetch returned status", response.status);
+        return;
+      }
+
+      const data = await response.json();
+      const calls = data?.calls || [];
+      renderCalls(calls);
+      lastLoadCallsAt = Date.now();
+
+      if (hasChrome() && chrome.storage?.local) {
+        chrome.storage.local.set({ cachedCalls: calls });
+      }
+    } catch (error) {
+      console.debug("[Gauge:panel] calls load failed quietly", error);
+      if (list && list.children.length === 0) {
+        list.innerHTML = "";
+        const li = document.createElement("li");
+        li.className = "sub";
+        li.textContent = buildManualUploadInstructions(`${APP_ORIGIN}/app/calls`);
+        list.appendChild(li);
+      }
+    } finally {
+      inFlightLoadCalls = null;
+    }
+  })();
+
+  return inFlightLoadCalls;
 }
 
 async function refreshKeyStatus() {
@@ -312,12 +368,18 @@ async function refreshKeyStatus() {
 
 async function initSession() {
   if (hasChrome() && chrome.storage?.local) {
-    chrome.storage.local.get({ authStatus: { state: "unknown" }, lastAnalyzedCall: null }, (res) => {
-      renderAccountStatus(res.authStatus);
-      if (res.lastAnalyzedCall) {
-        renderPostCallCard(res.lastAnalyzedCall);
-      }
-    });
+    chrome.storage.local.get(
+      { authStatus: { state: "unknown" }, lastAnalyzedCall: null, cachedCalls: null },
+      (res) => {
+        renderAccountStatus(res.authStatus);
+        if (res.lastAnalyzedCall) {
+          renderPostCallCard(res.lastAnalyzedCall);
+        }
+        if (Array.isArray(res.cachedCalls) && res.cachedCalls.length > 0) {
+          renderCalls(res.cachedCalls);
+        }
+      },
+    );
   }
 
   // Ping background to verify or auto-exchange Clerk cookie
@@ -547,11 +609,16 @@ if (hasChrome() && chrome.runtime?.onMessage) {
 if (hasChrome() && chrome.storage?.onChanged) {
   chrome.storage.onChanged.addListener((changes, area) => {
     if (area === "local" && changes.authStatus) {
+      const oldState = changes.authStatus.oldValue?.state;
+      const newState = changes.authStatus.newValue?.state;
       renderAccountStatus(changes.authStatus.newValue);
-      loadCalls();
+      if (oldState !== "signed_in" && newState === "signed_in") {
+        loadCalls();
+      }
     }
     if (area === "local" && changes.lastAnalyzedCall?.newValue) {
       renderPostCallCard(changes.lastAnalyzedCall.newValue);
+      loadCalls({ force: true });
     }
   });
 }
