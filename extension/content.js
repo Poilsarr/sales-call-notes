@@ -433,6 +433,7 @@
     totalCaptionsCount = 0;
     meetingTitle = getMeetingTitle();
     ensureBanner();
+    tryEnableCaptions();
     scrapeOnce();
     if (flushTimer == null) {
       flushTimer = setInterval(flush, FLUSH_INTERVAL_MS);

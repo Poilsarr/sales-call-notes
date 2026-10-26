@@ -112,6 +112,120 @@ function updateWaveformBars(freqBins) {
   }
 }
 
+let panelMicStream = null;
+let panelAudioCtx = null;
+let panelAnalyser = null;
+let panelAnimFrame = null;
+let liveSpeechRecognizer = null;
+
+async function ensurePanelMicPermission() {
+  if (panelMicStream && panelMicStream.active) return panelMicStream;
+  try {
+    if (navigator.mediaDevices?.getUserMedia) {
+      panelMicStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      setupPanelAudioVisualizer(panelMicStream);
+      return panelMicStream;
+    }
+  } catch (err) {
+    console.debug("[Gauge:sidepanel] mic permission error:", err);
+  }
+  return null;
+}
+
+function setupPanelAudioVisualizer(stream) {
+  try {
+    const AudioCtx = window.AudioContext || window.webkitAudioContext;
+    if (!AudioCtx || !stream) return;
+    if (!panelAudioCtx || panelAudioCtx.state === "closed") {
+      panelAudioCtx = new AudioCtx();
+    }
+    const source = panelAudioCtx.createMediaStreamSource(stream);
+    panelAnalyser = panelAudioCtx.createAnalyser();
+    panelAnalyser.fftSize = 64;
+    source.connect(panelAnalyser);
+
+    const dataArray = new Uint8Array(panelAnalyser.frequencyBinCount);
+    function tick() {
+      if (!panelAnalyser) return;
+      panelAnalyser.getByteFrequencyData(dataArray);
+      updateWaveformBars(Array.from(dataArray));
+      panelAnimFrame = requestAnimationFrame(tick);
+    }
+    if (panelAnimFrame) cancelAnimationFrame(panelAnimFrame);
+    tick();
+  } catch (err) {
+    console.debug("[Gauge:sidepanel] visualizer setup error:", err);
+  }
+}
+
+function teardownPanelAudio() {
+  if (panelAnimFrame) {
+    cancelAnimationFrame(panelAnimFrame);
+    panelAnimFrame = null;
+  }
+  if (panelMicStream) {
+    try {
+      panelMicStream.getTracks().forEach((t) => t.stop());
+    } catch {}
+    panelMicStream = null;
+  }
+  if (panelAudioCtx && panelAudioCtx.state !== "closed") {
+    try {
+      panelAudioCtx.close();
+    } catch {}
+    panelAudioCtx = null;
+  }
+  panelAnalyser = null;
+  resetWaveformBars();
+}
+
+function resetWaveformBars() {
+  const bars = document.querySelectorAll(".wave-bar");
+  bars.forEach((bar) => {
+    bar.style.height = "4px";
+  });
+}
+
+function startLiveSpeechRecognition() {
+  const SpeechRec = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if (!SpeechRec) return;
+  try {
+    liveSpeechRecognizer = new SpeechRec();
+    liveSpeechRecognizer.continuous = true;
+    liveSpeechRecognizer.interimResults = true;
+    liveSpeechRecognizer.lang = "en-US";
+    liveSpeechRecognizer.onresult = (event) => {
+      for (let i = event.resultIndex; i < event.results.length; ++i) {
+        const res = event.results[i];
+        const transcript = res[0]?.transcript?.trim();
+        if (!transcript) continue;
+        if (res.isFinal) {
+          appendLiveTranscriptTurn("You", transcript);
+          sendMessage({
+            type: MESSAGE_TYPES.CAPTIONS_UPDATE,
+            captions: [{ speaker: "You", text: transcript, timestamp: Date.now() }],
+          }).catch(() => {});
+        }
+      }
+    };
+    liveSpeechRecognizer.onerror = (e) => {
+      console.debug("[Gauge:speechRecognition] notice:", e);
+    };
+    liveSpeechRecognizer.start();
+  } catch (err) {
+    console.debug("[Gauge:speechRecognition] start failed:", err);
+  }
+}
+
+function stopLiveSpeechRecognition() {
+  if (liveSpeechRecognizer) {
+    try {
+      liveSpeechRecognizer.stop();
+    } catch {}
+    liveSpeechRecognizer = null;
+  }
+}
+
 function updateDurationTracker(elapsedSeconds) {
   setHidden("durationTracker", false);
   setText("elapsedTimeDisplay", formatDuration(elapsedSeconds));
@@ -227,6 +341,20 @@ function formatCallMeta(call) {
   return parts.join(" · ");
 }
 
+let favoriteCallIds = new Set();
+let customCallTitles = {};
+
+if (hasChrome() && chrome.storage?.local) {
+  chrome.storage.local.get({ favCalls: {}, customCallTitles: {} }, (res) => {
+    if (res.favCalls && typeof res.favCalls === "object") {
+      favoriteCallIds = new Set(Object.keys(res.favCalls).filter((k) => res.favCalls[k]));
+    }
+    if (res.customCallTitles && typeof res.customCallTitles === "object") {
+      customCallTitles = res.customCallTitles;
+    }
+  });
+}
+
 function renderCalls(calls) {
   const list = el("callsList");
   if (!list) return;
@@ -235,31 +363,192 @@ function renderCalls(calls) {
     return;
   }
   list.innerHTML = "";
-  for (const call of calls.slice(0, 20)) {
-    const li = document.createElement("li");
-    const link = document.createElement("a");
+
+  const sortedCalls = [...calls].sort((a, b) => {
+    const aFav = favoriteCallIds.has(String(a.id));
+    const bFav = favoriteCallIds.has(String(b.id));
+    if (aFav && !bFav) return -1;
+    if (!aFav && bFav) return 1;
+    return new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime();
+  });
+
+  for (const call of sortedCalls.slice(0, 20)) {
     const id = call?.id == null ? "" : String(call.id);
-    link.href = id ? buildCallDetailUrl(id) : `${APP_ORIGIN}/app/calls`;
+    const isFav = favoriteCallIds.has(id);
+    const displayTitle = customCallTitles[id] || call?.title || call?.filename || `Call ${id.slice(0, 8) || "untitled"}`;
+    const callUrl = id ? buildCallDetailUrl(id) : `${APP_ORIGIN}/app/calls`;
+
+    const li = document.createElement("li");
+    li.className = "call-item";
+    li.dataset.id = id;
+
+    const row = document.createElement("div");
+    row.className = "call-row";
+
+    // 1. Star button
+    const starBtn = document.createElement("button");
+    starBtn.className = `btn-star ${isFav ? "starred" : ""}`;
+    starBtn.title = isFav ? "Marked Important (click to unstar)" : "Mark as Important";
+    starBtn.setAttribute("aria-label", "Mark Important");
+    starBtn.textContent = isFav ? "★" : "☆";
+    starBtn.addEventListener("click", (e) => {
+      e.stopPropagation();
+      e.preventDefault();
+      const nowFav = !favoriteCallIds.has(id);
+      if (nowFav) favoriteCallIds.add(id);
+      else favoriteCallIds.delete(id);
+      if (hasChrome() && chrome.storage?.local) {
+        const obj = {};
+        favoriteCallIds.forEach((favId) => { obj[favId] = true; });
+        chrome.storage.local.set({ favCalls: obj });
+      }
+      renderCalls(calls);
+    });
+
+    // 2. Info link
+    const link = document.createElement("a");
+    link.href = callUrl;
     link.target = "_blank";
     link.rel = "noopener noreferrer";
+    link.className = "call-link";
 
-    const infoCol = document.createElement("div");
-    const title = document.createElement("div");
-    title.className = "call-title";
-    title.textContent = call?.filename || `Call ${id.slice(0, 8) || "untitled"}`;
+    const info = document.createElement("div");
+    info.className = "call-info";
+
+    const titleRow = document.createElement("div");
+    titleRow.className = "call-title-row";
+
+    const titleEl = document.createElement("span");
+    titleEl.className = "call-title";
+    titleEl.textContent = displayTitle;
+    titleRow.appendChild(titleEl);
+
+    if (isFav) {
+      const vipBadge = document.createElement("span");
+      vipBadge.className = "badge-important";
+      vipBadge.textContent = "VIP";
+      titleRow.appendChild(vipBadge);
+    }
+
     const meta = document.createElement("div");
     meta.className = "meta";
     meta.textContent = formatCallMeta(call);
-    infoCol.appendChild(title);
-    infoCol.appendChild(meta);
 
-    const arrow = document.createElement("span");
-    arrow.style.cssText = "color: rgba(255,255,255,0.3); font-size: 13px; margin-left: 8px;";
-    arrow.textContent = "→";
+    info.appendChild(titleRow);
+    info.appendChild(meta);
+    link.appendChild(info);
 
-    link.appendChild(infoCol);
-    link.appendChild(arrow);
-    li.appendChild(link);
+    // 3. Actions (Rename + Open link)
+    const actions = document.createElement("div");
+    actions.className = "call-actions";
+
+    const renameBtn = document.createElement("button");
+    renameBtn.className = "btn-icon btn-rename";
+    renameBtn.title = "Rename call";
+    renameBtn.setAttribute("aria-label", "Rename call");
+    renameBtn.textContent = "✎";
+
+    const openLink = document.createElement("a");
+    openLink.href = callUrl;
+    openLink.target = "_blank";
+    openLink.rel = "noopener noreferrer";
+    openLink.className = "btn-icon";
+    openLink.title = "Open in Gauge";
+    openLink.textContent = "→";
+
+    actions.appendChild(renameBtn);
+    actions.appendChild(openLink);
+
+    row.appendChild(starBtn);
+    row.appendChild(link);
+    row.appendChild(actions);
+    li.appendChild(row);
+
+    // 4. Inline rename row
+    const renameRow = document.createElement("div");
+    renameRow.className = "call-rename-row hidden";
+
+    const renameInput = document.createElement("input");
+    renameInput.type = "text";
+    renameInput.className = "rename-input";
+    renameInput.value = displayTitle;
+    renameInput.maxLength = 120;
+
+    const saveBtn = document.createElement("button");
+    saveBtn.className = "btn-xs btn-save-rename";
+    saveBtn.textContent = "Save";
+
+    const cancelBtn = document.createElement("button");
+    cancelBtn.className = "btn-xs";
+    cancelBtn.textContent = "✕";
+
+    renameBtn.addEventListener("click", (e) => {
+      e.stopPropagation();
+      e.preventDefault();
+      renameRow.classList.toggle("hidden");
+      if (!renameRow.classList.contains("hidden")) {
+        renameInput.focus();
+        renameInput.select();
+      }
+    });
+
+    cancelBtn.addEventListener("click", (e) => {
+      e.stopPropagation();
+      e.preventDefault();
+      renameRow.classList.add("hidden");
+      renameInput.value = displayTitle;
+    });
+
+    const doSave = async () => {
+      const newTitle = renameInput.value.trim();
+      if (!newTitle || newTitle === displayTitle) {
+        renameRow.classList.add("hidden");
+        return;
+      }
+      customCallTitles[id] = newTitle;
+      titleEl.textContent = newTitle;
+      renameRow.classList.add("hidden");
+
+      if (hasChrome() && chrome.storage?.local) {
+        chrome.storage.local.set({ customCallTitles });
+      }
+
+      // Sync to backend if possible
+      const apiKey = await getApiKeyFromSession();
+      if (apiKey && id) {
+        try {
+          await fetch(`${APP_ORIGIN}/api/calls/${id}`, {
+            method: "PATCH",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${apiKey}`,
+            },
+            body: JSON.stringify({ title: newTitle }),
+          });
+        } catch {}
+      }
+    };
+
+    saveBtn.addEventListener("click", (e) => {
+      e.stopPropagation();
+      e.preventDefault();
+      doSave();
+    });
+
+    renameInput.addEventListener("keydown", (e) => {
+      if (e.key === "Enter") {
+        e.preventDefault();
+        doSave();
+      } else if (e.key === "Escape") {
+        renameRow.classList.add("hidden");
+      }
+    });
+
+    renameRow.appendChild(renameInput);
+    renameRow.appendChild(saveBtn);
+    renameRow.appendChild(cancelBtn);
+    li.appendChild(renameRow);
+
     list.appendChild(li);
   }
   void escapeHtml;
@@ -506,19 +795,28 @@ el("recordBtn")?.addEventListener("click", async () => {
   const downloadRow = el("downloadRow");
   if (downloadRow) downloadRow.style.display = "none";
   setRecState("dot-rec", "Recording…");
-  setStatus("Recording tab audio (32kbps Opus) + captions. Press Stop when done.");
+  setStatus("Recording meeting audio + live speech recognition active. Press Stop when done.");
   setHidden("durationTracker", false);
+
+  // Request mic permission on interactive user gesture and start speech recognition
+  await ensurePanelMicPermission();
+  startLiveSpeechRecognition();
+
   const res = await sendMessage({ type: MESSAGE_TYPES.START_RECORDING });
   if (res && res.ok === false) {
+    stopLiveSpeechRecognition();
+    teardownPanelAudio();
     setRecState("dot-err", "Record failed");
     setStatus(`Could not start capture: ${res.error || "unknown"}. ${buildManualUploadInstructions()}`);
   }
 });
 
 el("stopBtn")?.addEventListener("click", async () => {
+  stopLiveSpeechRecognition();
+  teardownPanelAudio();
   await sendMessage({ type: MESSAGE_TYPES.STOP_RECORDING });
   setRecState("dot-ok", "Processing…");
-  setStatus("Stopped. Uploading audio + finalizing captions…");
+  setStatus("Stopped. Uploading audio + generating AI notes…");
   setHidden("micSilentBanner", true);
   el("sendBtn").disabled = false;
 });
@@ -555,6 +853,8 @@ if (hasChrome() && chrome.runtime?.onMessage) {
           (message.totalBytes ? ` (${Math.round(message.totalBytes / 1024)} KB)` : ""),
       );
     } else if (message.type === MESSAGE_TYPES.OFFSCREEN_DONE) {
+      stopLiveSpeechRecognition();
+      teardownPanelAudio();
       setRecState("dot-ok", "Uploaded");
       setHidden("durationTracker", true);
       setHidden("micSilentBanner", true);
@@ -570,11 +870,31 @@ if (hasChrome() && chrome.runtime?.onMessage) {
           actionItems: message.actionItems,
           healthScore: message.healthScore,
         });
+
+        // Optimistically prepend to cachedCalls in chrome.storage.local
+        const optimisticCall = {
+          id: message.id,
+          filename: message.meetingTitle || `Call ${String(message.id).slice(0, 8)}`,
+          title: message.meetingTitle || `Call ${String(message.id).slice(0, 8)}`,
+          createdAt: new Date().toISOString(),
+          healthScore: message.healthScore,
+          source: "extension",
+          summary: message.summary,
+        };
+        if (hasChrome() && chrome.storage?.local) {
+          chrome.storage.local.get({ cachedCalls: [] }, (stored) => {
+            const existing = Array.isArray(stored.cachedCalls) ? stored.cachedCalls : [];
+            const updated = [optimisticCall, ...existing.filter((c) => String(c.id) !== String(message.id))];
+            chrome.storage.local.set({ cachedCalls: updated }, () => {
+              renderCalls(updated);
+            });
+          });
+        }
       } else {
         setStatus("Done - nothing audible was captured.");
       }
       el("sendBtn").disabled = true;
-      loadCalls();
+      loadCalls({ force: true });
     } else if (message.type === MESSAGE_TYPES.OFFSCREEN_ERROR) {
       setRecState("dot-err", "Upload issue");
       setHidden("durationTracker", true);

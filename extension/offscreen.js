@@ -81,10 +81,8 @@ function pickMimeType() {
 async function acquireStream(streamId) {
   if (!navigator?.mediaDevices) throw new Error("media devices unavailable");
   if (streamId) {
-    // Tab-audio path: the service worker mints streamId via
-    // chrome.tabCapture.getMediaStreamId for the meeting tab.
     try {
-      return await navigator.mediaDevices.getUserMedia({
+      const stream = await navigator.mediaDevices.getUserMedia({
         audio: {
           mandatory: {
             chromeMediaSource: "tab",
@@ -93,21 +91,34 @@ async function acquireStream(streamId) {
         },
         video: false,
       });
+      if (stream && stream.getAudioTracks().length > 0) {
+        return { stream, source: "tab" };
+      }
     } catch (error) {
-      console.warn("[Gauge:offscreen] tab stream failed, falling back", error);
+      console.debug("[Gauge:offscreen] tab stream unavailable, falling back to mic", error);
     }
   }
-  // Fallback: user picks the meeting tab with audio sharing enabled.
-  return await navigator.mediaDevices.getDisplayMedia({ audio: true, video: false });
+
+  // Fallback to microphone directly (never getDisplayMedia in offscreen document)
+  try {
+    const mic = await navigator.mediaDevices.getUserMedia({ audio: true });
+    return { stream: mic, source: "mic" };
+  } catch (micErr) {
+    console.debug("[Gauge:offscreen] mic fallback notice:", micErr);
+    throw new Error("Unable to capture audio. Please ensure microphone permissions are granted.");
+  }
 }
 
 async function startCapture({ streamId, meetingTitle: title }) {
   if (recording) return { ok: true, already: true };
   const apiKey = await getApiKeyFromSession();
   if (!apiKey) {
-    console.warn("[Gauge:offscreen] Starting capture without API key; will record locally");
+    console.debug("[Gauge:offscreen] Starting capture without API key; will record locally");
   }
-  const rawTabStream = await acquireStream(streamId);
+  const streamInfo = await acquireStream(streamId);
+  const rawStream = streamInfo.stream;
+  const streamSource = streamInfo.source;
+
   meetingTitle = typeof title === "string" ? title.slice(0, 200) : "";
   slices = [];
   startedAt = Date.now();
@@ -117,36 +128,51 @@ async function startCapture({ streamId, meetingTitle: title }) {
     lastDownloadUrl = null;
   }
 
-  // Audio pipeline:
-  // 1. Loopback rawTabStream to speakers so user can hear call participants.
-  // 2. Mix user's microphone with tab audio so both sides of the call are recorded.
-  let recordStream = rawTabStream;
-  try {
-    const AudioCtx = window.AudioContext || window.webkitAudioContext;
-    if (AudioCtx) {
-      audioContext = new AudioCtx();
-      const tabSource = audioContext.createMediaStreamSource(rawTabStream);
-      // Route tab audio to system destination (speakers/headphones):
-      tabSource.connect(audioContext.destination);
+  let recordStream = rawStream;
 
-      try {
-        if (navigator.mediaDevices?.getUserMedia) {
-          micStream = await navigator.mediaDevices.getUserMedia({ audio: true });
-          const micSource = audioContext.createMediaStreamSource(micStream);
-          micAnalyser = audioContext.createAnalyser();
-          micAnalyser.fftSize = 64;
-          micSource.connect(micAnalyser);
-          const mixedDestination = audioContext.createMediaStreamDestination();
-          tabSource.connect(mixedDestination);
-          micSource.connect(mixedDestination);
-          recordStream = mixedDestination.stream;
+  if (streamSource === "tab") {
+    // 1. Loopback rawStream to speakers so user can hear call participants.
+    // 2. Mix user's microphone with tab audio so both sides of the call are recorded.
+    try {
+      const AudioCtx = window.AudioContext || window.webkitAudioContext;
+      if (AudioCtx) {
+        audioContext = new AudioCtx();
+        const tabSource = audioContext.createMediaStreamSource(rawStream);
+        tabSource.connect(audioContext.destination);
+
+        try {
+          if (navigator.mediaDevices?.getUserMedia) {
+            micStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+            const micSource = audioContext.createMediaStreamSource(micStream);
+            micAnalyser = audioContext.createAnalyser();
+            micAnalyser.fftSize = 64;
+            micSource.connect(micAnalyser);
+            const mixedDestination = audioContext.createMediaStreamDestination();
+            tabSource.connect(mixedDestination);
+            micSource.connect(mixedDestination);
+            recordStream = mixedDestination.stream;
+          }
+        } catch (micErr) {
+          console.debug("[Gauge:offscreen] Mic capture unavailable, recording tab audio only", micErr);
         }
-      } catch (micErr) {
-        console.warn("[Gauge:offscreen] Mic capture unavailable, recording tab audio only", micErr);
       }
+    } catch (audioCtxErr) {
+      console.debug("[Gauge:offscreen] Web Audio setup failed, using raw stream", audioCtxErr);
     }
-  } catch (audioCtxErr) {
-    console.warn("[Gauge:offscreen] Web Audio setup failed, using raw stream", audioCtxErr);
+  } else {
+    // Mic-only stream (e.g. testing in lobby or single speaker)
+    try {
+      const AudioCtx = window.AudioContext || window.webkitAudioContext;
+      if (AudioCtx) {
+        audioContext = new AudioCtx();
+        const micSource = audioContext.createMediaStreamSource(rawStream);
+        micAnalyser = audioContext.createAnalyser();
+        micAnalyser.fftSize = 64;
+        micSource.connect(micAnalyser);
+      }
+    } catch (audioCtxErr) {
+      console.debug("[Gauge:offscreen] Mic analyzer setup notice", audioCtxErr);
+    }
   }
 
   mediaStream = recordStream;
@@ -168,7 +194,7 @@ async function startCapture({ streamId, meetingTitle: title }) {
   };
   recorder.onstop = () => {
     finalizeUpload().catch((error) => {
-      console.warn("[Gauge:offscreen] finalize failed", error);
+      console.debug("[Gauge:offscreen] finalize failed", error);
       send({
         type: MESSAGE_TYPES.OFFSCREEN_ERROR,
         message: error?.message || "Upload failed",
@@ -251,6 +277,13 @@ async function stopCapture() {
           }
           resolve();
         };
+        try {
+          if (recorder.state === "recording") {
+            recorder.requestData();
+          }
+        } catch (e) {
+          console.debug("[Gauge:offscreen] requestData notice", e);
+        }
         recorder.stop();
       } else {
         resolve();

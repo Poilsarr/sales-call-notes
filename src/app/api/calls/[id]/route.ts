@@ -83,3 +83,67 @@ export async function GET(
     );
   }
 }
+
+export async function PATCH(
+  req: NextRequest,
+  { params }: { params: Promise<{ id: string }> },
+) {
+  try {
+    const { id } = await params;
+    let userId: string | null = null;
+
+    // 1. Try Bearer API key first
+    const authHeader = req.headers.get("authorization");
+    if (authHeader) {
+      const { resolveApiKey } = await import("@/lib/resolve-api-key");
+      const apiKeyResult = await resolveApiKey(authHeader);
+      if (apiKeyResult && apiKeyResult.kind === "ok") {
+        userId = apiKeyResult.context.userId;
+      }
+    }
+
+    // 2. Fall back to Clerk session
+    if (!userId) {
+      const clerkSession = await auth();
+      if (clerkSession.userId) {
+        const user = await getUserByClerkId(clerkSession.userId);
+        userId = user.id;
+      }
+    }
+
+    if (!userId) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    const body = await req.json().catch(() => ({}));
+    const newTitle = typeof body.title === "string" ? body.title.trim().slice(0, 200) : undefined;
+    const newFilename = typeof body.filename === "string" ? body.filename.trim().slice(0, 200) : undefined;
+
+    const call = await prisma.call.findUnique({
+      where: { id },
+      select: { id: true, userId: true },
+    });
+
+    if (!call) {
+      return NextResponse.json({ error: "Call not found" }, { status: 404 });
+    }
+
+    if (call.userId !== userId) {
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    }
+
+    const updated = await prisma.call.update({
+      where: { id },
+      data: {
+        ...(newTitle !== undefined ? { title: newTitle } : {}),
+        ...(newFilename !== undefined ? { filename: newFilename } : {}),
+      },
+      select: { id: true, title: true, filename: true, updatedAt: true },
+    });
+
+    return NextResponse.json({ ok: true, call: updated });
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "Unknown error";
+    return NextResponse.json({ error: `Failed to update call: ${message}` }, { status: 500 });
+  }
+}

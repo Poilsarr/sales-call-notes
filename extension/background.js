@@ -75,71 +75,52 @@ async function refreshAuthStatus() {
   const stored = await getStored({ authStatus: { state: "unknown" } });
   let apiKey = await getApiKeyFromSession();
 
-  // 1. If already signed in with a user email, PRESERVE IT and avoid clobbering!
-  if (stored.authStatus?.state === "signed_in" && stored.authStatus?.email) {
-    if (apiKey) {
-      try {
-        const session = await fetchSessionStatus(apiKey);
-        if (session && session.authenticated) {
-          const plan = (session.plan || stored.authStatus.plan || "free").toLowerCase();
-          const email = session.user?.email || stored.authStatus.email;
-          if (stored.authStatus.plan !== plan || stored.authStatus.email !== email) {
-            const status = { state: "signed_in", plan, email, at: Date.now() };
-            await setStored({ authStatus: status });
-            return status;
-          }
-          return stored.authStatus;
-        }
-      } catch {
-        // network failure — preserve existing signed-in status
-      }
-    }
-    return stored.authStatus;
-  }
-
-  // 2. If no key, attempt seamless auto-exchange using Clerk cookie
-  if (!apiKey) {
-    const clerkToken = await getClerkSessionToken();
-    if (clerkToken) {
-      try {
-        const exchange = await exchangeSessionTokenForKey(clerkToken);
-        if (exchange && (exchange.raw || exchange.user)) {
-          if (exchange.raw) {
-            apiKey = exchange.raw;
-            await setApiKeyInSession(apiKey);
-          }
-          const plan = (exchange.plan || "free").toLowerCase();
-          const email = exchange.user?.email || "";
-          const status = { state: "signed_in", plan, email, at: Date.now() };
-          await setStored({ authStatus: status });
-          return status;
-        }
-      } catch (err) {
-        console.warn("[Gauge] Cookie key exchange failed", err);
-      }
-    }
-  }
-
-  // 3. If apiKey is present, verify and ensure plan info is fresh
+  // 1. If we have an apiKey, verify it and ensure plan/email are fresh
   if (apiKey) {
     try {
       const session = await fetchSessionStatus(apiKey);
       if (session && session.authenticated) {
-        const plan = (session.plan || "free").toLowerCase();
+        const plan = (session.plan || stored.authStatus?.plan || "free").toLowerCase();
         const email = session.user?.email || stored.authStatus?.email || "";
+        if (stored.authStatus?.plan !== plan || stored.authStatus?.email !== email || stored.authStatus?.state !== "signed_in") {
+          const status = { state: "signed_in", plan, email, at: Date.now() };
+          await setStored({ authStatus: status });
+          return status;
+        }
+        return stored.authStatus;
+      }
+    } catch {
+      // network failure — preserve existing signed-in status
+      if (stored.authStatus?.state === "signed_in") {
+        return stored.authStatus;
+      }
+    }
+  }
+
+  // 2. If no apiKey (or key verification failed), attempt auto-exchange using Clerk cookie
+  const clerkToken = await getClerkSessionToken();
+  if (clerkToken) {
+    try {
+      const exchange = await exchangeSessionTokenForKey(clerkToken);
+      if (exchange && (exchange.raw || exchange.user)) {
+        if (exchange.raw) {
+          apiKey = exchange.raw;
+          await setApiKeyInSession(apiKey);
+        }
+        const plan = (exchange.plan || stored.authStatus?.plan || "free").toLowerCase();
+        const email = exchange.user?.email || stored.authStatus?.email || "";
         const status = { state: "signed_in", plan, email, at: Date.now() };
         await setStored({ authStatus: status });
         return status;
       }
-    } catch {
-      // keep existing status on network failure
+    } catch (err) {
+      console.warn("[Gauge] Cookie key exchange failed", err);
     }
-    if (stored.authStatus?.state === "signed_in") {
-      return stored.authStatus;
-    }
-    const status = { state: "signed_in", plan: "free", email: "", at: Date.now() };
-    await setStored({ authStatus: status });
-    return status;
+  }
+
+  // 3. If stored auth status was signed in and network is offline, keep it
+  if (stored.authStatus?.state === "signed_in" && stored.authStatus?.email) {
+    return stored.authStatus;
   }
 
   // 4. Truly no session, key, or cookie found
@@ -324,6 +305,16 @@ if (hasChrome() && chrome.runtime?.onMessage) {
       (async () => {
         if (message.apiKey) {
           await setApiKeyInSession(message.apiKey);
+        } else {
+          const clerkToken = await getClerkSessionToken();
+          if (clerkToken) {
+            try {
+              const exchange = await exchangeSessionTokenForKey(clerkToken);
+              if (exchange?.raw) {
+                await setApiKeyInSession(exchange.raw);
+              }
+            } catch {}
+          }
         }
         const stored = await getStored({ authStatus: {} });
         const existingAuth = stored.authStatus || {};
@@ -367,11 +358,36 @@ if (hasChrome() && chrome.runtime?.onMessage) {
           } catch {}
         }
         const streamId = await getTabStreamId(targetTabId);
-        chrome.runtime.sendMessage({
-          type: MESSAGE_TYPES.OFFSCREEN_START_AUDIO,
-          streamId,
-          meetingTitle: message.meetingTitle || stored.liveMeetingTitle || "",
+        const title = message.meetingTitle || stored.liveMeetingTitle || "";
+
+        // Send to offscreen and AWAIT the response so errors propagate
+        const offscreenResult = await new Promise((resolve) => {
+          try {
+            chrome.runtime.sendMessage(
+              {
+                type: MESSAGE_TYPES.OFFSCREEN_START_AUDIO,
+                streamId,
+                meetingTitle: title,
+              },
+              (response) => {
+                if (chrome.runtime?.lastError) {
+                  resolve({ ok: false, error: chrome.runtime.lastError.message || "offscreen unreachable" });
+                } else {
+                  resolve(response || { ok: false, error: "no response from offscreen" });
+                }
+              },
+            );
+          } catch (err) {
+            resolve({ ok: false, error: err?.message || "sendMessage failed" });
+          }
         });
+
+        if (!offscreenResult?.ok) {
+          sendResponse?.({ ok: false, error: offscreenResult?.error || "capture failed in offscreen" });
+          return;
+        }
+
+        await setStored({ recording: true });
 
         // Relay to content script so in-meeting REC banner appears and caption scraper starts
         if (targetTabId && chrome.tabs?.sendMessage) {
@@ -380,7 +396,7 @@ if (hasChrome() && chrome.runtime?.onMessage) {
               targetTabId,
               {
                 type: MESSAGE_TYPES.START_RECORDING,
-                meetingTitle: message.meetingTitle || stored.liveMeetingTitle || "",
+                meetingTitle: title,
               },
               () => {
                 void chrome.runtime?.lastError;
