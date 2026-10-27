@@ -12,6 +12,7 @@ const links = [
   { href: "/features", label: "Features" },
   { href: "/integrations", label: "Integrations" },
   { href: "/pricing", label: "Pricing" },
+  { href: "/extension", label: "Extension" },
   { href: "/demo", label: "Live demo" },
 ];
 

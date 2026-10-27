@@ -6,6 +6,8 @@ import { ShieldCheck, ArrowRight, Star } from "lucide-react";
 
 const EXTRA_REVIEWS = [
   {
+    plate: "/studio/gauge_review_jamie_studio.jpg",
+    plateAlt: "Live call capture catching a competitor mention, an instant Slack ping in 3 seconds, and a deal closed the same week",
     initials: "JM",
     name: "Jamie McKenzie",
     role: "VP Sales · Momentum.io",
@@ -14,6 +16,8 @@ const EXTRA_REVIEWS = [
     accent: "#10b981",
   },
   {
+    plate: "/studio/gauge_review_deepa_studio.jpg",
+    plateAlt: "HubSpot CRM data completeness rising from 40 to 98 percent in two weeks with zero manual feed",
     initials: "DS",
     name: "Deepa Sharma",
     role: "RevOps Lead · CloudAxis",
@@ -21,14 +25,72 @@ const EXTRA_REVIEWS = [
     rating: 5,
     accent: "#6366f1",
   },
+  {
+    plate: "/studio/gauge_review_marcus_studio.jpg",
+    plateAlt: "Follow-up email auto-drafted from the call and sent 8 minutes after hang-up — subject line reads Recap, rollout plan plus ROI numbers",
+    initials: "MH",
+    name: "Marcus Hale",
+    role: "Account Executive · Brightwave",
+    quote: "My follow-up went out 8 minutes after the call, drafted straight from the transcript. Prospects have noticed.",
+    rating: 5,
+    accent: "#F26522",
+  },
+  {
+    plate: "/studio/gauge_review_priya_studio.jpg",
+    plateAlt: "Today's call log showing Sarah Kim, Derek Owusu and Anne Voss — every conversation auto-logged to the CRM with zero keystrokes",
+    initials: "PN",
+    name: "Priya Natarajan",
+    role: "SDR Manager · Leafline",
+    quote: "My reps run 9 calls a day and every one lands in the CRM — logged, tagged, zero keystrokes. Our forecast finally tells the truth.",
+    rating: 5,
+    accent: "#8b5cf6",
+  },
 ];
 
-const COMMUNITIES = [
-  { name: "Modern Sales Pros", style: "font-serif italic font-bold text-[17px] text-gray-900" },
-  { name: "PAVILION", style: "font-sans font-black tracking-[0.2em] text-[13px] text-gray-800 uppercase" },
-  { name: "RevGenius", style: "font-sans font-bold tracking-widest text-[13px] text-gray-700 uppercase" },
-  { name: "HubSpot Certified", style: "font-mono font-semibold text-[12px] text-[#FF7A59]" },
-];
+function SeriesCard({ r, idx }: { r: (typeof EXTRA_REVIEWS)[number]; idx: number }) {
+  return (
+    <div
+      className="flex-shrink-0 w-[330px] sm:w-[440px] lg:w-[460px] mx-2.5 rounded-2xl p-5 sm:p-6 bg-[#F8F9FA] border border-black/[0.06] hover:border-black/[0.12] hover:bg-white hover:shadow-xl hover:shadow-black/[0.07] hover:-translate-y-1 transition-all duration-300 flex flex-col gap-3.5 cursor-default"
+    >
+      {/* Studio plate: outcome scene */}
+      <div className="relative rounded-xl overflow-hidden border border-black/[0.06] shadow-sm">
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          src={r.plate}
+          alt={r.plateAlt}
+          className={`studio-float block w-full ${idx % 2 === 1 ? "studio-float-alt" : ""}`}
+          loading="lazy"
+        />
+      </div>
+
+      {/* Stars */}
+      <div className="flex items-center gap-1 pt-1">
+        {[...Array(r.rating)].map((_, si) => (
+          <Star key={si} size={14} className="text-amber-400" fill="currentColor" />
+        ))}
+      </div>
+
+      <blockquote className="text-[16px] text-gray-800 leading-[1.55] flex-1">
+        &ldquo;{r.quote}&rdquo;
+      </blockquote>
+
+      <div className="flex items-center gap-3 pt-3.5 border-t border-black/[0.06]">
+        <div
+          className="w-11 h-11 rounded-full flex items-center justify-center text-[13px] font-bold text-white shrink-0"
+          style={{
+            background: `radial-gradient(circle at 35% 35%, rgba(255,255,255,0.3), transparent 50%), ${r.accent}`,
+          }}
+        >
+          {r.initials}
+        </div>
+        <div>
+          <p className="text-[15.5px] font-semibold text-gray-900 leading-tight">{r.name}</p>
+          <p className="text-[12.5px] text-gray-500 mt-0.5">{r.role}</p>
+        </div>
+      </div>
+    </div>
+  );
+}
 
 export function StudioSocialProof() {
   return (
@@ -108,7 +170,7 @@ export function StudioSocialProof() {
               >
                 &ldquo;
               </div>
-              <blockquote className="text-[20px] sm:text-[24px] font-medium leading-[1.35] text-white tracking-tight text-balance relative z-10">
+              <blockquote className="text-[21px] sm:text-[27px] font-medium leading-[1.32] text-white tracking-tight text-balance relative z-10">
                 It&apos;s an incredible app. The Chrome extension alone{" "}
                 <span className="text-[#F26522]">won us 3 deals against Gong</span> last month —
                 because the client never had to let an awkward bot into our call.
@@ -145,16 +207,17 @@ export function StudioSocialProof() {
                 Ecosystem & Sales Communities
               </span>
 
-              {/* Logo grid */}
-              <div className="grid grid-cols-2 gap-x-6 gap-y-5 items-center flex-1">
-                {COMMUNITIES.map((c) => (
-                  <div
-                    key={c.name}
-                    className="flex items-center justify-center py-3 px-4 rounded-xl bg-white border border-black/[0.06] shadow-sm hover:shadow-md transition-all hover:-translate-y-0.5 cursor-default"
-                  >
-                    <span className={c.style}>{c.name}</span>
-                  </div>
-                ))}
+              {/* Studio plate: community wordmarks orbiting the network core */}
+              <div className="flex-1 flex items-center">
+                <div className="w-full rounded-xl overflow-hidden border border-black/[0.06] shadow-sm transition-transform duration-500 ease-out hover:-translate-y-1.5">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src="/studio/gauge_communities_studio.jpg"
+                    alt="3D render: community wordmarks — Modern Sales Pros, Pavilion, RevGenius, HubSpot Certified — orbiting a glowing network core"
+                    className="studio-float block w-full"
+                    loading="lazy"
+                  />
+                </div>
               </div>
             </div>
 
@@ -194,42 +257,25 @@ export function StudioSocialProof() {
           </div>
         </div>
 
-        {/* ── Secondary mini testimonials row ── */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
-          {EXTRA_REVIEWS.map((r) => (
-            <div
-              key={r.name}
-              className="rounded-2xl p-6 bg-[#F8F9FA] border border-black/[0.06] hover:border-black/[0.12] hover:bg-white hover:shadow-sm transition-all flex flex-col gap-4"
-            >
-              {/* Stars */}
-              <div className="flex items-center gap-0.5">
-                {[...Array(r.rating)].map((_, i) => (
-                  <Star key={i} size={12} className="text-amber-400" fill="currentColor" />
-                ))}
-              </div>
+      </div>
 
-              <blockquote className="text-[14px] text-gray-700 leading-relaxed flex-1">
-                &ldquo;{r.quote}&rdquo;
-              </blockquote>
+      {/* ── Secondary testimonials: full-bleed marquee series ── */}
+      <div className="relative w-full mt-14">
+        <p className="text-center text-[12px] font-mono uppercase tracking-[0.2em] text-gray-400 font-semibold mb-7">
+          More from the field
+        </p>
+        <div className="relative w-full overflow-hidden py-4">
+          {/* Fade masks */}
+          <div className="pointer-events-none absolute inset-y-0 left-0 w-24 z-10 bg-gradient-to-r from-white to-transparent" />
+          <div className="pointer-events-none absolute inset-y-0 right-0 w-24 z-10 bg-gradient-to-l from-white to-transparent" />
 
-              <div className="flex items-center gap-3 pt-3 border-t border-black/[0.06]">
-                <div
-                  className="w-9 h-9 rounded-full flex items-center justify-center text-[11px] font-bold text-white shrink-0"
-                  style={{
-                    background: `radial-gradient(circle at 35% 35%, rgba(255,255,255,0.3), transparent 50%), ${r.accent}`,
-                  }}
-                >
-                  {r.initials}
-                </div>
-                <div>
-                  <p className="text-[13px] font-semibold text-gray-900 leading-tight">{r.name}</p>
-                  <p className="text-[11px] text-gray-500 mt-0.5">{r.role}</p>
-                </div>
-              </div>
-            </div>
-          ))}
+          {/* Series row — slides left, pauses + lifts on hover */}
+          <div className="flex animate-marquee-reviews">
+            {[...EXTRA_REVIEWS, ...EXTRA_REVIEWS].map((r, i) => (
+              <SeriesCard key={`${r.name}-${i}`} r={r} idx={i} />
+            ))}
+          </div>
         </div>
-
       </div>
     </section>
   );

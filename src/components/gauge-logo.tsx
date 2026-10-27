@@ -9,11 +9,11 @@ export default function GaugeLogo({
 }) {
   return (
     <img
-      src="/gauge-logo.png"
+      src={dark ? "/gauge-logo-white.png" : "/gauge-logo.png"}
       alt="Gauge"
       width={size}
       height={size}
-      className={`object-contain ${dark ? "invert" : ""} ${className}`}
+      className={`object-contain ${className}`}
       draggable={false}
     />
   );

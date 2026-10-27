@@ -22,6 +22,7 @@
 import { execFileSync } from "node:child_process";
 import { createHash } from "node:crypto";
 import {
+  copyFileSync,
   existsSync,
   mkdirSync,
   readdirSync,
@@ -315,6 +316,16 @@ function main() {
 
   const bytes = statSync(outPath).size;
   const sha = createHash("sha256").update(readFileSync(outPath)).digest("hex").slice(0, 16);
+
+  // Mirror package to public/ for web app direct download
+  const publicDir = path.join(ROOT, "public");
+  if (existsSync(publicDir)) {
+    try {
+      copyFileSync(outPath, path.join(publicDir, "gauge-extension-1.0.0.zip"));
+      copyFileSync(outPath, path.join(publicDir, "gauge-extension.zip"));
+    } catch {}
+  }
+
   console.log(`\ngauge: ok → ${path.relative(ROOT, outPath)} (${files.length} files, ${bytes} bytes, sha256:${sha}…)`);
 }
 

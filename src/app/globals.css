@@ -1003,3 +1003,21 @@
     scroll-behavior: auto !important;
   }
 }
+
+/* Studio plate levitation (social-proof visuals) */
+@keyframes studio-float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-5px); }
+}
+.studio-float { animation: studio-float 9s ease-in-out infinite; will-change: transform; }
+.studio-float-alt { animation-duration: 11s; animation-delay: -5.5s; }
+
+/* Review series marquee — slower pace for readable cards */
+.animate-marquee-reviews {
+  display: flex;
+  width: max-content;
+  animation: marquee-left 76s linear infinite;
+}
+.animate-marquee-reviews:hover {
+  animation-play-state: paused;
+}

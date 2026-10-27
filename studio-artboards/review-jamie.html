@@ -1,0 +1,166 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Gauge — Jamie Review Studio Plate</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body { background: #efe9e2; }
+  body {
+    font-family: -apple-system, "SF Pro Text", "Helvetica Neue", "Segoe UI", Arial, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+
+  .artboard {
+    position: relative;
+    width: 800px;
+    height: 250px;
+    overflow: hidden;
+    background: #f7f3ee;
+  }
+  .abs { position: absolute; }
+
+  .tint-mint { left: -120px; bottom: -150px; width: 480px; height: 480px;
+    background: radial-gradient(closest-side, rgba(180,236,206,0.55), rgba(180,236,206,0) 72%); }
+  .tint-peach { right: -140px; bottom: -170px; width: 520px; height: 520px;
+    background: radial-gradient(closest-side, rgba(255,178,108,0.5), rgba(255,178,108,0) 72%); }
+  .tint-blush { right: -60px; top: -100px; width: 380px; height: 380px;
+    background: radial-gradient(closest-side, rgba(255,196,192,0.4), rgba(255,196,192,0) 72%); }
+  .glow-core { left: 110px; top: 20px; width: 560px; height: 230px;
+    background: radial-gradient(closest-side, rgba(255,248,240,0.95), rgba(255,248,240,0) 70%); }
+  .vignette { inset: 0;
+    background: radial-gradient(150% 140% at 50% 45%, rgba(0,0,0,0) 60%, rgba(74,45,20,0.07) 100%); }
+  .grain { inset: 0; opacity: 0.55; mix-blend-mode: overlay;
+    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='260' height='260'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/><feColorMatrix type='matrix' values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.05 0'/></filter><rect width='260' height='260' filter='url(%23n)'/></svg>");
+    background-size: 260px 260px; }
+
+  .floor { border-radius: 50%;
+    background: radial-gradient(closest-side, rgba(58,34,10,0.26), rgba(58,34,10,0) 72%);
+    filter: blur(5px); }
+
+  .glass {
+    background: linear-gradient(180deg, #ffffff 0%, #fefdfc 55%, #f8f4ef 100%);
+    border: 1px solid rgba(31,22,10,0.08);
+    box-shadow:
+      inset 0 1px 0 rgba(255,255,255,0.9),
+      0 2px 6px rgba(56,32,8,0.06),
+      0 14px 26px -10px rgba(56,32,8,0.16),
+      0 34px 64px -18px rgba(56,32,8,0.24);
+    border-radius: 16px;
+  }
+  .sheen { position: absolute; inset: 0; border-radius: inherit; pointer-events: none;
+    background: linear-gradient(118deg, rgba(255,255,255,0.42) 0%, rgba(255,255,255,0) 30%); }
+  .edgeglow { position: absolute; inset: 0; border-radius: inherit; pointer-events: none;
+    box-shadow: inset -14px -18px 34px rgba(242,101,34,0.05), inset 12px 12px 28px rgba(212,193,255,0.07); }
+
+  .ball { position: absolute; border-radius: 50%; }
+  .ball-emerald {
+    background: radial-gradient(circle at 32% 26%, #d2fce4 0%, #3ddc97 34%, #10b981 60%, #05754e 94%);
+    box-shadow: inset -8px -10px 20px rgba(4,74,48,.5), inset 5px 6px 14px rgba(255,255,255,.4),
+      0 12px 24px -8px rgba(16,185,129,.5);
+  }
+  .ball-dark {
+    background: radial-gradient(circle at 34% 28%, #3a3f47, #16181d 66%);
+    box-shadow: inset 0 1.5px 2px rgba(255,255,255,.28), 0 6px 14px -3px rgba(22,24,29,.55);
+  }
+
+  .chip { position: absolute; display: flex; align-items: center; gap: 8px;
+    padding: 0 16px; }
+  .chip .txt { position: relative; z-index: 3; white-space: nowrap; }
+
+  /* slack-colored glyph */
+  .slack { display: flex; flex-wrap: wrap; width: 18px; height: 18px; gap: 2px; flex-shrink: 0; }
+  .slack i { width: 8px; height: 8px; border-radius: 3px; display: block; }
+
+  .rival { display: inline-flex; align-items: center; gap: 5px; font-size: 13px; font-weight: 800; letter-spacing: 0.04em;
+    color: #065f46; background: linear-gradient(180deg, #e9fbf1, #d7f5e4); border: 1px solid rgba(16,185,129,0.35); padding: 7px 14px;
+    border-radius: 999px; box-shadow: inset 0 1px 0 rgba(255,255,255,0.9), 0 2px 6px rgba(16,120,80,0.15); }
+  .rival .rdot { width: 6px; height: 6px; border-radius: 50%; background: #10b981;
+    box-shadow: 0 0 5px rgba(16,185,129,0.8); }
+
+  /* waveform capsule */
+  .wave {
+    left: 96px; top: 128px; width: 470px; height: 66px;
+    transform: rotate(-1.4deg);
+    border-radius: 33px;
+    display: flex; align-items: center; gap: 12px;
+    padding: 0 18px 0 12px;
+    z-index: 5;
+  }
+  .play { width: 40px; height: 40px; border-radius: 50%; flex-shrink: 0;
+    background: radial-gradient(circle at 34% 28%, #3a3f47, #16181d 66%);
+    box-shadow: inset 0 1.5px 2px rgba(255,255,255,.28), 0 6px 14px -3px rgba(22,24,29,.55);
+    display: flex; align-items: center; justify-content: center; }
+  .play svg { width: 13px; height: 13px; color: #fff; margin-left: 2px; }
+  .wtime { font-size: 13px; font-weight: 800; color: #23282f; letter-spacing: 0.03em; }
+  .bars { display: flex; align-items: center; gap: 3px; height: 32px; flex: 1; overflow: hidden; }
+  .bars i { width: 3px; border-radius: 2px; display: block; }
+  .bar-hot { background: linear-gradient(180deg, #ff8a4d, #f26522); box-shadow: 0 0 6px rgba(242,101,34,0.35); }
+  .bar-dim { background: #e3dfd9; }
+  .wmeta { display: flex; flex-direction: column; align-items: flex-end; gap: 3px; }
+  .wbit { font-size: 10px; color: #9aa0a8; letter-spacing: 0.03em; }
+  .wlive { display: flex; align-items: center; gap: 4px; font-size: 9px; font-weight: 800; color: #0e9f6e;
+    letter-spacing: 0.08em; }
+  .wlive .ldot { width: 5px; height: 5px; border-radius: 50%; background: #10b981; box-shadow: 0 0 5px rgba(16,185,129,0.8); }
+</style>
+</head>
+<body>
+<div class="artboard">
+  <div class="abs tint-mint"></div>
+  <div class="abs tint-blush"></div>
+  <div class="abs tint-peach"></div>
+  <div class="abs glow-core"></div>
+
+  <!-- Slack ping capsule -->
+  <div class="chip glass" style="left:52px; top:38px; height:52px; transform:rotate(-2.2deg);">
+    <span class="sheen"></span><span class="edgeglow"></span>
+    <span class="slack" style="position:relative; z-index:3;">
+      <i style="background:#36C5F0;"></i><i style="background:#ECB22E;"></i><i style="background:#2EB67D;"></i><i style="background:#E01E5A;"></i>
+    </span>
+    <span class="txt" style="font-size:15px; font-weight:700; color:#1f2430;">Slack ping <span style="color:#9aa0a8; font-weight:600;">· sent in</span> <span style="color:#0e9f6e; font-weight:800;">3s</span></span>
+  </div>
+
+  <!-- Rival detected chip -->
+  <div class="abs" style="left:436px; top:44px; transform:rotate(2deg); z-index:6;">
+    <span class="rival"><span class="rdot"></span>Rival detected: Gong</span>
+  </div>
+
+  <!-- Closed capsule -->
+  <div class="chip glass" style="left:538px; top:182px; height:50px; transform:rotate(-1.6deg);">
+    <span class="sheen"></span><span class="edgeglow"></span>
+    <span class="ball ball-emerald" style="position:relative; z-index:3; left:0; top:0; width:26px; height:26px; display:flex; align-items:center; justify-content:center; color:#fff; font-size:13px; font-weight:800;">&#10003;</span>
+    <span class="txt" style="font-size:15px; font-weight:700; color:#1f2430;">Deal closed <span style="color:#9aa0a8; font-weight:600;">· same week</span></span>
+  </div>
+
+  <!-- live waveform capsule -->
+  <div class="abs glass wave">
+    <span class="sheen"></span><span class="edgeglow"></span>
+    <div class="play" style="position:relative; z-index:3;">
+      <svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+    </div>
+    <span class="wtime" style="position:relative; z-index:3;">00:31</span>
+    <div class="bars" style="position:relative; z-index:3;">
+      <i class="bar-dim" style="height:8px"></i><i class="bar-dim" style="height:14px"></i><i class="bar-dim" style="height:10px"></i>
+      <i class="bar-dim" style="height:18px"></i><i class="bar-dim" style="height:8px"></i><i class="bar-dim" style="height:13px"></i>
+      <i class="bar-dim" style="height:20px"></i><i class="bar-dim" style="height:11px"></i><i class="bar-dim" style="height:15px"></i>
+      <i class="bar-dim" style="height:9px"></i><i class="bar-dim" style="height:17px"></i><i class="bar-dim" style="height:12px"></i>
+      <i class="bar-dim" style="height:7px"></i><i class="bar-dim" style="height:14px"></i>
+      <i class="bar-hot" style="height:26px"></i><i class="bar-hot" style="height:31px"></i><i class="bar-hot" style="height:22px"></i><i class="bar-hot" style="height:28px"></i>
+      <i class="bar-dim" style="height:10px"></i><i class="bar-dim" style="height:16px"></i><i class="bar-dim" style="height:12px"></i>
+      <i class="bar-dim" style="height:8px"></i><i class="bar-dim" style="height:19px"></i><i class="bar-dim" style="height:13px"></i>
+      <i class="bar-dim" style="height:9px"></i><i class="bar-dim" style="height:7px"></i><i class="bar-dim" style="height:15px"></i>
+    </div>
+    <div class="wmeta" style="position:relative; z-index:3;">
+      <span class="wbit">3 mentions caught</span>
+      <span class="wlive"><span class="ldot"></span>LIVE CAPTIONS</span>
+    </div>
+  </div>
+
+  <div class="floor" style="left:150px; top:216px; width:370px; height:26px;"></div>
+
+  <div class="abs vignette"></div>
+  <div class="abs grain"></div>
+</div>
+</body>
+</html>

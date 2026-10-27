@@ -3,6 +3,7 @@ import {
   ArrowRight,
   Captions,
   CheckCircle2,
+  Download,
   Globe,
   KeyRound,
   ListChecks,
@@ -68,20 +69,21 @@ export default function ExtensionPage() {
                 </p>
                 <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 sm:gap-5">
                   <a
-                    href="#install"
-                    className="group inline-flex items-center gap-2 bg-[#F26522] hover:bg-[#e05a1a] text-white text-[13px] sm:text-[14px] rounded-full pl-5 sm:pl-6 pr-2 py-2"
+                    href="/gauge-extension-1.0.0.zip"
+                    download="gauge-extension-1.0.0.zip"
+                    className="group inline-flex items-center gap-2 bg-[#F26522] hover:bg-[#e05a1a] text-white text-[13px] sm:text-[14px] font-medium rounded-full pl-5 sm:pl-6 pr-2 py-2 shadow-sm transition-all duration-200"
                   >
-                    <Globe size={16} className="text-white/90" />
-                    <span>Install the extension</span>
+                    <Download size={16} className="text-white/90" />
+                    <span>Download Extension (.zip)</span>
                     <span className="w-7 h-7 sm:w-8 sm:h-8 bg-white rounded-full flex items-center justify-center group-hover:translate-x-0.5 transition-transform duration-300">
                       <ArrowRight size={14} className="text-[#F26522]" />
                     </span>
                   </a>
                   <a
-                    href="#demo"
+                    href="#install"
                     className="text-[13px] text-gray-600 hover:text-gray-900 font-medium underline-offset-4 hover:underline"
                   >
-                    Run the 60-second demo →
+                    Installation steps ↓
                   </a>
                 </div>
               </div>
@@ -193,6 +195,37 @@ export default function ExtensionPage() {
 
             <ol className="grid grid-cols-1 md:grid-cols-3 gap-4 list-none">
               <li className="doppel-outer">
+                <div className="doppel-inner p-6 sm:p-8 h-full flex flex-col justify-between">
+                  <div>
+                    <div className="w-10 h-10 rounded-xl bg-[#F26522]/10 flex items-center justify-center mb-5">
+                      <Download
+                        size={18}
+                        className="text-[#F26522]"
+                        strokeWidth={1.5}
+                      />
+                    </div>
+                    <p className="text-[11px] font-mono text-gray-400 tracking-wider mb-2">
+                      STEP 1
+                    </p>
+                    <h3 className="text-[15px] font-semibold tracking-tight text-gray-900 mb-2">
+                      Download &amp; Unzip
+                    </h3>
+                    <p className="text-[13px] text-gray-500 leading-relaxed mb-4">
+                      Download the official extension archive (.zip) and extract it to a folder on your computer.
+                    </p>
+                  </div>
+                  <a
+                    href="/gauge-extension-1.0.0.zip"
+                    download="gauge-extension-1.0.0.zip"
+                    className="inline-flex items-center justify-center gap-2 bg-gray-900 hover:bg-black text-white text-[12px] font-medium rounded-lg px-4 py-2.5 transition-colors shadow-sm"
+                  >
+                    <Download size={14} />
+                    <span>Download v1.0.0 (.zip)</span>
+                  </a>
+                </div>
+              </li>
+
+              <li id="store-pending" className="doppel-outer scroll-mt-24">
                 <div className="doppel-inner p-6 sm:p-8 h-full flex flex-col">
                   <div className="w-10 h-10 rounded-xl bg-[#F26522]/10 flex items-center justify-center mb-5">
                     <Globe
@@ -202,98 +235,51 @@ export default function ExtensionPage() {
                     />
                   </div>
                   <p className="text-[11px] font-mono text-gray-400 tracking-wider mb-2">
-                    STEP 1
-                  </p>
-                  <h3 className="text-[15px] font-semibold tracking-tight text-gray-900 mb-2">
-                    Load the extension unpacked
-                  </h3>
-                  <p className="text-[13px] text-gray-500 leading-relaxed">
-                    Open{" "}
-                    <code className="px-1.5 py-0.5 bg-gray-100 rounded text-[12px] font-mono">
-                      chrome://extensions
-                    </code>{" "}
-                   , enable Developer mode, and load the extension folder.
-                    Manifest v3.
-                  </p>
-                </div>
-              </li>
-
-              <li id="store-pending" className="doppel-outer scroll-mt-24">
-                <div className="doppel-inner p-6 sm:p-8 h-full flex flex-col">
-                  <div className="w-10 h-10 rounded-xl bg-[#F26522]/10 flex items-center justify-center mb-5">
-                    <MousePointerClick
-                      size={18}
-                      className="text-[#F26522]"
-                      strokeWidth={1.5}
-                    />
-                  </div>
-                  <p className="text-[11px] font-mono text-gray-400 tracking-wider mb-2">
                     STEP 2
                   </p>
                   <h3 className="text-[15px] font-semibold tracking-tight text-gray-900 mb-2">
-                    Prefer one-click? Wait for the store
+                    Load unpacked in Chrome
                   </h3>
-                  <p className="text-[13px] text-gray-500 leading-relaxed mb-4">
-                    The Chrome Web Store listing is still pending review, so
-                    there is no live install link yet. This placeholder will
-                    become the install button the day it ships.
+                  <p className="text-[13px] text-gray-500 leading-relaxed mb-3">
+                    Open{" "}
+                    <code className="px-1.5 py-0.5 bg-gray-100 rounded text-[12px] font-mono text-gray-800">
+                      chrome://extensions
+                    </code>{" "}
+                    in your browser, turn ON <strong>Developer mode</strong> (top right toggle), click <strong>Load unpacked</strong>, and select the extracted folder.
                   </p>
-                  <a
-                    href="#store-pending"
-                    className="text-[13px] text-gray-400 font-medium underline-offset-4 underline cursor-not-allowed"
-                    aria-disabled="true"
-                  >
-                    Add to Chrome — coming soon
-                  </a>
+                  <p className="text-[11px] text-gray-400">
+                    Works on Google Chrome, Brave, Arc, Edge, and all Chromium browsers.
+                  </p>
                 </div>
               </li>
 
               <li className="doppel-outer">
-                <div className="doppel-inner p-6 sm:p-8 h-full flex flex-col">
-                  <div className="w-10 h-10 rounded-xl bg-[#F26522]/10 flex items-center justify-center mb-5">
-                    <KeyRound
-                      size={18}
-                      className="text-[#F26522]"
-                      strokeWidth={1.5}
-                    />
+                <div className="doppel-inner p-6 sm:p-8 h-full flex flex-col justify-between">
+                  <div>
+                    <div className="w-10 h-10 rounded-xl bg-[#F26522]/10 flex items-center justify-center mb-5">
+                      <KeyRound
+                        size={18}
+                        className="text-[#F26522]"
+                        strokeWidth={1.5}
+                      />
+                    </div>
+                    <p className="text-[11px] font-mono text-gray-400 tracking-wider mb-2">
+                      STEP 3
+                    </p>
+                    <h3 className="text-[15px] font-semibold tracking-tight text-gray-900 mb-2">
+                      Connect &amp; Record
+                    </h3>
+                    <p className="text-[13px] text-gray-500 leading-relaxed mb-4">
+                      Open the Gauge side panel in your browser, click <strong>Connect Gauge Account</strong> for zero-friction auto-sync (or paste an API key from Settings), join your meeting, and click <strong>Record</strong>.
+                    </p>
                   </div>
-                  <p className="text-[11px] font-mono text-gray-400 tracking-wider mb-2">
-                    STEP 3
-                  </p>
-                  <h3 className="text-[15px] font-semibold tracking-tight text-gray-900 mb-2">
-                    Paste your API key and press Save
-                  </h3>
-                  <p className="text-[13px] text-gray-500 leading-relaxed">
-                    Copy a key shaped{" "}
-                    <code className="px-1.5 py-0.5 bg-gray-100 rounded text-[12px] font-mono">
-                      cn_live_…
-                    </code>{" "}
-                    or{" "}
-                    <code className="px-1.5 py-0.5 bg-gray-100 rounded text-[12px] font-mono">
-                      cn_test_…
-                    </code>{" "}
-                    from{" "}
-                    <Link
-                      href="/settings?tab=api-keys"
-                      className="text-[#F26522] hover:underline underline-offset-2"
-                    >
-                      Settings → API Keys
-                    </Link>{" "}
-                    (minted via{" "}
-                    <code className="px-1.5 py-0.5 bg-gray-100 rounded text-[12px] font-mono">
-                      POST /api/v1/keys/exchange
-                    </code>
-                    ), paste it into the panel&apos;s API key field, and press
-                    Save. The panel confirms with “Key saved. Press Record on
-                    a meeting tab.” Full reference in the{" "}
-                    <Link
-                      href="/api-docs/v1"
-                      className="text-[#F26522] hover:underline underline-offset-2"
-                    >
-                      API docs
-                    </Link>
-                    .
-                  </p>
+                  <Link
+                    href="/extension/connect"
+                    className="inline-flex items-center gap-1.5 text-[12px] text-[#F26522] hover:text-[#e05a1a] font-semibold"
+                  >
+                    <span>Check connection status</span>
+                    <ArrowRight size={13} />
+                  </Link>
                 </div>
               </li>
             </ol>
