@@ -114,25 +114,45 @@ function renderUploadStatus(uploadStatus, lastUploadAt, lastError) {
 
 function renderMeetingContext(tab, data) {
   const info = el("meetingInfo");
+  const recBtn = el("popupRecordBtn");
+  const recText = el("popupRecordBtnText");
   if (!info) return;
   const isMeet = tab?.url && tab.url.includes("meet.google.com");
   const isTeams = tab?.url && tab.url.includes("teams.");
   const isZoom = tab?.url && tab.url.includes("zoom.us");
   const liveTitle = data.liveMeetingTitle || data.lastMeetingTitle || "";
+  const isRecording = Boolean(data.recording);
 
   if (isMeet || isTeams || isZoom) {
     setDot("statusDot", "dot-active");
-    setText("statusText", "Meeting Detected");
+    setText("statusText", isRecording ? "Recording Active" : "Meeting Detected");
     const appName = isMeet ? "Google Meet" : isTeams ? "Microsoft Teams" : "Zoom";
-    if (liveTitle) {
-      info.textContent = `${liveTitle} (${appName}) ready to record`;
+    if (isRecording) {
+      info.textContent = `Capturing audio + captions for ${appName}…`;
+      if (recBtn && recText) {
+        setHidden("popupRecordBtn", false);
+        recText.textContent = "■ Stop Recording";
+        recBtn.style.background = "linear-gradient(135deg, #ef4444 0%, #b91c1c 100%)";
+      }
     } else {
-      info.textContent = `${appName} active — click Open Recorder Panel to start`;
+      if (liveTitle) {
+        info.textContent = `${liveTitle} (${appName})`;
+      } else {
+        info.textContent = `${appName} active`;
+      }
+      if (recBtn && recText) {
+        setHidden("popupRecordBtn", false);
+        recText.textContent = "● Record Call";
+        recBtn.style.background = "linear-gradient(135deg, #ef4444 0%, #dc2626 100%)";
+      }
     }
-  } else if (data.lastMeetingSessionId) {
-    info.textContent = "Open Gauge to view the latest meeting summary";
   } else {
-    info.textContent = "Open Google Meet, Teams, or Zoom to record notes";
+    setHidden("popupRecordBtn", true);
+    if (data.lastMeetingSessionId) {
+      info.textContent = "Open Gauge to view the latest meeting summary";
+    } else {
+      info.textContent = "Open Google Meet, Teams, or Zoom to record notes";
+    }
   }
 }
 
@@ -210,6 +230,26 @@ el("openApp").addEventListener("click", () => {
       });
     },
   );
+});
+
+el("popupRecordBtn")?.addEventListener("click", async () => {
+  const data = await new Promise((resolve) => {
+    chrome.storage.local.get({ recording: false }, resolve);
+  });
+  const recBtn = el("popupRecordBtn");
+  const recText = el("popupRecordBtnText");
+  if (data.recording) {
+    if (recText) recText.textContent = "Stopping…";
+    await new Promise((resolve) => {
+      chrome.runtime.sendMessage({ type: MESSAGE_TYPES.STOP_RECORDING }, resolve);
+    });
+  } else {
+    if (recText) recText.textContent = "Starting…";
+    await new Promise((resolve) => {
+      chrome.runtime.sendMessage({ type: MESSAGE_TYPES.START_RECORDING }, resolve);
+    });
+  }
+  setTimeout(refresh, 300);
 });
 
 el("viewHistory").addEventListener("click", () => {

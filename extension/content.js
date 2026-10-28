@@ -106,6 +106,45 @@
     return true; // default true in injected contexts
   }
 
+  function isMeetingLobby() {
+    try {
+      // 1. If in-call leave/hangup button is present, we are DEFINITELY inside an active call!
+      var inCallLeaveBtn = document.querySelector(
+        'button[aria-label*="Leave call" i], button[aria-label*="hang up" i], button[data-tooltip*="Leave call" i], button[aria-label*="End call" i], button[aria-label*="Leave meeting" i], button[aria-label*="End meeting" i]'
+      );
+      if (inCallLeaveBtn) return false;
+
+      // 2. Check for explicit lobby/join buttons (case-insensitive search)
+      var lobbyJoinBtn = document.querySelector(
+        'button[aria-label*="Join now" i], button[aria-label*="Ask to join" i], button[aria-label*="Join meeting" i]'
+      );
+      if (lobbyJoinBtn) return true;
+
+      // 3. Check for Google Meet / Teams pre-join headings or prompt text
+      var bodyText = document.body ? (document.body.innerText || "") : "";
+      if (
+        bodyText.indexOf("Ready to join?") !== -1 ||
+        bodyText.indexOf("No one else is here") !== -1 ||
+        bodyText.indexOf("Choose your audio and video") !== -1 ||
+        bodyText.indexOf("Waiting for host") !== -1
+      ) {
+        return true;
+      }
+
+      // 4. Scan button text
+      var buttons = document.querySelectorAll("button");
+      for (var i = 0; i < buttons.length; i++) {
+        var t = (buttons[i].textContent || "").trim().toLowerCase();
+        if (t === "join now" || t === "ask to join" || t === "join meeting") {
+          return true;
+        }
+      }
+    } catch (e) {
+      void e;
+    }
+    return false;
+  }
+
   function findCaptionRoots() {
     var seen = [];
     var out = [];
@@ -371,6 +410,10 @@
 
   function setHudMode(mode, meta) {
     currentHudMode = mode;
+    if (mode === "idle" && !recording) {
+      removeBanner();
+      return;
+    }
     if (!hudShadow) return;
 
     var idleGroup = hudShadow.querySelector('[data-id="hudIdleGroup"]');
@@ -395,6 +438,17 @@
 
   function ensureBanner() {
     try {
+      // Only display the floating HUD if actively recording or finalizing/completed.
+      // Never display the HUD when idle or in the pre-meeting lobby.
+      if (!recording && currentHudMode !== "finalizing" && currentHudMode !== "completed") {
+        removeBanner();
+        return;
+      }
+      if (isMeetingLobby() && !recording) {
+        removeBanner();
+        return;
+      }
+
       // 1. Maintain semantic alert for screen readers and legacy contract checks
       var legacyBanner = document.getElementById(BANNER_ID);
       if (!legacyBanner) {
@@ -590,13 +644,16 @@
           } else {
             window.open("https://usegauge.vercel.app/app/calls", "_blank");
           }
+          currentHudMode = "idle";
+          removeBanner();
         });
       }
 
       var closeDoneBtn = hudShadow.querySelector('[data-id="hudCloseDoneBtn"]');
       if (closeDoneBtn) {
         closeDoneBtn.addEventListener("click", function () {
-          setHudMode("idle");
+          currentHudMode = "idle";
+          removeBanner();
         });
       }
 
@@ -655,7 +712,8 @@
   function stopRecording(final) {
     stopCaptionObserver();
     if (!recording && captions.length === 0) {
-      setHudMode("idle");
+      currentHudMode = "idle";
+      removeBanner();
       return;
     }
     recording = false;
@@ -673,7 +731,8 @@
     if (final) {
       setHudMode("finalizing");
     } else {
-      setHudMode("idle");
+      currentHudMode = "idle";
+      removeBanner();
     }
   }
 
@@ -721,13 +780,17 @@
     });
   }
 
-  // Passive caption watch: even before Record is pressed we track titles so
-  // the HUD can show the meeting name and be ready.
+  // Passive caption watch: track titles and maintain clean HUD lifecycle.
+  // When idle, ensure no HUD is injected on the webpage.
   function watch() {
     meetingTitle = getMeetingTitle();
-    if (isMeetingPage()) {
-      ensureBanner();
+    if (!recording) {
+      if (currentHudMode !== "completed" && currentHudMode !== "finalizing") {
+        removeBanner();
+      }
+      return;
     }
+    ensureBanner();
   }
 
   if (hasChromeRuntime() && chrome.runtime.onMessage) {
@@ -745,9 +808,15 @@
         }
         else if (message.type === MEETING_FINALIZE_SUCCESS || message.type === "MEETING_FINALIZE_SUCCESS") {
           setHudMode("completed", message.call);
+          setTimeout(function () {
+            if (currentHudMode === "completed") {
+              currentHudMode = "idle";
+              removeBanner();
+            }
+          }, 35000);
         }
         else if (message.type === RECORDING_STATUS) {
-          return Promise.resolve({ type: RECORDING_STATUS, recording: recording });
+          return Promise.resolve({ type: RECORDING_STATUS, recording: recording, inLobby: isMeetingLobby() });
         }
       });
     } catch (err) {

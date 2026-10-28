@@ -20,12 +20,12 @@ import { checkRateLimit } from "@/lib/rate-limit";
  * `api_access` plan gate. The key is named `extension-<yyyy-mm-dd>` so
  * rotation is visible in the key list. `raw` is returned ONCE.
  */
-export async function POST(req: Request) {
+export async function POST(req?: Request) {
   try {
     let userId: string | null = null;
 
     // 1. Try Bearer Clerk session token first (from Chrome extension background/bridge)
-    const authHeader = req.headers.get("authorization");
+    const authHeader = req?.headers?.get?.("authorization");
     if (authHeader && authHeader.startsWith("Bearer ")) {
       const token = authHeader.slice(7).trim();
       try {
@@ -114,13 +114,13 @@ export async function POST(req: Request) {
  * 1. Bearer API key (for Chrome Extension background & side panel)
  * 2. Clerk session cookie (for the web app & connect page)
  */
-export async function GET(req: Request) {
+export async function GET(req?: Request) {
   try {
     let user: { id: string; email: string; name: string | null; plan: string | null } | null = null;
     let userId: string | null = null;
 
     // 1. Try Bearer API key first
-    const authHeader = req.headers.get("authorization");
+    const authHeader = req?.headers?.get?.("authorization");
     if (authHeader) {
       const { resolveApiKey } = await import("@/lib/resolve-api-key");
       const apiKeyResult = await resolveApiKey(authHeader);
