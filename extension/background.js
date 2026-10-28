@@ -228,6 +228,19 @@ async function queueFinalize({ sessionId, meetingTitle, captions }) {
       return;
     }
 
+    const result = await response.json().catch(() => null);
+    const callId = result?.id || result?.callId || sessionId;
+    const callUrl = result?.callUrl || (callId ? `${APP_BASE_URL}/app/calls/${callId}` : "");
+    const lastAnalyzedCall = {
+      id: callId,
+      callUrl,
+      meetingTitle: meetingTitle || "Sales Call",
+      summary: result?.summary || "Meeting summary processed.",
+      actionItems: result?.actionItems || [],
+      healthScore: result?.healthScore ?? null,
+      at: Date.now(),
+    };
+
     await setStored({
       [PENDING_FLUSH_KEY]: null,
       finalizeAttempts: 0,
@@ -235,7 +248,29 @@ async function queueFinalize({ sessionId, meetingTitle, captions }) {
       uploadStatus: { state: "finalized", sessionId, at: Date.now() },
       lastUploadAt: Date.now(),
       lastUploadError: null,
+      lastAnalyzedCall,
     });
+
+    if (chrome.notifications?.create) {
+      chrome.notifications.create(`gauge-call-${callId}`, {
+        type: "basic",
+        iconUrl: "icon128.png",
+        title: "Gauge — Call Analysis Ready! ⚡",
+        message: `${meetingTitle || "Sales Call"} notes are ready to view. Click to open summary.`,
+        priority: 2,
+      });
+    }
+
+    const storedTab = await getStored({ lastMeetingTabId: null });
+    if (storedTab.lastMeetingTabId && chrome.tabs?.sendMessage) {
+      try {
+        chrome.tabs.sendMessage(
+          storedTab.lastMeetingTabId,
+          { type: "MEETING_FINALIZE_SUCCESS", call: lastAnalyzedCall },
+          () => { void chrome.runtime?.lastError; }
+        );
+      } catch {}
+    }
   } catch (error) {
     console.warn("[Gauge] Finalize failed", error);
     await recordUploadError(null, "network_error", error?.message || "network error");
@@ -339,6 +374,20 @@ if (hasChrome() && chrome.runtime?.onMessage) {
       return false;
     }
 
+    if (message.type === MESSAGE_TYPES.OPEN_PERMISSION_PAGE || message.type === "OPEN_PERMISSION_PAGE") {
+      if (chrome.tabs?.create) {
+        chrome.tabs.create({ url: chrome.runtime.getURL("permission.html") });
+      }
+      sendResponse?.({ ok: true });
+      return false;
+    }
+
+    if (message.type === MESSAGE_TYPES.MIC_PERMISSION_GRANTED || message.type === "MIC_PERMISSION_GRANTED") {
+      setStored({ micPermissionGranted: true }).catch(() => {});
+      sendResponse?.({ ok: true });
+      return false;
+    }
+
     if (message.type === MESSAGE_TYPES.START_RECORDING) {
       (async () => {
         const ready = await ensureOffscreenDocument();
@@ -347,14 +396,21 @@ if (hasChrome() && chrome.runtime?.onMessage) {
           return;
         }
         const stored = await getStored({ lastMeetingTabId: null, liveMeetingTitle: "" });
-        let targetTabId = stored.lastMeetingTabId;
+        // Prioritize explicit target tab ID from sender (e.g. content script in Google Meet)
+        let targetTabId = (sender?.tab && sender.tab.id) || message.targetTabId || stored.lastMeetingTabId;
         if (!targetTabId && chrome.tabs?.query) {
           try {
-            const tabs = await new Promise((res) => chrome.tabs.query({ active: true, currentWindow: true }, res));
-            if (tabs?.[0]?.id) {
-              targetTabId = tabs[0].id;
-              await setStored({ lastMeetingTabId: targetTabId });
+            // Find active meeting tabs first
+            const meetingTabs = await new Promise((res) =>
+              chrome.tabs.query({ url: ["*://meet.google.com/*", "*://teams.microsoft.com/*", "*://*.zoom.us/*"] }, res)
+            );
+            if (meetingTabs?.[0]?.id) {
+              targetTabId = meetingTabs[0].id;
+            } else {
+              const activeTabs = await new Promise((res) => chrome.tabs.query({ active: true, currentWindow: true }, res));
+              if (activeTabs?.[0]?.id) targetTabId = activeTabs[0].id;
             }
+            if (targetTabId) await setStored({ lastMeetingTabId: targetTabId });
           } catch {}
         }
         const streamId = await getTabStreamId(targetTabId);
@@ -383,7 +439,17 @@ if (hasChrome() && chrome.runtime?.onMessage) {
         });
 
         if (!offscreenResult?.ok) {
-          sendResponse?.({ ok: false, error: offscreenResult?.error || "capture failed in offscreen" });
+          // If microphone permission is missing, open permission gateway tab automatically!
+          if (offscreenResult?.needsMicPermission || String(offscreenResult?.error).includes("microphone permissions")) {
+            if (chrome.tabs?.create) {
+              chrome.tabs.create({ url: chrome.runtime.getURL("permission.html") });
+            }
+          }
+          sendResponse?.({
+            ok: false,
+            error: offscreenResult?.error || "capture failed in offscreen",
+            needsMicPermission: Boolean(offscreenResult?.needsMicPermission),
+          });
           return;
         }
 
@@ -465,6 +531,16 @@ if (hasChrome() && chrome.runtime?.onMessage) {
               message: `${message.meetingTitle || "Sales Call"} notes are ready to view. Click to open summary.`,
               priority: 2,
             });
+          }
+          const storedTab = await getStored({ lastMeetingTabId: null });
+          if (storedTab.lastMeetingTabId && chrome.tabs?.sendMessage) {
+            try {
+              chrome.tabs.sendMessage(
+                storedTab.lastMeetingTabId,
+                { type: "MEETING_FINALIZE_SUCCESS", call: lastAnalyzedCall },
+                () => { void chrome.runtime?.lastError; }
+              );
+            } catch {}
           }
         }
       })().catch((err) => console.warn("[Gauge] Failed to handle OFFSCREEN_DONE", err));

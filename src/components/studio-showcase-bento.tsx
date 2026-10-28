@@ -1,6 +1,5 @@
 "use client";
 
-import { useState } from "react";
 import Link from "next/link";
 import {
   ArrowRight,
@@ -8,15 +7,28 @@ import {
 } from "lucide-react";
 
 
+const CHECK_ITEMS = [
+  {
+    id: 0,
+    text: "Economic Buyer confirmed: VP of Sales ($45k budget allocated)",
+    avatar: "SC",
+    badge: "MEDDPICC",
+  },
+  {
+    id: 1,
+    text: "Competitor objection countered: Gong seat minimums trap shared",
+    avatar: "DM",
+    badge: "Battlecard",
+  },
+  {
+    id: 2,
+    text: "Push deal updates & schedule security review in HubSpot for Friday",
+    avatar: "AR",
+    badge: "CRM Sync",
+  },
+];
+
 export function StudioShowcaseBento() {
-  const [activeChecklist, setActiveChecklist] = useState<number[]>([0, 1, 2]);
-
-  const toggleCheck = (idx: number) => {
-    setActiveChecklist((prev) =>
-      prev.includes(idx) ? prev.filter((i) => i !== idx) : [...prev, idx]
-    );
-  };
-
   return (
     <section
       data-track-section="studio-showcase"
@@ -177,54 +189,39 @@ export function StudioShowcaseBento() {
               </div>
             </div>
 
-            {/* Right: 3 Interactive Checkbox Cards with Avatars (Screenshot 2 Bottom Checklist) */}
-            <div className="lg:col-span-7 space-y-3">
-              {[
-                {
-                  id: 0,
-                  text: "Economic Buyer confirmed: VP of Sales ($45k budget allocated)",
-                  avatar: "SC",
-                  role: "Sarah Chen · Economic Buyer",
-                  badge: "MEDDPICC",
-                },
-                {
-                  id: 1,
-                  text: "Competitor objection countered: Gong seat minimums trap shared",
-                  avatar: "DM",
-                  role: "David Miller · Account Exec",
-                  badge: "Battlecard",
-                },
-                {
-                  id: 2,
-                  text: "Push deal updates & schedule security review in HubSpot for Friday",
-                  avatar: "AR",
-                  role: "Alex Rivera · RevOps",
-                  badge: "CRM Sync",
-                },
-              ].map((item) => {
-                const checked = activeChecklist.includes(item.id);
-                return (
+            {/* Right: self-playing capture loop — checks cascade in, sync band pops, resets, repeats */}
+            <div className="lg:col-span-7 crm-loop">
+
+              {/* live call strip */}
+              <div className="flex items-center justify-between gap-3 mb-4">
+                <span className="inline-flex items-center gap-2.5 text-[12px] font-mono text-gray-600">
+                  <span className="sb-eq" aria-hidden>
+                    <i></i><i></i><i></i><i></i><i></i>
+                  </span>
+                  Live call &middot; 14:22
+                </span>
+                <span className="hidden sm:inline-block text-[10px] font-mono px-2 py-0.5 rounded bg-neutral-100 text-gray-500 border border-black/[0.05]">
+                  MEDDPICC capture &middot; ON
+                </span>
+              </div>
+
+              <div className="space-y-3">
+                {CHECK_ITEMS.map((item, idx) => (
                   <div
                     key={item.id}
-                    onClick={() => toggleCheck(item.id)}
-                    className={`p-4 rounded-xl border transition-all cursor-pointer flex items-center justify-between gap-4 ${
-                      checked
-                        ? "bg-white border-black/[0.08] shadow-sm"
-                        : "bg-neutral-50/60 border-black/[0.04] opacity-60"
-                    }`}
+                    className={`sb-row sb-cyc sb-row-${idx} p-4 rounded-xl border border-black/[0.08] bg-white shadow-sm flex items-center justify-between gap-4`}
                   >
                     <div className="flex items-center gap-3.5 min-w-0">
-                      <div
-                        className={`w-5 h-5 rounded-md flex items-center justify-center shrink-0 transition-colors ${
-                          checked
-                            ? "bg-[#10b981] text-white"
-                            : "border border-gray-300 bg-white"
-                        }`}
-                      >
-                        {checked && <Check size={13} strokeWidth={3} />}
-                      </div>
+                      <span className="sb-box sb-cyc w-5 h-5 rounded-md flex items-center justify-center shrink-0 bg-[#10b981] text-white">
+                        <span className="sb-tick sb-cyc flex items-center justify-center">
+                          <Check size={13} strokeWidth={3} />
+                        </span>
+                      </span>
                       <span className="text-[13px] sm:text-[14px] font-medium text-gray-800 truncate">
                         {item.text}
+                      </span>
+                      <span className="sb-chip sb-cyc hidden sm:inline-block text-[9px] font-mono px-1.5 py-0.5 rounded bg-orange-100 text-[#c1500c] border border-orange-200 uppercase tracking-wide">
+                        auto
                       </span>
                     </div>
 
@@ -237,8 +234,17 @@ export function StudioShowcaseBento() {
                       </div>
                     </div>
                   </div>
-                );
-              })}
+                ))}
+              </div>
+
+              {/* sync band */}
+              <div className="sb-sync sb-cyc mt-3 rounded-xl border border-emerald-200 bg-gradient-to-r from-emerald-50 to-white px-4 py-3 flex items-center justify-between gap-4">
+                <span className="flex items-center gap-2.5 text-[13px] text-emerald-800 font-semibold">
+                  <span className="sb-syncdot" aria-hidden></span>
+                  Pushed to HubSpot &middot; Salesforce
+                </span>
+                <span className="text-[11px] font-mono text-emerald-700/80">synced in 42s</span>
+              </div>
             </div>
           </div>
         </div>

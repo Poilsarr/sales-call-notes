@@ -105,7 +105,9 @@ async function acquireStream(streamId) {
     return { stream: mic, source: "mic" };
   } catch (micErr) {
     console.debug("[Gauge:offscreen] mic fallback notice:", micErr);
-    throw new Error("Unable to capture audio. Please ensure microphone permissions are granted.");
+    const err = new Error("Unable to capture audio. Please ensure microphone permissions are granted.");
+    err.needsMicPermission = true;
+    throw err;
   }
 }
 
@@ -115,7 +117,16 @@ async function startCapture({ streamId, meetingTitle: title }) {
   if (!apiKey) {
     console.debug("[Gauge:offscreen] Starting capture without API key; will record locally");
   }
-  const streamInfo = await acquireStream(streamId);
+  let streamInfo;
+  try {
+    streamInfo = await acquireStream(streamId);
+  } catch (err) {
+    return {
+      ok: false,
+      error: err.message || "Failed to acquire audio stream",
+      needsMicPermission: Boolean(err.needsMicPermission),
+    };
+  }
   const rawStream = streamInfo.stream;
   const streamSource = streamInfo.source;
 

@@ -56,12 +56,13 @@ describe("extension demo page", () => {
       screen.getByRole("heading", { name: /install in three steps/i }),
     ).toBeInTheDocument();
     expect(
-      screen.getByRole("heading", { name: /load the extension unpacked/i }),
+      screen.getByRole("heading", { name: /download & unzip/i }),
     ).toBeInTheDocument();
     expect(
-      screen.getByRole("heading", {
-        name: /paste your api key and press save/i,
-      }),
+      screen.getByRole("heading", { name: /load unpacked in chrome/i }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole("heading", { name: /connect & record/i }),
     ).toBeInTheDocument();
     expect(source()).toMatch(/chrome:\/\/extensions/);
   });
@@ -129,11 +130,13 @@ describe("extension demo page", () => {
     expect(src).toMatch(/session memory only/);
   });
 
-  it("links the store placeholder to #store-pending", () => {
+  it("keeps the store placeholder anchor and links the direct download", () => {
     render(<ExtensionPage />);
-    const link = screen.getByRole("link", { name: /coming soon/i });
-    expect(link).toHaveAttribute("href", "#store-pending");
-    expect(source()).toMatch(/href="#store-pending"/);
+    // Store listing is still pending; the page now ships a direct .zip download
+    // (gauge-extension-1.0.0.zip) in place of the old "coming soon" link.
+    const download = screen.getByRole("link", { name: /download v1\.0\.0/i });
+    expect(download).toHaveAttribute("href", "/gauge-extension-1.0.0.zip");
+    expect(download).toHaveAttribute("download");
     expect(source()).toMatch(/id="store-pending"/);
   });
 

@@ -128,6 +128,9 @@ async function ensurePanelMicPermission() {
     }
   } catch (err) {
     console.debug("[Gauge:sidepanel] mic permission error:", err);
+    if (hasChrome() && chrome.tabs?.create) {
+      chrome.tabs.create({ url: chrome.runtime.getURL("permission.html") });
+    }
   }
   return null;
 }
@@ -806,8 +809,16 @@ el("recordBtn")?.addEventListener("click", async () => {
   if (res && res.ok === false) {
     stopLiveSpeechRecognition();
     teardownPanelAudio();
-    setRecState("dot-err", "Record failed");
-    setStatus(`Could not start capture: ${res.error || "unknown"}. ${buildManualUploadInstructions()}`);
+    if (res.needsMicPermission || String(res.error).includes("microphone")) {
+      setRecState("dot-err", "Permission required");
+      setStatus("Microphone permission needed. Opening setup tab… Click Allow to start recording.");
+      if (hasChrome() && chrome.tabs?.create) {
+        chrome.tabs.create({ url: chrome.runtime.getURL("permission.html") });
+      }
+    } else {
+      setRecState("dot-err", "Record failed");
+      setStatus(`Could not start capture: ${res.error || "unknown"}. ${buildManualUploadInstructions()}`);
+    }
   }
 });
 

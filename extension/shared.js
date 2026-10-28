@@ -229,6 +229,10 @@ export const MESSAGE_TYPES = {
   TOGGLE_RECORDING_COMMAND: "TOGGLE_RECORDING_COMMAND",
   LIVE_TRANSCRIPT_CHUNK: "LIVE_TRANSCRIPT_CHUNK",
   TOGGLE_CAPTIONS_REQUEST: "TOGGLE_CAPTIONS_REQUEST",
+  REQUEST_MIC_PERMISSION: "REQUEST_MIC_PERMISSION",
+  MIC_PERMISSION_GRANTED: "MIC_PERMISSION_GRANTED",
+  OPEN_PERMISSION_PAGE: "OPEN_PERMISSION_PAGE",
+  MEETING_FINALIZE_SUCCESS: "MEETING_FINALIZE_SUCCESS",
 };
 
 export const MOMENT_CATEGORIES = {
@@ -620,4 +624,32 @@ export function buildManualUploadInstructions(callUrl = "") {
     "Manual fallback: 1) stop the recording, 2) download the captured audio, " +
     `3) upload it by hand${where}. Your captions are still saved locally by the extension.`
   );
+}
+
+// --- Microphone Permission Gateway Helpers ---
+export function openPermissionTab() {
+  const c = getChrome();
+  const url = c?.runtime?.getURL ? c.runtime.getURL("permission.html") : "permission.html";
+  if (c?.tabs?.create) {
+    c.tabs.create({ url });
+  } else if (typeof window !== "undefined") {
+    window.open(url, "_blank");
+  }
+}
+
+export async function isMicPermissionGranted() {
+  const c = getChrome();
+  try {
+    if (typeof navigator !== "undefined" && navigator?.permissions?.query) {
+      const status = await navigator.permissions.query({ name: "microphone" });
+      if (status?.state === "granted") return true;
+    }
+  } catch {}
+  if (c?.storage?.local?.get) {
+    try {
+      const stored = await new Promise((res) => c.storage.local.get({ micPermissionGranted: false }, res));
+      if (stored?.micPermissionGranted) return true;
+    } catch {}
+  }
+  return false;
 }

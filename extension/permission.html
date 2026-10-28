@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Gauge — Microphone Permission</title>
+  <style>
+    :root {
+      --bg: #090a0f;
+      --card-bg: rgba(18, 20, 29, 0.85);
+      --border: rgba(255, 255, 255, 0.1);
+      --accent: #6366f1;
+      --accent-hover: #4f46e5;
+      --emerald: #10b981;
+      --text: #f8fafc;
+      --text-muted: #94a3b8;
+    }
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+      -webkit-font-smoothing: antialiased;
+    }
+    .card {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      backdrop-filter: blur(24px);
+      -webkit-backdrop-filter: blur(24px);
+      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.7), 0 0 0 1px rgba(255, 255, 255, 0.05);
+      border-radius: 20px;
+      padding: 36px 32px;
+      max-width: 440px;
+      width: 100%;
+      text-align: center;
+    }
+    .logo-container {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 64px;
+      height: 64px;
+      border-radius: 18px;
+      background: linear-gradient(135deg, rgba(99, 102, 241, 0.2), rgba(168, 85, 247, 0.15));
+      border: 1px solid rgba(99, 102, 241, 0.3);
+      margin-bottom: 20px;
+      box-shadow: 0 8px 24px -4px rgba(99, 102, 241, 0.35);
+    }
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 10px;
+      border-radius: 9999px;
+      background: rgba(99, 102, 241, 0.15);
+      border: 1px solid rgba(99, 102, 241, 0.25);
+      color: #c7d2fe;
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      margin-bottom: 12px;
+    }
+    h1 {
+      font-size: 22px;
+      font-weight: 700;
+      color: #ffffff;
+      margin-bottom: 10px;
+      letter-spacing: -0.02em;
+    }
+    p {
+      font-size: 14px;
+      line-height: 1.55;
+      color: var(--text-muted);
+      margin-bottom: 24px;
+    }
+    .btn {
+      width: 100%;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      padding: 13px 20px;
+      border-radius: 12px;
+      font-size: 14px;
+      font-weight: 600;
+      color: #ffffff;
+      background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      box-shadow: 0 4px 14px 0 rgba(99, 102, 241, 0.39);
+      cursor: pointer;
+      transition: all 0.15s ease-in-out;
+    }
+    .btn:hover:not(:disabled) {
+      transform: translateY(-1px);
+      box-shadow: 0 6px 20px 0 rgba(99, 102, 241, 0.5);
+    }
+    .btn:active:not(:disabled) {
+      transform: translateY(0);
+    }
+    .btn:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+    .status {
+      margin-top: 18px;
+      padding: 12px 14px;
+      border-radius: 10px;
+      font-size: 13px;
+      line-height: 1.4;
+      display: none;
+    }
+    .status.success {
+      display: block;
+      background: rgba(16, 185, 129, 0.15);
+      border: 1px solid rgba(16, 185, 129, 0.35);
+      color: #6ee7b7;
+    }
+    .status.error {
+      display: block;
+      background: rgba(239, 68, 68, 0.15);
+      border: 1px solid rgba(239, 68, 68, 0.35);
+      color: #fca5a5;
+    }
+    .info-footer {
+      margin-top: 24px;
+      padding-top: 18px;
+      border-top: 1px solid rgba(255, 255, 255, 0.08);
+      font-size: 12px;
+      color: #64748b;
+      line-height: 1.5;
+    }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <div class="logo-container">
+      <svg width="36" height="36" viewBox="0 0 100 100" fill="none">
+        <path d="M50 8 L86 29 L86 71 L50 92 L14 71 L14 29 Z" stroke="#6366f1" stroke-width="4.5" fill="none" opacity="0.6"/>
+        <path d="M50 20 L76 35 L76 65 L50 80 L24 65 L24 35 Z" stroke="#818cf8" stroke-width="4.5" fill="none" opacity="0.8"/>
+        <path d="M50 32 L66 41 L66 59 L50 68 L34 59 L34 41 Z" fill="#6366f1" opacity="0.4"/>
+        <circle cx="50" cy="50" r="7" fill="#ffffff"/>
+      </svg>
+    </div>
+    <div>
+      <span class="badge">Background Capture</span>
+    </div>
+    <h1>Allow Microphone Access</h1>
+    <p>
+      Chrome requires a one-time permission grant so Gauge can capture your voice and transcribe meetings seamlessly in the background without needing the side panel open.
+    </p>
+
+    <button id="grantBtn" class="btn" type="button">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/>
+        <path d="M19 10v2a7 7 0 0 1-14 0v-2"/>
+        <line x1="12" y1="19" x2="12" y2="23"/>
+        <line x1="8" y1="23" x2="16" y2="23"/>
+      </svg>
+      Allow Microphone
+    </button>
+
+    <div id="statusBox" class="status"></div>
+
+    <div class="info-footer">
+      Your audio is processed securely and private. After granting access, this tab will close automatically and recording will resume.
+    </div>
+  </div>
+
+  <script src="permission.js"></script>
+</body>
+</html>

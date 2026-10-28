@@ -10,7 +10,7 @@ import {
   Mic,
   MousePointerClick,
   Share2,
-  Wrench,
+  ShieldCheck,
   X,
 } from "lucide-react";
 import Nav from "@/components/nav";
@@ -88,69 +88,134 @@ export default function ExtensionPage() {
                 </div>
               </div>
 
-              {/* RIGHT — product mockup: the side panel, as it really looks */}
-              <div className="relative">
+              {/* RIGHT — the side panel playing itself like a gif:
+                  idle → key saved → recording → uploading → done, on one
+                  shared 10s CSS cycle. Hover anywhere on it to freeze. */}
+              <div className="relative ex-hero-zone">
+                {/* floating studio chips */}
+                <div className="hidden lg:block absolute -left-12 top-14 z-10 ex-float">
+                  <span className="ex-fchip">
+                    <Captions size={13} className="text-emerald-600" />
+                    aria-live captions
+                  </span>
+                </div>
+                <div className="hidden lg:block absolute -right-8 top-1/2 z-10 ex-float ex-fd2">
+                  <span className="ex-fchip">
+                    <Mic size={13} className="text-[#F26522]" />
+                    32kbps Opus
+                  </span>
+                </div>
+                <div className="hidden lg:block absolute -left-6 bottom-20 z-10 ex-float ex-fd4">
+                  <span className="ex-fchip">
+                    <ShieldCheck size={13} className="text-emerald-600" />
+                    0 bots in room
+                  </span>
+                </div>
+
                 <div className="doppel-outer">
                   <div className="doppel-inner p-4 sm:p-5">
-                    <div className="flex items-center gap-2 mb-1">
-                      <span className="w-2.5 h-2.5 rounded-full bg-[#F26522]" />
-                      <p className="text-[12px] font-semibold text-gray-900">
-                        Gauge Recorder
-                      </p>
+                    {/* header — REC pill pops in at the recording phase */}
+                    <div className="flex items-center justify-between gap-2 mb-1">
+                      <div className="flex items-center gap-2">
+                        <span className="w-2.5 h-2.5 rounded-full bg-[#F26522]" />
+                        <p className="text-[12px] font-semibold text-gray-900">
+                          Gauge Recorder
+                        </p>
+                      </div>
+                      <span
+                        className="hx-recpill hx-a-pill hx-tl hx-cyc"
+                        aria-hidden="true"
+                      >
+                        <span className="hx-reddot rp-blink" />
+                        REC 00:14
+                      </span>
                     </div>
                     <p className="text-[11px] text-gray-400 mb-4">
                       The key stays in session memory only.
                     </p>
 
-                    {/* API key card */}
+                    {/* API key card — Save presses itself, chip gains a saved ring */}
                     <div className="rounded-xl border border-gray-200 bg-gray-50 p-3 mb-3">
                       <p className="text-[11px] font-semibold text-gray-700 mb-2">
                         API key
                       </p>
                       <div className="flex gap-2">
-                        <span className="flex-1 min-w-0 rounded-lg border border-gray-200 bg-white px-2.5 py-2 font-mono text-[11px] text-gray-400 truncate">
+                        <span className="hx-keyglow hx-tl hx-cyc flex-1 min-w-0 rounded-lg border border-gray-200 bg-white px-2.5 py-2 font-mono text-[11px] text-gray-400 truncate">
                           cn_live_…
                         </span>
-                        <span className="rounded-lg bg-gray-900 px-3 py-2 text-[11px] font-semibold text-white">
+                        <span className="relative rounded-lg bg-gray-900 px-3 py-2 text-[11px] font-semibold text-white hx-tl hx-a-press1 hx-cyc">
                           Save
+                          <span
+                            className="hx-press hx-cyc"
+                            aria-hidden="true"
+                          />
                         </span>
                       </div>
-                      <p className="text-[10px] text-gray-400 mt-2">
-                        No key saved for this session.
-                      </p>
+                      <div className="relative mt-2 h-[14px]">
+                        <p className="hx-line hx-tl hx-u0 hx-cyc">
+                          No key saved for this session.
+                        </p>
+                        <p className="hx-line hx-line-em hx-tl hx-u1 hx-cyc">
+                          Key saved · session memory only.
+                        </p>
+                      </div>
                     </div>
 
-                    {/* Recording card */}
+                    {/* status stage — the panel's real statuses, in sequence */}
                     <div className="rounded-xl border border-gray-200 bg-gray-50 p-3 mb-3">
-                      <p className="text-[11px] font-semibold text-gray-700 mb-2">
-                        <span className="inline-block w-2 h-2 rounded-full bg-red-500 mr-1.5" />
+                      <p className="text-[11px] font-semibold text-gray-700 mb-2 flex items-center gap-1.5">
+                        <span className="inline-block w-2 h-2 rounded-full bg-red-500" />
                         Recording…
                       </p>
-                      <div className="flex gap-2">
-                        {["Record", "Stop", "Send"].map((label) => (
-                          <span
-                            key={label}
-                            className="flex-1 rounded-lg bg-gray-900 px-2 py-2 text-center text-[11px] font-semibold text-white"
-                          >
-                            {label}
-                          </span>
-                        ))}
+                      <div className="relative h-[50px]">
+                        <div className="hx-st hx-tl hx-u0 hx-cyc">
+                          <span className="hx-dot hx-dot-amber" />
+                          <p>Open a Meet / Teams / Zoom tab, then press Record.</p>
+                        </div>
+                        <div className="hx-st hx-tl hx-u2 hx-cyc">
+                          <span className="hx-dot hx-dot-emerald" />
+                          <p>Recording tab audio (32kbps Opus) + captions. Press Stop when done.</p>
+                        </div>
+                        <div className="hx-st hx-tl hx-u3 hx-cyc">
+                          <span className="hx-dot hx-dot-orange" />
+                          <p>Stopped. Uploading audio + finalizing captions…</p>
+                        </div>
+                        <div className="hx-st hx-tl hx-u4 hx-cyc">
+                          <span className="hx-dot hx-dot-emerald" />
+                          <p>Done - summary: /app/calls/8f3k</p>
+                        </div>
                       </div>
-                      <p className="text-[10px] text-gray-400 mt-2">
-                        Open a Meet / Teams / Zoom tab, then press Record.
-                      </p>
+                      <div className="flex gap-2 mt-2">
+                        <span className="relative flex-1 rounded-lg bg-gray-900 px-2 py-2 text-center text-[11px] font-semibold text-white">
+                          Record
+                          <span
+                            className="hx-recon hx-a-recon hx-cyc"
+                            aria-hidden="true"
+                          />
+                        </span>
+                        <span className="flex-1 rounded-lg bg-gray-900 px-2 py-2 text-center text-[11px] font-semibold text-white">
+                          Stop
+                        </span>
+                        <span className="flex-1 rounded-lg bg-gray-900 px-2 py-2 text-center text-[11px] font-semibold text-white">
+                          Send
+                        </span>
+                      </div>
                     </div>
 
-                    {/* Recent calls card */}
+                    {/* Recent calls card — row highlights when the upload lands */}
                     <div className="rounded-xl border border-gray-200 bg-gray-50 p-3">
                       <p className="text-[11px] font-semibold text-gray-700 mb-2">
                         Recent calls
                       </p>
-                      <div className="rounded-lg border border-gray-200 bg-white px-2.5 py-2">
-                        <p className="text-[11px] text-gray-700 font-medium">
+                      <div className="relative rounded-lg border border-gray-200 bg-white px-2.5 py-2">
+                        <span
+                          className="hx-donehi hx-tl hx-a-w4 hx-cyc"
+                          aria-hidden="true"
+                        />
+                        <p className="relative text-[11px] text-gray-700 font-medium">
                           Acme × Gauge — Discovery
                         </p>
-                        <p className="text-[10px] text-gray-400 font-mono">
+                        <p className="relative text-[10px] text-gray-400 font-mono">
                           score 82 · extension
                         </p>
                       </div>
@@ -168,8 +233,7 @@ export default function ExtensionPage() {
                     </div>
                   </div>
                 </div>
-              </div>
-            </div>
+              </div>            </div>
           </div>
         </section>
 
@@ -194,30 +258,37 @@ export default function ExtensionPage() {
             </div>
 
             <ol className="grid grid-cols-1 md:grid-cols-3 gap-4 list-none">
-              <li className="doppel-outer">
-                <div className="doppel-inner p-6 sm:p-8 h-full flex flex-col justify-between">
-                  <div>
-                    <div className="w-10 h-10 rounded-xl bg-[#F26522]/10 flex items-center justify-center mb-5">
-                      <Download
-                        size={18}
-                        className="text-[#F26522]"
-                        strokeWidth={1.5}
-                      />
-                    </div>
-                    <p className="text-[11px] font-mono text-gray-400 tracking-wider mb-2">
+              <li className="doppel-outer transition-transform duration-300 hover:-translate-y-1">
+                <div className="doppel-inner p-6 sm:p-8 h-full flex flex-col">
+                  <div className="rounded-xl overflow-hidden mb-5">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                      src="/studio/gauge_ext_step_unzip.jpg"
+                      alt="The gauge-extension-1.0.0.zip archive unzipping into a folder of extension files"
+                      className="block w-full"
+                      loading="lazy"
+                    />
+                  </div>
+                  <div className="flex items-center justify-between mb-2">
+                    <p className="text-[11px] font-mono text-gray-400 tracking-wider">
                       STEP 1
                     </p>
-                    <h3 className="text-[15px] font-semibold tracking-tight text-gray-900 mb-2">
-                      Download &amp; Unzip
-                    </h3>
-                    <p className="text-[13px] text-gray-500 leading-relaxed mb-4">
-                      Download the official extension archive (.zip) and extract it to a folder on your computer.
-                    </p>
+                    <Download
+                      size={15}
+                      className="text-[#F26522]"
+                      strokeWidth={1.75}
+                    />
                   </div>
+                  <h3 className="text-[15px] font-semibold tracking-tight text-gray-900 mb-2">
+                    Download &amp; Unzip
+                  </h3>
+                  <p className="text-[13px] text-gray-500 leading-relaxed mb-4">
+                    Download the official extension archive (.zip) and extract it to a folder on your computer.
+                  </p>
                   <a
                     href="/gauge-extension-1.0.0.zip"
                     download="gauge-extension-1.0.0.zip"
-                    className="inline-flex items-center justify-center gap-2 bg-gray-900 hover:bg-black text-white text-[12px] font-medium rounded-lg px-4 py-2.5 transition-colors shadow-sm"
+                    className="mt-auto inline-flex items-center justify-center gap-2 bg-gray-900 hover:bg-black text-white text-[12px] font-medium rounded-lg px-4 py-2.5 transition-colors shadow-sm"
                   >
                     <Download size={14} />
                     <span>Download v1.0.0 (.zip)</span>
@@ -225,18 +296,27 @@ export default function ExtensionPage() {
                 </div>
               </li>
 
-              <li id="store-pending" className="doppel-outer scroll-mt-24">
+              <li id="store-pending" className="doppel-outer scroll-mt-24 transition-transform duration-300 hover:-translate-y-1">
                 <div className="doppel-inner p-6 sm:p-8 h-full flex flex-col">
-                  <div className="w-10 h-10 rounded-xl bg-[#F26522]/10 flex items-center justify-center mb-5">
-                    <Globe
-                      size={18}
-                      className="text-[#F26522]"
-                      strokeWidth={1.5}
+                  <div className="rounded-xl overflow-hidden mb-5">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                      src="/studio/gauge_ext_step_chrome.jpg"
+                      alt="chrome://extensions with Developer mode toggled on and the Gauge extension loaded unpacked"
+                      className="block w-full"
+                      loading="lazy"
                     />
                   </div>
-                  <p className="text-[11px] font-mono text-gray-400 tracking-wider mb-2">
-                    STEP 2
-                  </p>
+                  <div className="flex items-center justify-between mb-2">
+                    <p className="text-[11px] font-mono text-gray-400 tracking-wider">
+                      STEP 2
+                    </p>
+                    <Globe
+                      size={15}
+                      className="text-[#F26522]"
+                      strokeWidth={1.75}
+                    />
+                  </div>
                   <h3 className="text-[15px] font-semibold tracking-tight text-gray-900 mb-2">
                     Load unpacked in Chrome
                   </h3>
@@ -247,42 +327,49 @@ export default function ExtensionPage() {
                     </code>{" "}
                     in your browser, turn ON <strong>Developer mode</strong> (top right toggle), click <strong>Load unpacked</strong>, and select the extracted folder.
                   </p>
-                  <p className="text-[11px] text-gray-400">
+                  <p className="mt-auto text-[11px] text-gray-400">
                     Works on Google Chrome, Brave, Arc, Edge, and all Chromium browsers.
                   </p>
                 </div>
               </li>
 
-              <li className="doppel-outer">
-                <div className="doppel-inner p-6 sm:p-8 h-full flex flex-col justify-between">
-                  <div>
-                    <div className="w-10 h-10 rounded-xl bg-[#F26522]/10 flex items-center justify-center mb-5">
-                      <KeyRound
-                        size={18}
-                        className="text-[#F26522]"
-                        strokeWidth={1.5}
-                      />
-                    </div>
-                    <p className="text-[11px] font-mono text-gray-400 tracking-wider mb-2">
+              <li className="doppel-outer transition-transform duration-300 hover:-translate-y-1">
+                <div className="doppel-inner p-6 sm:p-8 h-full flex flex-col">
+                  <div className="rounded-xl overflow-hidden mb-5">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                      src="/studio/gauge_ext_step_connect.jpg"
+                      alt="The Gauge Recorder side panel saving an API key and connecting to the Gauge account"
+                      className="block w-full"
+                      loading="lazy"
+                    />
+                  </div>
+                  <div className="flex items-center justify-between mb-2">
+                    <p className="text-[11px] font-mono text-gray-400 tracking-wider">
                       STEP 3
                     </p>
-                    <h3 className="text-[15px] font-semibold tracking-tight text-gray-900 mb-2">
-                      Connect &amp; Record
-                    </h3>
-                    <p className="text-[13px] text-gray-500 leading-relaxed mb-4">
-                      Open the Gauge side panel in your browser, click <strong>Connect Gauge Account</strong> for zero-friction auto-sync (or paste an API key from Settings), join your meeting, and click <strong>Record</strong>.
-                    </p>
+                    <KeyRound
+                      size={15}
+                      className="text-[#F26522]"
+                      strokeWidth={1.75}
+                    />
                   </div>
+                  <h3 className="text-[15px] font-semibold tracking-tight text-gray-900 mb-2">
+                    Connect &amp; Record
+                  </h3>
+                  <p className="text-[13px] text-gray-500 leading-relaxed mb-4">
+                    Open the Gauge side panel in your browser, click <strong>Connect Gauge Account</strong> for zero-friction auto-sync (or paste an API key from Settings), join your meeting, and click <strong>Record</strong>.
+                  </p>
                   <Link
                     href="/extension/connect"
-                    className="inline-flex items-center gap-1.5 text-[12px] text-[#F26522] hover:text-[#e05a1a] font-semibold"
+                    className="mt-auto inline-flex items-center gap-1.5 text-[12px] text-[#F26522] hover:text-[#e05a1a] font-semibold"
                   >
                     <span>Check connection status</span>
                     <ArrowRight size={13} />
                   </Link>
                 </div>
               </li>
-            </ol>
+            </ol>            </ol>
           </div>
         </section>
 
