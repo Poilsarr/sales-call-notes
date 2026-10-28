@@ -340,7 +340,7 @@ function teardown() {
 }
 
 async function finalizeUpload() {
-  const apiKey = await getApiKeyFromSession();
+  let apiKey = await getApiKeyFromSession();
   const blob = new Blob(slices, { type: AUDIO_CONTENT_TYPE });
   lastRecordedBlob = blob;
   teardown();
@@ -356,6 +356,21 @@ async function finalizeUpload() {
   } catch {}
 
   const filename = `meeting-${new Date(startedAt || Date.now()).toISOString().replace(/[:.]/g, "-")}.webm`;
+
+  // If apiKey is null, proactively request background to auto-exchange from Clerk session
+  if (!apiKey) {
+    try {
+      const authRes = await new Promise((resolve) => {
+        chrome.runtime.sendMessage({ type: "ENSURE_API_KEY" }, resolve);
+      });
+      if (authRes?.apiKey) {
+        apiKey = authRes.apiKey;
+        await setApiKeyInSession(apiKey);
+      }
+    } catch (e) {
+      console.warn("[Gauge:offscreen] ENSURE_API_KEY failed", e);
+    }
+  }
 
   if (!apiKey) {
     send({

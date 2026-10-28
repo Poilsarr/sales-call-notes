@@ -47,10 +47,30 @@ export async function GET(req: Request) {
     }
     userId = apiKey.userId;
   } else {
-    // Fall back to Clerk session — same logic as the original /api/calls GET.
-    const { auth } = await import("@clerk/nextjs/server");
-    const session = await auth();
-    userId = session.userId;
+    // 1b. Check if Bearer is a Clerk session token from the extension
+    const authHeader = req.headers.get("authorization");
+    if (authHeader && authHeader.startsWith("Bearer ")) {
+      const candidate = authHeader.slice(7).trim();
+      if (!candidate.startsWith("cn_live_") && !candidate.startsWith("cn_test_")) {
+        try {
+          const { verifyToken } = await import("@clerk/backend");
+          const payload = await verifyToken(candidate, {
+            secretKey: process.env.CLERK_SECRET_KEY,
+          });
+          if (payload?.sub) {
+            userId = payload.sub;
+          }
+        } catch {}
+      }
+    }
+
+    if (!userId) {
+      // Fall back to Clerk session cookie
+      const { auth } = await import("@clerk/nextjs/server");
+      const session = await auth();
+      userId = session.userId;
+    }
+
     if (!userId) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }

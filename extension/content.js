@@ -118,9 +118,15 @@
         continue;
       }
       for (var j = 0; j < nodes.length; j += 1) {
-        if (seen.indexOf(nodes[j]) === -1) {
-          seen.push(nodes[j]);
-          out.push(nodes[j]);
+        var n = nodes[j];
+        if (!n) continue;
+        // Don't scrape our own banner or HUD elements as captions!
+        if (n.id === BANNER_ID || n.id === HUD_ROOT_ID) continue;
+        if (n.closest && (n.closest("#" + BANNER_ID) || n.closest("#" + HUD_ROOT_ID))) continue;
+
+        if (seen.indexOf(n) === -1) {
+          seen.push(n);
+          out.push(n);
         }
       }
     }
@@ -179,10 +185,14 @@
     var roots = findCaptionRoots();
     var fresh = [];
     for (var i = 0; i < roots.length; i += 1) {
-      var text = readRootText(roots[i]);
+      var node = roots[i];
+      var text = readRootText(node);
       if (!text) continue;
-      if (lastSeenByRoot[i] === text) continue;
-      lastSeenByRoot[i] = text;
+      // Skip text from Gauge's own banners or setup notices
+      if (text.indexOf("Gauge is recording") !== -1) continue;
+
+      if (node._gaugeLastSeenText === text) continue;
+      node._gaugeLastSeenText = text;
       fresh.push(text);
     }
     // De-dupe overlapping aria-live regions echoing the same line.
@@ -203,6 +213,31 @@
         emitLiveChunk(combined);
         updateLiveSubtitle(combined);
       }
+    }
+  }
+
+  var captionObserver = null;
+  function startCaptionObserver() {
+    if (captionObserver) return;
+    try {
+      var MutationObs = window.MutationObserver || window.WebKitMutationObserver;
+      if (!MutationObs) return;
+      captionObserver = new MutationObs(function () {
+        if (!recording) return;
+        scrapeOnce();
+      });
+      captionObserver.observe(document.body || document.documentElement, {
+        childList: true,
+        subtree: true,
+        characterData: true,
+      });
+    } catch (e) {}
+  }
+
+  function stopCaptionObserver() {
+    if (captionObserver) {
+      try { captionObserver.disconnect(); } catch (e) {}
+      captionObserver = null;
     }
   }
 
@@ -602,6 +637,7 @@
     setHudMode("recording");
     tryEnableCaptions();
     scrapeOnce();
+    startCaptionObserver();
 
     if (hudTimerInterval) clearInterval(hudTimerInterval);
     hudTimerInterval = setInterval(function () {
@@ -617,6 +653,7 @@
   }
 
   function stopRecording(final) {
+    stopCaptionObserver();
     if (!recording && captions.length === 0) {
       setHudMode("idle");
       return;

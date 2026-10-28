@@ -20,9 +20,33 @@ import { checkRateLimit } from "@/lib/rate-limit";
  * `api_access` plan gate. The key is named `extension-<yyyy-mm-dd>` so
  * rotation is visible in the key list. `raw` is returned ONCE.
  */
-export async function POST() {
+export async function POST(req: Request) {
   try {
-    const { userId } = await auth();
+    let userId: string | null = null;
+
+    // 1. Try Bearer Clerk session token first (from Chrome extension background/bridge)
+    const authHeader = req.headers.get("authorization");
+    if (authHeader && authHeader.startsWith("Bearer ")) {
+      const token = authHeader.slice(7).trim();
+      try {
+        const { verifyToken } = await import("@clerk/backend");
+        const payload = await verifyToken(token, {
+          secretKey: process.env.CLERK_SECRET_KEY,
+        });
+        if (payload?.sub) {
+          userId = payload.sub;
+        }
+      } catch (tokenErr) {
+        // Not a Clerk JWT or expired; fall through to cookie auth
+      }
+    }
+
+    // 2. Fall back to Clerk session cookie (from web app connect page)
+    if (!userId) {
+      const { userId: clerkUserId } = await auth();
+      userId = clerkUserId;
+    }
+
     if (!userId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
     // Per-user key-creation cap (5/hr) — same bucket as /api/v1/keys so
@@ -109,6 +133,19 @@ export async function GET(req: Request) {
           user = dbUser;
           userId = dbUser.id;
         }
+      } else if (authHeader.startsWith("Bearer ")) {
+        // Bearer is a Clerk session token from the extension
+        const token = authHeader.slice(7).trim();
+        try {
+          const { verifyToken } = await import("@clerk/backend");
+          const payload = await verifyToken(token, {
+            secretKey: process.env.CLERK_SECRET_KEY,
+          });
+          if (payload?.sub) {
+            user = await getUserByClerkId(payload.sub);
+            userId = user?.id || payload.sub;
+          }
+        } catch {}
       }
     }
 

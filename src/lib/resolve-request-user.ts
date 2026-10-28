@@ -68,6 +68,26 @@ export async function resolveRequestUser(
     return { ok: true, user: dbUser, authType: "api_key", clerkUserId: null };
   }
 
+  // 1b. Check if Authorization header carries a Clerk session JWT (from Chrome Extension)
+  const authHeader = req.headers.get("authorization");
+  if (authHeader && authHeader.startsWith("Bearer ")) {
+    const candidate = authHeader.slice(7).trim();
+    if (!candidate.startsWith("cn_live_") && !candidate.startsWith("cn_test_")) {
+      try {
+        const { verifyToken } = await import("@clerk/backend");
+        const payload = await verifyToken(candidate, {
+          secretKey: process.env.CLERK_SECRET_KEY,
+        });
+        if (payload?.sub) {
+          const dbUser = await getUserByClerkId(payload.sub);
+          return { ok: true, user: dbUser, authType: "session", clerkUserId: payload.sub };
+        }
+      } catch {
+        // Not a valid Clerk token, fall through to cookie auth
+      }
+    }
+  }
+
   // 2. Fall back to Clerk session — the pre-existing behavior.
   const { auth } = await import("@clerk/nextjs/server");
   const { userId: clerkUserId } = await auth();

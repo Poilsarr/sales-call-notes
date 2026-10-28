@@ -103,8 +103,8 @@ async function refreshAuthStatus() {
     try {
       const exchange = await exchangeSessionTokenForKey(clerkToken);
       if (exchange && (exchange.raw || exchange.user)) {
-        if (exchange.raw) {
-          apiKey = exchange.raw;
+        apiKey = exchange.raw || clerkToken;
+        if (apiKey) {
           await setApiKeyInSession(apiKey);
         }
         const plan = (exchange.plan || stored.authStatus?.plan || "free").toLowerCase();
@@ -374,6 +374,27 @@ if (hasChrome() && chrome.runtime?.onMessage) {
       return false;
     }
 
+    if (message.type === "ENSURE_API_KEY") {
+      (async () => {
+        let key = await getApiKeyFromSession();
+        if (!key) {
+          const clerkToken = await getClerkSessionToken();
+          if (clerkToken) {
+            try {
+              const exchange = await exchangeSessionTokenForKey(clerkToken);
+              key = exchange?.raw || clerkToken;
+              if (key) await setApiKeyInSession(key);
+            } catch {
+              key = clerkToken;
+              await setApiKeyInSession(key);
+            }
+          }
+        }
+        sendResponse?.({ apiKey: key || null });
+      })().catch(() => sendResponse?.({ apiKey: null }));
+      return true;
+    }
+
     if (message.type === MESSAGE_TYPES.OPEN_PERMISSION_PAGE || message.type === "OPEN_PERMISSION_PAGE") {
       if (chrome.tabs?.create) {
         chrome.tabs.create({ url: chrome.runtime.getURL("permission.html") });
@@ -455,19 +476,19 @@ if (hasChrome() && chrome.runtime?.onMessage) {
 
         await setStored({ recording: true });
 
-        // Relay to content script so in-meeting REC banner appears and caption scraper starts
-        if (targetTabId && chrome.tabs?.sendMessage) {
+        // Broadcast START_RECORDING to all meeting tabs so floating HUDs and scrapers sync immediately
+        if (chrome.tabs?.query) {
           try {
-            chrome.tabs.sendMessage(
-              targetTabId,
-              {
-                type: MESSAGE_TYPES.START_RECORDING,
-                meetingTitle: title,
-              },
-              () => {
-                void chrome.runtime?.lastError;
-              },
+            const meetingTabs = await new Promise((res) =>
+              chrome.tabs.query({ url: ["*://meet.google.com/*", "*://teams.microsoft.com/*", "*://*.zoom.us/*"] }, res)
             );
+            for (const t of (meetingTabs || [])) {
+              if (t.id) {
+                chrome.tabs.sendMessage(t.id, { type: MESSAGE_TYPES.START_RECORDING, meetingTitle: title }, () => {
+                  void chrome.runtime?.lastError;
+                });
+              }
+            }
           } catch {}
         }
 
@@ -551,12 +572,19 @@ if (hasChrome() && chrome.runtime?.onMessage) {
       chrome.runtime?.sendMessage?.({ type: MESSAGE_TYPES.OFFSCREEN_STOP_AUDIO });
       (async () => {
         await setStored({ recording: false });
-        const stored = await getStored({ lastMeetingTabId: null });
-        if (stored.lastMeetingTabId && chrome.tabs?.sendMessage) {
+        // Broadcast STOP_RECORDING to all meeting tabs so in-meeting HUDs update immediately
+        if (chrome.tabs?.query) {
           try {
-            chrome.tabs.sendMessage(stored.lastMeetingTabId, { type: MESSAGE_TYPES.STOP_RECORDING }, () => {
-              void chrome.runtime?.lastError;
-            });
+            const meetingTabs = await new Promise((res) =>
+              chrome.tabs.query({ url: ["*://meet.google.com/*", "*://teams.microsoft.com/*", "*://*.zoom.us/*"] }, res)
+            );
+            for (const t of (meetingTabs || [])) {
+              if (t.id) {
+                chrome.tabs.sendMessage(t.id, { type: MESSAGE_TYPES.STOP_RECORDING }, () => {
+                  void chrome.runtime?.lastError;
+                });
+              }
+            }
           } catch {}
         }
       })().catch(() => {});

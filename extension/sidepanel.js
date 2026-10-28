@@ -581,7 +581,16 @@ async function loadCalls(options = {}) {
   }
 
   inFlightLoadCalls = (async () => {
-    const apiKey = await getApiKeyFromSession();
+    let apiKey = await getApiKeyFromSession();
+    if (!apiKey) {
+      try {
+        const authRes = await sendMessage({ type: "ENSURE_API_KEY" });
+        if (authRes?.apiKey) {
+          apiKey = authRes.apiKey;
+          await setApiKeyInSession(apiKey);
+        }
+      } catch {}
+    }
     const list = el("callsList");
     if (!apiKey) {
       if (list && list.children.length === 0) {
@@ -785,14 +794,23 @@ el("connectAccountBtn")?.addEventListener("click", () => {
 el("recordBtn")?.addEventListener("click", async () => {
   let apiKey = await getApiKeyFromSession();
   if (!apiKey) {
-    const authRes = await sendMessage({ type: MESSAGE_TYPES.CHECK_AUTH });
-    apiKey = await getApiKeyFromSession();
-    if (!apiKey) {
-      setStatus("Please connect your Gauge account first to record.");
-      if (hasChrome() && chrome.tabs?.create) {
-        chrome.tabs.create({ url: buildConnectUrl() });
+    try {
+      const authRes = await sendMessage({ type: "ENSURE_API_KEY" });
+      if (authRes?.apiKey) {
+        apiKey = authRes.apiKey;
+        await setApiKeyInSession(apiKey);
       }
-      return;
+    } catch {}
+    if (!apiKey) {
+      await sendMessage({ type: MESSAGE_TYPES.CHECK_AUTH });
+      apiKey = await getApiKeyFromSession();
+      if (!apiKey) {
+        setStatus("Please connect your Gauge account first to record.");
+        if (hasChrome() && chrome.tabs?.create) {
+          chrome.tabs.create({ url: buildConnectUrl() });
+        }
+        return;
+      }
     }
   }
   const downloadRow = el("downloadRow");
@@ -933,6 +951,11 @@ if (hasChrome() && chrome.runtime?.onMessage) {
         setRecState("dot-idle", "Ready");
         setHidden("durationTracker", true);
       }
+    } else if (message.type === "MEETING_FINALIZE_SUCCESS") {
+      if (message.call) {
+        renderPostCallCard(message.call);
+      }
+      loadCalls({ force: true });
     }
   });
 }

@@ -91,22 +91,22 @@ export default function ExtensionPage() {
               {/* RIGHT — the side panel playing itself like a gif:
                   idle → key saved → recording → uploading → done, on one
                   shared 10s CSS cycle. Hover anywhere on it to freeze. */}
-              <div className="relative ex-hero-zone">
+              <div className="relative ex-hero-zone px-6 sm:px-12 py-8">
                 {/* floating studio chips */}
-                <div className="hidden lg:block absolute -left-12 top-14 z-10 ex-float">
+                <div className="hidden lg:block absolute left-1 top-1 z-10 ex-float">
                   <span className="ex-fchip">
                     <Captions size={13} className="text-emerald-600" />
                     aria-live captions
                   </span>
                 </div>
-                <div className="hidden lg:block absolute -right-8 top-1/2 z-10 ex-float ex-fd2">
+                <div className="hidden lg:block absolute right-1 top-[204px] z-10 ex-float ex-fd2">
                   <span className="ex-fchip">
                     <Mic size={13} className="text-[#F26522]" />
                     32kbps Opus
                   </span>
                 </div>
-                <div className="hidden lg:block absolute -left-6 bottom-20 z-10 ex-float ex-fd4">
-                  <span className="ex-fchip">
+                <div className="hidden lg:block absolute bottom-1 left-1/2 -translate-x-1/2 z-10">
+                  <span className="ex-fchip ex-float ex-fd4">
                     <ShieldCheck size={13} className="text-emerald-600" />
                     0 bots in room
                   </span>
@@ -143,10 +143,10 @@ export default function ExtensionPage() {
                         <span className="hx-keyglow hx-tl hx-cyc flex-1 min-w-0 rounded-lg border border-gray-200 bg-white px-2.5 py-2 font-mono text-[11px] text-gray-400 truncate">
                           cn_live_…
                         </span>
-                        <span className="relative rounded-lg bg-gray-900 px-3 py-2 text-[11px] font-semibold text-white hx-tl hx-a-press1 hx-cyc">
+                        <span className="relative rounded-lg bg-gray-900 px-3 py-2 text-[11px] font-semibold text-white">
                           Save
                           <span
-                            className="hx-press hx-cyc"
+                            className="hx-press hx-tl hx-a-press1 hx-cyc"
                             aria-hidden="true"
                           />
                         </span>
@@ -164,8 +164,8 @@ export default function ExtensionPage() {
                     {/* status stage — the panel's real statuses, in sequence */}
                     <div className="rounded-xl border border-gray-200 bg-gray-50 p-3 mb-3">
                       <p className="text-[11px] font-semibold text-gray-700 mb-2 flex items-center gap-1.5">
-                        <span className="inline-block w-2 h-2 rounded-full bg-red-500" />
-                        Recording…
+                        <span className="inline-block w-2 h-2 rounded-full bg-gray-300" />
+                        Status
                       </p>
                       <div className="relative h-[50px]">
                         <div className="hx-st hx-tl hx-u0 hx-cyc">
@@ -369,7 +369,7 @@ export default function ExtensionPage() {
                   </Link>
                 </div>
               </li>
-            </ol>            </ol>
+            </ol>
           </div>
         </section>
 
@@ -392,7 +392,163 @@ export default function ExtensionPage() {
               </p>
             </div>
 
-            <ol className="grid grid-cols-1 md:grid-cols-2 gap-4 list-none">
+            {/* Self-playing replay: the side panel walks through all six steps
+                like a gif (18s cycle, 3s per phase) while the matching step card
+                below lifts and rings orange in sync. Hover the zone to freeze. */}
+            <div className="ex-demo-zone">
+              <div className="ex-stage rounded-3xl bg-[#f7f3ee]">
+                <div className="ex-abs ex-tint-lav" aria-hidden="true" />
+                <div className="ex-abs ex-tint-blush" aria-hidden="true" />
+                <div className="ex-abs ex-tint-peach" aria-hidden="true" />
+                <div className="ex-abs ex-glow-core" aria-hidden="true" />
+
+                <div className="relative z-10 grid grid-cols-1 lg:grid-cols-[300px_minmax(0,430px)] justify-center gap-8 lg:gap-14 px-6 sm:px-10 py-10 sm:py-14">
+                  {/* step rail */}
+                  <aside className="rp-rail" aria-hidden="true">
+                    <div className="rp-rail-head font-mono">
+                      <span className="rp-head-dot" />
+                      60-SECOND REPLAY
+                      <span className="rp-head-loop font-mono">AUTO-LOOP</span>
+                    </div>
+
+                    <div className="rp-row rp-row--base rp-cyc rp-tl rp-a-liftw ex-d0">
+                      <span className="rp-glow rp-cyc rp-tl rp-a-phasew ex-d0" />
+                      <span className="rp-pill rp-cyc rp-tl rp-a-phasew ex-d0" />
+                      <span className="rp-bar rp-cyc rp-tl rp-a-barw ex-d0" />
+                      <span className="rp-num font-mono rp-cyc rp-tl rp-a-inkw ex-d0">01</span>
+                      <span className="rp-label rp-cyc rp-tl rp-a-inkdw ex-d0">Open the tab</span>
+                    </div>
+                    <div className="rp-row rp-cyc rp-tl rp-a-lift ex-d1">
+                      <span className="rp-glow rp-cyc rp-tl ex-d1" />
+                      <span className="rp-pill rp-cyc rp-tl ex-d1" />
+                      <span className="rp-bar rp-cyc rp-tl rp-a-bar ex-d1" />
+                      <span className="rp-num font-mono rp-cyc rp-tl rp-a-ink ex-d1">02</span>
+                      <span className="rp-label rp-cyc rp-tl rp-a-inkd ex-d1">Save the key</span>
+                    </div>
+                    <div className="rp-row rp-cyc rp-tl rp-a-lift ex-d2">
+                      <span className="rp-glow rp-cyc rp-tl ex-d2" />
+                      <span className="rp-pill rp-cyc rp-tl ex-d2" />
+                      <span className="rp-bar rp-cyc rp-tl rp-a-bar ex-d2" />
+                      <span className="rp-num font-mono rp-cyc rp-tl rp-a-ink ex-d2">03</span>
+                      <span className="rp-label rp-cyc rp-tl rp-a-inkd ex-d2">Press Record</span>
+                    </div>
+                    <div className="rp-row rp-cyc rp-tl rp-a-lift ex-d3">
+                      <span className="rp-glow rp-cyc rp-tl ex-d3" />
+                      <span className="rp-pill rp-cyc rp-tl ex-d3" />
+                      <span className="rp-bar rp-cyc rp-tl rp-a-bar ex-d3" />
+                      <span className="rp-num font-mono rp-cyc rp-tl rp-a-ink ex-d3">04</span>
+                      <span className="rp-label rp-cyc rp-tl rp-a-inkd ex-d3">Stop + Send</span>
+                    </div>
+                    <div className="rp-row rp-cyc rp-tl rp-a-lift ex-d4">
+                      <span className="rp-glow rp-cyc rp-tl ex-d4" />
+                      <span className="rp-pill rp-cyc rp-tl ex-d4" />
+                      <span className="rp-bar rp-cyc rp-tl rp-a-bar ex-d4" />
+                      <span className="rp-num font-mono rp-cyc rp-tl rp-a-ink ex-d4">05</span>
+                      <span className="rp-label rp-cyc rp-tl rp-a-inkd ex-d4">Done summary</span>
+                    </div>
+                    <div className="rp-row rp-cyc rp-tl rp-a-lift ex-d5">
+                      <span className="rp-glow rp-cyc rp-tl ex-d5" />
+                      <span className="rp-pill rp-cyc rp-tl ex-d5" />
+                      <span className="rp-bar rp-cyc rp-tl rp-a-bar ex-d5" />
+                      <span className="rp-num font-mono rp-cyc rp-tl rp-a-ink ex-d5">06</span>
+                      <span className="rp-label rp-cyc rp-tl rp-a-inkd ex-d5">Slack digest</span>
+                    </div>
+                  </aside>
+
+                  {/* the side panel, replaying the exact six states */}
+                  <section className="ex-glass rp-panel" aria-hidden="true">
+                    <div className="ex-sheen" />
+                    <div className="ex-edgeglow" />
+
+                    <header className="rp-head">
+                      <span className="rp-orb">G</span>
+                      <div className="rp-head-copy">
+                        <h3>Gauge Recorder</h3>
+                        <p>The key stays in session memory only.</p>
+                      </div>
+                    </header>
+
+                    <div className="rp-keyrow">
+                      <span className="rp-keylabel font-mono">API KEY</span>
+                      <span className="rp-keychip font-mono">cn_live_…</span>
+                      <span className="rp-btn rp-save rp-cyc rp-tl rp-a-press ex-d1">
+                        <span className="rp-btn-t">Save</span>
+                        <span className="rp-press rp-cyc rp-tl ex-d1" />
+                      </span>
+                    </div>
+
+                    <div className="rp-status">
+                      <div className="rp-st rp-st-amber rp-st--base rp-cyc rp-tl rp-a-upw ex-d0">
+                        <span className="rp-dot rp-dot-amber rp-blink" />
+                        <p>Open a Meet / Teams / Zoom tab, then press Record.</p>
+                      </div>
+                      <div className="rp-st rp-st-emerald rp-cyc rp-tl rp-a-up ex-d1">
+                        <span className="rp-dot rp-dot-emerald" />
+                        <p>Key saved · session memory only.</p>
+                      </div>
+                      <div className="rp-st rp-st-emerald rp-cyc rp-tl rp-a-up ex-d2">
+                        <p>
+                          <span className="rp-recpill font-mono">
+                            <span className="rp-dot rp-dot-red rp-blink" />
+                            REC 00:14
+                          </span>
+                          Recording tab audio (32kbps Opus) + captions. Press Stop when done.
+                        </p>
+                      </div>
+                      <div className="rp-st rp-st-neutral rp-cyc rp-tl rp-a-up ex-d3">
+                        <span className="rp-dot rp-dot-orange rp-blink" />
+                        <p>Stopped. Uploading audio + finalizing captions…</p>
+                      </div>
+                      <div className="rp-st rp-st-emerald rp-cyc rp-tl rp-a-up2 ex-d4">
+                        <span className="rp-dot rp-dot-emerald" />
+                        <p>Done - summary: /app/calls/8f3k</p>
+                      </div>
+                    </div>
+
+                    <div className="rp-actions">
+                      <span className="rp-btn rp-cyc">
+                        <span className="rp-btn-t">Record</span>
+                        <span className="rp-recon rp-cyc rp-a-recon ex-d2" />
+                      </span>
+                      <span className="rp-btn">
+                        <span className="rp-btn-t">Stop</span>
+                      </span>
+                      <span className="rp-btn rp-cyc rp-tl rp-a-press ex-d3">
+                        <span className="rp-btn-t">Send</span>
+                        <span className="rp-press rp-cyc rp-tl ex-d3" />
+                      </span>
+                    </div>
+
+                    <div className="rp-rule" />
+                    <div className="rp-seclabel font-mono">RECENT CALLS</div>
+
+                    <div className="rp-recent">
+                      <span className="rp-recent-hi rp-cyc rp-tl rp-a-hi2 ex-d4" />
+                      <span className="rp-recent-name">Acme × Gauge — Discovery</span>
+                      <span className="rp-recent-score font-mono rp-cyc rp-tl rp-a-inks ex-d4">
+                        score 82 · extension
+                      </span>
+                    </div>
+
+                    <div className="rp-digest-slot">
+                      <div className="rp-digest rp-cyc rp-tl rp-a-pop ex-d5">
+                        <svg className="rp-slack" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                          <rect x="8.9" y="2" width="3" height="9.4" rx="1.5" fill="#36C5F0" />
+                          <rect x="12.6" y="12.6" width="9.4" height="3" rx="1.5" fill="#2EB67D" />
+                          <rect x="12.1" y="12.6" width="3" height="9.4" rx="1.5" fill="#ECB22E" />
+                          <rect x="2" y="8.4" width="9.4" height="3" rx="1.5" fill="#E01E5A" />
+                        </svg>
+                        <p>#sales · digest sent · score 82</p>
+                      </div>
+                    </div>
+                  </section>
+                </div>
+
+                <div className="ex-abs ex-vignette" aria-hidden="true" />
+              </div>
+            </div>
+
+            <ol className="grid grid-cols-1 md:grid-cols-3 gap-4 list-none mt-4">
               {[
                 {
                   n: "01",
@@ -462,14 +618,22 @@ export default function ExtensionPage() {
                     />
                   ),
                 },
-              ].map((step) => (
-                <li key={step.n} className="doppel-outer">
-                  <div className="doppel-inner p-6 sm:p-8 h-full">
+              ].map((step, i) => (
+                <li key={step.n} className="doppel-outer relative">
+                  <span
+                    aria-hidden="true"
+                    className={`ex-cardhi rp-cyc rp-tl ${i === 0 ? "rp-a-phasew ex-d0" : `rp-a-phase ex-d${i}`}`}
+                  />
+                  <div
+                    className={`doppel-inner p-6 sm:p-8 h-full rp-cyc rp-tl ${i === 0 ? "rp-a-liftw ex-d0" : `rp-a-lift ex-d${i}`}`}
+                  >
                     <div className="flex items-center gap-3 mb-5">
                       <div className="w-10 h-10 rounded-xl bg-[#F26522]/10 flex items-center justify-center">
                         {step.icon}
                       </div>
-                      <span className="text-[11px] font-mono text-gray-400 tracking-wider">
+                      <span
+                        className={`text-[11px] font-mono tracking-wider rp-cyc rp-tl ${i === 0 ? "rp-a-inkw ex-d0" : `rp-a-ink ex-d${i}`}`}
+                      >
                         STEP {step.n}
                       </span>
                     </div>
@@ -503,9 +667,20 @@ export default function ExtensionPage() {
               </p>
             </div>
 
-            <div className="doppel-outer">
-              <div className="doppel-inner p-6 sm:p-8 overflow-x-auto">
-                <table className="w-full text-left text-[13px] min-w-[520px]">
+            <div className="grid grid-cols-1 lg:grid-cols-[0.85fr_1.15fr] gap-6 lg:gap-10 items-start">
+              <div className="rounded-2xl overflow-hidden transition-transform duration-300 hover:-translate-y-1">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src="/studio/gauge_ext_permissions.jpg"
+                  alt="A meeting window where only the tab title and the live captions are bracketed as captured, with shields over the microphone, camera, and other tabs"
+                  className="block w-full"
+                  loading="lazy"
+                />
+              </div>
+
+              <div className="doppel-outer">
+                <div className="doppel-inner p-6 sm:p-8 overflow-x-auto">
+                  <table className="ex-perm w-full text-left text-[13px] min-w-[520px]">
                   <caption className="sr-only">
                     What the extension captures and what it never captures
                   </caption>
@@ -584,6 +759,7 @@ export default function ExtensionPage() {
                   </Link>
                   .
                 </p>
+                </div>
               </div>
             </div>
           </div>
@@ -592,27 +768,37 @@ export default function ExtensionPage() {
         {/* TROUBLESHOOTING — 5 entries */}
         <section className="bg-[#EFEFEF] pt-16 sm:pt-20 lg:pt-28 pb-16 sm:pb-20 lg:pb-28">
           <div className="max-w-[1440px] mx-auto px-5 sm:px-8 lg:px-12">
-            <div className="max-w-2xl mb-14">
-              <p className="text-[11px] uppercase tracking-[0.18em] text-gray-400 mb-3">
-                Troubleshooting
-              </p>
-              <h2 className="text-[clamp(1.5rem,4vw,2.6rem)] font-medium leading-[1.1] tracking-[-0.02em] text-gray-900 mb-3">
-                When something looks wrong.
-              </h2>
-              <p className="text-gray-500 text-[14px]">
-                Five fixes for the five failures the panel actually reports.
-              </p>
+            <div className="grid grid-cols-1 lg:grid-cols-[1fr_auto] gap-8 lg:gap-12 items-end mb-14">
+              <div className="max-w-2xl">
+                <p className="text-[11px] uppercase tracking-[0.18em] text-gray-400 mb-3">
+                  Troubleshooting
+                </p>
+                <h2 className="text-[clamp(1.5rem,4vw,2.6rem)] font-medium leading-[1.1] tracking-[-0.02em] text-gray-900 mb-3">
+                  When something looks wrong.
+                </h2>
+                <p className="text-gray-500 text-[14px]">
+                  Five fixes for the five failures the panel actually reports.
+                </p>
+              </div>
+              <div className="rounded-xl overflow-hidden w-full max-w-[460px] lg:justify-self-end transition-transform duration-300 hover:-translate-y-1">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src="/studio/gauge_ext_console.jpg"
+                  alt="The Gauge side panel status log showing its five real status messages"
+                  className="block w-full"
+                  loading="lazy"
+                />
+              </div>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="doppel-outer">
+              <div className="doppel-outer transition-transform duration-300 hover:-translate-y-1">
                 <div className="doppel-inner p-6 sm:p-8 h-full">
-                  <div className="w-10 h-10 rounded-xl bg-[#F26522]/10 flex items-center justify-center mb-5">
-                    <Wrench
-                      size={18}
-                      className="text-[#F26522]"
-                      strokeWidth={1.5}
-                    />
+                  <div className="mb-5">
+                    <span className="ex-code ex-code-amber">
+                      <i />
+                      CC OFF
+                    </span>
                   </div>
                   <h3 className="text-[15px] font-semibold tracking-tight text-gray-900 mb-2">
                     No captions are captured
@@ -626,14 +812,13 @@ export default function ExtensionPage() {
                 </div>
               </div>
 
-              <div className="doppel-outer">
+              <div className="doppel-outer transition-transform duration-300 hover:-translate-y-1">
                 <div className="doppel-inner p-6 sm:p-8 h-full">
-                  <div className="w-10 h-10 rounded-xl bg-[#F26522]/10 flex items-center justify-center mb-5">
-                    <Wrench
-                      size={18}
-                      className="text-[#F26522]"
-                      strokeWidth={1.5}
-                    />
+                  <div className="mb-5">
+                    <span className="ex-code ex-code-orange">
+                      <i />
+                      HTTP 413
+                    </span>
                   </div>
                   <h3 className="text-[15px] font-semibold tracking-tight text-gray-900 mb-2">
                     Upload fails with 413
@@ -646,14 +831,13 @@ export default function ExtensionPage() {
                 </div>
               </div>
 
-              <div className="doppel-outer">
+              <div className="doppel-outer transition-transform duration-300 hover:-translate-y-1">
                 <div className="doppel-inner p-6 sm:p-8 h-full">
-                  <div className="w-10 h-10 rounded-xl bg-[#F26522]/10 flex items-center justify-center mb-5">
-                    <Wrench
-                      size={18}
-                      className="text-[#F26522]"
-                      strokeWidth={1.5}
-                    />
+                  <div className="mb-5">
+                    <span className="ex-code ex-code-red">
+                      <i />
+                      HTTP 401·403
+                    </span>
                   </div>
                   <h3 className="text-[15px] font-semibold tracking-tight text-gray-900 mb-2">
                     Key rejected with 401 or 403
@@ -673,14 +857,13 @@ export default function ExtensionPage() {
                 </div>
               </div>
 
-              <div className="doppel-outer">
+              <div className="doppel-outer transition-transform duration-300 hover:-translate-y-1">
                 <div className="doppel-inner p-6 sm:p-8 h-full">
-                  <div className="w-10 h-10 rounded-xl bg-[#F26522]/10 flex items-center justify-center mb-5">
-                    <Wrench
-                      size={18}
-                      className="text-[#F26522]"
-                      strokeWidth={1.5}
-                    />
+                  <div className="mb-5">
+                    <span className="ex-code ex-code-indigo">
+                      <i />
+                      BOTS API
+                    </span>
                   </div>
                   <h3 className="text-[15px] font-semibold tracking-tight text-gray-900 mb-2">
                     Should I use a meeting bot instead?
@@ -694,14 +877,13 @@ export default function ExtensionPage() {
                 </div>
               </div>
 
-              <div className="doppel-outer md:col-span-2">
+              <div className="doppel-outer md:col-span-2 transition-transform duration-300 hover:-translate-y-1">
                 <div className="doppel-inner p-6 sm:p-8 h-full">
-                  <div className="w-10 h-10 rounded-xl bg-[#F26522]/10 flex items-center justify-center mb-5">
-                    <Wrench
-                      size={18}
-                      className="text-[#F26522]"
-                      strokeWidth={1.5}
-                    />
+                  <div className="mb-5">
+                    <span className="ex-code ex-code-neutral">
+                      <i />
+                      MANUAL UPLOAD
+                    </span>
                   </div>
                   <h3 className="text-[15px] font-semibold tracking-tight text-gray-900 mb-2">
                     Automatic upload is unavailable
@@ -727,33 +909,46 @@ export default function ExtensionPage() {
         <section className="bg-[#EFEFEF] pt-8 sm:pt-12 pb-16 sm:pb-20 lg:pb-28">
           <div className="max-w-[1440px] mx-auto px-5 sm:px-8 lg:px-12">
             <div className="doppel-outer">
-              <div className="doppel-inner p-8 sm:p-12 lg:p-16 text-center">
-                <p className="text-[11px] uppercase tracking-[0.18em] text-gray-400 mb-4">
-                  One more thing
-                </p>
-                <h2 className="text-[clamp(1.5rem,4vw,2.6rem)] font-medium leading-[1.12] tracking-[-0.02em] mb-3 text-gray-900">
-                  Press Record on your next call.
-                </h2>
-                <p className="text-gray-500 mb-8 text-[14px] max-w-xl mx-auto">
-                  Same Gauge account. Recent calls, health scores, and the
-                  Slack digest work the moment your key is saved.
-                </p>
-                <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-                  <Link
-                    href="/app/record"
-                    className="group inline-flex items-center gap-2 bg-[#F26522] hover:bg-[#e05a1a] text-white text-[13px] rounded-full pl-5 pr-2 py-2"
-                  >
-                    <span>Open the manual fallback</span>
-                    <span className="w-7 h-7 bg-white rounded-full flex items-center justify-center group-hover:translate-x-0.5 transition-transform duration-300">
-                      <ArrowRight size={14} className="text-[#F26522]" />
-                    </span>
-                  </Link>
-                  <Link
-                    href="/api-docs/v1"
-                    className="text-[13px] text-gray-600 hover:text-gray-900 font-medium underline-offset-4 hover:underline"
-                  >
-                    Read the API docs →
-                  </Link>
+              <div className="doppel-inner p-8 sm:p-12 lg:p-16">
+                <div className="grid grid-cols-1 lg:grid-cols-[1fr_auto] gap-10 lg:gap-14 items-center">
+                  <div className="text-center lg:text-left">
+                    <p className="text-[11px] uppercase tracking-[0.18em] text-gray-400 mb-4">
+                      One more thing
+                    </p>
+                    <h2 className="text-[clamp(1.5rem,4vw,2.6rem)] font-medium leading-[1.12] tracking-[-0.02em] mb-3 text-gray-900">
+                      Press Record on your next call.
+                    </h2>
+                    <p className="text-gray-500 mb-8 text-[14px] max-w-xl lg:max-w-md mx-auto lg:mx-0">
+                      Same Gauge account. Recent calls, health scores, and the
+                      Slack digest work the moment your key is saved.
+                    </p>
+                    <div className="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-4">
+                      <Link
+                        href="/app/record"
+                        className="group inline-flex items-center gap-2 bg-[#F26522] hover:bg-[#e05a1a] text-white text-[13px] rounded-full pl-5 pr-2 py-2"
+                      >
+                        <span>Open the manual fallback</span>
+                        <span className="w-7 h-7 bg-white rounded-full flex items-center justify-center group-hover:translate-x-0.5 transition-transform duration-300">
+                          <ArrowRight size={14} className="text-[#F26522]" />
+                        </span>
+                      </Link>
+                      <Link
+                        href="/api-docs/v1"
+                        className="text-[13px] text-gray-600 hover:text-gray-900 font-medium underline-offset-4 hover:underline"
+                      >
+                        Read the API docs →
+                      </Link>
+                    </div>
+                  </div>
+                  <div className="rounded-2xl overflow-hidden w-full lg:w-[520px]">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                      src="/studio/gauge_ext_cta_record.jpg"
+                      alt="A large glossy red record button with orbiting chips for recent calls, the health score, and the Slack digest"
+                      className="block w-full"
+                      loading="lazy"
+                    />
+                  </div>
                 </div>
               </div>
             </div>
