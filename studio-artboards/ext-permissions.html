@@ -1,0 +1,298 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Gauge — Extension Permissions Studio Plate</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body { background: #efe9e2; }
+  body {
+    font-family: -apple-system, "SF Pro Text", "Helvetica Neue", "Segoe UI", Arial, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+  .mono { font-family: ui-monospace, "SF Mono", Menlo, monospace; }
+
+  .artboard {
+    position: relative;
+    width: 800px;
+    height: 420px;
+    overflow: hidden;
+    background: #f7f3ee;
+    perspective: 1600px;
+  }
+
+  .abs { position: absolute; }
+
+  .tint-lav { left: -110px; top: -90px; width: 460px; height: 460px;
+    background: radial-gradient(closest-side, rgba(206,182,255,0.62), rgba(206,182,255,0) 72%); }
+  .tint-blush { right: 30px; top: -70px; width: 470px; height: 470px;
+    background: radial-gradient(closest-side, rgba(255,197,192,0.5), rgba(255,197,192,0) 72%); }
+  .tint-peach { right: -130px; bottom: -140px; width: 540px; height: 540px;
+    background: radial-gradient(closest-side, rgba(255,181,113,0.58), rgba(255,181,113,0) 72%); }
+  .tint-mint { left: -100px; bottom: -130px; width: 440px; height: 440px;
+    background: radial-gradient(closest-side, rgba(180,236,206,0.5), rgba(180,236,206,0) 72%); }
+  .glow-core { left: 130px; top: 20px; width: 560px; height: 380px;
+    background: radial-gradient(closest-side, rgba(255,248,240,0.95), rgba(255,248,240,0) 70%); }
+  .vignette { inset: 0;
+    background: radial-gradient(130% 120% at 50% 42%, rgba(0,0,0,0) 58%, rgba(74,45,20,0.10) 100%); }
+  .grain { inset: 0; opacity: 0.55; mix-blend-mode: overlay;
+    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='260' height='260'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/><feColorMatrix type='matrix' values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.05 0'/></filter><rect width='260' height='260' filter='url(%23n)'/></svg>");
+    background-size: 260px 260px; }
+
+  .shadow-floor { border-radius: 50%;
+    background: radial-gradient(closest-side, rgba(58,34,10,0.30), rgba(58,34,10,0) 72%);
+    filter: blur(6px); }
+
+  .glass {
+    background: linear-gradient(180deg, #ffffff 0%, #fefdfc 55%, #f8f4ef 100%);
+    border: 1px solid rgba(31,22,10,0.08);
+    box-shadow:
+      inset 0 1px 0 rgba(255,255,255,0.9),
+      0 2px 6px rgba(56,32,8,0.06),
+      0 18px 34px -12px rgba(56,32,8,0.18),
+      0 48px 90px -24px rgba(56,32,8,0.28);
+    border-radius: 16px;
+  }
+  .sheen { position: absolute; inset: 0; border-radius: inherit; pointer-events: none;
+    background: linear-gradient(118deg, rgba(255,255,255,0.42) 0%, rgba(255,255,255,0) 30%); }
+  .edgeglow { position: absolute; inset: 0; border-radius: inherit; pointer-events: none;
+    box-shadow: inset -14px -18px 34px rgba(242,101,34,0.05), inset 12px 12px 28px rgba(212,193,255,0.07); }
+
+  /* emerald spill that leaks past the window edges (behind the browser) */
+  .spill-tab { left: 208px; top: 44px; width: 270px; height: 62px;
+    background: radial-gradient(closest-side, rgba(16,185,129,0.20), rgba(16,185,129,0) 72%);
+    filter: blur(7px); }
+  .spill-cap { left: 168px; top: 288px; width: 480px; height: 74px;
+    background: radial-gradient(closest-side, rgba(16,185,129,0.18), rgba(16,185,129,0) 72%);
+    filter: blur(9px); }
+
+  .browser {
+    left: 166px; top: 56px; width: 474px; height: 306px;
+    border-radius: 13px; overflow: hidden;
+    transform: rotateX(6deg) rotateY(-9deg) rotateZ(-1.4deg);
+    transform-origin: 50% 40%;
+    background: linear-gradient(180deg, #f3f1ee 0%, #eceae7 100%);
+    box-shadow:
+      inset 0 1px 0 rgba(255,255,255,0.95),
+      0 3px 8px rgba(56,32,8,0.08),
+      0 24px 44px -14px rgba(46,26,6,0.30),
+      0 64px 120px -30px rgba(46,26,6,0.42);
+  }
+  .chrome-top { height: 38px; display: flex; align-items: flex-end;
+    background: linear-gradient(180deg, #eceae7 0%, #e5e2df 100%);
+    border-bottom: 1px solid rgba(40,30,16,0.10); position: relative; }
+  .lights { position: absolute; left: 13px; top: 12px; display: flex; gap: 7px; }
+  .light { width: 11px; height: 11px; border-radius: 50%; box-shadow: inset 0 -1px 2px rgba(0,0,0,0.24), inset 0 1px 1.5px rgba(255,255,255,0.55), 0 0.5px 1px rgba(0,0,0,0.18); }
+  .l-red { background: radial-gradient(circle at 32% 28%, #ff8f80, #f4573e 58%, #d63a24); }
+  .l-yel { background: radial-gradient(circle at 32% 28%, #ffe08e, #f5bf2f 58%, #d99c14); }
+  .l-grn { background: radial-gradient(circle at 32% 28%, #96e69b, #42c152 58%, #2ca33c); }
+  .tab-active {
+    margin-left: 62px; height: 30px; width: 226px;
+    background: linear-gradient(180deg, #fbfaf9 0%, #f4f2f0 100%);
+    border-radius: 9px 9px 0 0; display: flex; align-items: center; gap: 7px; padding: 0 12px;
+    box-shadow: 0 -1px 3px rgba(40,30,16,0.06);
+  }
+  .meet-glyph { width: 13px; height: 13px; border-radius: 3px; flex-shrink: 0;
+    background: linear-gradient(150deg, #4ec98a, #1e9e5c);
+    box-shadow: inset 0 1px 1px rgba(255,255,255,0.4); display: flex; align-items: center; justify-content: center; }
+  .meet-glyph svg { width: 8px; height: 8px; }
+  .tab-title { font-size: 11px; color: #3a3f45; font-weight: 500; white-space: nowrap; }
+  .toolbar { height: 34px; display: flex; align-items: center; gap: 9px; padding: 0 12px;
+    background: linear-gradient(180deg, #f6f5f3 0%, #f0eeeb 100%);
+    border-bottom: 1px solid rgba(40,30,16,0.08); }
+  .nav-circ { width: 21px; height: 21px; border-radius: 50%; display: flex; align-items: center; justify-content: center;
+    color: #7c8188; border: 1px solid rgba(40,30,16,0.07); background: rgba(255,255,255,0.6);
+    box-shadow: 0 1px 1px rgba(255,255,255,0.9) inset; }
+  .nav-circ svg { width: 10px; height: 10px; }
+  .urlbar { flex: 1; height: 25px; border-radius: 13px; display: flex; align-items: center; gap: 7px; padding: 0 12px;
+    background: linear-gradient(180deg, #e7e4e0 0%, #eceae6 100%);
+    box-shadow: inset 0 1px 2.5px rgba(40,30,16,0.14), inset 0 -1px 0 rgba(255,255,255,0.7); }
+  .urlbar svg { width: 10px; height: 10px; color: #6d737a; flex-shrink: 0; }
+  .urlbar span { font-size: 11px; color: #34393f; font-weight: 500; letter-spacing: 0.01em; }
+  .urlbar .ext-sign { margin-left: auto; width: 16px; height: 16px; border-radius: 50%;
+    background: radial-gradient(circle at 34% 30%, #ff9a5e, #f26522 62%, #d85612);
+    display: flex; align-items: center; justify-content: center; color: #fff; font-size: 8.5px; font-weight: 800;
+    box-shadow: 0 1px 2px rgba(216,86,18,0.5), inset 0 1px 1px rgba(255,255,255,0.35); }
+  .avatar-mini { width: 19px; height: 19px; border-radius: 50%; background: linear-gradient(150deg, #d9d2c8, #b9b1a5);
+    display: flex; align-items: center; justify-content: center; font-size: 7.5px; font-weight: 700; color: #5b564e;
+    box-shadow: inset 0 1px 2px rgba(255,255,255,0.6), 0 1px 2px rgba(40,30,16,0.2); }
+
+  .meet { height: 234px; background: #17191e; position: relative; padding: 11px;
+    display: flex; flex-direction: column; gap: 9px; overflow: hidden; }
+  .meet::before { content: ""; position: absolute; inset: 0;
+    background: radial-gradient(90% 70% at 50% 0%, rgba(255,255,255,0.06), rgba(0,0,0,0) 60%); }
+  .tilegrid { position: relative; display: grid; grid-template-columns: repeat(3, 1fr); gap: 9px; flex: 1; }
+  .tile { border-radius: 9px; position: relative; overflow: hidden;
+    display: flex; align-items: center; justify-content: center;
+    box-shadow: inset 0 0 0 1px rgba(255,255,255,0.07); }
+  .t-mr { background: linear-gradient(155deg, #39424e 0%, #57626f 52%, #6f7a86 100%); }
+  .t-sc { background: linear-gradient(155deg, #4a3527 0%, #7e5433 55%, #b07c50 100%); }
+  .t-dm { background: linear-gradient(155deg, #25423a 0%, #3c6455 55%, #55816c 100%); }
+  .tile .init { font-size: 19px; font-weight: 700; color: rgba(255,255,255,0.9); letter-spacing: 0.04em;
+    text-shadow: 0 1px 8px rgba(0,0,0,0.35); }
+  .namechip { position: absolute; left: 7px; bottom: 7px; font-size: 9px; font-weight: 600; color: rgba(255,255,255,0.94);
+    background: rgba(10,12,16,0.55); border: 1px solid rgba(255,255,255,0.10); border-radius: 5px; padding: 2.5px 7px;
+    backdrop-filter: blur(4px); }
+
+  .capstrip { flex-shrink: 0; height: 46px; border-radius: 9px;
+    display: flex; align-items: center; gap: 9px; padding: 0 12px;
+    background: rgba(10,12,18,0.82); border: 1px solid rgba(255,255,255,0.08); }
+  .cc-badge { width: 22px; height: 18px; border-radius: 4px; flex-shrink: 0;
+    background: rgba(255,255,255,0.10); border: 1px solid rgba(255,255,255,0.14);
+    color: rgba(255,255,255,0.92); font-size: 8px; font-weight: 800; letter-spacing: 0.05em;
+    display: flex; align-items: center; justify-content: center; }
+  .cap-text { font-size: 10.5px; line-height: 1.4; color: rgba(255,255,255,0.94); white-space: nowrap; }
+  .cap-text b { color: #ffb37e; font-weight: 700; }
+  .cap-tag { margin-left: auto; flex-shrink: 0;
+    font-family: ui-monospace, "SF Mono", Menlo, monospace;
+    font-size: 8.5px; letter-spacing: 0.06em; color: rgba(141,240,198,0.9);
+    background: rgba(16,185,129,0.10); border: 1px solid rgba(52,211,153,0.30);
+    border-radius: 5px; padding: 3px 7px; white-space: nowrap; }
+
+  /* emerald "only these two surfaces" highlight kit */
+  .glow-cap { position: absolute; left: 8px; right: 8px; bottom: 8px; height: 52px; border-radius: 11px;
+    pointer-events: none;
+    box-shadow: 0 0 0 2px rgba(52,211,153,0.55), 0 0 26px rgba(16,185,129,0.40), inset 0 0 18px rgba(16,185,129,0.13); }
+  .glow-tab { position: absolute; left: 59px; top: 7px; width: 232px; height: 31px;
+    border-radius: 10px 10px 0 0; pointer-events: none;
+    box-shadow: 0 0 0 2px rgba(16,185,129,0.55), 0 0 20px rgba(16,185,129,0.45), inset 0 0 12px rgba(16,185,129,0.12); }
+  .brk { position: absolute; pointer-events: none; filter: drop-shadow(0 0 3px rgba(16,185,129,0.55)); }
+  .brk i { position: absolute; width: 11px; height: 11px; border: 0 solid #34d399; }
+  .brk i.tl { left: -5px; top: -5px; border-left-width: 2px; border-top-width: 2px; border-top-left-radius: 5px; }
+  .brk i.tr { right: -5px; top: -5px; border-right-width: 2px; border-top-width: 2px; border-top-right-radius: 5px; }
+  .brk i.bl { left: -5px; bottom: -5px; border-left-width: 2px; border-bottom-width: 2px; border-bottom-left-radius: 5px; }
+  .brk i.br { right: -5px; bottom: -5px; border-right-width: 2px; border-bottom-width: 2px; border-bottom-right-radius: 5px; }
+  .brk-sm i { width: 8px; height: 8px; }
+  .brk-sm i.tl { left: -4px; top: -4px; border-left-width: 2px; border-top-width: 2px; border-top-left-radius: 3px; }
+  .brk-sm i.tr { right: -4px; top: -4px; border-right-width: 2px; border-top-width: 2px; border-top-right-radius: 3px; }
+  .brk-sm i.bl { left: -4px; bottom: -4px; border-left-width: 2px; border-bottom-width: 2px; border-bottom-left-radius: 3px; }
+  .brk-sm i.br { right: -4px; bottom: -4px; border-right-width: 2px; border-bottom-width: 2px; border-bottom-right-radius: 3px; }
+  .tag-tab { position: absolute; left: 302px; top: 11px;
+    font-family: ui-monospace, "SF Mono", Menlo, monospace;
+    font-size: 8.5px; letter-spacing: 0.06em; color: #0b7a55;
+    background: rgba(234,252,243,0.94); border: 1px solid rgba(16,185,129,0.35);
+    border-radius: 5px; padding: 2.5px 7px; white-space: nowrap;
+    box-shadow: 0 1px 3px rgba(16,120,80,0.14); }
+
+  /* floating permission chips */
+  .deny-chip { position: absolute; display: flex; align-items: center; gap: 8px; padding: 8px 13px;
+    background: linear-gradient(180deg, rgba(255,255,255,0.96), rgba(250,246,241,0.94));
+    border: 1px solid rgba(31,22,10,0.09); border-radius: 999px;
+    box-shadow: 0 2px 5px rgba(56,32,8,0.08), 0 14px 26px -10px rgba(56,32,8,0.28), inset 0 1px 0 rgba(255,255,255,0.9); }
+  .deny-chip .no { width: 19px; height: 19px; border-radius: 50%; flex-shrink: 0;
+    background: radial-gradient(circle at 34% 28%, #ff8d84, #ff3b30 66%, #d92c21);
+    color: #fff; display: flex; align-items: center; justify-content: center;
+    box-shadow: 0 0 0 2px rgba(255,255,255,0.85), 0 3px 7px rgba(217,44,33,0.45); }
+  .deny-chip .no svg { width: 10px; height: 10px; }
+  .deny-chip .txt { white-space: nowrap; }
+  .deny-chip .t { display: block; font-size: 12px; font-weight: 700; color: #262b31; letter-spacing: -0.005em; }
+  .deny-chip .s { display: block; font-family: ui-monospace, "SF Mono", Menlo, monospace;
+    font-size: 8px; color: #9aa0a8; letter-spacing: 0.05em; margin-top: 1.5px; }
+
+  .grant-chip { position: absolute; display: flex; align-items: center; gap: 8px; padding: 8px 14px;
+    background: linear-gradient(180deg, rgba(243,255,248,0.97), rgba(232,250,240,0.94));
+    border: 1px solid rgba(16,185,129,0.4); border-radius: 999px;
+    box-shadow: 0 2px 5px rgba(16,120,80,0.10), 0 14px 28px -10px rgba(16,120,80,0.35), inset 0 1px 0 rgba(255,255,255,0.9); }
+  .grant-chip svg { width: 14px; height: 14px; color: #0e9f6e; flex-shrink: 0; }
+  .grant-chip .t { font-size: 11.5px; font-weight: 700; color: #065f46; white-space: nowrap; letter-spacing: -0.005em; }
+  .grant-chip .seg { font-family: ui-monospace, "SF Mono", Menlo, monospace; font-size: 10.5px; color: #067a5a; }
+
+  .spark { position: absolute; pointer-events: none; user-select: none; }
+  .spark em { position: absolute; width: 24px; height: 24px; margin: -12px 0 0 -12px; border-radius: 999px;
+    background:
+      linear-gradient(rgba(242,101,34,.5), rgba(242,101,34,0)) 50% 0/2px 24px no-repeat,
+      linear-gradient(rgba(242,101,34,0), rgba(242,101,34,.5)) 50% 100%/2px 24px no-repeat,
+      linear-gradient(90deg, rgba(242,101,34,.5), rgba(242,101,34,0)) 0 50%/24px 2px no-repeat,
+      linear-gradient(90deg, rgba(242,101,34,0), rgba(242,101,34,.5)) 100% 50%/24px 2px no-repeat;
+    filter: drop-shadow(0 0 4px rgba(255,178,108,.5)); }
+</style>
+</head>
+<body>
+  <div class="artboard">
+    <div class="abs tint-lav"></div>
+    <div class="abs tint-blush"></div>
+    <div class="abs tint-peach"></div>
+    <div class="abs tint-mint"></div>
+    <div class="abs glow-core"></div>
+
+    <div class="abs spill-tab"></div>
+    <div class="abs spill-cap"></div>
+
+    <div class="abs shadow-floor" style="left:168px; top:364px; width:464px; height:56px; background: radial-gradient(closest-side, rgba(58,34,10,0.42), rgba(58,34,10,0) 72%);"></div>
+    <div class="abs shadow-floor" style="left:290px; top:388px; width:320px; height:30px;"></div>
+
+    <div class="abs browser">
+      <div class="chrome-top">
+        <div class="lights">
+          <span class="light l-red"></span><span class="light l-yel"></span><span class="light l-grn"></span>
+        </div>
+        <div class="tab-active">
+          <span class="meet-glyph"><svg viewBox="0 0 24 24" fill="#fff"><path d="M17 10.5V7a1 1 0 0 0-1-1H4a1 1 0 0 0-1 1v10a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-3.5l4 4v-11l-4 4Z"/></svg></span>
+          <span class="tab-title">meet.google.com/qxm-sales-call</span>
+        </div>
+        <div class="glow-tab"></div>
+        <div class="brk brk-sm" style="left:59px; top:6px; width:232px; height:29px;">
+          <i class="tl"></i><i class="tr"></i><i class="bl"></i><i class="br"></i>
+        </div>
+        <span class="tag-tab">tab title</span>
+      </div>
+      <div class="toolbar">
+        <span class="nav-circ"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 6l-6 6 6 6"/></svg></span>
+        <span class="nav-circ" style="opacity:.45"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg></span>
+        <span class="nav-circ"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 11a8 8 0 1 0-2.3 6.3"/><path d="M20 5v6h-6"/></svg></span>
+        <div class="urlbar">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linejoin="round"><path d="M7 10V8a5 5 0 0 1 10 0v2h1a1 1 0 0 1 1 1v8a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1v-8a1 1 0 0 1 1-1h1Zm2 0h6V8a3 3 0 0 0-6 0v2Z"/></svg>
+          <span>meet.google.com/qxm-sales-call</span>
+          <span class="ext-sign">G</span>
+        </div>
+        <span class="avatar-mini">KA</span>
+      </div>
+      <div class="meet">
+        <div class="tilegrid">
+          <div class="tile t-mr"><span class="init">MR</span><span class="namechip">Mark Roberts</span></div>
+          <div class="tile t-sc"><span class="init">SC</span><span class="namechip">Sarah Chen</span></div>
+          <div class="tile t-dm"><span class="init">DM</span><span class="namechip">David Miller</span></div>
+        </div>
+        <div class="capstrip">
+          <span class="cc-badge mono">CC</span>
+          <span class="cap-text"><b>Sarah:</b> Their per-seat minimum didn&rsquo;t fit our team.</span>
+          <span class="cap-tag">aria-live captions</span>
+        </div>
+        <div class="glow-cap"></div>
+        <div class="brk" style="left:8px; right:8px; bottom:8px; height:52px;">
+          <i class="tl"></i><i class="tr"></i><i class="bl"></i><i class="br"></i>
+        </div>
+      </div>
+    </div>
+
+    <div class="abs deny-chip" style="left:22px; top:104px; transform:rotate(-2.4deg);">
+      <span class="no"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l7 3v5c0 4.6-3 7.6-7 9-4-1.4-7-4.4-7-9V6l7-3Z"/><path d="M5.5 5.5l13 13"/></svg></span>
+      <span class="txt"><span class="t">No microphone</span><span class="s">chrome.microphone</span></span>
+    </div>
+
+    <div class="abs deny-chip" style="left:40px; top:262px; transform:rotate(1.8deg);">
+      <span class="no"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l7 3v5c0 4.6-3 7.6-7 9-4-1.4-7-4.4-7-9V6l7-3Z"/><path d="M5.5 5.5l13 13"/></svg></span>
+      <span class="txt"><span class="t">No camera</span><span class="s">chrome.camera</span></span>
+    </div>
+
+    <div class="abs deny-chip" style="right:26px; top:92px; transform:rotate(2.4deg);">
+      <span class="no"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l7 3v5c0 4.6-3 7.6-7 9-4-1.4-7-4.4-7-9V6l7-3Z"/><path d="M5.5 5.5l13 13"/></svg></span>
+      <span class="txt"><span class="t">No other tabs</span><span class="s">chrome.tabs</span></span>
+    </div>
+
+    <div class="abs grant-chip" style="right:20px; top:284px; transform:rotate(-1.8deg);">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l7 3v5c0 4.6-3 7.6-7 9-4-1.4-7-4.4-7-9V6l7-3Z"/><path d="M9 12l2 2 4-4"/></svg>
+      <span class="t">Captured only between <span class="seg">Record &rarr; Stop</span></span>
+    </div>
+
+    <div class="abs spark" style="left:150px; top:60px;"><em></em></div>
+    <div class="abs spark" style="left:664px; top:170px; transform:scale(0.8);"><em></em></div>
+    <div class="abs spark" style="left:112px; top:326px; transform:scale(0.75);"><em></em></div>
+    <div class="abs spark" style="left:714px; top:338px;"><em></em></div>
+
+    <div class="abs grain"></div>
+    <div class="abs vignette"></div>
+  </div>
+</body>
+</html>

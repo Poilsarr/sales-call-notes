@@ -1,0 +1,178 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Gauge — Record Button Studio Plate</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body { background: #efe9e2; }
+  body {
+    font-family: -apple-system, "SF Pro Text", "Helvetica Neue", "Segoe UI", Arial, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+  .mono { font-family: ui-monospace, "SF Mono", Menlo, monospace; }
+
+  .artboard {
+    position: relative;
+    width: 800px;
+    height: 420px;
+    overflow: hidden;
+    background: #f7f3ee;
+  }
+
+  .abs { position: absolute; }
+
+  .tint-lav { left: -120px; top: -110px; width: 440px; height: 440px;
+    background: radial-gradient(closest-side, rgba(206,182,255,0.55), rgba(206,182,255,0) 72%); }
+  .tint-blush { right: -60px; top: -100px; width: 460px; height: 460px;
+    background: radial-gradient(closest-side, rgba(255,186,180,0.55), rgba(255,186,180,0) 72%); }
+  .tint-peach { right: -140px; bottom: -150px; width: 540px; height: 540px;
+    background: radial-gradient(closest-side, rgba(255,181,113,0.55), rgba(255,181,113,0) 72%); }
+  .tint-mint { left: -110px; bottom: -130px; width: 440px; height: 440px;
+    background: radial-gradient(closest-side, rgba(180,236,206,0.5), rgba(180,236,206,0) 72%); }
+  .glow-core { left: 160px; top: 20px; width: 480px; height: 350px;
+    background: radial-gradient(closest-side, rgba(255,248,240,0.95), rgba(255,248,240,0) 70%); }
+  .vignette { inset: 0;
+    background: radial-gradient(130% 120% at 50% 42%, rgba(0,0,0,0) 58%, rgba(74,45,20,0.10) 100%); }
+  .grain { inset: 0; opacity: 0.55; mix-blend-mode: overlay;
+    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='260' height='260'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/><feColorMatrix type='matrix' values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.05 0'/></filter><rect width='260' height='260' filter='url(%23n)'/></svg>");
+    background-size: 260px 260px; }
+
+  .shadow-floor { border-radius: 50%;
+    background: radial-gradient(closest-side, rgba(58,34,10,0.30), rgba(58,34,10,0) 72%);
+    filter: blur(6px); }
+
+  .glass {
+    background: linear-gradient(180deg, #ffffff 0%, #fefdfc 55%, #f8f4ef 100%);
+    border: 1px solid rgba(31,22,10,0.08);
+    box-shadow:
+      inset 0 1px 0 rgba(255,255,255,0.9),
+      0 2px 6px rgba(56,32,8,0.06),
+      0 18px 34px -12px rgba(56,32,8,0.18),
+      0 48px 90px -24px rgba(56,32,8,0.28);
+    border-radius: 16px;
+  }
+  .sheen { position: absolute; inset: 0; border-radius: inherit; pointer-events: none;
+    background: linear-gradient(118deg, rgba(255,255,255,0.42) 0%, rgba(255,255,255,0) 30%); }
+  .edgeglow { position: absolute; inset: 0; border-radius: inherit; pointer-events: none;
+    box-shadow: inset -14px -18px 34px rgba(242,101,34,0.05), inset 12px 12px 28px rgba(212,193,255,0.07); }
+
+  /* ambient red aura behind the orb */
+  .halo-red { left: 212px; top: 70px; width: 376px; height: 252px;
+    background: radial-gradient(closest-side, rgba(255,59,48,0.13), rgba(255,59,48,0) 70%); }
+
+  /* concentric ripple rings */
+  .ring { position: absolute; border-radius: 50%; }
+  .r1 { left: 280px; top: 76px; width: 240px; height: 240px; border: 1.5px solid rgba(242,101,34,0.40); }
+  .r2 { left: 242px; top: 38px; width: 316px; height: 316px; border: 1.5px solid rgba(242,101,34,0.24); }
+  .r3 { left: 204px; top: 0px; width: 392px; height: 392px; border: 1.5px solid rgba(242,101,34,0.13); }
+
+  /* tiny satellite nodes riding the rings */
+  .node { position: absolute; border-radius: 50%;
+    box-shadow: 0 0 0 3px rgba(255,255,255,0.65), 0 3px 8px rgba(56,32,8,0.18); }
+  .node-emerald { background: radial-gradient(circle at 35% 30%, #9df3c8, #10b981 70%); }
+  .node-indigo { background: radial-gradient(circle at 35% 30%, #bcc0fb, #6366f1 70%); }
+  .node-amber { background: radial-gradient(circle at 35% 30%, #ffdf9e, #f59e0b 70%); }
+
+  /* the record orb — glossy rec-red to brand orange */
+  .orb { position: absolute; left: 325px; top: 121px; width: 150px; height: 150px; border-radius: 50%;
+    background: radial-gradient(circle at 33% 26%, #ffb0a6 0%, #ff6a52 28%, #ff3b30 52%, #f26522 74%, #b32408 91%, #7c1206 100%);
+    box-shadow:
+      inset -16px -20px 42px rgba(108,8,0,0.56),
+      inset 8px 10px 22px rgba(255,255,255,0.45),
+      0 26px 48px -12px rgba(242,63,28,0.55),
+      0 0 70px rgba(255,59,48,0.28);
+  }
+  .orb::after { content: ""; position: absolute; left: 17%; top: 10%; width: 35%; height: 25%;
+    border-radius: 50%;
+    background: radial-gradient(closest-side, rgba(255,255,255,0.85), rgba(255,255,255,0));
+    transform: rotate(-16deg); filter: blur(1.5px); }
+  .orb::before { content: ""; position: absolute; right: 13%; bottom: 15%; width: 22%; height: 15%;
+    border-radius: 50%;
+    background: radial-gradient(closest-side, rgba(255,177,160,0.5), rgba(255,177,160,0));
+    filter: blur(3px); }
+
+  /* orbiting glass chips */
+  .orchip { position: absolute; display: flex; align-items: center; gap: 8px; padding: 8px 13px;
+    background: linear-gradient(180deg, rgba(255,255,255,0.96), rgba(250,246,241,0.94));
+    border: 1px solid rgba(31,22,10,0.09); border-radius: 999px;
+    box-shadow: 0 2px 5px rgba(56,32,8,0.08), 0 14px 26px -10px rgba(56,32,8,0.28), inset 0 1px 0 rgba(255,255,255,0.9); }
+  .orchip .glyph { width: 19px; height: 19px; border-radius: 50%; flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center;
+    box-shadow: 0 0 0 2px rgba(255,255,255,0.85), 0 3px 7px rgba(56,32,8,0.2); }
+  .orchip .glyph svg { width: 10px; height: 10px; }
+  .g-orange { background: radial-gradient(circle at 35% 30%, #ffb98a, #f26522 70%); }
+  .g-emerald { background: radial-gradient(circle at 35% 30%, #9df3c8, #10b981 70%); }
+  .g-indigo { background: radial-gradient(circle at 35% 30%, #bcc0fb, #6366f1 70%); }
+  .orchip .t { font-size: 11.5px; font-weight: 700; color: #262b31; white-space: nowrap; letter-spacing: -0.005em; }
+  .orchip .t.mono { font-size: 10.5px; letter-spacing: 0.01em; }
+  .orchip .t .dim { color: #8a9099; font-weight: 600; }
+  .orchip .t .hot { color: #d85612; }
+
+  .spark { position: absolute; pointer-events: none; user-select: none; }
+  .spark em { position: absolute; width: 24px; height: 24px; margin: -12px 0 0 -12px; border-radius: 999px;
+    background:
+      linear-gradient(rgba(242,101,34,.5), rgba(242,101,34,0)) 50% 0/2px 24px no-repeat,
+      linear-gradient(rgba(242,101,34,0), rgba(242,101,34,.5)) 50% 100%/2px 24px no-repeat,
+      linear-gradient(90deg, rgba(242,101,34,.5), rgba(242,101,34,0)) 0 50%/24px 2px no-repeat,
+      linear-gradient(90deg, rgba(242,101,34,0), rgba(242,101,34,.5)) 100% 50%/24px 2px no-repeat;
+    filter: drop-shadow(0 0 4px rgba(255,178,108,.5)); }
+</style>
+</head>
+<body>
+  <div class="artboard">
+    <div class="abs tint-lav"></div>
+    <div class="abs tint-blush"></div>
+    <div class="abs tint-peach"></div>
+    <div class="abs tint-mint"></div>
+    <div class="abs glow-core"></div>
+
+    <div class="abs halo-red"></div>
+
+    <!-- ripple rings -->
+    <div class="abs ring r3"></div>
+    <div class="abs ring r2"></div>
+    <div class="abs ring r1"></div>
+
+    <!-- ring-riding nodes -->
+    <div class="abs node node-emerald" style="left:298px; top:123px; width:8px; height:8px;"></div>
+    <div class="abs node node-indigo" style="left:544px; top:138px; width:8px; height:8px;"></div>
+    <div class="abs node node-amber" style="left:494px; top:22px; width:7px; height:7px;"></div>
+
+    <!-- floor shadow -->
+    <div class="abs shadow-floor" style="left:268px; top:332px; width:264px; height:48px; background: radial-gradient(closest-side, rgba(58,34,10,0.40), rgba(58,34,10,0) 72%);"></div>
+    <div class="abs shadow-floor" style="left:198px; top:354px; width:404px; height:42px; background: radial-gradient(closest-side, rgba(58,34,10,0.30), rgba(58,34,10,0) 72%);"></div>
+
+    <!-- hero orb -->
+    <div class="abs orb"></div>
+
+    <!-- orbiting glass chips -->
+    <div class="abs glass orchip" style="left:427px; top:101px; transform:rotate(-3deg);">
+      <span class="sheen"></span><span class="edgeglow"></span>
+      <span class="glyph g-orange"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3.5 2"/></svg></span>
+      <span class="t">Recent calls</span>
+    </div>
+
+    <div class="abs glass orchip" style="left:165px; top:219px; transform:rotate(2deg);">
+      <span class="sheen"></span><span class="edgeglow"></span>
+      <span class="glyph g-emerald"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12h4l3-7 4 14 3-7h4"/></svg></span>
+      <span class="t mono">score <span class="hot">82</span> <span class="dim">&middot; health</span></span>
+    </div>
+
+    <div class="abs glass orchip" style="left:489px; top:304px; transform:rotate(-2deg);">
+      <span class="sheen"></span><span class="edgeglow"></span>
+      <span class="glyph g-indigo"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 4L7 20M17 4l-2 16M4 9h16M3 15h16"/></svg></span>
+      <span class="t">Slack digest</span>
+    </div>
+
+    <div class="abs spark" style="left:560px; top:86px;"><em></em></div>
+    <div class="abs spark" style="left:238px; top:90px; transform:scale(0.75);"><em></em></div>
+    <div class="abs spark" style="left:646px; top:296px; transform:scale(0.85);"><em></em></div>
+    <div class="abs spark" style="left:168px; top:322px;"><em></em></div>
+
+    <div class="abs grain"></div>
+    <div class="abs vignette"></div>
+  </div>
+</body>
+</html>

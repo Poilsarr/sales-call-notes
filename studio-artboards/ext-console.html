@@ -1,0 +1,150 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Gauge — Side Panel Console Studio Plate</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body { background: #efe9e2; }
+  body {
+    font-family: -apple-system, "SF Pro Text", "Helvetica Neue", "Segoe UI", Arial, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+  .mono { font-family: ui-monospace, "SF Mono", Menlo, monospace; }
+
+  .artboard {
+    position: relative;
+    width: 800px;
+    height: 300px;
+    overflow: hidden;
+    background: #f7f3ee;
+    perspective: 1400px;
+  }
+
+  .abs { position: absolute; }
+
+  .tint-lav { left: -100px; top: -110px; width: 400px; height: 400px;
+    background: radial-gradient(closest-side, rgba(206,182,255,0.58), rgba(206,182,255,0) 72%); }
+  .tint-blush { right: 10px; top: -80px; width: 400px; height: 400px;
+    background: radial-gradient(closest-side, rgba(255,197,192,0.46), rgba(255,197,192,0) 72%); }
+  .tint-peach { right: -120px; bottom: -140px; width: 480px; height: 480px;
+    background: radial-gradient(closest-side, rgba(255,181,113,0.55), rgba(255,181,113,0) 72%); }
+  .tint-mint { left: -90px; bottom: -120px; width: 420px; height: 420px;
+    background: radial-gradient(closest-side, rgba(180,236,206,0.5), rgba(180,236,206,0) 72%); }
+  .glow-core { left: 140px; top: 10px; width: 520px; height: 260px;
+    background: radial-gradient(closest-side, rgba(255,248,240,0.95), rgba(255,248,240,0) 70%); }
+  .vignette { inset: 0;
+    background: radial-gradient(130% 130% at 50% 45%, rgba(0,0,0,0) 58%, rgba(74,45,20,0.09) 100%); }
+  .grain { inset: 0; opacity: 0.55; mix-blend-mode: overlay;
+    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='260' height='260'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/><feColorMatrix type='matrix' values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.05 0'/></filter><rect width='260' height='260' filter='url(%23n)'/></svg>");
+    background-size: 260px 260px; }
+
+  .shadow-floor { border-radius: 50%;
+    background: radial-gradient(closest-side, rgba(58,34,10,0.30), rgba(58,34,10,0) 72%);
+    filter: blur(6px); }
+
+  .glass {
+    background: linear-gradient(180deg, #ffffff 0%, #fefdfc 55%, #f8f4ef 100%);
+    border: 1px solid rgba(31,22,10,0.08);
+    box-shadow:
+      inset 0 1px 0 rgba(255,255,255,0.9),
+      0 2px 6px rgba(56,32,8,0.06),
+      0 18px 34px -12px rgba(56,32,8,0.18),
+      0 48px 90px -24px rgba(56,32,8,0.28);
+    border-radius: 16px;
+  }
+  .sheen { position: absolute; inset: 0; border-radius: inherit; pointer-events: none;
+    background: linear-gradient(118deg, rgba(255,255,255,0.42) 0%, rgba(255,255,255,0) 30%); }
+  .edgeglow { position: absolute; inset: 0; border-radius: inherit; pointer-events: none;
+    box-shadow: inset -14px -18px 34px rgba(242,101,34,0.05), inset 12px 12px 28px rgba(212,193,255,0.07); }
+
+  /* the console artifact */
+  .plate { left: 84px; top: 36px; width: 632px; height: 216px; padding: 13px;
+    transform: rotateX(2.5deg) rotateY(-4deg) rotateZ(-0.8deg);
+    transform-origin: 50% 40%; }
+  .console { width: 100%; height: 100%; position: relative; overflow: hidden;
+    background: #17191e; border-radius: 12px;
+    box-shadow: inset 0 0 0 1px rgba(255,255,255,0.07), inset 0 1px 0 rgba(255,255,255,0.06),
+      0 12px 26px -10px rgba(18,10,2,0.55);
+    display: flex; flex-direction: column; }
+  .console::after { content: ""; position: absolute; inset: 0; pointer-events: none;
+    background: repeating-linear-gradient(180deg, rgba(255,255,255,0.022) 0px, rgba(255,255,255,0.022) 1px, rgba(255,255,255,0) 1px, rgba(255,255,255,0) 3px); }
+
+  .con-top { height: 32px; flex-shrink: 0; display: flex; align-items: center; gap: 6px; padding: 0 12px;
+    background: linear-gradient(180deg, #23262d 0%, #1b1e24 100%);
+    border-bottom: 1px solid rgba(255,255,255,0.08); }
+  .light { width: 9px; height: 9px; border-radius: 50%; box-shadow: inset 0 -1px 2px rgba(0,0,0,0.24), inset 0 1px 1.5px rgba(255,255,255,0.55), 0 0.5px 1px rgba(0,0,0,0.18); }
+  .l-red { background: radial-gradient(circle at 32% 28%, #ff8f80, #f4573e 58%, #d63a24); }
+  .l-yel { background: radial-gradient(circle at 32% 28%, #ffe08e, #f5bf2f 58%, #d99c14); }
+  .l-grn { background: radial-gradient(circle at 32% 28%, #96e69b, #42c152 58%, #2ca33c); }
+  .con-title { font-family: ui-monospace, "SF Mono", Menlo, monospace;
+    font-size: 10px; color: rgba(233,238,244,0.78); letter-spacing: 0.05em; margin-left: 7px; }
+  .con-ver { margin-left: auto; font-family: ui-monospace, "SF Mono", Menlo, monospace;
+    font-size: 9px; color: rgba(233,238,244,0.35); letter-spacing: 0.06em; }
+
+  .con-body { flex: 1; padding: 13px 16px; display: flex; flex-direction: column; justify-content: center; gap: 10px; }
+  .cl { display: flex; align-items: flex-start; gap: 9px;
+    font-family: ui-monospace, "SF Mono", Menlo, monospace;
+    font-size: 11.5px; line-height: 1.45; color: rgba(228,233,240,0.88); white-space: nowrap; }
+  .cl .dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; margin-top: 4.5px; }
+  .d-amber { background: radial-gradient(circle at 35% 30%, #ffd27a, #f5a623 70%); box-shadow: 0 0 6px rgba(245,166,35,0.7); }
+  .d-green { background: radial-gradient(circle at 35% 30%, #bbf7d0, #4ade80 70%); box-shadow: 0 0 6px rgba(74,222,128,0.6); }
+  .d-red { background: radial-gradient(circle at 35% 30%, #ff9088, #ff3b30 70%); box-shadow: 0 0 6px rgba(255,59,48,0.75); }
+  .d-emerald { background: radial-gradient(circle at 35% 30%, #9df3c8, #10b981 70%); box-shadow: 0 0 6px rgba(16,185,129,0.75); }
+  .cl .warn { color: #ff9d95; }
+  .cl .ok { color: #7bf0c6; }
+  .cl .path { color: #ffb37e; }
+  .cursor { display: inline-block; width: 7px; height: 12px; border-radius: 1.5px; background: #10b981;
+    box-shadow: 0 0 7px rgba(16,185,129,0.8); margin-left: 4px; vertical-align: -1.5px; }
+
+  .spark { position: absolute; pointer-events: none; user-select: none; }
+  .spark em { position: absolute; width: 24px; height: 24px; margin: -12px 0 0 -12px; border-radius: 999px;
+    background:
+      linear-gradient(rgba(242,101,34,.5), rgba(242,101,34,0)) 50% 0/2px 24px no-repeat,
+      linear-gradient(rgba(242,101,34,0), rgba(242,101,34,.5)) 50% 100%/2px 24px no-repeat,
+      linear-gradient(90deg, rgba(242,101,34,.5), rgba(242,101,34,0)) 0 50%/24px 2px no-repeat,
+      linear-gradient(90deg, rgba(242,101,34,0), rgba(242,101,34,.5)) 100% 50%/24px 2px no-repeat;
+    filter: drop-shadow(0 0 4px rgba(255,178,108,.5)); }
+</style>
+</head>
+<body>
+  <div class="artboard">
+    <div class="abs tint-lav"></div>
+    <div class="abs tint-blush"></div>
+    <div class="abs tint-peach"></div>
+    <div class="abs tint-mint"></div>
+    <div class="abs glow-core"></div>
+
+    <div class="abs shadow-floor" style="left:192px; top:256px; width:416px; height:36px; background: radial-gradient(closest-side, rgba(58,34,10,0.40), rgba(58,34,10,0) 72%);"></div>
+    <div class="abs shadow-floor" style="left:292px; top:270px; width:296px; height:24px;"></div>
+
+    <div class="abs glass plate">
+      <span class="sheen"></span><span class="edgeglow"></span>
+      <div class="console">
+        <div class="con-top">
+          <span class="light l-red"></span><span class="light l-yel"></span><span class="light l-grn"></span>
+          <span class="con-title">Gauge side panel — status log</span>
+          <span class="con-ver">v2.4</span>
+        </div>
+        <div class="con-body">
+          <div class="cl"><span class="dot d-amber"></span><span>Open a Meet / Teams / Zoom tab, then press Record.</span></div>
+          <div class="cl"><span class="dot d-green"></span><span>Recording tab audio (32kbps Opus) + captions.</span></div>
+          <div class="cl"><span class="dot d-green"></span><span>Stopped. Uploading audio + finalizing captions&hellip;</span></div>
+          <div class="cl"><span class="dot d-red"></span><span><span class="warn">Key rejected (401/403).</span> Paste a fresh key above.</span></div>
+          <div class="cl"><span class="dot d-emerald"></span><span>Done - summary: <span class="path">/app/calls/{id}</span><span class="cursor"></span></span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="abs spark" style="left:52px; top:64px;"><em></em></div>
+    <div class="abs spark" style="left:300px; top:16px; transform:scale(0.8);"><em></em></div>
+    <div class="abs spark" style="left:744px; top:58px; transform:scale(0.75);"><em></em></div>
+    <div class="abs spark" style="left:736px; top:244px; transform:scale(0.7);"><em></em></div>
+    <div class="abs spark" style="left:64px; top:228px; transform:scale(0.75);"><em></em></div>
+
+    <div class="abs grain"></div>
+    <div class="abs vignette"></div>
+  </div>
+</body>
+</html>

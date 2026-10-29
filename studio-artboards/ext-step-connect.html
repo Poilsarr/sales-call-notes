@@ -1,0 +1,188 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Gauge — Side Panel Connect Studio Plate</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body { background: #efe9e2; }
+  body {
+    font-family: -apple-system, "SF Pro Text", "Helvetica Neue", "Segoe UI", Arial, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+  .mono { font-family: ui-monospace, "SF Mono", Menlo, monospace; }
+
+  .artboard {
+    position: relative;
+    width: 400px;
+    height: 250px;
+    overflow: hidden;
+    background: #f7f3ee;
+    perspective: 1100px;
+  }
+  .abs { position: absolute; }
+
+  .tint-lav { left: -75px; top: -65px; width: 260px; height: 260px;
+    background: radial-gradient(closest-side, rgba(206,182,255,0.52), rgba(206,182,255,0) 72%); }
+  .tint-blush { right: -35px; top: -45px; width: 250px; height: 250px;
+    background: radial-gradient(closest-side, rgba(255,197,192,0.42), rgba(255,197,192,0) 72%); }
+  .tint-peach { right: -85px; bottom: -95px; width: 310px; height: 310px;
+    background: radial-gradient(closest-side, rgba(255,181,113,0.5), rgba(255,181,113,0) 72%); }
+  .tint-mint { left: -65px; bottom: -75px; width: 260px; height: 260px;
+    background: radial-gradient(closest-side, rgba(180,236,206,0.42), rgba(180,236,206,0) 72%); }
+  .glow-core { left: 70px; top: 14px; width: 290px; height: 218px;
+    background: radial-gradient(closest-side, rgba(255,248,240,0.95), rgba(255,248,240,0) 70%); }
+  .vignette { inset: 0;
+    background: radial-gradient(150% 130% at 50% 45%, rgba(0,0,0,0) 62%, rgba(74,45,20,0.09) 100%); }
+  .grain { inset: 0; opacity: 0.55; mix-blend-mode: overlay;
+    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='260' height='260'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/><feColorMatrix type='matrix' values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.05 0'/></filter><rect width='260' height='260' filter='url(%23n)'/></svg>");
+    background-size: 260px 260px; }
+
+  .shadow-floor { border-radius: 50%;
+    background: radial-gradient(closest-side, rgba(58,34,10,0.30), rgba(58,34,10,0) 72%);
+    filter: blur(6px); }
+
+  .glass {
+    background: linear-gradient(180deg, #ffffff 0%, #fefdfc 55%, #f8f4ef 100%);
+    border: 1px solid rgba(31,22,10,0.08);
+    box-shadow:
+      inset 0 1px 0 rgba(255,255,255,0.9),
+      0 2px 6px rgba(56,32,8,0.06),
+      0 14px 26px -10px rgba(56,32,8,0.16),
+      0 34px 64px -18px rgba(56,32,8,0.24);
+    border-radius: 16px;
+  }
+  .sheen { position: absolute; inset: 0; border-radius: inherit; pointer-events: none;
+    background: linear-gradient(118deg, rgba(255,255,255,0.42) 0%, rgba(255,255,255,0) 30%); }
+  .edgeglow { position: absolute; inset: 0; border-radius: inherit; pointer-events: none;
+    box-shadow: inset -14px -18px 34px rgba(242,101,34,0.05), inset 12px 12px 28px rgba(212,193,255,0.07); }
+
+  .capdot { width: 5px; height: 5px; border-radius: 50%; background: #10b981; box-shadow: 0 0 5px rgba(16,185,129,0.8); }
+
+  .spark { position: absolute; pointer-events: none; user-select: none; }
+  .spark em { position: absolute; width: 22px; height: 22px; margin: -11px 0 0 -11px; border-radius: 999px;
+    background:
+      linear-gradient(rgba(242,101,34,.5), rgba(242,101,34,0)) 50% 0/2px 22px no-repeat,
+      linear-gradient(rgba(242,101,34,0), rgba(242,101,34,.5)) 50% 100%/2px 22px no-repeat,
+      linear-gradient(90deg, rgba(242,101,34,.5), rgba(242,101,34,0)) 0 50%/22px 2px no-repeat,
+      linear-gradient(90deg, rgba(242,101,34,0), rgba(242,101,34,.5)) 100% 50%/22px 2px no-repeat;
+    filter: drop-shadow(0 0 4px rgba(255,178,108,.5)); }
+  .spark.emr em { width: 26px; height: 26px; margin: -13px 0 0 -13px;
+    background:
+      linear-gradient(rgba(16,185,129,.55), rgba(16,185,129,0)) 50% 0/2px 26px no-repeat,
+      linear-gradient(rgba(16,185,129,0), rgba(16,185,129,.55)) 50% 100%/2px 26px no-repeat,
+      linear-gradient(90deg, rgba(16,185,129,.55), rgba(16,185,129,0)) 0 50%/26px 2px no-repeat,
+      linear-gradient(90deg, rgba(16,185,129,0), rgba(16,185,129,.55)) 100% 50%/26px 2px no-repeat;
+    filter: drop-shadow(0 0 4px rgba(120,230,180,.55)); }
+
+  /* ---- Gauge side panel ---- */
+  .panel { left: 110px; top: 20px; width: 180px; height: 212px;
+    transform: rotateX(4deg) rotateY(-6deg) rotateZ(-1.3deg);
+    transform-origin: 50% 40%;
+    border-radius: 14px; }
+  .p-in { position: relative; height: 100%; padding: 13px 13px 0; }
+
+  .p-head { display: flex; align-items: center; gap: 6px; padding-bottom: 11px;
+    border-bottom: 1px solid rgba(31,22,10,0.08); }
+  .p-dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0;
+    background: radial-gradient(circle at 35% 30%, #ffb98a, #f26522 70%);
+    box-shadow: 0 0 6px rgba(242,101,34,0.7); }
+  .p-title { font-size: 8.5px; font-weight: 700; color: #191d22; letter-spacing: -0.01em; }
+  .p-live { margin-left: auto; display: flex; align-items: center; gap: 4px;
+    font-size: 6.5px; font-weight: 700; color: #0e9f6e; letter-spacing: 0.04em; }
+
+  .k-label { margin-top: 13px; font-size: 5.5px; font-weight: 600; color: #a29b90; letter-spacing: 0.14em; }
+  .keyrow { margin-top: 5px; display: flex; gap: 6px; }
+  .keychip { flex: 1; height: 20px; border-radius: 6px; display: flex; align-items: center; padding: 0 8px;
+    background: linear-gradient(180deg, #f3eee7, #ece5da);
+    border: 1px solid rgba(31,22,10,0.10);
+    box-shadow: inset 0 1.5px 3px rgba(56,32,8,0.13), inset 0 -1px 0 rgba(255,255,255,0.8);
+    font-size: 6.8px; color: #3a3f45; white-space: nowrap; }
+  .savebtn { width: 44px; height: 20px; border-radius: 6px; flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center;
+    background: linear-gradient(180deg, #2b3038, #191c21);
+    color: #fff; font-size: 7px; font-weight: 700; letter-spacing: 0.03em;
+    box-shadow: inset 0 2.5px 5px rgba(0,0,0,0.55), inset 0 1px 0 rgba(255,255,255,0.07), 0 1px 2px rgba(0,0,0,0.25);
+    transform: translateY(0.8px); }
+
+  .hrow { margin-top: 26px; display: flex; align-items: center; justify-content: space-between; }
+  .hchip { height: 28px; border-radius: 8px;
+    display: flex; align-items: center; gap: 5px; padding: 0 8px;
+    background: linear-gradient(180deg, #ffffff, #f5f0e9);
+    border: 1px solid rgba(31,22,10,0.10);
+    box-shadow: inset 0 1px 0 rgba(255,255,255,0.9), 0 3px 8px rgba(56,32,8,0.14), 0 8px 16px -7px rgba(56,32,8,0.18); }
+  .kchip { width: 30px; padding: 0; justify-content: center; }
+  .kchip svg { width: 12px; height: 12px; color: #4a4f56; }
+  .a-orb { width: 15px; height: 15px; border-radius: 50%; flex-shrink: 0;
+    background: radial-gradient(circle at 34% 26%, #ffa066, #f26522 58%, #d85612);
+    box-shadow: inset 0 1px 1.5px rgba(255,255,255,0.5), 0 2px 5px -1px rgba(216,86,18,0.55); }
+  .achip span { font-size: 6.5px; font-weight: 600; color: #2c3138; white-space: nowrap; }
+
+  .burst { position: relative; width: 36px; height: 30px; display: flex; align-items: center; justify-content: center; }
+  .burst svg { position: absolute; left: 3px; top: 0; width: 30px; height: 30px; }
+  .burst .bdot { width: 8px; height: 8px; border-radius: 50%;
+    background: radial-gradient(circle at 35% 30%, #9df3c8, #10b981 70%);
+    box-shadow: 0 0 10px rgba(16,185,129,0.95), 0 0 0 4px rgba(16,185,129,0.16); }
+
+  .chips { margin-top: 34px; display: flex; gap: 5px; }
+  .mchip { display: flex; align-items: center; gap: 3.5px; height: 16px; padding: 0 7px;
+    border-radius: 999px;
+    background: linear-gradient(180deg, rgba(255,255,255,0.96), rgba(250,246,241,0.94));
+    border: 1px solid rgba(31,22,10,0.09);
+    box-shadow: 0 1px 3px rgba(56,32,8,0.10), inset 0 1px 0 rgba(255,255,255,0.9);
+    font-size: 5.8px; color: #42392c; white-space: nowrap; }
+  .mchip svg { width: 7px; height: 7px; color: #6d737c; flex-shrink: 0; }
+  .mchip b { color: #0e9f6e; font-weight: 800; }
+  .mchip .dot { width: 4px; height: 4px; border-radius: 50%; flex-shrink: 0;
+    background: radial-gradient(circle at 35% 30%, #9df3c8, #10b981 70%); box-shadow: 0 0 4px rgba(16,185,129,0.8); }
+</style>
+</head>
+<body>
+  <div class="artboard">
+    <div class="abs tint-lav"></div>
+    <div class="abs tint-blush"></div>
+    <div class="abs tint-peach"></div>
+    <div class="abs tint-mint"></div>
+    <div class="abs glow-core"></div>
+
+    <div class="abs shadow-floor" style="left:100px; top:216px; width:200px; height:28px;"></div>
+    <div class="abs shadow-floor" style="left:64px; top:206px; width:120px; height:22px;"></div>
+
+    <div class="abs glass panel">
+      <span class="sheen"></span><span class="edgeglow"></span>
+      <div class="p-in">
+        <div class="p-head">
+          <span class="p-dot"></span>
+          <span class="p-title">Gauge Recorder</span>
+          <span class="p-live"><span class="capdot"></span>LIVE</span>
+        </div>
+
+        <div class="k-label mono">API KEY</div>
+        <div class="keyrow">
+          <span class="keychip mono">cn_live_&hellip;</span>
+          <span class="savebtn">Save</span>
+        </div>
+
+        <div class="hrow">
+          <span class="hchip kchip"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4"/></svg></span>
+          <span class="burst"><span class="spark emr" style="left:18px; top:15px;"><em></em></span><svg viewBox="0 0 30 30" fill="none" stroke="#10b981" stroke-opacity="0.55" stroke-width="1.5" stroke-linecap="round"><path d="M19.2 10.8 L22.8 7.2 M10.8 10.8 L7.2 7.2 M10.8 19.2 L7.2 22.8 M19.2 19.2 L22.8 22.8"/></svg><span class="bdot"></span></span>
+          <span class="hchip achip"><span class="a-orb"></span><span>Gauge account</span></span>
+        </div>
+
+        <div class="chips">
+          <span class="mchip"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l7 3v5c0 4.6-3 7.6-7 9-4-1.4-7-4.4-7-9V6l7-3Z"/><path d="M9 12l2 2 4-4"/></svg>session memory only</span>
+          <span class="mchip"><span class="dot"></span>auto-sync&nbsp;<b>ON</b></span>
+        </div>
+      </div>
+    </div>
+
+    <div class="abs spark" style="left:78px; top:64px;"><em></em></div>
+    <div class="abs spark" style="left:322px; top:172px;"><em></em></div>
+    <div class="abs spark" style="left:308px; top:38px;"><em></em></div>
+
+    <div class="abs grain"></div>
+    <div class="abs vignette"></div>
+  </div>
+</body>
+</html>

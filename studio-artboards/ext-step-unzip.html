@@ -1,0 +1,203 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Gauge — Extension Unzip Studio Plate</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body { background: #efe9e2; }
+  body {
+    font-family: -apple-system, "SF Pro Text", "Helvetica Neue", "Segoe UI", Arial, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+  .mono { font-family: ui-monospace, "SF Mono", Menlo, monospace; }
+
+  .artboard {
+    position: relative;
+    width: 400px;
+    height: 250px;
+    overflow: hidden;
+    background: #f7f3ee;
+    perspective: 1100px;
+  }
+  .abs { position: absolute; }
+
+  .tint-lav { left: -75px; top: -65px; width: 260px; height: 260px;
+    background: radial-gradient(closest-side, rgba(206,182,255,0.52), rgba(206,182,255,0) 72%); }
+  .tint-blush { right: -35px; top: -45px; width: 250px; height: 250px;
+    background: radial-gradient(closest-side, rgba(255,197,192,0.42), rgba(255,197,192,0) 72%); }
+  .tint-peach { right: -85px; bottom: -95px; width: 310px; height: 310px;
+    background: radial-gradient(closest-side, rgba(255,181,113,0.5), rgba(255,181,113,0) 72%); }
+  .tint-mint { left: -65px; bottom: -75px; width: 260px; height: 260px;
+    background: radial-gradient(closest-side, rgba(180,236,206,0.42), rgba(180,236,206,0) 72%); }
+  .glow-core { left: 72px; top: 16px; width: 300px; height: 216px;
+    background: radial-gradient(closest-side, rgba(255,248,240,0.95), rgba(255,248,240,0) 70%); }
+  .vignette { inset: 0;
+    background: radial-gradient(150% 130% at 50% 45%, rgba(0,0,0,0) 62%, rgba(74,45,20,0.09) 100%); }
+  .grain { inset: 0; opacity: 0.55; mix-blend-mode: overlay;
+    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='260' height='260'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/><feColorMatrix type='matrix' values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.05 0'/></filter><rect width='260' height='260' filter='url(%23n)'/></svg>");
+    background-size: 260px 260px; }
+
+  .shadow-floor { border-radius: 50%;
+    background: radial-gradient(closest-side, rgba(58,34,10,0.30), rgba(58,34,10,0) 72%);
+    filter: blur(6px); }
+
+  .glass {
+    background: linear-gradient(180deg, #ffffff 0%, #fefdfc 55%, #f8f4ef 100%);
+    border: 1px solid rgba(31,22,10,0.08);
+    box-shadow:
+      inset 0 1px 0 rgba(255,255,255,0.9),
+      0 2px 6px rgba(56,32,8,0.06),
+      0 14px 26px -10px rgba(56,32,8,0.16),
+      0 34px 64px -18px rgba(56,32,8,0.24);
+    border-radius: 16px;
+  }
+  .sheen { position: absolute; inset: 0; border-radius: inherit; pointer-events: none;
+    background: linear-gradient(118deg, rgba(255,255,255,0.42) 0%, rgba(255,255,255,0) 30%); }
+  .edgeglow { position: absolute; inset: 0; border-radius: inherit; pointer-events: none;
+    box-shadow: inset -14px -18px 34px rgba(242,101,34,0.05), inset 12px 12px 28px rgba(212,193,255,0.07); }
+
+  .g-tile { position: relative; width: 34px; height: 34px; border-radius: 10px; flex-shrink: 0;
+    background: radial-gradient(circle at 32% 24%, #ffa066 0%, #f26522 56%, #d85612 100%);
+    box-shadow: inset 0 1.5px 2px rgba(255,255,255,0.5), inset 0 -3px 6px rgba(150,50,0,0.35), 0 7px 15px -4px rgba(216,86,18,0.55), 0 2px 4px rgba(216,86,18,0.3);
+    display: flex; align-items: center; justify-content: center; color: #fff; font-size: 16px; font-weight: 800; }
+  .g-badge { position: absolute; top: -5px; right: -6px; width: 14px; height: 14px; border-radius: 50%;
+    background: radial-gradient(circle at 34% 28%, #ff8d84, #ff3b30 66%, #d92c21);
+    color: #fff; font-size: 7.5px; font-weight: 800; display: flex; align-items: center; justify-content: center;
+    box-shadow: 0 0 0 2px #ffffff, 0 2px 5px rgba(217,44,33,0.5); }
+
+  .spark { position: absolute; pointer-events: none; user-select: none; }
+  .spark em { position: absolute; width: 22px; height: 22px; margin: -11px 0 0 -11px; border-radius: 999px;
+    background:
+      linear-gradient(rgba(242,101,34,.5), rgba(242,101,34,0)) 50% 0/2px 22px no-repeat,
+      linear-gradient(rgba(242,101,34,0), rgba(242,101,34,.5)) 50% 100%/2px 22px no-repeat,
+      linear-gradient(90deg, rgba(242,101,34,.5), rgba(242,101,34,0)) 0 50%/22px 2px no-repeat,
+      linear-gradient(90deg, rgba(242,101,34,0), rgba(242,101,34,.5)) 100% 50%/22px 2px no-repeat;
+    filter: drop-shadow(0 0 4px rgba(255,178,108,.5)); }
+
+  /* ---- archive chip (lower left) ---- */
+  .zip3d { left: 16px; top: 92px; width: 138px; height: 102px;
+    transform: rotateX(7deg) rotateY(-11deg) rotateZ(-2.4deg);
+    transform-origin: 50% 40%; }
+  .zslab { position: absolute;
+    border: 1px solid rgba(31,22,10,0.16);
+    box-shadow: 0 3px 6px rgba(56,32,8,0.14), 0 14px 24px -9px rgba(56,32,8,0.30); }
+  .ztop { left: 8px; width: 122px; top: 0; height: 36px; border-radius: 10px 10px 3px 3px;
+    background: linear-gradient(180deg, #ffffff 0%, #faf6ef 68%, #f0e9dd 100%);
+    display: flex; align-items: center; justify-content: center; }
+  .ztop span { font-size: 6.5px; color: #1a1d22; white-space: nowrap; }
+  .zbot { left: 2px; width: 130px; top: 56px; height: 44px; border-radius: 3px 3px 11px 11px;
+    background: linear-gradient(180deg, #e4c79b 0%, #d5b080 55%, #c79d69 100%);
+    box-shadow: inset 0 1px 0 rgba(255,255,255,0.55), inset 0 -3px 6px rgba(120,80,30,0.28),
+      0 3px 6px rgba(56,32,8,0.14), 0 14px 24px -9px rgba(56,32,8,0.30);
+    border: 1px solid rgba(31,22,10,0.18); }
+  .zbot .bar { position: absolute; right: 12px; bottom: 9px; width: 26px; height: 10px; opacity: 0.7;
+    background: repeating-linear-gradient(90deg, rgba(74,52,24,0.85) 0 1px, transparent 1px 3.2px); }
+  .zchannel { position: absolute; left: 10px; top: 41px; width: 120px; height: 12px; border-radius: 3.5px;
+    background: linear-gradient(180deg, rgba(64,42,16,0.34), rgba(64,42,16,0.16));
+    box-shadow: inset 0 1.5px 3px rgba(40,25,8,0.35), inset 0 -1px 0 rgba(255,255,255,0.15); }
+  .zteeth .row { position: absolute; left: 19px; display: flex; gap: 4.2px; }
+  .zteeth .row.t { top: 39px; }
+  .zteeth .row.b { top: 48px; margin-left: 4.2px; }
+  .tooth { width: 4.5px; height: 8px; border-radius: 1.5px;
+    background: linear-gradient(180deg, #fdfbf7, #d3ccc1);
+    border: 1px solid rgba(31,22,10,0.28); box-shadow: 0 1px 1px rgba(56,32,8,0.25); }
+  .row.b .tooth { background: linear-gradient(180deg, #efe9dd, #c4bcb0); }
+  .zpull { position: absolute; right: 10px; top: 38px; width: 9px; height: 19px; border-radius: 2.5px;
+    background: linear-gradient(180deg, #f7f5f1, #c9c3b9);
+    border: 1px solid rgba(31,22,10,0.32); box-shadow: 0 2px 3px rgba(56,32,8,0.28); }
+  .zpull::after { content: ""; position: absolute; left: 50%; top: 4px; width: 3px; height: 6px;
+    margin-left: -1.5px; border-radius: 2px; background: rgba(74,52,24,0.55); }
+
+  /* ---- open folder (upper right) ---- */
+  .folder3d { left: 238px; top: 58px; width: 152px; height: 114px;
+    transform: rotateX(5deg) rotateY(8deg) rotateZ(1.8deg);
+    transform-origin: 50% 45%; }
+  .f-back { position: absolute; left: 12px; top: 10px; width: 130px; height: 94px; border-radius: 7px;
+    background: linear-gradient(180deg, #ead9bc 0%, #dcc6a0 100%);
+    border: 1px solid rgba(31,22,10,0.13);
+    box-shadow: inset 0 1px 0 rgba(255,255,255,0.65), 0 10px 20px -8px rgba(46,26,6,0.30); }
+  .f-back::before { content: ""; position: absolute; left: 12px; top: -8px; width: 48px; height: 10px;
+    border-radius: 4px 4px 0 0;
+    background: linear-gradient(180deg, #ead9bc, #e3d1b2);
+    border: 1px solid rgba(31,22,10,0.13); border-bottom: none; }
+  .f-mouth { position: absolute; left: 14px; top: 36px; width: 126px; height: 8px; border-radius: 3px;
+    background: linear-gradient(180deg, rgba(74,45,20,0.36), rgba(74,45,20,0.10)); }
+  .f-frontwrap { position: absolute; left: 0; top: 38px; width: 152px; height: 72px;
+    filter: drop-shadow(0 9px 10px rgba(46,26,6,0.28)); }
+  .f-front { position: absolute; inset: 0; border-radius: 0 0 9px 9px;
+    clip-path: polygon(5% 0, 95% 0, 100% 100%, 0 100%);
+    background: linear-gradient(180deg, #f4e8cf 0%, #e9d6b3 58%, #dcc7a2 100%);
+    box-shadow: inset 0 1.5px 0 rgba(255,255,255,0.72), inset 0 -3px 6px rgba(150,110,60,0.20); }
+  .fchip { position: absolute; z-index: 3; height: 15px; display: flex; align-items: center; padding: 0 6px;
+    background: linear-gradient(180deg, #ffffff, #f5f0e9);
+    border: 1px solid rgba(31,22,10,0.10); border-radius: 5px;
+    font-size: 6px; color: #2c3138; white-space: nowrap;
+    box-shadow: inset 0 1px 0 rgba(255,255,255,0.9), 0 3px 7px rgba(56,32,8,0.20), 0 8px 15px -6px rgba(56,32,8,0.22); }
+
+  /* ---- emerald check chip ---- */
+  .okchip { left: 142px; top: 22px; transform: rotate(-2.4deg);
+    display: flex; align-items: center; gap: 5px; padding: 5px 10px;
+    background: linear-gradient(180deg, rgba(243,255,248,0.97), rgba(232,250,240,0.94));
+    border: 1px solid rgba(16,185,129,0.4); border-radius: 999px;
+    box-shadow: 0 2px 5px rgba(16,120,80,0.10), 0 12px 24px -9px rgba(16,120,80,0.35), inset 0 1px 0 rgba(255,255,255,0.9); }
+  .okchip svg { width: 10px; height: 10px; color: #0e9f6e; }
+  .okchip span { font-size: 8.5px; font-weight: 700; color: #065f46; letter-spacing: -0.005em; }
+</style>
+</head>
+<body>
+  <div class="artboard">
+    <div class="abs tint-lav"></div>
+    <div class="abs tint-blush"></div>
+    <div class="abs tint-peach"></div>
+    <div class="abs tint-mint"></div>
+    <div class="abs glow-core"></div>
+
+    <div class="abs shadow-floor" style="left:6px; top:196px; width:184px; height:30px;"></div>
+    <div class="abs shadow-floor" style="left:240px; top:180px; width:156px; height:26px;"></div>
+
+    <!-- dotted motion arc -->
+    <svg class="abs" style="left:118px; top:42px; width:156px; height:158px; overflow:visible;" viewBox="0 0 156 158" fill="none">
+      <path d="M6 140 Q 70 104 126 16" stroke="rgba(242,101,34,0.5)" stroke-width="2" stroke-linecap="round" stroke-dasharray="0.1 7.6"/>
+      <circle cx="6" cy="140" r="2.6" fill="#f26522"/>
+      <path d="M0 0 L-9.5 -3.6 L-9.5 3.6 Z" fill="#f26522" transform="translate(128,14) rotate(-53)"/>
+    </svg>
+
+    <!-- archive chip -->
+    <div class="abs zip3d">
+      <div class="zslab ztop"><span class="mono">gauge-extension-1.0.0.zip</span></div>
+      <span class="zchannel"></span>
+      <div class="zteeth">
+        <div class="row t"><span class="tooth"></span><span class="tooth"></span><span class="tooth"></span><span class="tooth"></span><span class="tooth"></span><span class="tooth"></span><span class="tooth"></span><span class="tooth"></span><span class="tooth"></span><span class="tooth"></span><span class="tooth"></span><span class="tooth"></span></div>
+        <div class="row b"><span class="tooth"></span><span class="tooth"></span><span class="tooth"></span><span class="tooth"></span><span class="tooth"></span><span class="tooth"></span><span class="tooth"></span><span class="tooth"></span><span class="tooth"></span><span class="tooth"></span><span class="tooth"></span><span class="tooth"></span></div>
+      </div>
+      <span class="zpull"></span>
+      <div class="zslab zbot"><span class="bar"></span></div>
+    </div>
+
+    <!-- open folder -->
+    <div class="abs folder3d">
+      <div class="f-back"></div>
+      <div class="f-mouth"></div>
+      <span class="fchip" style="left:-2px; top:24px; transform:rotate(-10deg);">content.js</span>
+      <span class="fchip" style="left:18px; top:14px; transform:rotate(-4deg);">sidepanel.js</span>
+      <span class="fchip" style="left:52px; top:10px; transform:rotate(2deg);">manifest.json</span>
+      <span class="fchip" style="left:88px; top:18px; transform:rotate(8.5deg);">sidepanel.html</span>
+      <div class="f-frontwrap"><div class="f-front"></div></div>
+      <div class="g-tile" style="position:absolute; left:60px; top:-22px; z-index:5;">G<span class="g-badge">1</span></div>
+    </div>
+
+    <div class="abs okchip">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12.5l5 5L20 6.5"/></svg>
+      <span>Extracted</span>
+    </div>
+
+    <div class="abs spark" style="left:128px; top:84px;"><em></em></div>
+    <div class="abs spark" style="left:356px; top:24px;"><em></em></div>
+
+    <div class="abs grain"></div>
+    <div class="abs vignette"></div>
+  </div>
+</body>
+</html>
