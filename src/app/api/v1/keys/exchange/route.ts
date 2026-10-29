@@ -20,7 +20,7 @@ import { checkRateLimit } from "@/lib/rate-limit";
  * `api_access` plan gate. The key is named `extension-<yyyy-mm-dd>` so
  * rotation is visible in the key list. `raw` is returned ONCE.
  */
-export async function POST(req?: Request) {
+export async function POST(req: Request) {
   try {
     let userId: string | null = null;
 
@@ -114,7 +114,7 @@ export async function POST(req?: Request) {
  * 1. Bearer API key (for Chrome Extension background & side panel)
  * 2. Clerk session cookie (for the web app & connect page)
  */
-export async function GET(req?: Request) {
+export async function GET(req: Request) {
   try {
     let user: { id: string; email: string; name: string | null; plan: string | null } | null = null;
     let userId: string | null = null;

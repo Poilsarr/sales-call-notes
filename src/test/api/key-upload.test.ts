@@ -90,6 +90,14 @@ function seedKeyRow(raw: string, scope: string) {
   });
 }
 
+/** No-auth exchange request: body is empty, headers carry no Bearer token,
+ *  so the handler falls through to the mocked Clerk session-cookie path. */
+function exchangeRequest(): Request {
+  return new Request("https://usegauge.com/api/v1/keys/exchange", {
+    method: "POST",
+  });
+}
+
 describe("Part 3A Bearer-key upload + extension exchange", () => {
   const fetchSpy = vi.fn();
 
@@ -150,7 +158,7 @@ describe("Part 3A Bearer-key upload + extension exchange", () => {
       createdAt: new Date("2026-09-27T00:00:00Z"),
     }));
 
-    const res = await exchangePost();
+    const res = await exchangePost(exchangeRequest());
     expect(res.status).toBe(201);
     const body = await res.json();
 
@@ -181,7 +189,7 @@ describe("Part 3A Bearer-key upload + extension exchange", () => {
       createdAt: new Date("2026-09-27T00:00:00Z"),
     }));
 
-    const res = await exchangePost();
+    const res = await exchangePost(exchangeRequest());
 
     expect(res.status).toBe(201);
     const body = await res.json();
