@@ -113,6 +113,7 @@ export async function POST(req: Request) {
     let removeFillers: boolean;
     let requestedTemplate: string | null;
     let isBlobUpload = false;
+    let clientProvidedTranscript: string | null = null;
 
     // Resolved once, before the branches: the multipart branch needs the
     // plan tier to enforce the server-side size cap BEFORE writing the blob.
@@ -160,6 +161,7 @@ export async function POST(req: Request) {
         }
       }
       fileName = body.filename || blobUrl.split('/').pop() || 'recording.webm';
+      clientProvidedTranscript = typeof body.transcript === 'string' && body.transcript.trim() ? body.transcript.trim() : null;
       requestedLanguage = normalizeLanguage(body.language ?? null);
       removeFillers = typeof body.removeFillers === 'boolean' ? body.removeFillers : parseRemoveFillers(body.removeFillers ?? null);
       requestedTemplate = (body.template as string) || null;
@@ -268,36 +270,50 @@ export async function POST(req: Request) {
         removeFillers,
         filename: fileName,
       });
+      if ((!transcription.text || transcription.text.trim().length < 5) && clientProvidedTranscript) {
+        console.log("Whisper produced empty/near-empty text; using client-provided meeting transcript");
+        transcription.text = clientProvidedTranscript;
+      }
     } catch (error: any) {
-      console.error('Transcription failed:', error?.message || error);
-      console.error('Transcription error cause:', error?.cause);
-      console.error('Transcription error stack:', error?.stack);
-      // Failure path after the blob write: the request is about to return an
-      // error, so the legacy blob written above would be orphaned forever.
-      if (uploadedOwnBlob) await deleteUploadedBlob(audioUrl);
-      const msg = error?.message || '';
-      const causeMsg = error?.cause?.message || '';
-      const fullError = causeMsg ? `${msg} | Cause: ${causeMsg}` : msg;
-      if (msg.includes('OPENAI_API_KEY') || msg.includes('GROQ_API_KEY')) {
-        return NextResponse.json({ error: msg }, { status: 500 });
-      }
-      if (isQuotaError(error)) {
-        captureQuotaEvent(error, "analyze/transcribe");
-        return quotaErrorResponse();
-      }
-      if (msg.includes('401') || msg.includes('Unauthorized') || msg.includes('Incorrect API key') || causeMsg.includes('401')) {
-        return NextResponse.json({ error: 'AI provider API key is invalid or expired. Check OPENAI_API_KEY and GROQ_API_KEY — or your saved keys under Settings → API Keys → Bring your own AI keys.' }, { status: 500 });
-      }
-      // Normalize generic connection/network errors into actionable messages
-      if (msg.toLowerCase().includes('connection') || msg.toLowerCase().includes('network') || msg.toLowerCase().includes('timeout') || msg.toLowerCase().includes('econnrefused') || causeMsg.toLowerCase().includes('fetch failed')) {
-        console.error('Transcription network error details:', error?.message, error?.cause, error?.stack);
+      if (clientProvidedTranscript) {
+        console.log("Transcription API call failed; gracefully falling back to client-provided meeting transcript");
+        transcription = {
+          text: clientProvidedTranscript,
+          language: requestedLanguage || 'en',
+          confidence: 0.95,
+          segments: [],
+        };
+      } else {
+        console.error('Transcription failed:', error?.message || error);
+        console.error('Transcription error cause:', error?.cause);
+        console.error('Transcription error stack:', error?.stack);
+        // Failure path after the blob write: the request is about to return an
+        // error, so the legacy blob written above would be orphaned forever.
+        if (uploadedOwnBlob) await deleteUploadedBlob(audioUrl);
+        const msg = error?.message || '';
+        const causeMsg = error?.cause?.message || '';
+        const fullError = causeMsg ? `${msg} | Cause: ${causeMsg}` : msg;
+        if (msg.includes('OPENAI_API_KEY') || msg.includes('GROQ_API_KEY')) {
+          return NextResponse.json({ error: msg }, { status: 500 });
+        }
+        if (isQuotaError(error)) {
+          captureQuotaEvent(error, "analyze/transcribe");
+          return quotaErrorResponse();
+        }
+        if (msg.includes('401') || msg.includes('Unauthorized') || msg.includes('Incorrect API key') || causeMsg.includes('401')) {
+          return NextResponse.json({ error: 'AI provider API key is invalid or expired. Check OPENAI_API_KEY and GROQ_API_KEY — or your saved keys under Settings → API Keys → Bring your own AI keys.' }, { status: 500 });
+        }
+        // Normalize generic connection/network errors into actionable messages
+        if (msg.toLowerCase().includes('connection') || msg.toLowerCase().includes('network') || msg.toLowerCase().includes('timeout') || msg.toLowerCase().includes('econnrefused') || causeMsg.toLowerCase().includes('fetch failed')) {
+          console.error('Transcription network error details:', error?.message, error?.cause, error?.stack);
+          return NextResponse.json({
+            error: `Transcription failed: could not reach the AI provider (${fullError.slice(0, 300)}). Try again in a moment. If it persists, check that OPENAI_API_KEY and GROQ_API_KEY are set in Vercel.`
+          }, { status: 500 });
+        }
         return NextResponse.json({
-          error: `Transcription failed: could not reach the AI provider (${fullError.slice(0, 300)}). Try again in a moment. If it persists, check that OPENAI_API_KEY and GROQ_API_KEY are set in Vercel.`
+          error: 'Transcription failed: ' + fullError.slice(0, 300)
         }, { status: 500 });
       }
-      return NextResponse.json({
-        error: 'Transcription failed: ' + fullError.slice(0, 300)
-      }, { status: 500 });
     }
     console.log(`Transcription succeeded, length: ${transcription.text.length}, confidence: ${transcription.confidence}`);
 

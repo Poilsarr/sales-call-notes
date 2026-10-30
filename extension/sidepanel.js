@@ -670,7 +670,14 @@ async function refreshKeyStatus() {
 async function initSession() {
   if (hasChrome() && chrome.storage?.local) {
     chrome.storage.local.get(
-      { authStatus: { state: "unknown" }, lastAnalyzedCall: null, cachedCalls: null },
+      {
+        authStatus: { state: "unknown" },
+        lastAnalyzedCall: null,
+        cachedCalls: null,
+        recording: false,
+        recordingStartTime: 0,
+        liveMeetingTitle: "",
+      },
       (res) => {
         renderAccountStatus(res.authStatus);
         if (res.lastAnalyzedCall) {
@@ -678,6 +685,15 @@ async function initSession() {
         }
         if (Array.isArray(res.cachedCalls) && res.cachedCalls.length > 0) {
           renderCalls(res.cachedCalls);
+        }
+        if (res.recording) {
+          setRecState("dot-rec", "Recording…");
+          setHidden("durationTracker", false);
+          const elapsed = res.recordingStartTime
+            ? Math.max(0, Math.floor((Date.now() - res.recordingStartTime) / 1000))
+            : 0;
+          updateDurationTracker(elapsed);
+          setStatus("Recording in progress… Audio and captions are syncing.");
         }
       },
     );
@@ -851,9 +867,12 @@ el("stopBtn")?.addEventListener("click", async () => {
 });
 
 el("sendBtn")?.addEventListener("click", async () => {
+  setRecState("dot-ok", "Processing…");
+  setStatus("Sending recording & live captions for AI notes…");
+  el("sendBtn").disabled = true;
+  await sendMessage({ type: "FORCE_FINALIZE_AUDIO" });
   await sendMessage({ type: MESSAGE_TYPES.MEETING_END, captions: [], meetingTitle: "" });
-  setStatus("Finalize requested. Watch the status dot, then open the call summary below.");
-  await loadCalls();
+  loadCalls({ force: true });
 });
 
 if (hasChrome() && chrome.runtime?.onMessage) {
@@ -877,6 +896,10 @@ if (hasChrome() && chrome.runtime?.onMessage) {
     }
 
     if (message.type === MESSAGE_TYPES.OFFSCREEN_CHUNK) {
+      if (el("recordBtn") && !el("recordBtn").disabled) {
+        setRecState("dot-rec", "Recording…");
+        setHidden("durationTracker", false);
+      }
       setStatus(
         `Recording… ${(message.chunkCount || 0)} chunks buffered` +
           (message.totalBytes ? ` (${Math.round(message.totalBytes / 1024)} KB)` : ""),
@@ -962,17 +985,28 @@ if (hasChrome() && chrome.runtime?.onMessage) {
 
 if (hasChrome() && chrome.storage?.onChanged) {
   chrome.storage.onChanged.addListener((changes, area) => {
-    if (area === "local" && changes.authStatus) {
-      const oldState = changes.authStatus.oldValue?.state;
-      const newState = changes.authStatus.newValue?.state;
-      renderAccountStatus(changes.authStatus.newValue);
-      if (oldState !== "signed_in" && newState === "signed_in") {
-        loadCalls();
+    if (area === "local") {
+      if (changes.recording) {
+        if (changes.recording.newValue) {
+          setRecState("dot-rec", "Recording…");
+          setHidden("durationTracker", false);
+        } else {
+          setRecState("dot-idle", "Ready");
+          setHidden("durationTracker", true);
+        }
       }
-    }
-    if (area === "local" && changes.lastAnalyzedCall?.newValue) {
-      renderPostCallCard(changes.lastAnalyzedCall.newValue);
-      loadCalls({ force: true });
+      if (changes.authStatus) {
+        const oldState = changes.authStatus.oldValue?.state;
+        const newState = changes.authStatus.newValue?.state;
+        renderAccountStatus(changes.authStatus.newValue);
+        if (oldState !== "signed_in" && newState === "signed_in") {
+          loadCalls();
+        }
+      }
+      if (changes.lastAnalyzedCall?.newValue) {
+        renderPostCallCard(changes.lastAnalyzedCall.newValue);
+        loadCalls({ force: true });
+      }
     }
   });
 }

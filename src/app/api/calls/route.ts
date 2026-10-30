@@ -4,6 +4,7 @@ import { auth } from '@clerk/nextjs/server';
 import prisma from '@/lib/prisma';
 import { getUserByClerkId } from '@/lib/get-user';
 import { cacheGet, cacheSet, makeCacheKey } from '@/lib/cache';
+import { resolveRequestUser } from '@/lib/resolve-request-user';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -107,10 +108,11 @@ export async function GET(req: NextRequest) {
 
 export async function POST(req: Request) {
   try {
-    const { userId: clerkUserId } = await auth();
-    if (!clerkUserId) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    const resolved = await resolveRequestUser(req, 'POST');
+    if (!resolved.ok) {
+      return NextResponse.json({ error: resolved.error }, { status: resolved.status });
     }
+    const user = resolved.user;
 
     const body = await req.json().catch(() => null);
     if (!body || typeof body !== 'object') {
@@ -128,6 +130,9 @@ export async function POST(req: Request) {
     const source = typeof (body as Record<string, unknown>).source === 'string'
       ? ((body as Record<string, unknown>).source as string).slice(0, 50)
       : 'live';
+    const audioUrl = typeof (body as Record<string, unknown>).audioUrl === 'string'
+      ? ((body as Record<string, unknown>).audioUrl as string).trim()
+      : null;
 
     if (!filename) {
       return NextResponse.json({ error: 'filename required' }, { status: 400 });
@@ -135,8 +140,6 @@ export async function POST(req: Request) {
     if (!transcript) {
       return NextResponse.json({ error: 'transcript required' }, { status: 400 });
     }
-
-    const user = await getUserByClerkId(clerkUserId);
 
     const call = await prisma.call.create({
       data: {
@@ -148,6 +151,7 @@ export async function POST(req: Request) {
         summary: transcript.slice(0, 500),
         duration: duration ?? null,
         source,
+        audioUrl,
       },
     });
 

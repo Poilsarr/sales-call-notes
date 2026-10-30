@@ -474,7 +474,7 @@ if (hasChrome() && chrome.runtime?.onMessage) {
           return;
         }
 
-        await setStored({ recording: true });
+        await setStored({ recording: true, recordingStartTime: Date.now() });
 
         // Broadcast START_RECORDING to all meeting tabs so floating HUDs and scrapers sync immediately
         if (chrome.tabs?.query) {
@@ -565,6 +565,22 @@ if (hasChrome() && chrome.runtime?.onMessage) {
           }
         }
       })().catch((err) => console.warn("[Gauge] Failed to handle OFFSCREEN_DONE", err));
+      return false;
+    }
+
+    if (message.type === "FORCE_FINALIZE_AUDIO") {
+      chrome.runtime?.sendMessage?.({ type: "OFFSCREEN_FORCE_FINALIZE" });
+      (async () => {
+        const stored = await getStored({ lastMeetingCaptions: [], liveMeetingTitle: "", liveSessionId: null });
+        if (stored.lastMeetingCaptions && stored.lastMeetingCaptions.length > 0) {
+          await queueFinalize({
+            sessionId: stored.liveSessionId || createLiveSessionId(stored.liveMeetingTitle || "meeting"),
+            meetingTitle: stored.liveMeetingTitle,
+            captions: stored.lastMeetingCaptions,
+          });
+        }
+      })().catch(() => {});
+      sendResponse?.({ ok: true });
       return false;
     }
 

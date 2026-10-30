@@ -148,10 +148,17 @@
   function findCaptionRoots() {
     var seen = [];
     var out = [];
-    for (var i = 0; i < DOM_ADAPTER.captionSelectors.length; i += 1) {
+    var selectors = DOM_ADAPTER.captionSelectors.concat([
+      '[aria-label*="caption" i]',
+      '[aria-label*="subtitles" i]',
+      'div[role="region"][aria-label*="caption" i]',
+      'div[role="region"][aria-label*="subtitles" i]',
+      '[data-sender-name]'
+    ]);
+    for (var i = 0; i < selectors.length; i += 1) {
       var nodes = [];
       try {
-        nodes = document.querySelectorAll(DOM_ADAPTER.captionSelectors[i]);
+        nodes = document.querySelectorAll(selectors[i]);
       } catch (err) {
         void err;
         continue;
@@ -178,7 +185,12 @@
         typeof root.innerText === "string" && root.innerText
           ? root.innerText
           : root.textContent || "";
-      return String(raw).replace(/\s+/g, " ").trim().slice(0, 4000);
+      // Preserve line breaks between block elements (speaker name vs text)
+      return String(raw)
+        .replace(/[ \t\r\f\v]+/g, " ")
+        .replace(/\n\s+/g, "\n")
+        .trim()
+        .slice(0, 4000);
     } catch (err) {
       void err;
       return "";
@@ -781,9 +793,20 @@
   }
 
   // Passive caption watch: track titles and maintain clean HUD lifecycle.
-  // When idle, ensure no HUD is injected on the webpage.
+  // Synchronizes recording state with chrome.storage.local continuously.
   function watch() {
     meetingTitle = getMeetingTitle();
+    if (hasChromeRuntime() && chrome.storage && chrome.storage.local) {
+      try {
+        chrome.storage.local.get({ recording: false }, function (data) {
+          if (data && data.recording && !recording) {
+            startRecording();
+          } else if (data && !data.recording && recording) {
+            stopRecording(false);
+          }
+        });
+      } catch (e) {}
+    }
     if (!recording) {
       if (currentHudMode !== "completed" && currentHudMode !== "finalizing") {
         removeBanner();

@@ -387,6 +387,18 @@ async function finalizeUpload() {
   const plan = getChunkPlan(blob.size);
   reportProgress(0, blob.size, plan.length);
 
+  let transcript = "";
+  try {
+    const stored = await new Promise((resolve) => {
+      chrome.storage.local.get({ lastMeetingCaptions: [] }, resolve);
+    });
+    if (stored?.lastMeetingCaptions && Array.isArray(stored.lastMeetingCaptions) && stored.lastMeetingCaptions.length > 0) {
+      transcript = stored.lastMeetingCaptions
+        .map((c) => (c.speaker ? `${c.speaker}: ${c.text}` : c.text))
+        .join("\n");
+    }
+  } catch {}
+
   try {
     const uploadRes = await fetchWithBackoff(
       buildUploadUrlEndpoint(),
@@ -417,9 +429,38 @@ async function finalizeUpload() {
     const analyzeRes = await fetchWithBackoff(buildAnalyzeEndpoint(), {
       method: "POST",
       headers: buildBearerHeaders(apiKey),
-      body: JSON.stringify({ blobUrl, filename, meetingTitle }),
+      body: JSON.stringify({ blobUrl, filename, meetingTitle, transcript }),
     });
     if (!analyzeRes.ok) {
+      console.warn(`[Gauge:offscreen] /api/analyze failed (${analyzeRes.status}), attempting direct call persistence fallback`);
+      try {
+        const fallbackRes = await fetch(`${APP_ORIGIN}/api/calls`, {
+          method: "POST",
+          headers: buildBearerHeaders(apiKey),
+          body: JSON.stringify({
+            filename,
+            transcript: transcript || `Call recorded (${filename}). Audio URL: ${blobUrl}`,
+            duration: Math.floor((Date.now() - (startedAt || Date.now())) / 1000),
+            source: "extension",
+          }),
+        });
+        if (fallbackRes.ok) {
+          const fallbackData = await fallbackRes.json();
+          slices = [];
+          send({
+            type: MESSAGE_TYPES.OFFSCREEN_DONE,
+            id: fallbackData?.id || null,
+            callUrl: fallbackData?.id ? buildCallDetailUrl(fallbackData.id) : "",
+            meetingTitle,
+            summary: transcript ? transcript.slice(0, 300) : "Meeting audio and transcript recorded.",
+            actionItems: [],
+            healthScore: null,
+          });
+          return;
+        }
+      } catch (fallbackErr) {
+        console.warn("[Gauge:offscreen] Fallback call persistence failed", fallbackErr);
+      }
       throw new Error(
         analyzeRes.status === 401 || analyzeRes.status === 403
           ? "API key rejected by /api/analyze. Re-paste a fresh key."
@@ -472,6 +513,18 @@ if (hasChrome() && chrome.runtime?.onMessage) {
         .catch((error) =>
           sendResponse?.({ ok: false, error: error?.message || "stop failed" }),
         );
+      return true;
+    }
+    if (message.type === "OFFSCREEN_FORCE_FINALIZE") {
+      if (recording) {
+        stopCapture()
+          .then(() => sendResponse?.({ ok: true }))
+          .catch((e) => sendResponse?.({ ok: false, error: e?.message }));
+      } else {
+        finalizeUpload()
+          .then(() => sendResponse?.({ ok: true }))
+          .catch((e) => sendResponse?.({ ok: false, error: e?.message }));
+      }
       return true;
     }
     return false;
