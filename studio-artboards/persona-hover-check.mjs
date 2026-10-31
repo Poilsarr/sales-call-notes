@@ -23,7 +23,7 @@ const pillRowHidden = await page
   .evaluate((el) => el.closest('[aria-hidden="true"]') !== null);
 console.log("no-click audit    : role=tab:", tabs, "| next-btns:", nextBtns, "| passive pills:", pills, "| pills-row aria-hidden:", pillRowHidden);
 
-/* ---------- 2) smart pause: dwell -> hover (pause) -> leave (resume) ---------- */
+/* ---------- 2) hover is NOT a pause condition (iPad synthetic-hover stall fix) ---------- */
 const fillSel = '[data-track-section="persona-switcher"] [data-pill-active="true"] .persona-progress-fill';
 const playState = () =>
   page
@@ -37,12 +37,24 @@ console.log("baseline          :", await playState());
 const h3 = page.locator('[data-track-section="persona-switcher"] h3').first();
 const box = await h3.boundingBox();
 await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2, { steps: 4 });
-await page.waitForTimeout(300);
-console.log("hover-on-stage    :", await playState());
+await page.waitForTimeout(900);
+console.log("hover-on-stage    :", await playState(), "(must stay running — no freeze)");
 
-await page.mouse.move(10, 10, { steps: 4 });
-await page.waitForTimeout(400);
-console.log("hover-out         :", await playState());
+// hold the pointer on the stage for longer than one full dwell (5.6s): the cycle must advance
+const pillText = () =>
+  page
+    .locator('[data-track-section="persona-switcher"] [data-pill-active="true"]')
+    .first()
+    .innerText()
+    .then((t) => t.trim());
+const hBefore = await pillText();
+await page.waitForTimeout(6200);
+const hAfter = await pillText();
+console.log(
+  "hover dwell >6s   :",
+  hBefore, "->", hAfter,
+  hAfter !== hBefore ? "(ADVANCED while hovered — fix live)" : "(STUCK — hover still pauses: FAIL)"
+);
 
 /* ---------- 3) autoplay advances with zero clicks ---------- */
 const activePillText = () =>

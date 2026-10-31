@@ -434,7 +434,6 @@ function FormFounders({ p, metric, active, epoch }: { p: PersonaData; metric: st
 export function StudioPersonaSwitcher() {
   const [activeKey, setActiveKey] = useState<PersonaKey>("vpsales");
   const [epoch, setEpoch] = useState(0);
-  const [hovered, setHovered] = useState(false);
   const [focused, setFocused] = useState(false);
   const [inView, setInView] = useState(true);
   const [docHidden, setDocHidden] = useState(false);
@@ -453,7 +452,7 @@ export function StudioPersonaSwitcher() {
     setEpoch((e) => e + 1);
   }, []);
 
-  const playing = !reducedMotion && inView && !docHidden && !hovered && !focused;
+  const playing = !reducedMotion && inView && !docHidden && !focused;
 
   useEffect(() => {
     if (playing) setEpoch((e) => e + 1);
@@ -524,10 +523,12 @@ export function StudioPersonaSwitcher() {
           Whatever you close, Gauge works for you
         </h2>
 
+        {/* Autoplay pause conditions: focus-within (keyboard), tab-hidden, off-screen,
+            prefers-reduced-motion. Deliberately NO pause-on-hover: touch devices fire a
+            synthetic mouseenter that never gets a mouseleave, which froze the cycle
+            permanently on iPad/Mobile Safari (owner-reported 2026-10-31). */}
         <div
           ref={stageRef}
-          onMouseEnter={() => setHovered(true)}
-          onMouseLeave={() => setHovered(false)}
           onFocusCapture={() => setFocused(true)}
           onBlurCapture={(e) => {
             if (stageRef.current && e.relatedTarget && stageRef.current.contains(e.relatedTarget as Node)) return;
