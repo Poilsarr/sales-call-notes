@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Product Duo — V1 OBSIDIAN BAND</title>
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; }
+  :root{
+    --orange:#F26522; --orange-deep:#c2410c;
+    --ink:#070708; --glass-hi:rgba(255,255,255,0.085); --glass-lo:rgba(255,255,255,0.018);
+    --line:rgba(255,255,255,0.09); --mono:"SF Mono",ui-monospace,Menlo,monospace;
+  }
+  body{ width:1440px; background:#000; font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif; -webkit-font-smoothing:antialiased; }
+
+  .band{
+    position:relative; overflow:hidden; padding:92px 70px 88px;
+    background:
+      radial-gradient(1100px 480px at 18% -8%, rgba(242,101,34,0.10), transparent 62%),
+      radial-gradient(900px 460px at 88% 112%, rgba(99,102,241,0.075), transparent 60%),
+      radial-gradient(1400px 700px at 50% 50%, #0B0B0D 0%, #070708 70%);
+    color:#fff;
+  }
+  .grain{ position:absolute; inset:0; opacity:.055; pointer-events:none;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='240' height='240'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='240' height='240' filter='url(%23n)' opacity='1'/%3E%3C/svg%3E"); }
+
+  .inner{ max-width:1300px; margin:0 auto; }
+
+  /* header */
+  header{ text-align:center; margin-bottom:60px; }
+  .eyebrow{ font-family:var(--mono); font-size:12px; letter-spacing:.2em; color:var(--orange); font-weight:600; margin-bottom:18px; }
+  h2{ font-size:52px; line-height:1.08; letter-spacing:-.032em; font-weight:500; }
+  h2 .soft{ color:#7d818c; }
+  .sub{ max-width:640px; margin:20px auto 0; font-size:15.5px; line-height:1.65; color:#9a9ea8; }
+
+  /* engine grid */
+  .engine{ display:grid; grid-template-columns:1fr 118px 1fr; gap:16px; align-items:stretch; }
+
+  .plate{
+    position:relative; border-radius:26px; padding:26px 26px 24px;
+    background:linear-gradient(180deg, var(--glass-hi), var(--glass-lo));
+    border:1px solid var(--line);
+    box-shadow: 0 50px 100px rgba(0,0,0,.55), inset 0 1px 0 rgba(255,255,255,.09);
+    display:flex; flex-direction:column;
+  }
+  .pl-meta{ display:flex; justify-content:space-between; align-items:center; margin-bottom:16px; }
+  .rolepill{ font-family:var(--mono); font-size:10.5px; letter-spacing:.14em; text-transform:uppercase; font-weight:600; padding:7px 13px; border-radius:999px; }
+  .rp-green{ color:#6ee7b7; background:rgba(16,185,129,.09); border:1px solid rgba(16,185,129,.32); }
+  .rp-blue{ color:#a5b4fc; background:rgba(99,102,241,.10); border:1px solid rgba(99,102,241,.34); }
+  .grademono{ font-family:var(--mono); font-size:10.5px; color:#5b5f6a; letter-spacing:.08em; }
+
+  h3{ font-size:24px; font-weight:600; letter-spacing:-.02em; margin-bottom:8px; }
+  .pl-copy{ font-size:13px; line-height:1.6; color:#9a9ea8; margin-bottom:16px; }
+
+  /* ---------- LEFT VISUAL : MEET WINDOW + HOLOGRAPHIC BATTLECARD ---------- */
+  .visual{ position:relative; height:308px; margin-bottom:16px; }
+  .meet{
+    position:absolute; inset:34px 46px 58px 0; border-radius:16px; overflow:hidden;
+    background:linear-gradient(180deg,#141419,#0d0d11); border:1px solid rgba(255,255,255,.08);
+    box-shadow: 0 24px 50px rgba(0,0,0,.5);
+  }
+  .meetbar{ display:flex; align-items:center; gap:8px; padding:10px 14px; border-bottom:1px solid rgba(255,255,255,.06); }
+  .dot{ width:8px; height:8px; border-radius:50%; flex:none; }
+  .d1{background:#ff5f57;} .d2{background:#febc2e;} .d3{background:#28c840;}
+  .meeturl{ font-family:var(--mono); font-size:10px; color:#8b8f9a; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; flex:1 1 auto; min-width:0; }
+  .recpill{ position:absolute; right:14px; bottom:12px; display:flex; align-items:center; gap:7px; padding:8px 13px; border-radius:999px;
+    background:rgba(10,10,12,.85); border:1px solid rgba(248,113,113,.30); font-family:var(--mono); font-size:10px; letter-spacing:.12em; color:#fca5a5; backdrop-filter:blur(8px); z-index:3; }
+  .recpill b{ width:7px; height:7px; border-radius:50%; background:#f87171; box-shadow:0 0 10px rgba(248,113,113,.8); animation:blink 1.4s steps(2,start) infinite; }
+  .wave{ position:absolute; left:26px; top:96px; right:26px; display:flex; align-items:flex-start; gap:5px; height:46px; }
+  .wave i{ width:4px; border-radius:3px; background:linear-gradient(180deg,#5b6270,#3a3f4b); height:var(--h); animation:eq 1.15s ease-in-out infinite alternate; animation-delay:var(--d); transform-origin:bottom; }
+  .wave i.hot{ background:linear-gradient(180deg,#fb923c,var(--orange-deep)); }
+  .caption{ position:absolute; left:26px; bottom:50px; font-family:var(--mono); font-size:10.5px; color:#b9bdc8; letter-spacing:.02em; }
+  .caption mark{ background:rgba(242,101,34,.22); color:#fdba74; padding:1px 4px; border-radius:3px; }
+  .zeropill{ position:absolute; left:16px; bottom:12px; display:flex; align-items:center; gap:7px; padding:8px 14px; border-radius:999px;
+    background:rgba(10,10,12,.85); border:1px solid rgba(255,255,255,.12); font-family:var(--mono); font-size:10px; letter-spacing:.12em; color:#d3d6de; backdrop-filter:blur(8px); z-index:3; }
+  .zeropill b{ width:7px; height:7px; border-radius:50%; background:#34d399; box-shadow:0 0 10px rgba(52,211,153,.7); animation:breathe 2.6s ease-in-out infinite; }
+
+  /* battlecard hologram */
+  .battlecard{
+    position:absolute; right:0; top:34px; width:248px; border-radius:14px; padding:13px 14px; z-index:2;
+    background:linear-gradient(180deg, rgba(28,28,34,.97), rgba(20,20,25,.97));
+    border:1px solid rgba(242,101,34,.35);
+    box-shadow: 0 30px 60px rgba(0,0,0,.6), 0 0 0 1px rgba(255,255,255,.04) inset, 0 0 44px rgba(242,101,34,.12);
+    animation:bob 5.2s ease-in-out infinite;
+  }
+  .bc-head{ display:flex; align-items:center; gap:8px; font-family:var(--mono); font-size:10px; letter-spacing:.12em; color:#fdba74; margin-bottom:9px; }
+  .bc-head::before{ content:""; width:7px; height:7px; border-radius:50%; background:var(--orange); box-shadow:0 0 12px rgba(242,101,34,.8); }
+  .bc-label{ font-family:var(--mono); font-size:9px; letter-spacing:.18em; color:#6b707c; margin-bottom:5px; }
+  .bc-quote{ font-size:12.5px; line-height:1.45; color:#e8e9ee; margin-bottom:11px; }
+  .bc-track{ height:4px; border-radius:3px; background:rgba(255,255,255,.09); overflow:hidden; margin-bottom:5px; }
+  .bc-fill{ width:78%; height:100%; border-radius:3px; background:linear-gradient(90deg,var(--orange-deep),#fb923c); }
+  .bc-conf{ font-family:var(--mono); font-size:8.5px; color:#8b8f9a; letter-spacing:.06em; white-space:nowrap; }
+
+  /* chips inside plate */
+  .chips{ display:flex; gap:9px; flex-wrap:wrap; margin-bottom:18px; }
+  .chip{ display:inline-flex; align-items:center; gap:7px; padding:8px 13px; border-radius:999px; font-family:var(--mono); font-size:10px; letter-spacing:.1em;
+    color:#c6c9d2; background:rgba(255,255,255,.045); border:1px solid rgba(255,255,255,.10); }
+  .chip b{ width:6px; height:6px; border-radius:50%; }
+  .chip .cg{ background:#34d399; } .chip .co{ background:var(--orange); } .chip .cn{ background:#5b5f6a; }
+  .chip.hot{ color:#fdba74; border-color:rgba(242,101,34,.38); background:rgba(242,101,34,.08); }
+
+  .cta{ display:flex; align-items:center; justify-content:center; gap:9px; height:48px; border-radius:999px; font-size:13.5px; font-weight:600; margin-top:auto; text-decoration:none; }
+  .cta-orange{ background:linear-gradient(180deg,#fb7a34,var(--orange) 55%, #e05a1a); color:#fff; box-shadow:0 12px 34px rgba(242,101,34,.35), inset 0 1px 0 rgba(255,255,255,.25); }
+  .cta-ghost{ background:rgba(255,255,255,.03); border:1px solid rgba(255,255,255,.22); color:#f4f4f6; box-shadow:inset 0 1px 0 rgba(255,255,255,.08); }
+  .cta svg{ width:13px; height:13px; }
+
+  /* ---------- RIGHT VISUAL : RADAR ---------- */
+  .radarwrap{ position:relative; height:308px; margin-bottom:16px; }
+  .disc{ position:absolute; left:-4px; top:16px; width:284px; height:284px; border-radius:50%;
+    background:radial-gradient(circle at 50% 46%, #101014 0%, #0a0a0d 62%, #08080a 100%);
+    border:1px solid rgba(255,255,255,.085); box-shadow:0 30px 70px rgba(0,0,0,.55), inset 0 0 60px rgba(242,101,34,.05); }
+  .disc svg{ position:absolute; inset:0; }
+  .sweep{ position:absolute; inset:10px; border-radius:50%;
+    background:conic-gradient(from 0deg, transparent 0deg, rgba(242,101,34,.02) 300deg, rgba(242,101,34,.30) 356deg, rgba(242,101,34,.55) 360deg);
+    animation:spin 9s linear infinite; }
+  .disc::after{ content:""; position:absolute; left:50%; top:50%; width:9px; height:9px; margin:-4.5px;
+    border-radius:50%; background:var(--orange); box-shadow:0 0 18px rgba(242,101,34,.9); }
+  .blip{ position:absolute; width:8px; height:8px; border-radius:50%; }
+  .blip::after{ content:""; position:absolute; inset:-3px; border-radius:50%; border:1px solid rgba(242,101,34,.5); animation:ping 3s cubic-bezier(0,0,.2,1) infinite; }
+  .b1{ left:172px; top:86px; background:#fb923c; }
+  .b2{ left:86px; top:196px; background:#a5b4fc; } .b2::after{ animation-delay:1.2s; }
+  .b3{ left:206px; top:212px; background:#f87171; } .b3::after{ animation-delay:2.1s; }
+
+  .minibars{ position:absolute; left:8px; bottom:6px; display:flex; align-items:flex-end; gap:6px; padding:12px 14px; border-radius:12px;
+    background:rgba(12,12,15,.75); border:1px solid rgba(255,255,255,.09); backdrop-filter:blur(8px); }
+  .minibars i{ width:9px; border-radius:3px 3px 1px 1px; height:var(--h); background:linear-gradient(180deg,#fb923c,var(--orange-deep)); }
+  .minibars i.alt{ background:linear-gradient(180deg,#818cf8,#4f46e5); }
+
+  .statrail{ position:absolute; right:-6px; top:0; width:206px; display:flex; flex-direction:column; gap:11px; }
+  .statcard{ border-radius:13px; padding:13px 15px; background:linear-gradient(180deg, rgba(28,28,34,.9), rgba(18,18,22,.9)); border:1px solid rgba(255,255,255,.10); box-shadow:0 18px 40px rgba(0,0,0,.4); }
+  .statcard.rival{ border-color:rgba(242,101,34,.5); box-shadow:0 18px 40px rgba(0,0,0,.4), 0 0 34px rgba(242,101,34,.10); }
+  .statlabel{ font-family:var(--mono); font-size:9px; letter-spacing:.2em; color:#6b707c; margin-bottom:4px; }
+  .statlabel.hot{ color:#fdba74; }
+  .statname{ font-size:21px; font-weight:600; letter-spacing:-.02em; margin-bottom:1px; }
+  .statdelta{ font-family:var(--mono); font-size:10px; color:#fb923c; letter-spacing:.08em; }
+  .statbig{ font-size:34px; font-weight:600; letter-spacing:-.03em; margin-bottom:1px; }
+  .statsub{ font-family:var(--mono); font-size:9px; letter-spacing:.16em; color:#6b707c; }
+  .livepill{ align-self:flex-end; display:inline-flex; align-items:center; gap:7px; padding:7px 13px; border-radius:999px;
+    background:rgba(242,101,34,.10); border:1px solid rgba(242,101,34,.45); font-family:var(--mono); font-size:10px; letter-spacing:.16em; color:#fdba74; }
+  .livepill b{ width:6px; height:6px; border-radius:50%; background:var(--orange); animation:blink 1.2s steps(2,start) infinite; }
+
+  /* ---------- CENTER RAIL ---------- */
+  .rail{ display:flex; flex-direction:column; align-items:center; justify-content:center; gap:0; padding:34px 0; }
+  .railchip{ font-family:var(--mono); font-size:9.5px; letter-spacing:.16em; color:#b9bdc8; padding:8px 12px; border-radius:999px;
+    background:rgba(255,255,255,.045); border:1px solid rgba(255,255,255,.11); white-space:nowrap; }
+  .railline{ position:relative; width:1px; height:52px; background:linear-gradient(180deg, rgba(242,101,34,.4), rgba(242,101,34,.12)); }
+  .railline::after{ content:""; position:absolute; left:-1.5px; width:4px; height:4px; border-radius:50%; background:#fb923c; box-shadow:0 0 8px rgba(242,101,34,.9);
+    animation:trav 2.8s linear infinite; }
+  .railfoot{ margin-top:26px; font-family:var(--mono); font-size:9px; letter-spacing:.22em; color:#5b5f6a; text-align:center; line-height:1.7; }
+
+  /* keyframes */
+  @keyframes eq{ from{ transform:scaleY(.45);} to{ transform:scaleY(1);} }
+  @keyframes spin{ to{ transform:rotate(360deg);} }
+  @keyframes ping{ 0%{ transform:scale(.4); opacity:.9;} 80%,100%{ transform:scale(2.6); opacity:0;} }
+  @keyframes bob{ 0%,100%{ transform:translateY(0);} 50%{ transform:translateY(-8px);} }
+  @keyframes blink{ 0%,49%{opacity:1;} 50%,100%{opacity:.15;} }
+  @keyframes breathe{ 0%,100%{ box-shadow:0 0 6px rgba(52,211,153,.5);} 50%{ box-shadow:0 0 14px rgba(52,211,153,1);} }
+  @keyframes trav{ 0%{ top:-2px; opacity:0;} 15%{ opacity:1;} 85%{ opacity:1;} 100%{ top:50px; opacity:0;} }
+</style>
+</head>
+<body>
+<div class="capture">
+<section class="band">
+  <div class="inner">
+    <header>
+      <p class="eyebrow">TWO SIDES OF ONE REVENUE ENGINE</p>
+      <h2>The extension on your call.<br><span class="soft">The web hub for your team.</span></h2>
+      <p class="sub">Sales reps capture meetings with 0 bots directly in the browser. Revenue leaders track competitor trends and deal pipeline across the entire team in the web dashboard.</p>
+    </header>
+
+    <div class="engine">
+      <!-- LEFT PLATE : EXTENSION -->
+      <article class="plate">
+        <div class="pl-meta">
+          <span class="rolepill rp-green">Primary Product · For Reps</span>
+          <span class="grademono">CHROME EXTENSION (MV3)</span>
+        </div>
+        <h3>The In-Call Weapon</h3>
+        <p class="pl-copy">Lives inside Google Meet, Zoom, and Teams. Captures audio from the tab with <b>zero bots invited</b>, surfaces live battlecards on screen, pushes notes to your CRM on Send.</p>
+
+        <div class="visual">
+          <div class="meet">
+            <div class="meetbar">
+              <i class="dot d1"></i><i class="dot d2"></i><i class="dot d3"></i>
+              <span class="meeturl">meet.google.com / acme-corp</span>
+            </div>
+            <div class="wave">
+              <i style="--h:14px;--d:0s"></i><i style="--h:26px;--d:.08s" class="hot"></i><i style="--h:38px;--d:.16s"></i>
+              <i style="--h:22px;--d:.24s"></i><i style="--h:42px;--d:.32s" class="hot"></i><i style="--h:30px;--d:.4s"></i>
+              <i style="--h:16px;--d:.48s"></i><i style="--h:44px;--d:.56s" class="hot"></i><i style="--h:28px;--d:.64s"></i>
+              <i style="--h:20px;--d:.72s"></i><i style="--h:40px;--d:.8s" class="hot"></i><i style="--h:24px;--d:.88s"></i>
+              <i style="--h:34px;--d:.96s"></i><i style="--h:18px;--d:1.04s"></i><i style="--h:30px;--d:1.12s" class="hot"></i>
+              <i style="--h:14px;--d:1.2s"></i><i style="--h:36px;--d:1.28s"></i><i style="--h:22px;--d:1.36s"></i>
+            </div>
+            <p class="caption">…they standardized on <mark>Gong</mark> analytics last quarter…</p>
+            <div class="zeropill"><b></b>0 BOTS ACTIVE</div>
+            <div class="recpill"><b></b>REC · 14:02</div>
+          </div>
+
+          <div class="battlecard">
+            <div class="bc-head">GONG DETECTED · 00:21</div>
+            <div class="bc-label">OBJECTION</div>
+            <p class="bc-quote">"We standardized on Gong for deal analytics."</p>
+            <div class="bc-track"><div class="bc-fill"></div></div>
+            <div class="bc-conf">CONFIDENCE 78% · BATTLECARD READY</div>
+          </div>
+        </div>
+
+        <div class="chips">
+          <span class="chip"><b class="cg"></b>0 BOTS IN CALL</span>
+          <span class="chip hot"><b class="co"></b>BATTLECARD IN 2.1S</span>
+          <span class="chip"><b class="cn"></b>CRM SYNC IN 60S</span>
+        </div>
+        <a class="cta cta-orange">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15 15 0 0 1 0 20 15 15 0 0 1 0-20"/></svg>
+          Install Chrome Extension
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+        </a>
+      </article>
+
+      <!-- CENTER SYNC RAIL -->
+      <div class="rail">
+        <span class="railchip">CAPTURE</span>
+        <span class="railline"></span>
+        <span class="railchip">ANALYZE</span>
+        <span class="railline"></span>
+        <span class="railchip">PULSE TO TEAM</span>
+        <p class="railfoot">SYNC<br>CONTINUOUS</p>
+      </div>
+
+      <!-- RIGHT PLATE : HUB -->
+      <article class="plate">
+        <div class="pl-meta">
+          <span class="rolepill rp-blue">Intelligence Hub · For Teams</span>
+          <span class="grademono">WEB APP &amp; DATABASE</span>
+        </div>
+        <h3>The Revenue Hub</h3>
+        <p class="pl-copy">Your company's central call database. Team competitive mention trends, pipeline risks, AI query over every call, and bi-directional sync to HubSpot, Salesforce, and Slack.</p>
+
+        <div class="radarwrap">
+          <div class="disc">
+            <svg viewBox="0 0 284 284" fill="none">
+              <circle cx="142" cy="142" r="52" stroke="rgba(255,255,255,0.10)"/>
+              <circle cx="142" cy="142" r="96" stroke="rgba(255,255,255,0.08)"/>
+              <circle cx="142" cy="142" r="128" stroke="rgba(255,255,255,0.06)" stroke-dasharray="2 6"/>
+              <line x1="142" y1="10" x2="142" y2="274" stroke="rgba(255,255,255,0.05)"/>
+              <line x1="10" y1="142" x2="274" y2="142" stroke="rgba(255,255,255,0.05)"/>
+            </svg>
+            <div class="sweep"></div>
+            <span class="blip b1"></span><span class="blip b2"></span><span class="blip b3"></span>
+          </div>
+          <div class="minibars">
+            <i style="--h:38px"></i><i style="--h:24px"></i><i style="--h:15px" class="alt"></i><i style="--h:30px" class="alt"></i><i style="--h:19px" class="alt"></i><i style="--h:44px"></i><i style="--h:12px"></i>
+          </div>
+          <div class="statrail">
+            <div class="statcard rival">
+              <div class="statlabel hot">TOP RIVAL</div>
+              <div class="statname">Gong</div>
+              <div class="statdelta">+38% WoW</div>
+            </div>
+            <div class="statcard">
+              <div class="statlabel">MENTIONS</div>
+              <div class="statbig">127</div>
+              <div class="statsub">LAST 7 DAYS</div>
+            </div>
+            <span class="livepill"><b></b>LIVE RADAR SYNC</span>
+          </div>
+        </div>
+
+        <div class="chips">
+          <span class="chip"><b class="cn"></b>COMPETITOR RADAR</span>
+          <span class="chip"><b class="cn"></b>PIPELINE RISKS</span>
+          <span class="chip hot"><b class="co"></b>AUTO CRM HYGIENE</span>
+        </div>
+        <a class="cta cta-ghost">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><ellipse cx="12" cy="5" rx="8" ry="3"/><path d="M4 5v14c0 1.7 3.6 3 8 3s8-1.3 8-3V5"/><path d="M4 12c0 1.7 3.6 3 8 3s8-1.3 8-3"/></svg>
+          Try Interactive Web Sandbox
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+        </a>
+      </article>
+    </div>
+  </div>
+  <div class="grain"></div>
+</section>
+</div>
+</body>
+</html>
