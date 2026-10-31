@@ -1,0 +1,487 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Gauge — Persona Orb / Aurora-Minimal (v1)</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: #f2f2f4; font-family: -apple-system, "SF Pro Text", "Helvetica Neue", "Segoe UI", Arial, sans-serif; -webkit-font-smoothing: antialiased; text-rendering: optimizeLegibility; }
+  .mono { font-family: ui-monospace, "SF Mono", Menlo, monospace; }
+
+  .artboard {
+    position: relative; width: 960px; height: 880px; overflow: hidden;
+    background: #ffffff; padding: 58px 60px 0; text-align: center;
+  }
+
+  /* ---------- header ---------- */
+  .po-h2 { font-size: 34px; font-weight: 500; letter-spacing: -0.035em; color: #111316; line-height: 1.15; margin-bottom: 28px; }
+
+  /* ---------- pills ---------- */
+  .po-pills { position: relative; height: 36px; margin-bottom: 48px; display: flex; align-items: center; justify-content: center; gap: 10px; }
+  .po-pill {
+    position: relative; display: flex; align-items: center; justify-content: center;
+    padding: 9px 18px; border-radius: 999px;
+    font-size: 13px; font-weight: 590; letter-spacing: -0.005em; white-space: nowrap;
+    background: #f5f5f6; color: #57575d;
+  }
+  .po-hl { position: absolute; left: 14px; right: 14px; bottom: 5px; height: 2px; border-radius: 2px; overflow: hidden; pointer-events: none; }
+  .po-hl-o { position: absolute; inset: 0; }
+  .po-hl-track { position: absolute; inset: 0; border-radius: 2px; background: rgba(255,255,255,.22); }
+  .po-hl-fill { position: absolute; inset: 0; border-radius: 2px; transform-origin: 0 50%; background: rgba(255,255,255,.88); }
+
+  /* =========================================================
+     20s clock — 5 personas x 4s
+     VP Sales 0s | RevOps 4s | PMM 8s | Founders 12s | Sales 16s
+     crossfade 700ms cubic-bezier(.22,1,.36,1):
+     in [0%,3.5%]  hold [3.5%,16.5%]  out [16.5%,20%]
+     wrapped (VP) additionally fades in [96.5%,100%]
+     ========================================================= */
+  .po-tl {
+    animation-duration: 20s;
+    animation-timing-function: cubic-bezier(.22,1,.36,1);
+    animation-iteration-count: infinite;
+    animation-fill-mode: both;
+    animation-delay: var(--d, 0s);
+  }
+  .artboard:hover .po-pause { animation-play-state: paused; }
+
+  .po-layer { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; opacity: 0; }
+  .po-w { opacity: 1; }
+
+  @keyframes poIn {
+    0%    { opacity: 0; transform: translateY(6px) scale(.965) rotate(-1.6deg); }
+    3.5%  { opacity: 1; transform: none; }
+    16.5% { opacity: 1; transform: none; }
+    20%   { opacity: 0; transform: translateY(-4px) scale(1.045) rotate(1.1deg); }
+    100%  { opacity: 0; transform: translateY(-4px) scale(1.045) rotate(1.1deg); }
+  }
+  @keyframes poInW {
+    0%    { opacity: 1; transform: none; }
+    16.5% { opacity: 1; transform: none; }
+    20%   { opacity: 0; transform: translateY(-4px) scale(1.045) rotate(1.1deg); }
+    97% { opacity: 0; transform: translateY(6px) scale(.965) rotate(-1.6deg); }
+    100%  { opacity: 1; transform: none; }
+  }
+  .po-in  { animation-name: poIn; }
+  .po-inw { animation-name: poInW; }
+
+  /* ---------- pills + hairline windows ---------- */
+  .po-pill { animation-name: poOn; }
+  @keyframes poOn {
+    0%    { background: #f5f5f6; color: #57575d; transform: none; box-shadow: none; }
+    2.5%  { background: #111214; color: #ffffff; transform: scale(1.03); box-shadow: 0 1px 2px rgba(17,18,20,.10), 0 10px 20px -12px rgba(17,18,20,.38); }
+    16.5% { background: #111214; color: #ffffff; transform: scale(1.03); box-shadow: 0 1px 2px rgba(17,18,20,.10), 0 10px 20px -12px rgba(17,18,20,.38); }
+    20%   { background: #f5f5f6; color: #57575d; transform: none; box-shadow: none; }
+    100%  { background: #f5f5f6; color: #57575d; transform: none; box-shadow: none; }
+  }
+  @keyframes poOnW {
+    0%    { background: #111214; color: #ffffff; transform: scale(1.03); box-shadow: 0 1px 2px rgba(17,18,20,.10), 0 10px 20px -12px rgba(17,18,20,.38); }
+    16.5% { background: #111214; color: #ffffff; transform: scale(1.03); box-shadow: 0 1px 2px rgba(17,18,20,.10), 0 10px 20px -12px rgba(17,18,20,.38); }
+    20%   { background: #f5f5f6; color: #57575d; transform: none; box-shadow: none; }
+    97% { background: #f5f5f6; color: #57575d; transform: scale(.99); box-shadow: none; }
+    100%  { background: #111214; color: #ffffff; transform: scale(1.03); box-shadow: 0 1px 2px rgba(17,18,20,.10), 0 10px 20px -12px rgba(17,18,20,.38); }
+  }
+  .po-hl-o  { animation-name: poHlO; animation-timing-function: linear; }
+  @keyframes poHlO  { 0% { opacity: 1; } 16.5% { opacity: 1; } 20% { opacity: 0; } 100% { opacity: 0; } }
+  @keyframes poHlOW { 0% { opacity: 1; } 16.5% { opacity: 1; } 20% { opacity: 0; } 97% { opacity: 0; } 100% { opacity: 1; } }
+  .po-hl-fill { animation-name: poHlF; animation-timing-function: linear; }
+  @keyframes poHlF  { 0% { transform: scaleX(0); } 16.5% { transform: scaleX(.825); } 20% { transform: scaleX(1); } 100% { transform: scaleX(1); } }
+  @keyframes poHlFW { 0% { transform: scaleX(0); } 16.5% { transform: scaleX(.825); } 20% { transform: scaleX(1); } 97% { transform: scaleX(.95); } 100% { transform: scaleX(1); } }
+
+  /* ---------- orb stage anatomy ---------- */
+  .po-stage { position: relative; height: 340px; margin-bottom: 34px; }
+  .po-fx { position: absolute; left: 50%; top: 50%; margin: 0; }
+  .po-float  { animation-name: poFloat; animation-timing-function: ease-in-out; animation-duration: 4s; animation-iteration-count: infinite; }
+  @keyframes poFloat { 0%,100% { transform: translate(-50%,-50%) translateY(0) rotate(0deg); } 50% { transform: translate(-50%,-50%) translateY(-8px) rotate(-.7deg); } }
+  .po-glow { position: absolute; left: 50%; top: 50%; z-index: 0; border-radius: 50%; pointer-events: none;
+    background: radial-gradient(circle at 50% 50%, color-mix(in srgb, var(--a) 40%, transparent) 0%, color-mix(in srgb, var(--a) 15%, transparent) 42%, color-mix(in srgb, var(--a) 6%, transparent) 62%, transparent 76%);
+    transform: translate(-50%,-50%); filter: blur(34px); opacity: .5;
+    animation-name: poGlowB; animation-timing-function: ease-in-out; animation-duration: 4s; animation-iteration-count: infinite; }
+  @keyframes poGlowB { 0%,100% { opacity: .44; transform: translate(-50%,-50%) scale(1); } 50% { opacity: .68; transform: translate(-50%,-50%) scale(1.06); } }
+  .po-shadow { position: absolute; left: 50%; bottom: -2px; height: 20px; width: 132px; border-radius: 50%; pointer-events: none; z-index: 1;
+    background: radial-gradient(ellipse at center, rgba(22,12,5,.30) 0%, rgba(22,12,5,0) 68%); filter: blur(4px);
+    animation-name: poShadowB; animation-timing-function: ease-in-out; animation-duration: 4s; animation-iteration-count: infinite; }
+  @keyframes poShadowB { 0%,100% { transform: translateX(-50%) scaleX(1); opacity: .9; } 50% { transform: translateX(-50%) scaleX(.88); opacity: .6; } }
+
+  /* baked 3D sphere shading — verbatim from studio-persona-switcher */
+  .po-sphere { border-radius: 50%; overflow: hidden; position: relative; z-index: 3;
+    background:
+      radial-gradient(circle at 32% 27%, rgba(255,255,255,.85) 0%, rgba(255,255,255,0) 26%),
+      radial-gradient(circle at 71% 80%, color-mix(in srgb, var(--a) 47%, transparent) 0%, rgba(255,255,255,0) 44%),
+      radial-gradient(circle at 30% 79%, rgba(255,255,255,.16) 0%, rgba(255,255,255,0) 38%),
+      radial-gradient(circle at 50% 50%, var(--a) 0%, color-mix(in srgb, var(--a) 93%, #000 7%) 52%, color-mix(in srgb, var(--a) 67%, #000 33%) 74%, var(--d1) 90%, var(--d2) 100%);
+    box-shadow:
+      inset -12px -18px 36px rgba(5,3,1,.5),
+      inset 10px 14px 30px rgba(255,255,255,.14),
+      inset 3px 4px 16px rgba(255,255,255,.22),
+      0 36px 72px -14px color-mix(in srgb, var(--a) 40%, transparent),
+      0 16px 36px rgba(15,9,3,.3); }
+  .po-sheen { position: absolute; left: 50%; top: 50%; width: 175%; height: 175%; border-radius: 50%; pointer-events: none;
+    background: conic-gradient(from 0deg, rgba(255,255,255,0) 0deg, rgba(255,255,255,.32) 48deg, rgba(255,255,255,0) 96deg);
+    mix-blend-mode: overlay; transform: translate(-50%,-50%);
+    animation-name: poSheenR; animation-timing-function: linear; animation-duration: 9s; animation-iteration-count: infinite; }
+  @keyframes poSheenR { from { transform: translate(-50%,-50%) rotate(0deg); } to { transform: translate(-50%,-50%) rotate(360deg); } }
+  .po-grain { position: absolute; inset: 0; border-radius: inherit; opacity: .14; mix-blend-mode: overlay; pointer-events: none;
+    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/><feColorMatrix type='matrix' values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 0.5 0'/></filter><rect width='160' height='160' filter='url(%23n)'/></svg>");
+    background-size: 160px 160px; }
+
+  /* ---------- orb copy ---------- */
+  .po-copy { position: absolute; inset: 0; z-index: 6; display: flex; flex-direction: column; align-items: center; justify-content: center; pointer-events: none;
+    animation-name: poCopy; animation-timing-function: cubic-bezier(.22,1,.36,1); animation-duration: 4s; animation-iteration-count: infinite; animation-fill-mode: both; animation-delay: var(--d, 0s); }
+  @keyframes poCopy { 0% { opacity: 0; transform: translateY(10px); } 14% { opacity: 1; transform: none; } 100% { opacity: 1; transform: none; } }
+  .po-out { display: block; font-size: 9.5px; font-weight: 700; letter-spacing: .24em; text-transform: uppercase; color: rgba(255,255,255,.72); margin-bottom: 5px; }
+  .po-metric { text-shadow: 0 1px 3px rgba(10,6,2,.25); display: block; font-weight: 700; letter-spacing: -0.02em; line-height: 1; color: #fff; font-size: 38px; }
+  .po-label { display: block; margin-top: 6px; font-size: 10.5px; font-weight: 500; line-height: 1.3; color: rgba(255,255,255,.82); max-width: 150px; }
+  .po-tags { display: flex; flex-wrap: wrap; justify-content: center; gap: 5px; margin-top: 13px; max-width: 176px; }
+  .po-tag { display: inline-block; padding: 3px 8px; border-radius: 999px; font-size: 9.5px; letter-spacing: .01em; line-height: 1.5; white-space: nowrap;
+    background: rgba(255,255,255,.13); border: 1px solid rgba(255,255,255,.26); color: rgba(255,255,255,.92);
+    opacity: 0; animation-name: poPop; animation-timing-function: cubic-bezier(.22,1,.36,1); animation-duration: 4s; animation-iteration-count: infinite; animation-fill-mode: both; animation-delay: calc(var(--d, 0s) + var(--td, 0s)); }
+  @keyframes poPop { 0% { opacity: 0; transform: translateY(8px) scale(.9); } 12% { opacity: 1; transform: none; } 100% { opacity: 1; transform: none; } }
+</style>
+</head>
+<style>
+  /* ================= FORM 1 — VP SALES: radar sphere ================= */
+  .po-radar { position: absolute; left: 50%; top: 50%; transform: translate(-50%,-50%); z-index: 2; pointer-events: none; }
+  .po-arc { transform-origin: 200px 200px; animation-name: poRot; animation-timing-function: linear; animation-iteration-count: infinite; }
+  @keyframes poRot { to { transform: rotate(360deg); } }
+  .po-arc-b { animation-direction: reverse; }
+  .po-arc-c { animation-direction: reverse; }
+
+  /* ================= FORM 2 — REVOPS: grid monolith ================= */
+  .po-mono { position: relative; width: 208px; height: 272px; border-radius: 52px; overflow: hidden; z-index: 3;
+    background:
+      radial-gradient(62% 30% at 50% 0%, rgba(255,255,255,.42) 0%, rgba(255,255,255,0) 68%),
+      radial-gradient(120% 26% at 50% 106%, rgba(0,0,0,.5) 0%, rgba(0,0,0,0) 58%),
+      linear-gradient(180deg, var(--a) 0%, color-mix(in srgb, var(--a) 90%, #000 10%) 42%, color-mix(in srgb, var(--a) 76%, #000 24%) 64%, var(--d1) 94%, var(--d2) 100%);
+    box-shadow:
+      inset -12px -18px 36px rgba(5,3,1,.48),
+      inset 10px 14px 30px rgba(255,255,255,.14),
+      inset 3px 4px 16px rgba(255,255,255,.2),
+      0 36px 72px -14px color-mix(in srgb, var(--a) 40%, transparent),
+      0 16px 36px rgba(15,9,3,.3); }
+  .po-mono::after { content: ""; position: absolute; inset: 0; border-radius: inherit; pointer-events: none; z-index: 2;
+    background: linear-gradient(120deg, rgba(255,255,255,.16) 0%, rgba(255,255,255,0) 36%); }
+  .po-mono-cap { position: absolute; left: 50%; top: -15px; transform: translateX(-50%); width: 174px; height: 32px; border-radius: 50%; z-index: 2;
+    background:
+      radial-gradient(circle at 34% 28%, rgba(255,255,255,.42) 0%, rgba(255,255,255,.08) 52%),
+      linear-gradient(180deg, color-mix(in srgb, var(--a) 95%, #fff 5%) 0%, color-mix(in srgb, var(--a) 68%, #000 32%) 100%);
+    box-shadow: 0 14px 24px -8px color-mix(in srgb, var(--d1) 85%, #000 15%), inset 0 2px 5px rgba(255,255,255,.4); }
+  .po-mono > .po-grain { position: absolute; inset: 0; z-index: 4; }
+  .po-mlx { position: absolute; inset: 14px; border-radius: 40px; overflow: hidden; z-index: 3; pointer-events: none;
+    -webkit-mask-image: linear-gradient(180deg, transparent 3%, #000 32%, #000 86%, rgba(0,0,0,.5) 100%);
+    mask-image: linear-gradient(180deg, transparent 3%, #000 32%, #000 86%, rgba(0,0,0,.5) 100%); }
+  .po-mtilt { position: absolute; inset: -60%; left: -60%; right: -60%; top: -60%; bottom: -60%;
+    transform: rotateX(47deg); }
+  .po-mgrid { position: absolute; inset: -70%; border-radius: 0;
+    background-image:
+      linear-gradient(rgba(255,255,255,.34) 1px, rgba(255,255,255,0) 1px),
+      linear-gradient(90deg, rgba(255,255,255,.34) 1px, rgba(255,255,255,0) 1px);
+    background-size: 27px 27px;
+    animation-name: poRot; animation-timing-function: linear; animation-duration: 26s; animation-iteration-count: infinite; }
+  .po-mpers { position: absolute; inset: 0; perspective: 520px; }
+
+  /* ================= FORM 3 — PMM: glass lens ================= */
+  .po-lens { position: relative; width: 288px; height: 176px; border-radius: 50%; overflow: hidden; z-index: 3;
+    background:
+      radial-gradient(circle at 32% 26%, rgba(255,255,255,.55) 0%, rgba(255,255,255,0) 40%),
+      radial-gradient(circle at 74% 82%, color-mix(in srgb, var(--a) 47%, transparent) 0%, rgba(255,255,255,0) 46%),
+      linear-gradient(180deg, var(--a) 0%, color-mix(in srgb, var(--a) 88%, #000 12%) 44%, color-mix(in srgb, var(--a) 70%, #000 30%) 68%, var(--d1) 96%);
+    box-shadow:
+      inset -12px -16px 34px rgba(5,3,1,.44),
+      inset 10px 14px 30px rgba(255,255,255,.16),
+      inset 0 2px 10px rgba(255,255,255,.28),
+      0 36px 72px -14px color-mix(in srgb, var(--a) 40%, transparent),
+      0 16px 36px rgba(15,9,3,.3); }
+  .po-lens::before { content: ""; position: absolute; inset: 0; z-index: 2; border-radius: inherit; pointer-events: none;
+    background: linear-gradient(115deg, rgba(255,255,255,.44) 0%, rgba(255,255,255,0) 34%); }
+  .po-lens::after { content: ""; position: absolute; inset: 0; z-index: 3; border-radius: inherit; pointer-events: none;
+    box-shadow: inset 0 0 0 1px rgba(255,255,255,.22); }
+  .po-beam { position: absolute; top: -16%; bottom: -16%; left: 0; width: 76px; z-index: 2; pointer-events: none;
+    background: linear-gradient(90deg, rgba(255,255,255,0) 0%, rgba(255,255,255,.62) 50%, rgba(255,255,255,0) 100%);
+    mix-blend-mode: overlay;
+    animation-name: poSweep; animation-timing-function: linear; animation-duration: 3s; animation-iteration-count: infinite; }
+  @keyframes poSweep { from { transform: translateX(-70px); } to { transform: translateX(360px); } }
+
+  /* ================= FORM 4 — FOUNDERS: cluster ================= */
+  .po-cluster { position: relative; width: 340px; height: 340px; }
+  .po-ring { position: absolute; left: 50%; top: 50%; transform: translate(-50%,-50%); border-radius: 50%; border: 1px solid; z-index: 1; pointer-events: none; }
+  .po-orbiter { position: absolute; inset: 0; z-index: 2; pointer-events: none; animation-name: poRot; animation-timing-function: linear; animation-iteration-count: infinite; }
+  .po-orb-cc { animation-direction: reverse; }
+  .po-mini { position: absolute; left: 50%; top: 0; margin-left: -27px; margin-top: -27px; width: 54px; height: 54px; }
+  .po-mini-in { position: absolute; inset: 0; border-radius: 50%;
+    background:
+      radial-gradient(circle at 32% 27%, rgba(255,255,255,.8) 0%, rgba(255,255,255,0) 30%),
+      radial-gradient(circle at 71% 80%, color-mix(in srgb, var(--a) 47%, transparent) 0%, rgba(255,255,255,0) 48%),
+      radial-gradient(circle at 50% 50%, var(--a) 0%, color-mix(in srgb, var(--a) 90%, #000 10%) 56%, color-mix(in srgb, var(--a) 64%, #000 36%) 78%, var(--d1) 100%);
+    box-shadow:
+      inset -6px -9px 16px rgba(5,3,1,.45),
+      inset 5px 7px 14px rgba(255,255,255,.18),
+      0 14px 26px -8px color-mix(in srgb, var(--a) 45%, transparent); }
+  .po-mini-spin { position: absolute; inset: 0; animation-name: poRot; animation-timing-function: linear; animation-iteration-count: infinite; }
+
+  /* ================= FORM 5 — SALES: waveform rings ================= */
+  .po-ringbox { position: absolute; pointer-events: none; }
+  .po-ringbox.back { z-index: 2; }
+  .po-ringbox.front { z-index: 4; clip-path: inset(52.5% 0 0 0); }
+  .po-waveline { animation-name: poDashA; animation-timing-function: linear; animation-iteration-count: infinite; }
+  .po-waveline-b { animation-name: poDashB; animation-direction: reverse; }
+  @keyframes poDashA { from { stroke-dashoffset: 0; } to { stroke-dashoffset: -767; } }
+  @keyframes poDashB { from { stroke-dashoffset: 0; } to { stroke-dashoffset: 858; } }
+
+  /* ---------- role text stage ---------- */
+  .po-texts { position: relative; height: 116px; margin-bottom: 30px; }
+  .po-text { position: absolute; left: 50%; top: 0; transform: translateX(-50%); width: 700px; display: flex; flex-direction: column; align-items: center; opacity: 0; }
+  .po-w2 { opacity: 1; }
+  .po-tx  { animation-name: poTx; }
+  .po-txw { animation-name: poTxW; }
+  @keyframes poTx {
+    0%    { opacity: 0; transform: translateX(-50%) translateY(9px); }
+    3.5%  { opacity: 1; transform: translateX(-50%); }
+    16.5% { opacity: 1; transform: translateX(-50%); }
+    20%   { opacity: 0; transform: translateX(-50%) translateY(-7px); }
+    100%  { opacity: 0; transform: translateX(-50%) translateY(-7px); }
+  }
+  @keyframes poTxW {
+    0%    { opacity: 1; transform: translateX(-50%); }
+    16.5% { opacity: 1; transform: translateX(-50%); }
+    20%   { opacity: 0; transform: translateX(-50%) translateY(-7px); }
+    97% { opacity: 0; transform: translateX(-50%) translateY(9px); }
+    100%  { opacity: 1; transform: translateX(-50%); }
+  }
+  .po-role { font-size: 24px; font-weight: 560; letter-spacing: -0.02em; color: #111316; line-height: 1.2; margin-bottom: 9px; }
+  .po-desc { font-size: 14.5px; line-height: 1.62; letter-spacing: -0.005em; color: #55555a; max-width: 620px; }
+
+  /* ---------- CTA ---------- */
+  .po-cta { display: inline-flex; align-items: center; gap: 8px; padding: 12px 22px; border-radius: 999px;
+    background: #111214; color: #fff; font-size: 13px; font-weight: 600; letter-spacing: -0.005em;
+    box-shadow: 0 1px 2px rgba(17,18,20,.12), 0 14px 28px -14px rgba(17,18,20,.45); }
+  .po-cta svg { display: block; }
+
+  @media (prefers-reduced-motion: reduce) {
+    * { animation: none !important; }
+  }
+</style>
+<body>
+<style>
+  /* geometry/constants patch */
+  .po-arc { transform-origin: 180px 180px; }
+  .po-pill-w { animation-name: poOnW; }
+  .po-hlw-o { animation-name: poHlOW; animation-timing-function: linear; }
+  .po-hlw-f { animation-name: poHlFW; animation-timing-function: linear; }
+  .po-spin-cc { animation-direction: reverse; }
+  @keyframes poDashA { from { stroke-dashoffset: 0; } to { stroke-dashoffset: -763; } }
+  @keyframes poDashB { from { stroke-dashoffset: 0; } to { stroke-dashoffset: -858; } }
+</style>
+<body>
+<div class="artboard">
+  <h1 class="po-h2">Whatever you close, Gauge works for you</h1>
+
+  <!-- pills: passive phase indicators -->
+  <div class="po-pills" aria-hidden="true">
+    <div class="po-pill po-tl po-on" style="--d:16s"><span class="po-pill-t">Sales</span>
+      <span class="po-hl"><span class="po-hl-o po-tl" style="--d:16s"><span class="po-hl-track"></span><span class="po-hl-fill po-tl" style="--d:16s"></span></span></span>
+    </div>
+    <div class="po-pill po-tl po-pill-w" style="--d:0s"><span class="po-pill-t">VP Sales</span>
+      <span class="po-hl"><span class="po-hl-o po-tl po-hlw-o" style="--d:0s"><span class="po-hl-track"></span><span class="po-hl-fill po-tl po-hlw-f" style="--d:0s"></span></span></span>
+    </div>
+    <div class="po-pill po-tl po-on" style="--d:4s"><span class="po-pill-t">RevOps</span>
+      <span class="po-hl"><span class="po-hl-o po-tl" style="--d:4s"><span class="po-hl-track"></span><span class="po-hl-fill po-tl" style="--d:4s"></span></span></span>
+    </div>
+    <div class="po-pill po-tl po-on" style="--d:8s"><span class="po-pill-t">Product Marketing</span>
+      <span class="po-hl"><span class="po-hl-o po-tl" style="--d:8s"><span class="po-hl-track"></span><span class="po-hl-fill po-tl" style="--d:8s"></span></span></span>
+    </div>
+    <div class="po-pill po-tl po-on" style="--d:12s"><span class="po-pill-t">Founders</span>
+      <span class="po-hl"><span class="po-hl-o po-tl" style="--d:12s"><span class="po-hl-track"></span><span class="po-hl-fill po-tl" style="--d:12s"></span></span></span>
+    </div>
+  </div>
+
+  <!-- orb stage: 5 stacked phase layers on one 20s clock -->
+  <div class="po-stage">
+
+    <!-- LAYER 2 (clock) : VP Sales — radar sphere -->
+    <div class="po-layer po-tl po-inw po-w" style="--d:0s; --a:#F26522; --d1:#26120a; --d2:#0d0703;">
+      <span class="po-glow po-pause" style="width:380px; height:340px;" aria-hidden="true"></span>
+      <div class="po-fx po-float po-pause" style="width:340px; height:340px;">
+        <svg class="po-radar po-pause" width="360" height="360" viewBox="0 0 360 360" aria-hidden="true">
+          <g class="po-arc po-pause" style="animation-duration:17s;">
+            <circle cx="180" cy="180" r="138" fill="none" stroke="#F26522" stroke-width="2" stroke-linecap="round" stroke-dasharray="192 675" opacity=".95"/>
+            <circle cx="180" cy="42" r="8" fill="rgba(242,101,34,.3)"/>
+            <circle cx="180" cy="42" r="3" fill="#ffffff"/>
+          </g>
+          <g class="po-arc po-pause" style="animation-duration:17s; animation-direction:reverse; animation-timing-function:linear;">
+            <circle cx="180" cy="180" r="156" fill="none" stroke="#F26522" stroke-width="1.4" stroke-linecap="round" stroke-dasharray="2.5 17" opacity=".5"/>
+          </g>
+          <g class="po-arc po-pause" style="animation-duration:40s; animation-timing-function:linear;">
+            <circle cx="180" cy="180" r="168" fill="none" stroke="#F26522" stroke-width="1.3" stroke-linecap="round" stroke-dasharray="58 206" opacity=".34"/>
+          </g>
+        </svg>
+        <div class="po-sphere po-pause" style="width:252px; height:252px; position:absolute; left:50%; top:50%; margin:-126px 0 0 -126px;">
+          <span class="po-sheen po-pause"></span>
+          <span class="po-grain"></span>
+        </div>
+        <div class="po-copy po-pause" style="position:absolute; inset:calc(50% - 100px) calc(50% - 100px); width:200px; height:200px;">
+          <span class="po-out mono">Outcome</span>
+          <span class="po-metric" style="font-size:38px;">+28%</span>
+          <span class="po-label" style="max-width:130px;">Competitive win-rate lift</span>
+          <div class="po-tags" style="max-width:172px;">
+            <span class="po-tag mono" style="--td:.25s;">Slack alerts</span>
+            <span class="po-tag mono" style="--td:.48s;">Team radar</span>
+            <span class="po-tag mono" style="--td:.7s;">Coach reps</span>
+          </div>
+        </div>
+      </div>
+      <span class="po-shadow po-pause" style="width:140px; bottom:32px;" aria-hidden="true"></span>
+    </div>
+
+    <!-- LAYER 3 (clock) : RevOps — grid monolith -->
+    <div class="po-layer po-tl po-in" style="--d:4s; --a:#10b981; --d1:#04281c; --d2:#02110b;">
+      <span class="po-glow po-pause" style="width:360px; height:320px;" aria-hidden="true"></span>
+      <div class="po-fx po-float po-pause" style="width:272px; height:340px;">
+        <div class="po-mono po-pause">
+          <span class="po-mono-cap po-pause"></span>
+          <span class="po-grain"></span>
+          <div class="po-mpers po-pause">
+            <div class="po-mtilt po-pause"><div class="po-mgrid po-pause"></div></div>
+          </div>
+        </div>
+        <div class="po-copy po-pause" style="position:absolute; inset:calc(50% - 100px) calc(50% - 104px); width:208px; height:200px;">
+          <span class="po-out mono">Outcome</span>
+          <span class="po-metric" style="font-size:34px;">100%</span>
+          <span class="po-label" style="max-width:150px;">CRM data completeness</span>
+          <div class="po-tags" style="max-width:196px;">
+            <span class="po-tag mono" style="--td:.25s;">MEDDPICC fields</span>
+            <span class="po-tag mono" style="--td:.48s;">CRM hygiene</span>
+            <span class="po-tag mono" style="--td:.7s;">Zero chasing</span>
+          </div>
+        </div>
+      </div>
+      <span class="po-shadow po-pause" style="width:150px; bottom:22px;" aria-hidden="true"></span>
+    </div>
+
+    <!-- LAYER 4 (clock) : Product Marketing — glass lens -->
+    <div class="po-layer po-tl po-in" style="--d:8s; --a:#6366f1; --d1:#17163a; --d2:#0a0920;">
+      <span class="po-glow po-pause" style="width:380px; height:280px;" aria-hidden="true"></span>
+      <div class="po-fx po-float po-pause" style="width:300px; height:220px;">
+        <div class="po-lens po-pause" style="position:absolute; left:50%; top:50%; margin:-88px 0 0 -144px;">
+          <span class="po-sheen po-pause"></span>
+          <span class="po-grain" style="border-radius:50%;"></span>
+          <span class="po-beam po-pause"></span>
+        </div>
+        <div class="po-copy po-pause" style="position:absolute; inset:calc(50% - 100px) calc(50% - 110px); width:220px; height:200px;">
+          <span class="po-out mono">Outcome</span>
+          <span class="po-metric" style="font-size:34px;">2.1s</span>
+          <span class="po-label" style="max-width:160px;">Live battlecard trigger time</span>
+          <div class="po-tags" style="max-width:240px;">
+            <span class="po-tag mono" style="--td:.25s;">Battlecards</span>
+            <span class="po-tag mono" style="--td:.48s;">Live trigger</span>
+            <span class="po-tag mono" style="--td:.7s;">Competitor named</span>
+          </div>
+        </div>
+      </div>
+      <span class="po-shadow po-pause" style="width:236px; bottom:64px;" aria-hidden="true"></span>
+    </div>
+
+    <!-- LAYER 5 (clock) : Founders — orbit cluster -->
+    <div class="po-layer po-tl po-in" style="--d:12s; --a:#f59e0b; --d1:#3a2504; --d2:#1a1002;">
+      <span class="po-glow po-pause" style="width:400px; height:360px;" aria-hidden="true"></span>
+      <div class="po-fx po-float po-pause" style="width:340px; height:340px;">
+        <div class="po-cluster po-pause" style="position:absolute; left:50%; top:50%; margin:-170px 0 0 -170px;">
+          <span class="po-ring po-pause" style="width:244px; height:244px; border-color:rgba(245,158,11,.2);"></span>
+          <span class="po-ring po-pause" style="width:288px; height:288px; border-color:rgba(245,158,11,.14);"></span>
+          <span class="po-ring po-pause" style="width:326px; height:326px; border-color:rgba(245,158,11,.09);"></span>
+          <div class="po-orbiter po-pause" style="width:244px; height:244px; left:calc(50% - 122px); top:calc(50% - 122px); animation-duration:9s;">
+            <div class="po-mini"><div class="po-mini-spin po-pause" style="animation-duration:9s; animation-direction:reverse;"><div class="po-mini-in" style="--a:#fbbf24; --d1:#3a2504;"></div></div></div>
+          </div>
+          <div class="po-orbiter po-pause" style="width:288px; height:288px; left:calc(50% - 144px); top:calc(50% - 144px); animation-duration:13.5s; animation-direction:reverse;">
+            <div class="po-mini" style="margin-left:-25px; margin-top:-25px; width:50px; height:50px;"><div class="po-mini-spin po-pause" style="animation-duration:13.5s;"><div class="po-mini-in" style="--a:#f59e0b; --d1:#3a2504;"></div></div></div>
+          </div>
+          <div class="po-orbiter po-pause" style="width:326px; height:326px; left:calc(50% - 163px); top:calc(50% - 163px); animation-duration:18s;">
+            <div class="po-mini" style="margin-left:-28px; margin-top:-28px; width:56px; height:56px;"><div class="po-mini-spin po-pause" style="animation-duration:18s; animation-direction:reverse;"><div class="po-mini-in" style="--a:#fcd34d; --d1:#493102;"></div></div></div>
+          </div>
+          <div class="po-sphere po-pause" style="width:200px; height:200px; position:absolute; left:50%; top:50%; margin:-100px 0 0 -100px; z-index:3;">
+            <span class="po-sheen po-pause"></span>
+            <span class="po-grain"></span>
+          </div>
+          <div class="po-copy po-pause" style="position:absolute; inset:calc(50% - 100px) calc(50% - 100px); width:200px; height:200px; z-index:6;">
+            <span class="po-out mono">Outcome</span>
+            <span class="po-metric" style="font-size:24px;">90%</span>
+            <span class="po-label" style="max-width:118px; font-size:9.5px; line-height:1.25; margin-top:4px;">Cost reduction vs Gong minimums</span>
+            <div class="po-tags" style="max-width:150px; margin-top:10px; gap:4px;">
+              <span class="po-tag mono" style="--td:.25s; padding:2px 7px;">$9-29/seat</span>
+              <span class="po-tag mono" style="--td:.48s; padding:2px 7px;">0 bots</span>
+              <span class="po-tag mono" style="--td:.7s; padding:2px 7px;">No platform min</span>
+            </div>
+          </div>
+        </div>
+      </div>
+      <span class="po-shadow po-pause" style="width:208px; bottom:16px;" aria-hidden="true"></span>
+    </div>
+
+    <!-- LAYER 6 (clock) : Sales — waveform rings -->
+    <div class="po-layer po-tl po-in" style="--d:16s; --a:#3b82f6; --d1:#0c1f3d; --d2:#060f1f;">
+      <span class="po-glow po-pause" style="width:380px; height:340px;" aria-hidden="true"></span>
+      <div class="po-fx po-float po-pause" style="width:340px; height:340px;">
+        <svg class="po-ringbox back po-pause" width="380" height="200" viewBox="0 0 380 200" style="position:absolute; left:calc(50% - 190px); top:calc(50% - 100px);" aria-hidden="true">
+          <ellipse cx="190" cy="100" rx="176" ry="48" transform="rotate(-7 190 100)" fill="none" stroke="rgba(59,130,246,.34)" stroke-width="1.2" stroke-dasharray="3 9" stroke-linecap="round"/>
+          <ellipse cx="190" cy="100" rx="196" ry="56" transform="rotate(9 190 100)" fill="none" stroke="rgba(59,130,246,.28)" stroke-width="1.2" stroke-dasharray="3 9" stroke-linecap="round"/>
+          <ellipse class="po-waveline po-pause" style="animation-duration:6.5s;" cx="190" cy="100" rx="176" ry="48" transform="rotate(-7 190 100)" fill="none" stroke="rgba(255,255,255,.85)" stroke-width="2" stroke-linecap="round" stroke-dasharray="150 613"/>
+          <ellipse class="po-waveline po-waveline-b po-pause" style="animation-duration:9s;" cx="190" cy="100" rx="196" ry="56" transform="rotate(9 190 100)" fill="none" stroke="rgba(255,255,255,.7)" stroke-width="2" stroke-linecap="round" stroke-dasharray="128 730"/>
+        </svg>
+        <div class="po-sphere po-pause" style="width:236px; height:236px; position:absolute; left:50%; top:50%; margin:-118px 0 0 -118px; z-index:3;">
+          <span class="po-sheen po-pause"></span>
+          <span class="po-grain"></span>
+        </div>
+        <svg class="po-ringbox front po-pause" width="380" height="200" viewBox="0 0 380 200" style="position:absolute; left:calc(50% - 190px); top:calc(50% - 100px);" aria-hidden="true">
+          <ellipse cx="190" cy="100" rx="176" ry="48" transform="rotate(-7 190 100)" fill="none" stroke="rgba(59,130,246,.4)" stroke-width="1.2" stroke-dasharray="3 9" stroke-linecap="round"/>
+          <ellipse cx="190" cy="100" rx="196" ry="56" transform="rotate(9 190 100)" fill="none" stroke="rgba(59,130,246,.32)" stroke-width="1.2" stroke-dasharray="3 9" stroke-linecap="round"/>
+          <ellipse class="po-waveline po-pause" style="animation-duration:6.5s;" cx="190" cy="100" rx="176" ry="48" transform="rotate(-7 190 100)" fill="none" stroke="rgba(255,255,255,.9)" stroke-width="2" stroke-linecap="round" stroke-dasharray="150 613"/>
+          <ellipse class="po-waveline po-waveline-b po-pause" style="animation-duration:9s;" cx="190" cy="100" rx="196" ry="56" transform="rotate(9 190 100)" fill="none" stroke="rgba(255,255,255,.75)" stroke-width="2" stroke-linecap="round" stroke-dasharray="128 730"/>
+        </svg>
+        <div class="po-copy po-pause" style="position:absolute; inset:calc(50% - 100px) calc(50% - 100px); width:200px; height:200px; z-index:6;">
+          <span class="po-out mono">Outcome</span>
+          <span class="po-metric" style="font-size:36px;">5 hrs/wk</span>
+          <span class="po-label" style="max-width:140px;">Time saved on CRM admin</span>
+          <div class="po-tags" style="max-width:176px;">
+            <span class="po-tag mono" style="--td:.25s;">0 bots</span>
+            <span class="po-tag mono" style="--td:.48s;">Auto CRM sync</span>
+            <span class="po-tag mono" style="--td:.7s;">Action items</span>
+          </div>
+        </div>
+      </div>
+      <span class="po-shadow po-pause" style="width:148px; bottom:40px;" aria-hidden="true"></span>
+    </div>
+  </div>
+
+  <!-- role text stage: 5 stacked swap blocks, same 20s windows -->
+  <div class="po-texts" aria-hidden="false">
+    <div class="po-text po-tl po-txw po-w2" style="--d:0s;">
+      <h3 class="po-role">VP of Sales &amp; CRO</h3>
+      <p class="po-desc">Know the second Gong or Salesforce enters a pipeline deal. Gauge delivers instant Slack alerts and team radar analytics so you can coach reps before deals slip away.</p>
+    </div>
+    <div class="po-text po-tl po-tx" style="--d:4s;">
+      <h3 class="po-role">RevOps &amp; Sales Ops</h3>
+      <p class="po-desc">Automate MEDDPICC, BANT, and SPICED fields directly into Salesforce and HubSpot. No empty deal stages or missing economic buyers.</p>
+    </div>
+    <div class="po-text po-tl po-tx" style="--d:8s;">
+      <h3 class="po-role">Product Marketing &amp; CI</h3>
+      <p class="po-desc">You spend tens of thousands on battlecards that reps forget to open. Gauge surfaces your talking points right on their screen the second a competitor is named.</p>
+    </div>
+    <div class="po-text po-tl po-tx" style="--d:12s;">
+      <h3 class="po-role">Founding Sales Teams</h3>
+      <p class="po-desc">Gong costs $1,400/rep/year with a $5,000 platform minimum. Gauge gives you 0-bot capture, battlecards, and CRM sync for flat $9 to $29/seat.</p>
+    </div>
+    <div class="po-text po-tl po-tx" style="--d:16s;">
+      <h3 class="po-role">Sales Reps (AEs)</h3>
+      <p class="po-desc">Stop spending 45 minutes every evening typing summaries into HubSpot. The Chrome extension captures your call with 0 bots, extracts action items, and syncs to CRM in 60 seconds.</p>
+    </div>
+  </div>
+
+  <div class="po-cta">
+    <span>Explore features</span>
+    <svg width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+      <path d="M1 6h9M6.2 2.4 10 6l-3.8 3.6" stroke="#ffffff" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>
+  </div>
+</div>
+</body>
+</html>

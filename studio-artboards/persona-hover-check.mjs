@@ -13,33 +13,81 @@ const section = page.locator('[data-track-section="persona-switcher"]');
 await section.scrollIntoViewIfNeeded();
 await page.waitForTimeout(600);
 
-const fillSel = '[data-track-section="persona-switcher"] [role="tab"][aria-selected="true"] .persona-progress-fill';
-const playState = () => page.locator(fillSel).first().evaluate((el) => getComputedStyle(el).animationPlayState).catch(() => "no-fill");
+/* ---------- 1) no-click audit: passive pills only, zero arrows ---------- */
+const tabs = await page.locator('[data-track-section="persona-switcher"] [role="tab"]').count();
+const nextBtns = await page.locator('[data-track-section="persona-switcher"] [aria-label^="Next role"]').count();
+const pills = await page.locator('[data-track-section="persona-switcher"] [data-pill-active]').count();
+const pillRowHidden = await page
+  .locator('[data-track-section="persona-switcher"] [data-pill-active]')
+  .first()
+  .evaluate((el) => el.closest('[aria-hidden="true"]') !== null);
+console.log("no-click audit    : role=tab:", tabs, "| next-btns:", nextBtns, "| passive pills:", pills, "| pills-row aria-hidden:", pillRowHidden);
 
-console.log("baseline           :", await playState());
+/* ---------- 2) smart pause: dwell -> hover (pause) -> leave (resume) ---------- */
+const fillSel = '[data-track-section="persona-switcher"] [data-pill-active="true"] .persona-progress-fill';
+const playState = () =>
+  page
+    .locator(fillSel)
+    .first()
+    .evaluate((el) => getComputedStyle(el).animationPlayState)
+    .catch(() => "no-fill");
 
-await page.hover('[data-track-section="persona-switcher"] h3');
+console.log("baseline          :", await playState());
+
+const h3 = page.locator('[data-track-section="persona-switcher"] h3').first();
+const box = await h3.boundingBox();
+await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2, { steps: 4 });
 await page.waitForTimeout(300);
-console.log("playState hover    :", await playState());
+console.log("hover-on-stage    :", await playState());
 
-await page.mouse.move(60, 60);
+await page.mouse.move(10, 10, { steps: 4 });
 await page.waitForTimeout(400);
-console.log("playState resume   :", await playState());
+console.log("hover-out         :", await playState());
 
-await page.evaluate(() => window.scrollTo(0, 0));
-await page.waitForTimeout(500);
-console.log("playState offscreen:", await playState());
+/* ---------- 3) autoplay advances with zero clicks ---------- */
+const activePillText = () =>
+  page
+    .locator('[data-track-section="persona-switcher"] [data-pill-active="true"]')
+    .first()
+    .innerText()
+    .then((t) => t.trim());
 
-await section.scrollIntoViewIfNeeded();
-await page.waitForTimeout(300);
-const before = await page.locator('[data-track-section="persona-switcher"] [role="tab"][aria-selected="true"]').textContent();
-await page.locator('[data-track-section="persona-switcher"] [aria-label^="Next role"]').click();
+const before = await activePillText();
+let after = before;
+for (let i = 0; i < 45; i++) {
+  await page.waitForTimeout(200);
+  after = await activePillText();
+  if (after !== before) break;
+}
+console.log("autoplay w/o click:", after !== before ? `advanced "${before}" -> "${after}"` : "NO ADVANCE (FAIL)");
+
+/* ---------- 4) chip cascade replays each activation ---------- */
+const firstActiveForm = () =>
+  page
+    .locator('[data-track-section="persona-switcher"] [data-active="true"]')
+    .first()
+    .evaluate((el) => ({
+      chips: el.querySelectorAll(".psw-chip span, .psw-chip").length,
+      chipInCount: el.querySelectorAll(".psw-chip-in").length,
+    }))
+    .catch(() => ({ chips: -1, chipInCount: -1 }));
+const chipInfo = await firstActiveForm();
+
+/* ---------- 5) structural: one form per layer, active layer visible ---------- */
+const layerInfo = await page.evaluate(() => {
+  const section = document.querySelector('[data-track-section="persona-switcher"]');
+  const layers = section ? Array.from(section.querySelectorAll(".psw-layer")) : [];
+  const on = layers.filter((l) => l.classList.contains("psw-layer--on"));
+  const off = layers.filter((l) => l.classList.contains("psw-layer--off"));
+  const offPaused = off.length > 0;
+  return { total: layers.length, on: on.length, off: off.length, offPaused };
+});
+console.log("layers            :", JSON.stringify(layerInfo));
+console.log("active chips      :", JSON.stringify(chipInfo));
+
+/* ---------- snapshot for the record ---------- */
 await page.waitForTimeout(900);
-const after = await page.locator('[data-track-section="persona-switcher"] [role="tab"][aria-selected="true"]').textContent();
-console.log("arrow advance      :", before.trim(), "->", after.trim());
-
-await page.getByRole("tab", { name: "Founders" }).click();
-await page.waitForTimeout(1600);
-await section.screenshot({ path: path.join(outDir, "persona-founders.png") });
+await section.screenshot({ path: path.join(outDir, "home-psw-hovercheck.png") });
 
 await browser.close();
+console.log("done");

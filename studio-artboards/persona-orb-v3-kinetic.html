@@ -1,0 +1,554 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Gauge — Kinetic-Choreo Persona Section (v3)</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body { background: #ffffff; }
+  body {
+    font-family: -apple-system, "SF Pro Text", "Helvetica Neue", "Segoe UI", Arial, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+  .mono { font-family: ui-monospace, "SF Mono", Menlo, monospace; }
+
+  .artboard {
+    position: relative;
+    width: 960px;
+    height: 880px;
+    overflow: hidden;
+    background: #ffffff;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    padding-top: 62px;
+  }
+
+  /* ---------- static section chrome ---------- */
+  .kn-head {
+    font-size: 34px;
+    font-weight: 500;
+    letter-spacing: -0.022em;
+    color: #111111;
+    line-height: 1.2;
+  }
+  .kn-subrow {
+    margin-top: 24px;
+    display: flex;
+    gap: 8px;
+    justify-content: center;
+  }
+  .kn-pill {
+    position: relative;
+    height: 36px;
+    padding: 0 18px 0;
+    border-radius: 999px;
+    display: flex;
+    align-items: center;
+    font-size: 13px;
+    font-weight: 500;
+    letter-spacing: -0.004em;
+    background: #f4f4f5;
+    color: #71717a;
+    transform: scale(1);
+  }
+  .kn-pill-track { position: absolute; left: 13px; right: 13px; bottom: 5px; height: 2px;
+    border-radius: 999px; overflow: hidden; background: rgba(255,255,255,0.22); }
+  .kn-pill-fill {
+    position: absolute; inset: 0; border-radius: 999px;
+    background: rgba(255,255,255,0.85);
+    transform-origin: 0% 50%; transform: scaleX(0);
+  }
+  /* hover-pause hook: pause the prototype while inspecting */
+  .artboard:hover .kncyc { animation-play-state: paused; }
+
+  .kn-stage { position: relative; width: 700px; height: 350px; margin-top: 30px; flex: none; }
+  .kn-layer { position: absolute; inset: 0; pointer-events: none; }
+  .kn-anim { position: absolute; inset: 0; }
+  .kn-float { position: absolute; inset: 0; }
+  .kn-scene { position: absolute; left: 50%; top: 50%; width: 0; height: 0; transform-style: preserve-3d; }
+  .kn-glow { position: absolute; left: 50%; top: 50%; width: 420px; height: 420px; margin: -210px 0 0 -210px;
+    border-radius: 50%; pointer-events: none; }
+  .kn-shadowbase { position: absolute; left: 50%; top: 282px; width: 170px; height: 26px; margin-left: -85px;
+    border-radius: 50%; pointer-events: none;
+    background: radial-gradient(ellipse at center, rgba(22,12,8,0.30) 0%, rgba(22,12,8,0) 68%);
+    filter: blur(4px); }
+
+  .kn-orbcopy { position: absolute; left: 50%; top: 50%; transform: translate(-50%,-50%);
+    display: flex; flex-direction: column; align-items: center; z-index: 6; pointer-events: none; white-space: nowrap; }
+  .kn-eyebrow { font-size: 10px; font-weight: 700; letter-spacing: 0.18em; color: rgba(255,255,255,0.72); }
+  .kn-metric { font-size: 40px; font-weight: 700; color: #ffffff; letter-spacing: -0.02em; line-height: 1.06;
+    margin-top: 5px; text-shadow: 0 2px 12px rgba(10,6,2,0.35); }
+  .kn-metriclabel { font-size: 11px; font-weight: 500; color: rgba(255,255,255,0.82); margin-top: 5px; line-height: 1.25;
+    max-width: 150px; white-space: normal; }
+  .kn-tags { display: flex; gap: 7px; margin-top: 12px; }
+  .kn-tag {
+    font-size: 9.5px; font-weight: 600; letter-spacing: 0.02em; color: rgba(255,255,255,0.92);
+    background: rgba(255,255,255,0.13); border: 1px solid rgba(255,255,255,0.26);
+    border-radius: 999px; padding: 4px 7px; line-height: 1; white-space: nowrap;
+    backdrop-filter: blur(2px);
+  }
+
+  .kn-copyrow { margin-top: 26px; position: relative; width: 700px; height: 132px; flex: none; }
+  .kn-title { position: absolute; left: 0; right: 0; top: 0;
+    font-size: 24px; font-weight: 500; color: #111111; letter-spacing: -0.02em; }
+  .kn-desc {
+    position: absolute; left: 0; right: 0; top: 40px; margin: 0 auto; max-width: 620px;
+    font-size: 14.5px; line-height: 1.58; color: #555555; letter-spacing: -0.002em;
+  }
+  .kn-cta-row { margin-top: 34px; }
+  .kn-cta {
+    display: inline-flex; align-items: center; gap: 8px; height: 46px; padding: 0 26px;
+    border-radius: 999px; background: #111111; color: #ffffff; font-size: 14.5px; font-weight: 600;
+    letter-spacing: -0.004em;
+    box-shadow: inset 0 1px 0 rgba(255,255,255,0.14), 0 2px 6px rgba(17,17,17,0.25), 0 14px 28px -12px rgba(17,17,17,0.45);
+  }
+  .kn-cta svg { display: block; }
+
+  /* shared clock: one 20s cycle, phase-anchored via --d (negative delays) */
+  .kncyc { animation-duration: 20s; animation-timing-function: linear; animation-iteration-count: infinite; animation-fill-mode: both; }
+  .kn-anim, .kn-shadowbase, .kn-orbcopy, .kn-pill, .kn-pill-fill, .kn-tag { animation-delay: var(--d); }
+</style>
+</head>
+<style>
+  /* =========================================================
+     KINETIC-CHOREO loop — one shared 20s clock (5 phases x 4s)
+     Phase starts (wall time): VP Sales 17.8s | RevOps 1.8s |
+     Product Marketing 5.8s | Founders 9.8s | Sales 13.8s
+     Each node re-runs the SAME keyframes every 20s via a single
+     shared negative delay --d so every beat stays phase-locked.
+     Track shape (phase-local):
+       0-4%      entrance: drop from +18px, scale 1.08 -> 1,
+                 rotate -5deg -> 0, cubic-bezier(0.34,1.3,0.4,1)
+       4-17.5%   steady dwell
+       17.5-20%  exit: lift -14px, blur 6px, fade (ease-in)
+       rest      hold the hidden entrance pose for the wrap
+     Beats after phase start: metric 0.4s, title 0.45s (+80ms desc),
+     tag cascade 0.9 / 1.05 / 1.2s, hairline fills 0 -> 4s linear.
+     ========================================================= */
+
+  /* -- form wrapper: the directed handoff moment -- */
+  @keyframes knForm {
+    0%    { opacity: 0; transform: translateY(18px) rotate(-5deg) scale(1.08); filter: blur(3px);
+            animation-timing-function: cubic-bezier(0.34, 1.3, 0.4, 1); }
+    4%    { opacity: 1; transform: translateY(0px) rotate(0deg) scale(1); filter: none; }
+    17.5% { opacity: 1; transform: translateY(0px) rotate(0deg) scale(1); filter: none;
+            animation-timing-function: cubic-bezier(0.5, 0, 0.75, 0.35); }
+    20%   { opacity: 0; transform: translateY(-14px) rotate(0deg) scale(1.035); filter: blur(6px); }
+    20.2% { opacity: 0; transform: translateY(18px) rotate(-5deg) scale(1.08); filter: blur(3px); }
+    100%  { opacity: 0; transform: translateY(18px) rotate(-5deg) scale(1.08); filter: blur(3px); }
+  }
+  .kn-anim { animation-name: knForm; }
+
+  /* -- contact shadow: grows on approach, squashes on landing, lifts away -- */
+  @keyframes knShadow {
+    0%    { opacity: 0; transform: scaleX(0.5) scaleY(0.45);
+            animation-timing-function: ease-out; }
+    3.4%  { opacity: 0.5; transform: scaleX(1.1) scaleY(0.78); }
+    4.2%  { opacity: 0.55; transform: scaleX(1) scaleY(1); }
+    17.3% { opacity: 0.55; transform: scaleX(1) scaleY(1);
+            animation-timing-function: cubic-bezier(0.5, 0, 0.75, 0.35); }
+    19%   { opacity: 0; transform: scaleX(0.62) scaleY(0.5); }
+    19.2% { opacity: 0; transform: scaleX(0.5) scaleY(0.45); }
+    100%  { opacity: 0; transform: scaleX(0.5) scaleY(0.45); }
+  }
+  .kn-shadowbase { animation-name: knShadow; }
+
+  /* -- orb copy (OUTCOME meter): lands just after the form settles -- */
+  @keyframes knMetry {
+    0%     { opacity: 0; transform: translate(-50%, calc(-50% + 7px));
+             animation-timing-function: cubic-bezier(0.34, 1.3, 0.4, 1); }
+    2%     { opacity: 0; transform: translate(-50%, calc(-50% + 7px));
+             animation-timing-function: cubic-bezier(0.34, 1.3, 0.4, 1); }
+    4.25%  { opacity: 1; transform: translate(-50%, -50%); }
+    17.2%  { opacity: 1; transform: translate(-50%, -50%);
+             animation-timing-function: cubic-bezier(0.5, 0, 0.75, 0.35); }
+    18.3%  { opacity: 0; transform: translate(-50%, calc(-50% - 7px)); }
+    18.5%  { opacity: 0; transform: translate(-50%, calc(-50% + 7px)); }
+    100%   { opacity: 0; transform: translate(-50%, calc(-50% + 7px)); }
+  }
+  .kn-orbcopy { animation-name: knMetry; }
+
+  /* -- role title + description: two-beat reveal (desc reuses via +80ms delay) -- */
+  @keyframes knCopy {
+    0%     { opacity: 0; transform: translateY(10px);
+             animation-timing-function: cubic-bezier(0.34, 1.3, 0.4, 1); }
+    2.25%  { opacity: 0; transform: translateY(10px);
+             animation-timing-function: cubic-bezier(0.34, 1.3, 0.4, 1); }
+    4.75%  { opacity: 1; transform: translateY(0px); }
+    17.2%  { opacity: 1; transform: translateY(0px);
+             animation-timing-function: cubic-bezier(0.5, 0, 0.75, 0.35); }
+    18.4%  { opacity: 0; transform: translateY(-6px); }
+    18.6%  { opacity: 0; transform: translateY(10px); }
+    100%   { opacity: 0; transform: translateY(10px); }
+  }
+  .kn-title, .kn-desc { animation-name: knCopy; animation-duration: 20s;
+    animation-timing-function: linear; animation-iteration-count: infinite; animation-fill-mode: both;
+    animation-delay: calc(var(--d)); }
+  .kn-desc { animation-delay: calc(var(--d) + 0.08s); }
+
+  /* -- component tag cascade (delay shifted per tag: +0.9 / 1.05 / 1.2s) -- */
+  @keyframes knTag {
+    0%    { opacity: 0; transform: translateY(8px);
+            animation-timing-function: cubic-bezier(0.34, 1.3, 0.4, 1); }
+    1.75% { opacity: 1; transform: translateY(0px); }
+    19%   { opacity: 1; transform: translateY(0px); }
+    20%   { opacity: 0; transform: translateY(8px); }
+    100%  { opacity: 0; transform: translateY(8px); }
+  }
+  .kn-tag { animation-name: knTag; }
+
+  /* -- idle float (4s breathing y-float on the form) -- */
+  @keyframes knFloat {
+    0%, 100% { transform: translateY(0px); }
+    50%      { transform: translateY(-10px); }
+  }
+  .kn-float { animation: knFloat 4s ease-in-out infinite; }
+
+  /* -- breathing ambient glow -- */
+  @keyframes knGlow {
+    0%, 100% { opacity: 0.55; transform: scale(1); }
+    50%      { opacity: 0.78; transform: scale(1.06); }
+  }
+  .kn-glow { animation: knGlow 5s ease-in-out infinite; }
+
+  /* -- conic sheen sweep (baked orb language) -- */
+  @keyframes knSheen {
+    0%   { transform: translate(-50%,-50%) rotate(0deg); }
+    100% { transform: translate(-50%,-50%) rotate(360deg); }
+  }
+  .kn-sheen { position: absolute; left: 50%; top: 50%; width: 175%; height: 175%;
+    transform: translate(-50%,-50%); mix-blend-mode: overlay; pointer-events: none;
+    background: conic-gradient(from 0deg, rgba(255,255,255,0) 0deg, rgba(255,255,255,0.24) 48deg, rgba(255,255,255,0) 96deg);
+    animation: knSheen 14s linear infinite; }
+
+  /* -- film grain (studio language, reused verbatim) -- */
+  .kn-grain { position: absolute; inset: 0; opacity: 0.14; mix-blend-mode: overlay; pointer-events: none;
+    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/><feColorMatrix type='matrix' values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 0.5 0'/></filter><rect width='160' height='160' filter='url(%23n)'/></svg>");
+    background-size: 160px 160px; }
+
+  /* -- pill ink + fill (hairline fills 0 -> 20% linear, in lockstep) -- */
+  @keyframes knPill {
+    98.4%  { background: #f4f4f5; color: #71717a; transform: scale(1);
+             animation-timing-function: cubic-bezier(0.45, 0, 0.55, 1); }
+    0%     { background: #17181c; color: #ffffff; transform: scale(1.035); }
+    19.9%  { background: #17181c; color: #ffffff; transform: scale(1.035); }
+    20%    { background: #f4f4f5; color: #71717a; transform: scale(1); }
+    21.2%  { background: #f4f4f5; color: #71717a; transform: scale(1);
+             animation-timing-function: cubic-bezier(0.45, 0, 0.55, 1); }
+    99.9%  { background: #f4f4f5; color: #71717a; transform: scale(1); }
+    100%   { background: #17181c; color: #ffffff; transform: scale(1.035); }
+  }
+  .kn-pill { animation-name: knPill; }
+  @keyframes knFill {
+    0%     { opacity: 1; transform: scaleX(0); }
+    20%    { opacity: 1; transform: scaleX(1); }
+    20.5%  { opacity: 0; transform: scaleX(1); }
+    20.8%  { opacity: 0; transform: scaleX(0); }
+    100%   { opacity: 0; transform: scaleX(0); }
+  }
+  .kn-pill-fill { animation-name: knFill; }
+
+  /* --d mapping (per persona): VP Sales -2.2s | RevOps -18.2s | Product Marketing -14.2s | Founders -10.2s | Sales -6.2s */
+
+  @media (prefers-reduced-motion: reduce) {
+    .kncyc, .kn-float, .kn-glow, .kn-sheen { animation: none !important; }
+  }
+</style>
+<style>
+  /* =========================================================
+     THE 5 SIGNATURE FORMS — shared baked-sphere shading language
+     (radial sphere shading at 32%/27%, inset shadow stack, conic
+     sheen sweep, film grain) with a distinct structure + silhouette
+     per persona.
+     ========================================================= */
+  .fm { position: absolute; overflow: hidden; }
+
+  /* -- 1. VP Sales: RADAR ORB -- 244px sphere + concentric SVG arcs */
+  .vp-arcs { position: absolute; left: -186px; top: -186px; width: 372px; height: 372px; z-index: 2;
+    overflow: visible; pointer-events: none; }
+  .vp-arc-a, .vp-arc-b, .vp-arc-c { transform-box: view-box; transform-origin: center; }
+  @keyframes arcSpin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+  .vp-arc-a { animation: arcSpin 26s linear infinite; }
+  .vp-arc-b { animation: arcSpin 17s linear infinite reverse; }
+  .vp-arc-c { animation: arcSpin 38s linear infinite; }
+  .fm-vp { left: -122px; top: -122px; width: 244px; height: 244px; border-radius: 50%; z-index: 3;
+    background:
+      radial-gradient(circle at 32% 27%, rgba(255,255,255,0.72) 0%, rgba(255,255,255,0) 22%),
+      radial-gradient(circle at 71% 82%, #F2652277 0%, rgba(255,255,255,0) 46%),
+      radial-gradient(circle at 30% 79%, rgba(255,255,255,0.16) 0%, rgba(255,255,255,0) 38%),
+      radial-gradient(circle at 50% 50%, #F26522 0%, #F26522EE 52%, #F26522AA 74%, #26120a 90%, #0d0703 100%);
+    box-shadow: inset -12px -18px 36px rgba(5,3,1,0.5), inset 10px 14px 30px rgba(255,255,255,0.14),
+      inset 3px 4px 16px rgba(255,255,255,0.22), 0 36px 72px -14px #F2652266, 0 16px 36px rgba(15,9,3,0.3); }
+
+  /* -- 2. RevOps: GRID MONOLITH -- 264x250 soft-cube column + tilting lattice */
+  .fm-ro { left: -118px; top: -130px; width: 236px; height: 260px; border-radius: 44px 44px 34px 34px; z-index: 3;
+    background:
+      radial-gradient(circle at 32% 10%, rgba(255,255,255,0.72) 0%, rgba(255,255,255,0) 30%),
+      radial-gradient(circle at 78% 94%, #10b98177 0%, rgba(255,255,255,0) 52%),
+      radial-gradient(circle at 30% 88%, rgba(255,255,255,0.12) 0%, rgba(255,255,255,0) 40%),
+      radial-gradient(circle at 50% -18%, #26c896 0%, #10b981EE 44%, #0aa166 64%, #07432e 86%, #020c08 100%);
+    box-shadow: inset -12px -18px 36px rgba(5,3,1,0.5), inset 10px 14px 30px rgba(255,255,255,0.14),
+      inset 3px 4px 16px rgba(255,255,255,0.22), 0 36px 72px -14px #10b98166, 0 16px 36px rgba(15,9,3,0.3); }
+  .ro-lattice { position: absolute; left: -30%; top: -45%; width: 160%; height: 190%; pointer-events: none;
+    background-image:
+      repeating-linear-gradient(90deg, rgba(255,255,255,0.11) 0px, rgba(255,255,255,0.11) 1px, transparent 1px, transparent 19px),
+      repeating-linear-gradient(0deg, rgba(255,255,255,0.1) 0px, rgba(255,255,255,0.1) 1px, transparent 1px, transparent 19px);
+    transform: perspective(520px) rotateX(56deg) scale(1.1);
+    animation: knLattice 9s linear infinite; }
+  @keyframes knLattice { from { background-position: 0px 0px; } to { background-position: 0px 48px; } }
+
+  /* -- 3. Product Marketing: GLASS LENS -- 312x186 ellipse + scanning beam */
+  .fm-pm { left: -156px; top: -93px; width: 312px; height: 186px; border-radius: 999px; z-index: 3;
+    background:
+      radial-gradient(ellipse 56% 66% at 30% 20%, rgba(255,255,255,0.6) 0%, rgba(255,255,255,0) 52%),
+      radial-gradient(ellipse 55% 90% at 76% 86%, #6366f177 0%, rgba(255,255,255,0) 60%),
+      radial-gradient(ellipse 44% 60% at 26% 88%, rgba(255,255,255,0.14) 0%, rgba(255,255,255,0) 55%),
+      radial-gradient(ellipse 88% 84% at 50% 50%, #6f72fc 0%, #6566f3 44%, #5255ec 64%, #1f2150 88%, #07072b 100%);
+    box-shadow: inset 0 2.5px 9px rgba(255,255,255,0.5), inset 0 -18px 30px rgba(5,3,1,0.46),
+      inset -10px -14px 30px rgba(5,3,1,0.4), inset 10px 12px 26px rgba(255,255,255,0.13),
+      0 34px 70px -14px #6366f166, 0 16px 36px rgba(15,9,3,0.3); }
+  .pm-beam { position: absolute; left: 50%; top: -22%; width: 104px; height: 144%; margin-left: -52px;
+    background: linear-gradient(90deg, rgba(255,255,255,0) 0%, rgba(255,255,255,0.5) 50%, rgba(255,255,255,0) 100%);
+    mix-blend-mode: overlay; pointer-events: none; animation: knBeam 3s linear infinite; }
+  @keyframes knBeam { 0% { transform: translateX(-176px); } 100% { transform: translateX(176px); } }
+
+  /* -- 4. Founders: CLUSTER -- 150px core orb + 3 minis on tilted elliptical rings */
+  .fm-fd-core { left: -75px; top: -75px; width: 150px; height: 150px; border-radius: 50%; z-index: 3; overflow: hidden;
+    background:
+      radial-gradient(circle at 32% 27%, rgba(255,255,255,0.72) 0%, rgba(255,255,255,0) 22%),
+      radial-gradient(circle at 71% 80%, #f59e0b77 0%, rgba(255,255,255,0) 44%),
+      radial-gradient(circle at 30% 79%, rgba(255,255,255,0.16) 0%, rgba(255,255,255,0) 38%),
+      radial-gradient(circle at 50% 50%, #f59e0b 0%, #f59e0bEE 52%, #e8930caa 74%, #4e2c04 90%, #1c0f02 100%);
+    box-shadow: inset -8px -12px 24px rgba(5,3,1,0.5), inset 7px 10px 20px rgba(255,255,255,0.16),
+      inset 2px 3px 10px rgba(255,255,255,0.22), 0 26px 52px -14px #f59e0b66, 0 12px 26px rgba(15,9,3,0.3); }
+  .fd-link { position: absolute; left: 50%; top: 50%; width: 0; height: 0; z-index: 4; }
+  .fd-ell-b { transform: scaleY(0.78); }
+  .fd-ell-c { transform: scaleY(0.88); }
+  .fd-orb { position: absolute; left: 0; top: 0; width: 0; height: 0; }
+  .fd-mini { position: absolute; width: 58px; height: 58px; border-radius: 50%; margin-left: -29px; margin-top: -29px;
+    background:
+      radial-gradient(circle at 32% 27%, rgba(255,255,255,0.85) 0%, rgba(255,255,255,0) 30%),
+      radial-gradient(circle at 50% 50%, #f59e0b 0%, #e8930cee 55%, #e8930caa 76%, #4e2c04 92%, #1c0f02 100%);
+    box-shadow: inset -5px -8px 14px rgba(5,3,1,0.5), inset 4px 6px 12px rgba(255,255,255,0.18),
+      0 12px 24px -8px #f59e0b66, 0 8px 16px rgba(15,9,3,0.28); }
+  .fd-a { animation: knOrbit 9s linear infinite; }
+  .fd-b { animation: knOrbit 13s linear infinite reverse; }
+  .fd-c { animation: knOrbit 17.5s linear infinite; }
+  .fd-mini-a { margin-left: 93px; }   /* ring radius 122 */
+  .fd-mini-b { margin-left: 127px; }  /* ring radius 156 */
+  .fd-mini-c { margin-left: 109px; }  /* ring radius 138 */
+  @keyframes knOrbit { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+  .fd-k {
+    position: absolute; width: 200px; height: 200px; left: -100px; top: -100px; border-radius: 50%;
+    border: 1px dashed rgba(245,158,11,0.28); }
+  .fd-k2 { width: 264px; height: 264px; left: -132px; top: -132px; border-color: rgba(245,158,11,0.14);
+    transform: scaleY(0.78); }
+  .fd-k3 { width: 232px; height: 232px; left: -116px; top: -116px; border-color: rgba(245,158,11,0.2);
+    transform: scaleY(0.88); }
+
+  /* -- 5. Sales: WAVEFORM SPHERE -- 220px sphere + two 3D sound bands -- */
+  .fm-sl { left: -110px; top: -110px; width: 220px; height: 220px; border-radius: 50%; z-index: 3;
+    background:
+      radial-gradient(circle at 32% 27%, rgba(255,255,255,0.72) 0%, rgba(255,255,255,0) 22%),
+      radial-gradient(circle at 71% 80%, #3b82f677 0%, rgba(255,255,255,0) 44%),
+      radial-gradient(circle at 30% 79%, rgba(255,255,255,0.16) 0%, rgba(255,255,255,0) 38%),
+      radial-gradient(circle at 50% 50%, #3b82f6 0%, #3b82f6EE 52%, #3b82f6AA 74%, #101d3a 90%, #050a17 100%);
+    box-shadow: inset -12px -18px 36px rgba(5,3,1,0.5), inset 10px 14px 30px rgba(255,255,255,0.14),
+      inset 3px 4px 16px rgba(255,255,255,0.22), 0 36px 72px -14px #3b82f666, 0 16px 36px rgba(15,9,3,0.3); }
+  .kf-link { position: absolute; left: 50%; top: 50%; width: 0; height: 0; transform-style: preserve-3d; z-index: 2; }
+  .kf-link-b { margin-top: -6px; transform: rotateZ(-16deg); }
+  .kf-spin { position: absolute; width: 0; height: 0; transform-style: preserve-3d; animation: knSpinY 9s linear infinite; }
+  .kf-ring { position: absolute; left: -165px; top: -165px; width: 330px; height: 330px; border-radius: 50%;
+    border: 2.5px solid rgba(59,130,246,0.85);
+    transform: rotateX(72deg); }
+
+  .kf-spin-b { animation-duration: 14s; animation-direction: reverse; }
+  .kf-ring-b { transform: rotateX(68deg); border: 1.5px solid rgba(147,197,253,0.6); }
+  @keyframes knSpinY { from { transform: rotateY(0deg); } to { transform: rotateY(360deg); } }
+</style>
+<style>
+  @media (prefers-reduced-motion: reduce) {
+    .kncyc { animation: none !important; }
+    .kn-float, .kn-glow, .kn-sheen { animation: none !important; }
+    .kn-layer, .kn-title, .kn-desc, .kn-tag { display: none; }
+    .pl-vp, .pl-t-vp { display: block; }
+    .kn-glow { animation: none !important; opacity: 0.6 !important; }
+    .kn-pill { background: #f4f4f5; color: #71717a; }
+    .pl-pill-vp { background: #17181c; color: #ffffff; }
+    .pl-pill-vp .kn-pill-fill { display: block; opacity: 1; transform: scaleX(0.62); }
+  }
+</style>
+</head>
+<body>
+  <div class="artboard">
+    <h1 class="kn-head">Whatever you close, Gauge works for you</h1>
+
+    <!-- pills are passive indicators; the active one darkens + hairline fills in lockstep -->
+    <div class="kn-subrow">
+      <div class="kn-pill kncyc pl-pill-sl" style="--d:-6.2s"><span>Sales</span><span class="kn-pill-track"><span class="kn-pill-fill kncyc" style="--d:-6.2s"></span></span></div>
+      <div class="kn-pill kncyc pl-pill-vp" style="--d:-2.2s"><span>VP Sales</span><span class="kn-pill-track"><span class="kn-pill-fill kncyc" style="--d:-2.2s"></span></span></div>
+      <div class="kn-pill kncyc pl-pill-ro" style="--d:-18.2s"><span>RevOps</span><span class="kn-pill-track"><span class="kn-pill-fill kncyc" style="--d:-18.2s"></span></span></div>
+      <div class="kn-pill kncyc pl-pill-pm" style="--d:-14.2s"><span>Product Marketing</span><span class="kn-pill-track"><span class="kn-pill-fill kncyc" style="--d:-14.2s"></span></span></div>
+      <div class="kn-pill kncyc pl-pill-fd" style="--d:-10.2s"><span>Founders</span><span class="kn-pill-track"><span class="kn-pill-fill kncyc" style="--d:-10.2s"></span></span></div>
+    </div>
+
+    <!-- orb stage: 5 stacked directed-handoff layers -->
+    <div class="kn-stage">
+
+      <!-- 1. VP SALES — radar orb -->
+      <div class="kn-layer pl-vp">
+        <span class="kn-shadowbase kncyc" style="--d:-2.2s"></span>
+        <div class="kn-anim kncyc" style="--d:-2.2s">
+          <div class="kn-float">
+            <div class="kn-glow" style="background: radial-gradient(circle at 50% 50%, #F2652288 0%, #F2652212 56%, transparent 72%); filter: blur(23px);"></div>
+            <div class="kn-scene">
+              <svg class="vp-arcs" width="372" height="372" viewBox="-186 -186 372 372" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <circle class="vp-arc-a" cx="0" cy="0" r="158" stroke="#F26522" stroke-opacity="0.9" stroke-width="3" stroke-linecap="round" stroke-dasharray="620 373"/>
+                <circle class="vp-arc-b" cx="0" cy="0" r="140" stroke="#F26522" stroke-opacity="0.5" stroke-width="2" stroke-linecap="round" stroke-dasharray="350 529"/>
+                <circle class="vp-arc-c" cx="0" cy="0" r="174" stroke="#F26522" stroke-opacity="0.28" stroke-width="1.75" stroke-linecap="round" stroke-dasharray="180 813"/>
+              </svg>
+              <div class="fm fm-vp"><span class="kn-sheen"></span><span class="kn-grain"></span></div>
+            </div>
+            <div class="kn-orbcopy kncyc" style="--d:-2.2s">
+              <span class="kn-eyebrow mono">OUTCOME</span>
+              <span class="kn-metric">+28%</span>
+              <span class="kn-metriclabel">Competitive win-rate lift</span>
+              <div class="kn-tags">
+                <span class="kn-tag kncyc" style="--d:calc(-2.2s + 0.9s)">Slack alerts</span>
+                <span class="kn-tag kncyc" style="--d:calc(-2.2s + 1.05s)">Team radar</span>
+                <span class="kn-tag kncyc" style="--d:calc(-2.2s + 1.2s)">Coach reps</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 2. REVOPS — grid monolith -->
+      <div class="kn-layer pl-ro">
+        <span class="kn-shadowbase kncyc" style="--d:-18.2s"></span>
+        <div class="kn-anim kncyc" style="--d:-18.2s">
+          <div class="kn-float">
+            <div class="kn-glow" style="background: radial-gradient(circle at 50% 50%, #10b98188 0%, #10b98112 56%, transparent 72%); filter: blur(23px);"></div>
+            <div class="kn-scene">
+              <div class="fm fm-ro"><div class="ro-lattice"></div><span class="kn-sheen"></span><span class="kn-grain"></span></div>
+            </div>
+            <div class="kn-orbcopy kncyc" style="--d:-18.2s">
+              <span class="kn-eyebrow mono">OUTCOME</span>
+              <span class="kn-metric">100%</span>
+              <span class="kn-metriclabel">CRM data completeness</span>
+              <div class="kn-tags">
+                <span class="kn-tag kncyc" style="--d:calc(-18.2s + 0.9s)">MEDDPICC fields</span>
+                <span class="kn-tag kncyc" style="--d:calc(-18.2s + 1.05s)">CRM hygiene</span>
+                <span class="kn-tag kncyc" style="--d:calc(-18.2s + 1.2s)">Zero chasing</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 3. PRODUCT MARKETING — glass lens -->
+      <div class="kn-layer pl-pm">
+        <span class="kn-shadowbase kncyc" style="--d:-14.2s"></span>
+        <div class="kn-anim kncyc" style="--d:-14.2s">
+          <div class="kn-float">
+            <div class="kn-glow" style="background: radial-gradient(circle at 50% 50%, #6366f188 0%, #6366f112 56%, transparent 72%); filter: blur(23px);"></div>
+            <div class="kn-scene">
+              <div class="fm fm-pm"><div class="pm-beam"></div><span class="kn-sheen"></span><span class="kn-grain"></span></div>
+            </div>
+            <div class="kn-orbcopy kncyc" style="--d:-14.2s">
+              <span class="kn-eyebrow mono">OUTCOME</span>
+              <span class="kn-metric">2.1s</span>
+              <span class="kn-metriclabel">Live battlecard trigger time</span>
+              <div class="kn-tags">
+                <span class="kn-tag kncyc" style="--d:calc(-14.2s + 0.9s)">Battlecards</span>
+                <span class="kn-tag kncyc" style="--d:calc(-14.2s + 1.05s)">Live trigger</span>
+                <span class="kn-tag kncyc" style="--d:calc(-14.2s + 1.2s)">Competitor named</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 4. FOUNDERS — orbit cluster -->
+      <div class="kn-layer pl-fd">
+        <span class="kn-shadowbase kncyc" style="--d:-10.2s"></span>
+        <div class="kn-anim kncyc" style="--d:-10.2s">
+          <div class="kn-float">
+            <div class="kn-glow" style="background: radial-gradient(circle at 50% 50%, #f59e0b88 0%, #f59e0b12 56%, transparent 72%); filter: blur(23px);"></div>
+            <div class="kn-scene">
+              <span class="fd-k fd-k2"></span>
+              <span class="fd-k fd-k3"></span>
+              <span class="fd-k"></span>
+              <div class="fm fm-fd-core"><span class="kn-sheen"></span><span class="kn-grain"></span></div>
+              <div class="fd-link fd-ell-b"><div class="fd-orb fd-b"><span class="fd-mini fd-mini-b"></span></div></div>
+              <div class="fd-link fd-ell-c"><div class="fd-orb fd-c"><span class="fd-mini fd-mini-c"></span></div></div>
+              <div class="fd-link"><div class="fd-orb fd-a"><span class="fd-mini fd-mini-a"></span></div></div>
+            </div>
+            <div class="kn-orbcopy kncyc" style="--d:-10.2s">
+              <span class="kn-eyebrow mono">OUTCOME</span>
+              <span class="kn-metric">90%</span>
+              <span class="kn-metriclabel">Cost reduction vs Gong minimums</span>
+              <div class="kn-tags">
+                <span class="kn-tag kncyc" style="--d:calc(-10.2s + 0.9s)">$9-29/seat</span>
+                <span class="kn-tag kncyc" style="--d:calc(-10.2s + 1.05s)">0 bots</span>
+                <span class="kn-tag kncyc" style="--d:calc(-10.2s + 1.2s)">No platform min</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 5. SALES — waveform sphere (true 3D sound bands) -->
+      <div class="kn-layer pl-sl">
+        <span class="kn-shadowbase kncyc" style="--d:-6.2s"></span>
+        <div class="kn-anim kncyc" style="--d:-6.2s">
+          <div class="kn-float">
+            <div class="kn-glow" style="background: radial-gradient(circle at 50% 50%, #3b82f688 0%, #3b82f612 56%, transparent 72%); filter: blur(23px);"></div>
+            <div class="kn-scene">
+              <div class="kf-link"><div class="kf-spin"><div class="kf-ring"></div></div></div>
+              <div class="kf-link kf-link-b"><div class="kf-spin kf-spin-b"><div class="kf-ring kf-ring-b"></div></div></div>
+              <div class="fm fm-sl"><span class="kn-grain"></span></div>
+            </div>
+            <div class="kn-orbcopy kncyc" style="--d:-6.2s">
+              <span class="kn-eyebrow mono">OUTCOME</span>
+              <span class="kn-metric">5 hrs/wk</span>
+              <span class="kn-metriclabel">Time saved on CRM admin</span>
+              <div class="kn-tags">
+                <span class="kn-tag kncyc" style="--d:calc(-6.2s + 0.9s)">0 bots</span>
+                <span class="kn-tag kncyc" style="--d:calc(-6.2s + 1.05s)">Auto CRM sync</span>
+                <span class="kn-tag kncyc" style="--d:calc(-6.2s + 1.2s)">Action items</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- role copy: two-beat reveal (title first, desc +80ms) -->
+    <div class="kn-copyrow">
+      <h3 class="kn-title pl-t-vp" style="--d:-2.2s">VP of Sales & CRO</h3>
+      <h3 class="kn-title pl-t-ro" style="--d:-18.2s">RevOps & Sales Ops</h3>
+      <h3 class="kn-title pl-t-pm" style="--d:-14.2s">Product Marketing & CI</h3>
+      <h3 class="kn-title pl-t-fd" style="--d:-10.2s">Founding Sales Teams</h3>
+      <h3 class="kn-title pl-t-sl" style="--d:-6.2s">Sales Reps (AEs)</h3>
+      <p class="kn-desc pl-t-vp" style="--d:-2.2s">Know the second Gong or Salesforce enters a pipeline deal. Gauge delivers instant Slack alerts and team radar analytics so you can coach reps before deals slip away.</p>
+      <p class="kn-desc pl-t-ro" style="--d:-18.2s">Automate MEDDPICC, BANT, and SPICED fields directly into Salesforce and HubSpot. No empty deal stages or missing economic buyers.</p>
+      <p class="kn-desc pl-t-pm" style="--d:-14.2s">You spend tens of thousands on battlecards that reps forget to open. Gauge surfaces your talking points right on their screen the second a competitor is named.</p>
+      <p class="kn-desc pl-t-fd" style="--d:-10.2s">Gong costs $1,400/rep/year with a $5,000 platform minimum. Gauge gives you 0-bot capture, battlecards, and CRM sync for flat $9 to $29/seat.</p>
+      <p class="kn-desc pl-t-sl" style="--d:-6.2s">Stop spending 45 minutes every evening typing summaries into HubSpot. The Chrome extension captures your call with 0 bots, extracts action items, and syncs to CRM in 60 seconds.</p>
+    </div>
+
+    <div class="kn-cta-row">
+      <div class="kn-cta">Explore features
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M2.5 7h8.2M7.4 3.6 10.8 7l-3.4 3.4" stroke="#ffffff" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </div>
+    </div>
+  </div>
+</body>
+</html>
