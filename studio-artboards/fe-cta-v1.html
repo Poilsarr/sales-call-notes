@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Extension CTA — V1 REC ORB</title>
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; }
+  :root{
+    --orange:#F26522; --green:#34d399;
+    --glass-hi:rgba(255,255,255,0.085); --glass-lo:rgba(255,255,255,0.018);
+    --mline:rgba(255,255,255,.09); --mono:"SF Mono",ui-monospace,Menlo,monospace;
+  }
+  body{ background:#fff; font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif; -webkit-font-smoothing:antialiased; }
+  .cregion{ width:540px; padding:34px; }
+
+  .island{ border-radius:24px; padding:30px 26px 24px; color:#fff; position:relative; overflow:hidden;
+    background:
+      radial-gradient(360px 220px at 50% -30%, rgba(242,101,34,.16), transparent 70%),
+      linear-gradient(180deg, var(--glass-hi), var(--glass-lo)),
+      linear-gradient(180deg,#141419,#0b0b0f);
+    border:1px solid var(--mline);
+    box-shadow:0 60px 120px rgba(19,19,22,.4), inset 0 1px 0 rgba(255,255,255,.09);
+    display:flex; flex-direction:column; align-items:center; }
+  .meta{ width:100%; display:flex; justify-content:space-between; font-family:var(--mono); font-size:8.5px; letter-spacing:.18em; color:#7d818c; text-transform:uppercase; }
+  .meta b{ color:#fb923c; font-weight:600; }
+
+  .orbwrap{ position:relative; width:190px; height:190px; margin:18px 0 14px; }
+  .ring{ position:absolute; inset:0; border-radius:50%; border:1px solid rgba(242,101,34,.32); }
+  .ring.r2{ inset:24px; border-color:rgba(242,101,34,.2); }
+  .core{ position:absolute; inset:44px; border-radius:50%; display:flex; align-items:center; justify-content:center;
+    background:radial-gradient(circle at 36% 30%, #ff8a50, #f26522 60%, #b23f0f);
+    box-shadow:0 24px 60px rgba(242,101,34,.5), inset 0 2px 6px rgba(255,255,255,.4), inset 0 -8px 14px rgba(150,50,0,.4); }
+  .core span{ font-family:var(--mono); font-size:13px; letter-spacing:.2em; color:#fff; font-weight:700; }
+  .core::after{ content:""; position:absolute; inset:0; border-radius:50%; border:1.5px solid rgba(255,255,255,.25); }
+  .breathe{ position:absolute; inset:18px; border-radius:50%; background:radial-gradient(circle, rgba(242,101,34,.22), transparent 70%); animation:pulse 3s ease-in-out infinite; }
+  @keyframes pulse{ 0%,100%{ opacity:.5; transform:scale(1); } 50%{ opacity:1; transform:scale(1.06); } }
+
+  .chips{ display:flex; gap:6px; flex-wrap:wrap; justify-content:center; }
+  .chip{ font-family:var(--mono); font-size:8.5px; letter-spacing:.14em; color:#c6c9d2; padding:6px 10px; border-radius:999px;
+    background:rgba(255,255,255,.045); border:1px solid rgba(255,255,255,.1); white-space:nowrap; text-transform:uppercase; }
+  .chip b{ width:5px; height:5px; border-radius:50%; background:var(--green); box-shadow:0 0 7px rgba(52,211,153,.7); display:inline-block; margin-right:6px; vertical-align:1px; }
+  .chip.hot{ color:#fdba74; border-color:rgba(242,101,34,.36); background:rgba(242,101,34,.09); }
+  .chip.hot b{ background:var(--orange); box-shadow:0 0 8px rgba(242,101,34,.8); }
+  .foot{ margin-top:16px; font-family:var(--mono); font-size:8px; letter-spacing:.16em; color:#6b707c; text-transform:uppercase; }
+</style>
+</head>
+<body>
+<div class="capture">
+  <div class="cregion">
+    <div class="island">
+      <p class="meta"><span><b>Record</b> · next call</span><span>same gauge account</span></p>
+      <div class="orbwrap" role="img" aria-label="A breathing record button ringed by the three promises the account already tracks">
+        <div class="breathe" aria-hidden="true"></div>
+        <div class="ring" aria-hidden="true"></div>
+        <div class="ring r2" aria-hidden="true"></div>
+        <div class="core"><span>REC</span></div>
+      </div>
+      <div class="chips">
+        <span class="chip"><b aria-hidden="true"></b>Recent calls</span>
+        <span class="chip hot"><b aria-hidden="true"></b>Health scores</span>
+        <span class="chip"><b aria-hidden="true"></b>Slack digest</span>
+      </div>
+      <p class="foot">Works the moment your key is saved</p>
+    </div>
+  </div>
+</div>
+</body>
+</html>

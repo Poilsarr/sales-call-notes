@@ -1,19 +1,7 @@
 import Link from "next/link";
-import {
-  ArrowRight,
-  Captions,
-  CheckCircle2,
-  Download,
-  Globe,
-  KeyRound,
-  ListChecks,
-  Mic,
-  MousePointerClick,
-  Share2,
-  ShieldCheck,
-  X,
-} from "lucide-react";
+import { ArrowRight, Download } from "lucide-react";
 import Nav from "@/components/nav";
+import { LiveDiv, LiveSection } from "@/components/extension-live";
 
 export const metadata = {
   title: "Chrome Extension — Gauge",
@@ -22,21 +10,22 @@ export const metadata = {
 };
 
 /**
- * Chrome extension demo page (Part 6B rebuild).
+ * Chrome extension demo page (Part 6B rebuild; obsidian restyle ported
+ * from studio-artboards/fe-*-v1.html).
  *
  * Every claim below mirrors the code it describes:
- *   - Install + key flow mirror extension/sidepanel.js (Bearer
- *     cn_live_ / cn_test_ minted via POST /api/v1/keys/exchange,
- *     kept in session memory only, Record / Stop / Send buttons).
+ *   - Install + key flow mirror extension/sidepanel.js (Bearer keys
+ *     minted via POST /api/v1/keys/exchange, kept in session memory
+ *     only, Record / Stop / Send buttons).
  *   - Recent calls mirror GET /api/v1/calls, deep-linking to
  *     /app/calls/{id} for the Done summary.
- *   - Permissions mirror extension/manifest.json plus the
- *     aria-live + tab-title scrape in extension/content.js.
- *   - Upload caps mirror the per-tier table in the upload and
- *     analyze routes (free 30 / pro 200 / business 500 MB).
+ *   - Permissions mirror extension/manifest.json plus the aria-live +
+ *     tab-title scrape in extension/content.js.
+ *   - Upload caps mirror the per-tier table in the upload and analyze
+ *     routes (Free 30MB / Pro 200MB / Business 500MB).
  *
- * No store listing is live, so the store button points at the
- * in-page #store-pending placeholder — never a store URL.
+ * No store listing is live, so the store card carries id="store-pending"
+ * and the page ships a direct .zip download instead — never a store URL.
  * Nothing captures before you press Record: capture starts on your
  * click and ships when you press Send.
  */
@@ -44,13 +33,13 @@ export default function ExtensionPage() {
   return (
     <>
       <Nav />
-      <main id="main" className="min-h-screen bg-[#EFEFEF] text-gray-900">
-        {/* HERO — 2-col: left copy + CTAs, right side-panel mockup */}
+      <main id="main" className="fex-page min-h-screen bg-[#EFEFEF] text-gray-900">
+        {/* HERO — copy left, live console island right (fe-hero artboard) */}
         <section className="relative min-h-[100dvh] flex flex-col">
           <div className="flex-1" />
           <div className="relative z-20 w-full max-w-[1440px] mx-auto px-5 sm:px-8 lg:px-12 pb-14 sm:pb-16 lg:pb-20">
             <div className="grid grid-cols-1 lg:grid-cols-[1.05fr_0.95fr] gap-10 lg:gap-16 items-end">
-              {/* LEFT */}
+              {/* LEFT — exact copy carried over from the previous build */}
               <div>
                 <p className="text-[13px] leading-[14px] text-gray-900 tracking-wide mb-5 sm:mb-8">
                   Gauge Chrome extension
@@ -88,824 +77,826 @@ export default function ExtensionPage() {
                 </div>
               </div>
 
-              {/* RIGHT — the side panel playing itself like a gif:
-                  idle → key saved → recording → uploading → done, on one
-                  shared 10s CSS cycle. Hover anywhere on it to freeze. */}
-              <div className="relative ex-hero-zone px-6 sm:px-12 py-8">
-                {/* floating studio chips */}
-                <div className="hidden lg:block absolute left-1 top-1 z-10 ex-float">
-                  <span className="ex-fchip">
-                    <Captions size={13} className="text-emerald-600" />
-                    aria-live captions
-                  </span>
-                </div>
-                <div className="hidden lg:block absolute right-1 top-[204px] z-10 ex-float ex-fd2">
-                  <span className="ex-fchip">
-                    <Mic size={13} className="text-[#F26522]" />
-                    32kbps Opus
-                  </span>
-                </div>
-                <div className="hidden lg:block absolute bottom-1 left-1/2 -translate-x-1/2 z-10">
-                  <span className="ex-fchip ex-float ex-fd4">
-                    <ShieldCheck size={13} className="text-emerald-600" />
-                    0 bots in room
-                  </span>
-                </div>
+              {/* RIGHT — the side panel playing itself: a real console
+                  still, REC pill blinking only while on screen */}
+              <LiveDiv className="relative flex justify-center lg:justify-end py-6 lg:py-10">
+                <div className="fex-island">
+                  <div className="fex-imeta">
+                    <span className="fex-ilabel">
+                      <b>Side panel</b> · what 60 seconds buys
+                    </span>
+                    <span className="fex-itag">Sample</span>
+                  </div>
 
-                <div className="doppel-outer">
-                  <div className="doppel-inner p-4 sm:p-5">
-                    {/* header — REC pill pops in at the recording phase */}
-                    <div className="flex items-center justify-between gap-2 mb-1">
-                      <div className="flex items-center gap-2">
-                        <span className="w-2.5 h-2.5 rounded-full bg-[#F26522]" />
-                        <p className="text-[12px] font-semibold text-gray-900">
-                          Gauge Recorder
-                        </p>
-                      </div>
-                      <span
-                        className="hx-recpill hx-a-pill hx-tl hx-cyc"
-                        aria-hidden="true"
-                      >
-                        <span className="hx-reddot rp-blink" />
+                  <div className="fex-panel">
+                    <div className="fex-phead">
+                      <span className="fex-orb">G</span>
+                      <span className="fex-pname">Gauge Recorder</span>
+                      <span className="fex-recpill">
+                        <i aria-hidden="true" />
                         REC 00:14
                       </span>
                     </div>
-                    <p className="text-[11px] text-gray-400 mb-4">
-                      The key stays in session memory only.
-                    </p>
 
-                    {/* API key card — Save presses itself, chip gains a saved ring */}
-                    <div className="rounded-xl border border-gray-200 bg-gray-50 p-3 mb-3">
-                      <p className="text-[11px] font-semibold text-gray-700 mb-2">
-                        API key
-                      </p>
-                      <div className="flex gap-2">
-                        <span className="hx-keyglow hx-tl hx-cyc flex-1 min-w-0 rounded-lg border border-gray-200 bg-white px-2.5 py-2 font-mono text-[11px] text-gray-400 truncate">
-                          cn_live_…
-                        </span>
-                        <span className="relative rounded-lg bg-gray-900 px-3 py-2 text-[11px] font-semibold text-white">
-                          Save
-                          <span
-                            className="hx-press hx-tl hx-a-press1 hx-cyc"
-                            aria-hidden="true"
-                          />
-                        </span>
-                      </div>
-                      <div className="relative mt-2 h-[14px]">
-                        <p className="hx-line hx-tl hx-u0 hx-cyc">
-                          No key saved for this session.
-                        </p>
-                        <p className="hx-line hx-line-em hx-tl hx-u1 hx-cyc">
-                          Key saved · session memory only.
-                        </p>
-                      </div>
-                    </div>
-
-                    {/* status stage — the panel's real statuses, in sequence */}
-                    <div className="rounded-xl border border-gray-200 bg-gray-50 p-3 mb-3">
-                      <p className="text-[11px] font-semibold text-gray-700 mb-2 flex items-center gap-1.5">
-                        <span className="inline-block w-2 h-2 rounded-full bg-gray-300" />
-                        Status
-                      </p>
-                      <div className="relative h-[50px]">
-                        <div className="hx-st hx-tl hx-u0 hx-cyc">
-                          <span className="hx-dot hx-dot-amber" />
-                          <p>Open a Meet / Teams / Zoom tab, then press Record.</p>
-                        </div>
-                        <div className="hx-st hx-tl hx-u2 hx-cyc">
-                          <span className="hx-dot hx-dot-emerald" />
-                          <p>Recording tab audio (32kbps Opus) + captions. Press Stop when done.</p>
-                        </div>
-                        <div className="hx-st hx-tl hx-u3 hx-cyc">
-                          <span className="hx-dot hx-dot-orange" />
-                          <p>Stopped. Uploading audio + finalizing captions…</p>
-                        </div>
-                        <div className="hx-st hx-tl hx-u4 hx-cyc">
-                          <span className="hx-dot hx-dot-emerald" />
-                          <p>Done - summary: /app/calls/8f3k</p>
-                        </div>
-                      </div>
-                      <div className="flex gap-2 mt-2">
-                        <span className="relative flex-1 rounded-lg bg-gray-900 px-2 py-2 text-center text-[11px] font-semibold text-white">
-                          Record
-                          <span
-                            className="hx-recon hx-a-recon hx-cyc"
-                            aria-hidden="true"
-                          />
-                        </span>
-                        <span className="flex-1 rounded-lg bg-gray-900 px-2 py-2 text-center text-[11px] font-semibold text-white">
-                          Stop
-                        </span>
-                        <span className="flex-1 rounded-lg bg-gray-900 px-2 py-2 text-center text-[11px] font-semibold text-white">
-                          Send
-                        </span>
-                      </div>
-                    </div>
-
-                    {/* Recent calls card — row highlights when the upload lands */}
-                    <div className="rounded-xl border border-gray-200 bg-gray-50 p-3">
-                      <p className="text-[11px] font-semibold text-gray-700 mb-2">
-                        Recent calls
-                      </p>
-                      <div className="relative rounded-lg border border-gray-200 bg-white px-2.5 py-2">
-                        <span
-                          className="hx-donehi hx-tl hx-a-w4 hx-cyc"
-                          aria-hidden="true"
-                        />
-                        <p className="relative text-[11px] text-gray-700 font-medium">
-                          Acme × Gauge — Discovery
-                        </p>
-                        <p className="relative text-[10px] text-gray-400 font-mono">
-                          score 82 · extension
-                        </p>
-                      </div>
-                    </div>
-
-                    {/* Footer status — the exact idle status from the panel */}
-                    <div className="mt-4 pt-3 border-t border-gray-100 flex items-center justify-between text-[10px] text-gray-400">
-                      <span className="flex items-center gap-1.5">
-                        <Captions className="w-3 h-3" />
-                        Live captions
+                    <div className="fex-keyrow">
+                      <span className="fex-keylabel">API key</span>
+                      <span className="fex-keychip">cn_live_…</span>
+                      <span className="fex-savebtn">
+                        Save<s aria-hidden="true" />
                       </span>
-                      <span className="flex items-center gap-1.5 text-[#F26522] font-medium">
-                        Tab audio is captured only while recording
+                    </div>
+
+                    <div
+                      className="fex-logstack"
+                      role="img"
+                      aria-label="Side panel log — captions recording in progress, upload finished line queued"
+                    >
+                      <span className="fex-log">
+                        <i aria-hidden="true" className="fex-dot-amb" />
+                        Open a Meet / Teams / Zoom tab, then press Record.
                       </span>
+                      <span className="fex-log">
+                        <i aria-hidden="true" className="fex-dot-em" />
+                        Key saved · session memory only.
+                      </span>
+                      <span className="fex-log fex-lit">
+                        <i aria-hidden="true" className="fex-dot-red" />
+                        Recording tab audio (32kbps Opus) + captions. Press
+                        Stop when done.
+                      </span>
+                      <span className="fex-log">
+                        <i aria-hidden="true" className="fex-dot-ora" />
+                        Done - summary: <span className="fex-q">/app/calls/8f3k</span>
+                      </span>
+                    </div>
+
+                    <div className="fex-actions">
+                      <span className="fex-act fex-actrec">Record</span>
+                      <span className="fex-act">Stop</span>
+                      <span className="fex-act">Send</span>
+                    </div>
+
+                    <div className="fex-recent">
+                      <p className="fex-rlabel">Recent calls</p>
+                      <div className="fex-rrow">
+                        <i aria-hidden="true" />
+                        <span className="fex-rname">Acme × Gauge — Discovery</span>
+                        <span className="fex-rmeta">score 82 · extension</span>
+                      </div>
                     </div>
                   </div>
+
+                  <div className="fex-divider" />
+                  <div className="fex-srcrow">
+                    <span className="fex-tok fex-tok-g">
+                      <b aria-hidden="true" />
+                      aria-live captions
+                    </span>
+                    <span className="fex-tok fex-tok-o">
+                      <b aria-hidden="true" />
+                      32kbps Opus
+                    </span>
+                    <span className="fex-tok fex-tok-d">0 bots in room</span>
+                  </div>
                 </div>
-              </div>            </div>
+              </LiveDiv>
+            </div>
           </div>
         </section>
 
-        {/* INSTALL — 3 steps */}
-        <section
-          id="install"
-          className="bg-white pt-16 sm:pt-20 lg:pt-28 pb-16 sm:pb-20 lg:pb-28 scroll-mt-20"
-        >
-          <div className="max-w-[1440px] mx-auto px-5 sm:px-8 lg:px-12">
-            <div className="max-w-2xl mb-10">
-              <p className="text-[11px] uppercase tracking-[0.18em] text-gray-400 mb-3">
-                Install
-              </p>
-              <h2 className="text-[clamp(1.5rem,4vw,2.6rem)] font-medium leading-[1.1] tracking-[-0.02em] text-gray-900 mb-3">
-                Install in three steps.
-              </h2>
-              <p className="text-gray-500 text-[14px]">
-                Load the extension unpacked, connect it with an API key, and
-                press Save. The key lives in session memory only — it never
-                touches disk.
-              </p>
-            </div>
+        {/* INSTALL — obsidian band, three cards (fe-install artboard) */}
+        <LiveSection id="install" className="fex-band fex-band-install">
+          <div className="fex-grain" aria-hidden="true" />
+          <div className="fex-inner">
+            <p className="fex-eyebrow">Install</p>
+            <h2 className="fex-h2">
+              Install in three steps.
+              <br />
+              <span className="fex-soft">No store visit.</span>
+            </h2>
+            <p className="fex-sub">
+              chrome://extensions · developer mode · session-memory key
+            </p>
 
-            <ol className="grid grid-cols-1 md:grid-cols-3 gap-4 list-none">
-              <li className="doppel-outer transition-transform duration-300 hover:-translate-y-1">
-                <div className="doppel-inner p-6 sm:p-8 h-full flex flex-col">
-                  <div className="rounded-xl overflow-hidden mb-5">
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img
-                      src="/studio/gauge_ext_step_unzip.jpg"
-                      alt="The gauge-extension-1.0.0.zip archive unzipping into a folder of extension files"
-                      className="block w-full"
-                      loading="lazy"
-                    />
-                  </div>
-                  <div className="flex items-center justify-between mb-2">
-                    <p className="text-[11px] font-mono text-gray-400 tracking-wider">
-                      STEP 1
-                    </p>
-                    <Download
-                      size={15}
-                      className="text-[#F26522]"
-                      strokeWidth={1.75}
-                    />
-                  </div>
-                  <h3 className="text-[15px] font-semibold tracking-tight text-gray-900 mb-2">
-                    Download &amp; Unzip
-                  </h3>
-                  <p className="text-[13px] text-gray-500 leading-relaxed mb-4">
-                    Download the official extension archive (.zip) and extract it to a folder on your computer.
-                  </p>
-                  <a
-                    href="/gauge-extension-1.0.0.zip"
-                    download="gauge-extension-1.0.0.zip"
-                    className="mt-auto inline-flex items-center justify-center gap-2 bg-gray-900 hover:bg-black text-white text-[12px] font-medium rounded-lg px-4 py-2.5 transition-colors shadow-sm"
-                  >
-                    <Download size={14} />
-                    <span>Download v1.0.0 (.zip)</span>
-                  </a>
+            <div className="fex-trio">
+              {/* 01 — download and unzip */}
+              <article className="fex-pcard">
+                <div className="fex-prole">
+                  <span className="fex-stepn">
+                    <b>STEP 1</b> · files out
+                  </span>
+                  <span className="fex-ftag">v1.0.0</span>
                 </div>
-              </li>
-
-              <li id="store-pending" className="doppel-outer scroll-mt-24 transition-transform duration-300 hover:-translate-y-1">
-                <div className="doppel-inner p-6 sm:p-8 h-full flex flex-col">
-                  <div className="rounded-xl overflow-hidden mb-5">
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img
-                      src="/studio/gauge_ext_step_chrome.jpg"
-                      alt="chrome://extensions with Developer mode toggled on and the Gauge extension loaded unpacked"
-                      className="block w-full"
-                      loading="lazy"
-                    />
+                <div
+                  className="fex-scene"
+                  role="img"
+                  aria-label="The extension zip extracting into a folder with three real files"
+                >
+                  <div className="fex-sbody">
+                    <div className="fex-ziprow">
+                      <span className="fex-ztile">
+                        <i aria-hidden="true">ZIP</i>
+                        gauge-extension-1.0.0.zip
+                      </span>
+                      <div className="fex-folder">
+                        <div className="fex-fhead">
+                          <i aria-hidden="true" />
+                          unzipped
+                        </div>
+                        <div className="fex-frow">
+                          <s aria-hidden="true" />
+                          manifest.json
+                          <span className="fex-ftag">MV3</span>
+                        </div>
+                        <div className="fex-frow fex-frowjs">
+                          <s aria-hidden="true" />
+                          sidepanel.js
+                          <span className="fex-ftag">REC</span>
+                        </div>
+                        <div className="fex-frow fex-frowjs">
+                          <s aria-hidden="true" />
+                          content.js
+                          <span className="fex-ftag">SCRAPER</span>
+                        </div>
+                      </div>
+                    </div>
+                    <div className="fex-splitline" aria-hidden="true" />
                   </div>
-                  <div className="flex items-center justify-between mb-2">
-                    <p className="text-[11px] font-mono text-gray-400 tracking-wider">
-                      STEP 2
-                    </p>
-                    <Globe
-                      size={15}
-                      className="text-[#F26522]"
-                      strokeWidth={1.75}
-                    />
-                  </div>
-                  <h3 className="text-[15px] font-semibold tracking-tight text-gray-900 mb-2">
-                    Load unpacked in Chrome
-                  </h3>
-                  <p className="text-[13px] text-gray-500 leading-relaxed mb-3">
-                    Open{" "}
-                    <code className="px-1.5 py-0.5 bg-gray-100 rounded text-[12px] font-mono text-gray-800">
-                      chrome://extensions
-                    </code>{" "}
-                    in your browser, turn ON <strong>Developer mode</strong> (top right toggle), click <strong>Load unpacked</strong>, and select the extracted folder.
-                  </p>
-                  <p className="mt-auto text-[11px] text-gray-400">
-                    Works on Google Chrome, Brave, Arc, Edge, and all Chromium browsers.
-                  </p>
                 </div>
-              </li>
+                <h3 className="fex-ttl">Download &amp; Unzip</h3>
+                <p className="fex-subline">
+                  The archive carries the MV3 manifest, the sidepanel recorder,
+                  and the caption scraper. <b>Nothing phones home.</b>
+                </p>
+                <a
+                  className="fex-scrollink"
+                  href="/gauge-extension-1.0.0.zip"
+                  download="gauge-extension-1.0.0.zip"
+                >
+                  Download v1.0.0 (.zip)
+                </a>
+              </article>
 
-              <li className="doppel-outer transition-transform duration-300 hover:-translate-y-1">
-                <div className="doppel-inner p-6 sm:p-8 h-full flex flex-col">
-                  <div className="rounded-xl overflow-hidden mb-5">
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img
-                      src="/studio/gauge_ext_step_connect.jpg"
-                      alt="The Gauge Recorder side panel saving an API key and connecting to the Gauge account"
-                      className="block w-full"
-                      loading="lazy"
-                    />
-                  </div>
-                  <div className="flex items-center justify-between mb-2">
-                    <p className="text-[11px] font-mono text-gray-400 tracking-wider">
-                      STEP 3
-                    </p>
-                    <KeyRound
-                      size={15}
-                      className="text-[#F26522]"
-                      strokeWidth={1.75}
-                    />
-                  </div>
-                  <h3 className="text-[15px] font-semibold tracking-tight text-gray-900 mb-2">
-                    Connect &amp; Record
-                  </h3>
-                  <p className="text-[13px] text-gray-500 leading-relaxed mb-4">
-                    Open the Gauge side panel in your browser, click <strong>Connect Gauge Account</strong> for zero-friction auto-sync (or paste an API key from Settings), join your meeting, and click <strong>Record</strong>.
-                  </p>
-                  <Link
-                    href="/extension/connect"
-                    className="mt-auto inline-flex items-center gap-1.5 text-[12px] text-[#F26522] hover:text-[#e05a1a] font-semibold"
-                  >
-                    <span>Check connection status</span>
-                    <ArrowRight size={13} />
-                  </Link>
+              {/* 02 — load unpacked */}
+              <article className="fex-pcard" id="store-pending">
+                <div className="fex-prole">
+                  <span className="fex-stepn">
+                    <b>STEP 2</b> · unpacked
+                  </span>
+                  <span className="fex-ftag">chromium</span>
                 </div>
-              </li>
-            </ol>
-          </div>
-        </section>
-
-        {/* DEMO — 60-second script, steps 1–6 */}
-        <section
-          id="demo"
-          className="bg-[#EFEFEF] pt-16 sm:pt-20 lg:pt-28 pb-16 sm:pb-20 lg:pb-28 scroll-mt-20"
-        >
-          <div className="max-w-[1440px] mx-auto px-5 sm:px-8 lg:px-12">
-            <div className="max-w-2xl mb-14">
-              <p className="text-[11px] uppercase tracking-[0.18em] text-gray-400 mb-3">
-                Demo script
-              </p>
-              <h2 className="text-[clamp(1.5rem,4vw,3rem)] font-medium leading-[1.1] tracking-[-0.02em] text-gray-900 mb-3">
-                The 60-second demo.
-              </h2>
-              <p className="text-gray-500 text-[14px]">
-                Six steps, using the exact labels from the side panel: Record,
-                Stop, Send, and the Done summary at /app/calls/{`{id}`}.
-              </p>
-            </div>
-
-            {/* Self-playing replay: the side panel walks through all six steps
-                like a gif (18s cycle, 3s per phase) while the matching step card
-                below lifts and rings orange in sync. Hover the zone to freeze. */}
-            <div className="ex-demo-zone">
-              <div className="ex-stage rounded-3xl bg-[#f7f3ee]">
-                <div className="ex-abs ex-tint-lav" aria-hidden="true" />
-                <div className="ex-abs ex-tint-blush" aria-hidden="true" />
-                <div className="ex-abs ex-tint-peach" aria-hidden="true" />
-                <div className="ex-abs ex-glow-core" aria-hidden="true" />
-
-                <div className="relative z-10 grid grid-cols-1 lg:grid-cols-[300px_minmax(0,430px)] justify-center gap-8 lg:gap-14 px-6 sm:px-10 py-10 sm:py-14">
-                  {/* step rail */}
-                  <aside className="rp-rail" aria-hidden="true">
-                    <div className="rp-rail-head font-mono">
-                      <span className="rp-head-dot" />
-                      60-SECOND REPLAY
-                      <span className="rp-head-loop font-mono">AUTO-LOOP</span>
-                    </div>
-
-                    <div className="rp-row rp-row--base rp-cyc rp-tl rp-a-liftw ex-d0">
-                      <span className="rp-glow rp-cyc rp-tl rp-a-phasew ex-d0" />
-                      <span className="rp-pill rp-cyc rp-tl rp-a-phasew ex-d0" />
-                      <span className="rp-bar rp-cyc rp-tl rp-a-barw ex-d0" />
-                      <span className="rp-num font-mono rp-cyc rp-tl rp-a-inkw ex-d0">01</span>
-                      <span className="rp-label rp-cyc rp-tl rp-a-inkdw ex-d0">Open the tab</span>
-                    </div>
-                    <div className="rp-row rp-cyc rp-tl rp-a-lift ex-d1">
-                      <span className="rp-glow rp-cyc rp-tl ex-d1" />
-                      <span className="rp-pill rp-cyc rp-tl ex-d1" />
-                      <span className="rp-bar rp-cyc rp-tl rp-a-bar ex-d1" />
-                      <span className="rp-num font-mono rp-cyc rp-tl rp-a-ink ex-d1">02</span>
-                      <span className="rp-label rp-cyc rp-tl rp-a-inkd ex-d1">Save the key</span>
-                    </div>
-                    <div className="rp-row rp-cyc rp-tl rp-a-lift ex-d2">
-                      <span className="rp-glow rp-cyc rp-tl ex-d2" />
-                      <span className="rp-pill rp-cyc rp-tl ex-d2" />
-                      <span className="rp-bar rp-cyc rp-tl rp-a-bar ex-d2" />
-                      <span className="rp-num font-mono rp-cyc rp-tl rp-a-ink ex-d2">03</span>
-                      <span className="rp-label rp-cyc rp-tl rp-a-inkd ex-d2">Press Record</span>
-                    </div>
-                    <div className="rp-row rp-cyc rp-tl rp-a-lift ex-d3">
-                      <span className="rp-glow rp-cyc rp-tl ex-d3" />
-                      <span className="rp-pill rp-cyc rp-tl ex-d3" />
-                      <span className="rp-bar rp-cyc rp-tl rp-a-bar ex-d3" />
-                      <span className="rp-num font-mono rp-cyc rp-tl rp-a-ink ex-d3">04</span>
-                      <span className="rp-label rp-cyc rp-tl rp-a-inkd ex-d3">Stop + Send</span>
-                    </div>
-                    <div className="rp-row rp-cyc rp-tl rp-a-lift ex-d4">
-                      <span className="rp-glow rp-cyc rp-tl ex-d4" />
-                      <span className="rp-pill rp-cyc rp-tl ex-d4" />
-                      <span className="rp-bar rp-cyc rp-tl rp-a-bar ex-d4" />
-                      <span className="rp-num font-mono rp-cyc rp-tl rp-a-ink ex-d4">05</span>
-                      <span className="rp-label rp-cyc rp-tl rp-a-inkd ex-d4">Done summary</span>
-                    </div>
-                    <div className="rp-row rp-cyc rp-tl rp-a-lift ex-d5">
-                      <span className="rp-glow rp-cyc rp-tl ex-d5" />
-                      <span className="rp-pill rp-cyc rp-tl ex-d5" />
-                      <span className="rp-bar rp-cyc rp-tl rp-a-bar ex-d5" />
-                      <span className="rp-num font-mono rp-cyc rp-tl rp-a-ink ex-d5">06</span>
-                      <span className="rp-label rp-cyc rp-tl rp-a-inkd ex-d5">Slack digest</span>
-                    </div>
-                  </aside>
-
-                  {/* the side panel, replaying the exact six states */}
-                  <section className="ex-glass rp-panel" aria-hidden="true">
-                    <div className="ex-sheen" />
-                    <div className="ex-edgeglow" />
-
-                    <header className="rp-head">
-                      <span className="rp-orb">G</span>
-                      <div className="rp-head-copy">
-                        <h3>Gauge Recorder</h3>
-                        <p>The key stays in session memory only.</p>
-                      </div>
-                    </header>
-
-                    <div className="rp-keyrow">
-                      <span className="rp-keylabel font-mono">API KEY</span>
-                      <span className="rp-keychip font-mono">cn_live_…</span>
-                      <span className="rp-btn rp-save rp-cyc rp-tl rp-a-press ex-d1">
-                        <span className="rp-btn-t">Save</span>
-                        <span className="rp-press rp-cyc rp-tl ex-d1" />
-                      </span>
-                    </div>
-
-                    <div className="rp-status">
-                      <div className="rp-st rp-st-amber rp-st--base rp-cyc rp-tl rp-a-upw ex-d0">
-                        <span className="rp-dot rp-dot-amber rp-blink" />
-                        <p>Open a Meet / Teams / Zoom tab, then press Record.</p>
-                      </div>
-                      <div className="rp-st rp-st-emerald rp-cyc rp-tl rp-a-up ex-d1">
-                        <span className="rp-dot rp-dot-emerald" />
-                        <p>Key saved · session memory only.</p>
-                      </div>
-                      <div className="rp-st rp-st-emerald rp-cyc rp-tl rp-a-up ex-d2">
-                        <p>
-                          <span className="rp-recpill font-mono">
-                            <span className="rp-dot rp-dot-red rp-blink" />
-                            REC 00:14
-                          </span>
-                          Recording tab audio (32kbps Opus) + captions. Press Stop when done.
-                        </p>
-                      </div>
-                      <div className="rp-st rp-st-neutral rp-cyc rp-tl rp-a-up ex-d3">
-                        <span className="rp-dot rp-dot-orange rp-blink" />
-                        <p>Stopped. Uploading audio + finalizing captions…</p>
-                      </div>
-                      <div className="rp-st rp-st-emerald rp-cyc rp-tl rp-a-up2 ex-d4">
-                        <span className="rp-dot rp-dot-emerald" />
-                        <p>Done - summary: /app/calls/8f3k</p>
-                      </div>
-                    </div>
-
-                    <div className="rp-actions">
-                      <span className="rp-btn rp-cyc">
-                        <span className="rp-btn-t">Record</span>
-                        <span className="rp-recon rp-cyc rp-a-recon ex-d2" />
-                      </span>
-                      <span className="rp-btn">
-                        <span className="rp-btn-t">Stop</span>
-                      </span>
-                      <span className="rp-btn rp-cyc rp-tl rp-a-press ex-d3">
-                        <span className="rp-btn-t">Send</span>
-                        <span className="rp-press rp-cyc rp-tl ex-d3" />
-                      </span>
-                    </div>
-
-                    <div className="rp-rule" />
-                    <div className="rp-seclabel font-mono">RECENT CALLS</div>
-
-                    <div className="rp-recent">
-                      <span className="rp-recent-hi rp-cyc rp-tl rp-a-hi2 ex-d4" />
-                      <span className="rp-recent-name">Acme × Gauge — Discovery</span>
-                      <span className="rp-recent-score font-mono rp-cyc rp-tl rp-a-inks ex-d4">
-                        score 82 · extension
-                      </span>
-                    </div>
-
-                    <div className="rp-digest-slot">
-                      <div className="rp-digest rp-cyc rp-tl rp-a-pop ex-d5">
-                        <svg className="rp-slack" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-                          <rect x="8.9" y="2" width="3" height="9.4" rx="1.5" fill="#36C5F0" />
-                          <rect x="12.6" y="12.6" width="9.4" height="3" rx="1.5" fill="#2EB67D" />
-                          <rect x="12.1" y="12.6" width="3" height="9.4" rx="1.5" fill="#ECB22E" />
-                          <rect x="2" y="8.4" width="9.4" height="3" rx="1.5" fill="#E01E5A" />
-                        </svg>
-                        <p>#sales · digest sent · score 82</p>
-                      </div>
-                    </div>
-                  </section>
-                </div>
-
-                <div className="ex-abs ex-vignette" aria-hidden="true" />
-              </div>
-            </div>
-
-            <ol className="grid grid-cols-1 md:grid-cols-3 gap-4 list-none mt-4">
-              {[
-                {
-                  n: "01",
-                  title: "Open a meeting tab with captions on",
-                  body: "Join any Meet, Teams, or Zoom call and switch captions on. The panel status reads “Open a Meet / Teams / Zoom tab, then press Record.” With captions off there is nothing for the panel to read.",
-                  icon: (
-                    <Captions
-                      size={18}
-                      className="text-[#F26522]"
-                      strokeWidth={1.5}
-                    />
-                  ),
-                },
-                {
-                  n: "02",
-                  title: "Paste your key and press Save",
-                  body: "Paste a cn_live_… or cn_test_… key into the API key field and press Save. The key is required for upload and is kept in session memory only.",
-                  icon: (
-                    <KeyRound
-                      size={18}
-                      className="text-[#F26522]"
-                      strokeWidth={1.5}
-                    />
-                  ),
-                },
-                {
-                  n: "03",
-                  title: "Press Record and talk",
-                  body: "Press Record. The dot turns red and the panel reports “Recording tab audio (32kbps Opus) + captions. Press Stop when done.” Tab audio is captured only while recording.",
-                  icon: (
-                    <Mic size={18} className="text-[#F26522]" strokeWidth={1.5} />
-                  ),
-                },
-                {
-                  n: "04",
-                  title: "Press Stop, then Send",
-                  body: "Press Stop — the panel shows “Stopped. Uploading audio + finalizing captions…” — then press Send to finalize the captions for the meeting.",
-                  icon: (
-                    <MousePointerClick
-                      size={18}
-                      className="text-[#F26522]"
-                      strokeWidth={1.5}
-                    />
-                  ),
-                },
-                {
-                  n: "05",
-                  title: "Open the Done summary",
-                  body: "When the upload lands, the panel reports “Done - summary:” with a link to /app/calls/{id}. The same call appears under Recent calls, loaded via GET /api/v1/calls, with its health score in the row meta.",
-                  icon: (
-                    <ListChecks
-                      size={18}
-                      className="text-[#F26522]"
-                      strokeWidth={1.5}
-                    />
-                  ),
-                },
-                {
-                  n: "06",
-                  title: "Share the digest",
-                  body: "Open the call page to forward the summary. The Slack digest carries the same summary plus the health score, so the team sees the outcome without opening the dashboard.",
-                  icon: (
-                    <Share2
-                      size={18}
-                      className="text-[#F26522]"
-                      strokeWidth={1.5}
-                    />
-                  ),
-                },
-              ].map((step, i) => (
-                <li key={step.n} className="doppel-outer relative">
-                  <span
-                    aria-hidden="true"
-                    className={`ex-cardhi rp-cyc rp-tl ${i === 0 ? "rp-a-phasew ex-d0" : `rp-a-phase ex-d${i}`}`}
-                  />
-                  <div
-                    className={`doppel-inner p-6 sm:p-8 h-full rp-cyc rp-tl ${i === 0 ? "rp-a-liftw ex-d0" : `rp-a-lift ex-d${i}`}`}
-                  >
-                    <div className="flex items-center gap-3 mb-5">
-                      <div className="w-10 h-10 rounded-xl bg-[#F26522]/10 flex items-center justify-center">
-                        {step.icon}
-                      </div>
-                      <span
-                        className={`text-[11px] font-mono tracking-wider rp-cyc rp-tl ${i === 0 ? "rp-a-inkw ex-d0" : `rp-a-ink ex-d${i}`}`}
+                <div
+                  className="fex-scene"
+                  role="img"
+                  aria-label="chrome://extensions with Developer mode on and Load unpacked waiting for a folder"
+                >
+                  <div className="fex-sbody">
+                    <div className="fex-urlbar">
+                      <svg
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="#8b8f9a"
+                        strokeWidth="2"
+                        aria-hidden="true"
                       >
-                        STEP {step.n}
+                        <circle cx="11" cy="11" r="7" />
+                        <path d="m20 20-3.5-3.5" />
+                      </svg>
+                      <span>chrome://extensions</span>
+                      <span className="fex-urllock">built-in</span>
+                    </div>
+                    <div className="fex-devrow">
+                      <span className="fex-devlabel">Developer mode</span>
+                      <span className="fex-toggle">
+                        <u>ON</u>
                       </span>
                     </div>
-                    <h3 className="text-[15px] font-semibold tracking-tight text-gray-900 mb-2">
-                      {step.title}
-                    </h3>
-                    <p className="text-[13px] text-gray-500 leading-relaxed">
-                      {step.body}
-                    </p>
+                    <div className="fex-loadrow">
+                      <span className="fex-loadchip">
+                        <i aria-hidden="true" />
+                        Load unpacked
+                      </span>
+                      <span className="fex-loadmark">folder picker</span>
+                    </div>
                   </div>
-                </li>
-              ))}
-            </ol>
-          </div>
-        </section>
+                </div>
+                <h3 className="fex-ttl">Load unpacked in Chrome</h3>
+                <p className="fex-subline">
+                  Toggle <b>Developer mode</b>, point{" "}
+                  <code>Load unpacked</code> at the unzipped folder. Works on
+                  Chrome, Brave, Arc, Edge.
+                </p>
+              </article>
 
-        {/* PERMISSIONS — truth table */}
-        <section className="bg-white pt-16 sm:pt-20 lg:pt-28 pb-16 sm:pb-20 lg:pb-28">
-          <div className="max-w-[1440px] mx-auto px-5 sm:px-8 lg:px-12">
-            <div className="max-w-2xl mb-14">
-              <p className="text-[11px] uppercase tracking-[0.18em] text-gray-400 mb-3">
-                Permissions
-              </p>
-              <h2 className="text-[clamp(1.5rem,4vw,2.6rem)] font-medium leading-[1.1] tracking-[-0.02em] text-gray-900 mb-3">
-                What the extension can see.
+              {/* 03 — key in */}
+              <article className="fex-pcard">
+                <div className="fex-prole">
+                  <span className="fex-stepn">
+                    <b>STEP 3</b> · key in
+                  </span>
+                  <span className="fex-ftag">session only</span>
+                </div>
+                <div
+                  className="fex-scene"
+                  role="img"
+                  aria-label="The side panel saving an API key — verdict line confirms session memory storage"
+                >
+                  <div className="fex-sbody">
+                    <div className="fex-keyrow">
+                      <span className="fex-keychip">cn_live_…</span>
+                      <span className="fex-savebtn">
+                        Save<s aria-hidden="true" />
+                      </span>
+                    </div>
+                    <div className="fex-verdict">
+                      <i aria-hidden="true" />
+                      <span>Key saved · session memory only.</span>
+                    </div>
+                    <div className="fex-paneledge">
+                      <b aria-hidden="true" />
+                      side panel
+                      <span className="fex-arrow" aria-hidden="true" />
+                      <span>gauge account</span>
+                    </div>
+                  </div>
+                </div>
+                <h3 className="fex-ttl">Connect &amp; Record</h3>
+                <p className="fex-subline">
+                  Paste a key or auto-connect the account, then hit{" "}
+                  <b>Record</b>. The panel reads captions —{" "}
+                  <b>no bot joins the room.</b>
+                </p>
+                <Link className="fex-scrollink" href="/extension/connect">
+                  Check connection status →
+                </Link>
+              </article>
+            </div>
+          </div>
+        </LiveSection>
+
+        {/* DEMO — obsidian band, six plates (fe-demo artboard) */}
+        <LiveSection id="demo" className="fex-band fex-band-demo">
+          <div className="fex-grain" aria-hidden="true" />
+          <div className="fex-inner">
+            <div className="fex-head">
+              <p className="fex-eyebrow">Demo script</p>
+              <h2 className="fex-h2">
+                The 60-second demo.
+                <br />
+                <span className="fex-soft">Four buttons. Watch them stack.</span>
               </h2>
-              <p className="text-gray-500 text-[14px]">
-                The scraper reads only live-caption regions and the tab title
-                on meeting pages. Capture starts on your Record click and the
-                stream is released on Stop.
+              <p className="fex-sub">
+                Every label below is verbatim from the side panel
               </p>
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-[0.85fr_1.15fr] gap-6 lg:gap-10 items-start">
-              <div className="rounded-2xl overflow-hidden transition-transform duration-300 hover:-translate-y-1">
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img
-                  src="/studio/gauge_ext_permissions.jpg"
-                  alt="A meeting window where only the tab title and the live captions are bracketed as captured, with shields over the microphone, camera, and other tabs"
-                  className="block w-full"
-                  loading="lazy"
-                />
+            <div className="fex-vocab">
+              <span className="fex-vtok fex-vtok-hot">Record</span>
+              <span className="fex-vsep" aria-hidden="true">·</span>
+              <span className="fex-vtok">Stop</span>
+              <span className="fex-vsep" aria-hidden="true">·</span>
+              <span className="fex-vtok">Send</span>
+              <span className="fex-vsep" aria-hidden="true">·</span>
+              <span className="fex-vtok">Recent calls</span>
+              <span className="fex-vsep" aria-hidden="true">·</span>
+              <span className="fex-vtok" style={{ color: "#6ee7b7" }}>
+                32kbps opus
+              </span>
+            </div>
+
+            <div className="fex-demogrid">
+              {/* 01 — captions on */}
+              <article className="fex-platec">
+                <div className="fex-chead">
+                  <span className="fex-stepn">
+                    <b>STEP 01</b>
+                  </span>
+                  <span className="fex-scap">captions on</span>
+                </div>
+                <div
+                  className="fex-scene"
+                  role="img"
+                  aria-label="A meeting tab with live captions running — the panel needs captions to hear"
+                >
+                  <div className="fex-sbody">
+                    <div className="fex-caprow">
+                      <span className="fex-cc">CC</span>
+                      <span
+                        className="fex-capline fex-capline-hot"
+                        style={{ width: "58%" }}
+                      />
+                      <span className="fex-capline" style={{ width: "26%" }} />
+                      <span className="fex-limelabel">live</span>
+                    </div>
+                    <div className="fex-caprow">
+                      <span className="fex-cc" style={{ opacity: 0.45 }}>
+                        CC
+                      </span>
+                      <span className="fex-capline" style={{ width: "44%" }} />
+                      <span className="fex-capline" style={{ width: "34%" }} />
+                      <span className="fex-limelabel">meet tab</span>
+                    </div>
+                    <div className="fex-caprow" style={{ borderStyle: "dashed" }}>
+                      <span className="fex-limelabel" style={{ marginLeft: 0 }}>
+                        tab title
+                      </span>
+                      <span className="fex-capline" style={{ width: "52%" }} />
+                      <span className="fex-limelabel">call name</span>
+                    </div>
+                  </div>
+                </div>
+                <p className="fex-ttl-plate">Open a meeting tab with captions on</p>
+                <p className="fex-tline">
+                  <b>Record</b> waits — captions off means nothing to read
+                </p>
+              </article>
+
+              {/* 02 — key in */}
+              <article className="fex-platec">
+                <div className="fex-chead">
+                  <span className="fex-stepn">
+                    <b>STEP 02</b>
+                  </span>
+                  <span className="fex-scap">key in</span>
+                </div>
+                <div
+                  className="fex-scene"
+                  role="img"
+                  aria-label="A cn_test key pasted and saved — held in session memory only"
+                >
+                  <div className="fex-sbody">
+                    <div className="fex-keyrow">
+                      <span className="fex-keychip">cn_test_…</span>
+                      <span className="fex-savebtn">
+                        Save<s aria-hidden="true" />
+                      </span>
+                    </div>
+                    <div className="fex-verdict">
+                      <i aria-hidden="true" />
+                      <span>Key saved · session memory only.</span>
+                    </div>
+                  </div>
+                </div>
+                <p className="fex-ttl-plate">Paste your key and press Save</p>
+                <p className="fex-tline">
+                  <b>cn_live_</b> or <b>cn_test_</b> — never touches disk
+                </p>
+              </article>
+
+              {/* 03 — record */}
+              <article className="fex-platec">
+                <div className="fex-chead">
+                  <span className="fex-stepn">
+                    <b>STEP 03</b>
+                  </span>
+                  <span className="fex-scap">record</span>
+                </div>
+                <div
+                  className="fex-scene"
+                  role="img"
+                  aria-label="REC pill at 14 seconds — tab audio at 32kbps Opus streaming, captions tracked"
+                >
+                  <div className="fex-sbody">
+                    <div className="fex-recrow">
+                      <span className="fex-recpill">
+                        <i aria-hidden="true" />
+                        REC 00:14
+                      </span>
+                      <div className="fex-instrument" aria-hidden="true">
+                        <i style={{ height: "8px" }} />
+                        <i className="fex-off" style={{ height: "12px" }} />
+                        <i style={{ height: "16px" }} />
+                        <i style={{ height: "9px" }} />
+                        <i className="fex-off" style={{ height: "14px" }} />
+                        <i style={{ height: "18px" }} />
+                        <i style={{ height: "11px" }} />
+                      </div>
+                    </div>
+                    <div className="fex-micex">
+                      <span>tab audio · 32kbps opus</span>
+                      <span className="fex-no">mic → never asked</span>
+                    </div>
+                  </div>
+                </div>
+                <p className="fex-ttl-plate">Press Record and talk</p>
+                <p className="fex-tline">
+                  <b>Record</b> pressed — capture starts on your click
+                </p>
+              </article>
+
+              {/* 04 — stop, then send */}
+              <article className="fex-platec">
+                <div className="fex-chead">
+                  <span className="fex-stepn">
+                    <b>STEP 04</b>
+                  </span>
+                  <span className="fex-scap">stop, then send</span>
+                </div>
+                <div
+                  className="fex-scene"
+                  role="img"
+                  aria-label="Stop released the stream, Send hands the take over"
+                >
+                  <div className="fex-sbody">
+                    <div className="fex-stoprow">
+                      <span className="fex-spill">Stop</span>
+                      <span className="fex-flowb" aria-hidden="true" />
+                      <span className="fex-spill fex-spill-hot">Send</span>
+                    </div>
+                    <div className="fex-upchips">
+                      <span className="fex-uchip">uploading audio</span>
+                      <span className="fex-uchip">captions finalize</span>
+                    </div>
+                  </div>
+                </div>
+                <h3 className="fex-ttl-plate">Press Stop, then Send</h3>
+                <p className="fex-tline">
+                  stream released on stop · landed on send
+                </p>
+              </article>
+
+              {/* 05 — done summary */}
+              <article className="fex-platec">
+                <div className="fex-chead">
+                  <span className="fex-stepn">
+                    <b>STEP 05</b>
+                  </span>
+                  <span className="fex-scap">done summary</span>
+                </div>
+                <div
+                  className="fex-scene"
+                  role="img"
+                  aria-label="Done summary line with a call-page link, echoed by a Recent calls row"
+                >
+                  <div className="fex-sbody">
+                    <span className="fex-stline fex-dm">
+                      <i aria-hidden="true" />
+                      Stopped. Uploading audio + finalizing captions…
+                    </span>
+                    <div className="fex-doneline">
+                      <i aria-hidden="true" />
+                      <span>Done - summary: /app/calls/8f3k</span>
+                      <u>GET /api/v1/calls</u>
+                    </div>
+                    <div
+                      className="fex-doneline"
+                      style={{
+                        background: "rgba(255,255,255,.02)",
+                        borderColor: "rgba(255,255,255,.07)",
+                      }}
+                    >
+                      <i
+                        aria-hidden="true"
+                        style={{ background: "#5b6270", boxShadow: "none" }}
+                      />
+                      <span style={{ color: "#8b8f9a" }}>
+                        Acme × Gauge — Discovery
+                      </span>
+                      <u style={{ color: "#6ee7b7" }}>score 82</u>
+                    </div>
+                  </div>
+                </div>
+                <p className="fex-ttl-plate">Open the Done summary</p>
+                <p className="fex-tline">
+                  <b>Recent calls</b> deep-links the call · health score inline
+                </p>
+              </article>
+
+              {/* 06 — slack digest */}
+              <article className="fex-platec">
+                <div className="fex-chead">
+                  <span className="fex-stepn">
+                    <b>STEP 06</b>
+                  </span>
+                  <span className="fex-scap">slack digest</span>
+                </div>
+                <div
+                  className="fex-scene"
+                  role="img"
+                  aria-label="Slack digest posted with summary and health score to a sales channel"
+                >
+                  <div className="fex-sbody">
+                    <div className="fex-digest">
+                      <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                        <rect x="8.9" y="2" width="3" height="9.4" rx="1.5" fill="#36C5F0" />
+                        <rect x="12.6" y="12.6" width="9.4" height="3" rx="1.5" fill="#2EB67D" />
+                        <rect x="12.1" y="12.6" width="3" height="9.4" rx="1.5" fill="#ECB22E" />
+                        <rect x="2" y="8.4" width="9.4" height="3" rx="1.5" fill="#E01E5A" />
+                      </svg>
+                      <p>#sales · digest sent</p>
+                      <b>HEALTH SCORE 82</b>
+                    </div>
+                    <span className="fex-stline fex-dm">
+                      <i aria-hidden="true" />
+                      Same summary the dashboard holds — forward without opening
+                      it.
+                    </span>
+                  </div>
+                </div>
+                <p className="fex-ttl-plate">Share the digest</p>
+                <p className="fex-tline">
+                  outcome visible to the whole team
+                </p>
+              </article>
+            </div>
+          </div>
+        </LiveSection>
+
+        {/* TRUTH — obsidian band, scope scene + real table (fe-truth artboard) */}
+        <LiveSection id="truth" className="fex-band fex-band-truth">
+          <div className="fex-grain" aria-hidden="true" />
+          <div className="fex-inner">
+            <p className="fex-eyebrow">Permissions</p>
+            <h2 className="fex-h2">
+              What the extension can see.
+              <br />
+              <span className="fex-soft">Two brackets drawn on the tab.</span>
+            </h2>
+            <p className="fex-subplain">
+              The scraper reads only live-caption regions and the tab title on
+              meeting pages. Capture starts on your Record click and the
+              stream is released on Stop.
+            </p>
+
+            <div className="fex-duo">
+              {/* left: scope scene */}
+              <div className="fex-maj">
+                <div
+                  className="fex-win"
+                  role="img"
+                  aria-label="Meeting window with two bracketed regions — the aria-live captions and the tab title; everything else shielded"
+                >
+                  <div className="fex-winhead">
+                    <span className="fex-wdot" style={{ background: "#ff5f57" }} />
+                    <span className="fex-wdot" style={{ background: "#febc2e" }} />
+                    <span className="fex-wdot" style={{ background: "#28c840" }} />
+                    <span className="fex-wtitle">Meet — Acme × Gauge Weekly</span>
+                    <span className="fex-wscope">view from gauge · extension</span>
+                  </div>
+                  <div className="fex-winbody">
+                    <div className="fex-capzone">
+                      <span className="fex-ztag">Reads · aria-live region</span>
+                      <div className="fex-capl" style={{ width: "74%" }} />
+                      <div className="fex-capl fex-capl-b" />
+                      <div className="fex-capl" style={{ width: "52%" }} />
+                      <div className="fex-capl" style={{ width: "40%" }} />
+                    </div>
+                    <div className="fex-titlerow">
+                      <span className="fex-tbrackets">
+                        Tab title → <b>call name</b>
+                      </span>
+                      <span className="fex-tmeta">second read</span>
+                    </div>
+                    <div className="fex-shieldrow">
+                      <div className="fex-shield">
+                        <i aria-hidden="true" />
+                        <span>mic</span>
+                      </div>
+                      <div className="fex-shield">
+                        <i aria-hidden="true" />
+                        <span>camera</span>
+                      </div>
+                      <div className="fex-shield">
+                        <i aria-hidden="true" />
+                        <span>other tabs</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div className="fex-recfoot">
+                  <i aria-hidden="true" />
+                  <span>
+                    Between record and stop only — bracket closes on stop
+                  </span>
+                </div>
               </div>
 
-              <div className="doppel-outer">
-                <div className="doppel-inner p-6 sm:p-8 overflow-x-auto">
-                  <table className="ex-perm w-full text-left text-[13px] min-w-[520px]">
+              {/* right: the real capture-scope table */}
+              <div className="fex-maj fex-truthcard">
+                <table className="fex-table">
                   <caption className="sr-only">
-                    What the extension captures and what it never captures
+                    Capture scope — what the side panel reads and what it
+                    never touches
                   </caption>
                   <thead>
-                    <tr className="border-b border-gray-200">
-                      <th scope="col" className="pb-4 pr-4 w-1/2">
-                        <span className="flex items-center gap-2 text-emerald-700 font-semibold text-[11px] font-mono uppercase tracking-wider">
-                          <CheckCircle2 className="w-4 h-4 text-emerald-600" />
-                          Captures
-                        </span>
+                    <tr>
+                      <th scope="col" className="fex-tcol fex-tcol-y">
+                        Captures
                       </th>
-                      <th scope="col" className="pb-4 pl-4 w-1/2">
-                        <span className="flex items-center gap-2 text-red-600 font-semibold text-[11px] font-mono uppercase tracking-wider">
-                          <X className="w-4 h-4 text-red-500" />
-                          Never captures
-                        </span>
+                      <th scope="col" className="fex-tcol fex-tcol-n">
+                        Never captures
                       </th>
                     </tr>
                   </thead>
-                  <tbody className="text-gray-700">
-                    <tr className="border-b border-gray-100">
-                      <td className="py-3 pr-4">
-                        Live caption text from aria-live regions on the meeting
-                        tab (Meet, Teams, Zoom)
+                  <tbody>
+                    <tr>
+                      <td>
+                        <p className="fex-ty">
+                          Live caption text from aria-live regions (Meet,
+                          Teams, Zoom)
+                        </p>
                       </td>
-                      <td className="py-3 pl-4">
-                        Anything before you press Record — capture never
-                        auto-starts
-                      </td>
-                    </tr>
-                    <tr className="border-b border-gray-100">
-                      <td className="py-3 pr-4">
-                        Meeting-tab audio at 32kbps Opus, only between Record
-                        and Stop
-                      </td>
-                      <td className="py-3 pl-4">
-                        Microphone input directly — no microphone permission is
-                        requested
-                      </td>
-                    </tr>
-                    <tr className="border-b border-gray-100">
-                      <td className="py-3 pr-4">
-                        Meeting title from the tab title, used as the call name
-                      </td>
-                      <td className="py-3 pl-4">
-                        Camera, video, or screen content
-                      </td>
-                    </tr>
-                    <tr className="border-b border-gray-100">
-                      <td className="py-3 pr-4">
-                        Caption buffer and upload state in local storage, so a
-                        closed tab never loses captions
-                      </td>
-                      <td className="py-3 pl-4">
-                        Other tabs or browsing history
+                      <td>
+                        <p className="fex-tn">
+                          Anything before you press Record — capture never
+                          auto-starts
+                        </p>
                       </td>
                     </tr>
                     <tr>
-                      <td className="py-3 pr-4">
-                        Bearer API key in session memory only — never written
-                        to disk
+                      <td>
+                        <p className="fex-ty">
+                          Meeting-tab audio at 32kbps Opus, Record → Stop only
+                        </p>
                       </td>
-                      <td className="py-3 pl-4">
-                        Google account, contacts, or email
+                      <td>
+                        <p className="fex-tn">
+                          Microphone input directly — no mic permission
+                          requested
+                        </p>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td>
+                        <p className="fex-ty">
+                          Meeting title from the tab title, used as the call
+                          name
+                        </p>
+                      </td>
+                      <td>
+                        <p className="fex-tn">Camera, video, or screen content</p>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td>
+                        <p className="fex-ty">
+                          Caption buffer in local storage — a closed tab never
+                          loses captions
+                        </p>
+                      </td>
+                      <td>
+                        <p className="fex-tn">Other tabs or browsing history</p>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td>
+                        <p className="fex-ty">Bearer API key in session memory only</p>
+                      </td>
+                      <td>
+                        <p className="fex-tn">Google account, contacts, or email</p>
                       </td>
                     </tr>
                   </tbody>
                 </table>
-                <p className="text-[12px] text-gray-500 mt-6 leading-relaxed">
-                  Full disclosure in our{" "}
-                  <Link
-                    href="/privacy"
-                    className="text-[#F26522] hover:underline underline-offset-2"
-                  >
+                <p className="fex-tfoot">
+                  Full disclosure →{" "}
+                  <Link href="/privacy" className="fex-tflink">
                     privacy policy
                   </Link>
-                  .
                 </p>
-                </div>
               </div>
             </div>
           </div>
-        </section>
+        </LiveSection>
 
-        {/* TROUBLESHOOTING — 5 entries */}
-        <section className="bg-[#EFEFEF] pt-16 sm:pt-20 lg:pt-28 pb-16 sm:pb-20 lg:pb-28">
-          <div className="max-w-[1440px] mx-auto px-5 sm:px-8 lg:px-12">
-            <div className="grid grid-cols-1 lg:grid-cols-[1fr_auto] gap-8 lg:gap-12 items-end mb-14">
-              <div className="max-w-2xl">
-                <p className="text-[11px] uppercase tracking-[0.18em] text-gray-400 mb-3">
-                  Troubleshooting
-                </p>
-                <h2 className="text-[clamp(1.5rem,4vw,2.6rem)] font-medium leading-[1.1] tracking-[-0.02em] text-gray-900 mb-3">
+        {/* FIX — obsidian band, log still + five cards (fe-fix artboard) */}
+        <LiveSection id="fix" className="fex-band fex-band-fix">
+          <div className="fex-grain" aria-hidden="true" />
+          <div className="fex-inner">
+            <div className="fex-headrow">
+              <div>
+                <p className="fex-eyebrow">Troubleshooting</p>
+                <h2 className="fex-h2">
                   When something looks wrong.
+                  <br />
+                  <span className="fex-soft">Five fixes, five real codes.</span>
                 </h2>
-                <p className="text-gray-500 text-[14px]">
-                  Five fixes for the five failures the panel actually reports.
+                <p className="fex-sub">
+                  The panel says one of these five — match the chip, take the
+                  fix
                 </p>
               </div>
-              <div className="rounded-xl overflow-hidden w-full max-w-[460px] lg:justify-self-end transition-transform duration-300 hover:-translate-y-1">
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img
-                  src="/studio/gauge_ext_console.jpg"
-                  alt="The Gauge side panel status log showing its five real status messages"
-                  className="block w-full"
-                  loading="lazy"
-                />
+              <div
+                className="fex-logstill"
+                role="img"
+                aria-label="The panel status log — its five real messages, one per state"
+              >
+                <div className="fex-loghead">
+                  <i aria-hidden="true" />
+                  <span>Side panel · status log</span>
+                  <b>all five, verbatim</b>
+                </div>
+                <div className="fex-logrows">
+                  <div className="fex-lrow">
+                    <i aria-hidden="true" className="fex-dot-amb" />
+                    <span>Open a Meet / Teams / Zoom tab, then press Record.</span>
+                    <u>IDLE</u>
+                  </div>
+                  <div className="fex-lrow">
+                    <i aria-hidden="true" className="fex-dot-em" />
+                    <span>Key saved · session memory only.</span>
+                    <u>READY</u>
+                  </div>
+                  <div className="fex-lrow">
+                    <i aria-hidden="true" className="fex-dot-red" />
+                    <span>Recording tab audio (32kbps Opus) + captions.…</span>
+                    <u>LIVE</u>
+                  </div>
+                  <div className="fex-lrow">
+                    <i aria-hidden="true" className="fex-dot-ora" />
+                    <span>Stopped. Uploading audio + finalizing captions…</span>
+                    <u>TRANSIT</u>
+                  </div>
+                  <div className="fex-lrow">
+                    <i aria-hidden="true" className="fex-dot-em" />
+                    <span>Done - summary: /app/calls/8f3k</span>
+                    <u>LANDED</u>
+                  </div>
+                </div>
               </div>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="doppel-outer transition-transform duration-300 hover:-translate-y-1">
-                <div className="doppel-inner p-6 sm:p-8 h-full">
-                  <div className="mb-5">
-                    <span className="ex-code ex-code-amber">
-                      <i />
-                      CC OFF
-                    </span>
-                  </div>
-                  <h3 className="text-[15px] font-semibold tracking-tight text-gray-900 mb-2">
-                    No captions are captured
-                  </h3>
-                  <p className="text-[13px] text-gray-500 leading-relaxed">
-                    Turn captions (CC) on in the meeting. The panel reads only
-                    aria-live caption regions and the tab title, so with
-                    captions off there is nothing to scrape — the status stays
-                    on “Open a Meet / Teams / Zoom tab, then press Record.”
-                  </p>
-                </div>
-              </div>
+            <div className="fex-fixgrid">
+              {/* 1 */}
+              <article className="fex-fixc">
+                <span className="fex-chipcode fex-chipcode-amb">
+                  <i aria-hidden="true" />
+                  cc off
+                </span>
+                <h3>No captions are captured</h3>
+                <p className="fex-fx">
+                  Captions are off on the call tab. The panel reads only{" "}
+                  <b>aria-live caption regions</b> — turn <b>CC on</b> and the
+                  log starts moving.
+                </p>
+              </article>
 
-              <div className="doppel-outer transition-transform duration-300 hover:-translate-y-1">
-                <div className="doppel-inner p-6 sm:p-8 h-full">
-                  <div className="mb-5">
-                    <span className="ex-code ex-code-orange">
-                      <i />
-                      HTTP 413
-                    </span>
-                  </div>
-                  <h3 className="text-[15px] font-semibold tracking-tight text-gray-900 mb-2">
-                    Upload fails with 413
-                  </h3>
-                  <p className="text-[13px] text-gray-500 leading-relaxed">
-                    The file is over your plan&apos;s server-side cap: Free
-                    30MB, Pro 200MB, Business 500MB. Record a shorter segment
-                    or upgrade, then press Send again.
-                  </p>
+              {/* 2 */}
+              <article className="fex-fixc">
+                <span className="fex-chipcode fex-chipcode-ora">
+                  <i aria-hidden="true" />
+                  HTTP 413
+                </span>
+                <h3>Upload fails with 413</h3>
+                <p className="fex-fx">
+                  The take is over your plan&apos;s server-side cap. Record a
+                  shorter segment, or upgrade, then press <b>Send</b> again.
+                </p>
+                <div className="fex-caps">
+                  <span className="fex-capm">Free 30MB</span>
+                  <span className="fex-capm fex-capm-hot">Pro 200MB</span>
+                  <span className="fex-capm fex-capm-hot">Business 500MB</span>
                 </div>
-              </div>
+              </article>
 
-              <div className="doppel-outer transition-transform duration-300 hover:-translate-y-1">
-                <div className="doppel-inner p-6 sm:p-8 h-full">
-                  <div className="mb-5">
-                    <span className="ex-code ex-code-red">
-                      <i />
-                      HTTP 401·403
-                    </span>
-                  </div>
-                  <h3 className="text-[15px] font-semibold tracking-tight text-gray-900 mb-2">
-                    Key rejected with 401 or 403
-                  </h3>
-                  <p className="text-[13px] text-gray-500 leading-relaxed">
-                    The panel shows “Key rejected (401/403). Paste a fresh key
-                    above.” Mint a new key via POST /api/v1/keys/exchange or
-                    from{" "}
-                    <Link
-                      href="/settings?tab=api-keys"
-                      className="text-[#F26522] hover:underline underline-offset-2"
-                    >
-                      Settings → API Keys
-                    </Link>
-                    , paste it, and press Save.
-                  </p>
-                </div>
-              </div>
+              {/* 3 */}
+              <article className="fex-fixc">
+                <span className="fex-chipcode fex-chipcode-red">
+                  <i aria-hidden="true" />
+                  HTTP 401 · 403
+                </span>
+                <h3>Key rejected with 401 or 403</h3>
+                <p className="fex-fx">
+                  &ldquo;Key rejected (401/403).&rdquo; Mint fresh via{" "}
+                  <code>POST /api/v1/keys/exchange</code> or from{" "}
+                  <Link href="/settings?tab=api-keys">Settings → API Keys</Link>
+                  , paste, press <b>Save</b>.
+                </p>
+              </article>
 
-              <div className="doppel-outer transition-transform duration-300 hover:-translate-y-1">
-                <div className="doppel-inner p-6 sm:p-8 h-full">
-                  <div className="mb-5">
-                    <span className="ex-code ex-code-indigo">
-                      <i />
-                      BOTS API
-                    </span>
-                  </div>
-                  <h3 className="text-[15px] font-semibold tracking-tight text-gray-900 mb-2">
-                    Should I use a meeting bot instead?
-                  </h3>
-                  <p className="text-[13px] text-gray-500 leading-relaxed">
-                    Use the extension when you attend the call in your browser.
-                    For meetings you cannot join — or calls with no captions —
-                    dispatch a meeting bot via POST /api/v1/bots instead. Same
-                    dashboard, same call pages.
-                  </p>
-                </div>
-              </div>
+              {/* 4 */}
+              <article className="fex-fixc">
+                <span className="fex-chipcode fex-chipcode-ind">
+                  <i aria-hidden="true" />
+                  bots api
+                </span>
+                <h3>Should I use a meeting bot instead?</h3>
+                <p className="fex-fx">
+                  In the room? Use the panel. Call you can&apos;t join — or
+                  with no captions — dispatch a bot via{" "}
+                  <code>POST /api/v1/bots</code>. Same dashboard, same call
+                  pages.
+                </p>
+              </article>
 
-              <div className="doppel-outer md:col-span-2 transition-transform duration-300 hover:-translate-y-1">
-                <div className="doppel-inner p-6 sm:p-8 h-full">
-                  <div className="mb-5">
-                    <span className="ex-code ex-code-neutral">
-                      <i />
-                      MANUAL UPLOAD
-                    </span>
-                  </div>
-                  <h3 className="text-[15px] font-semibold tracking-tight text-gray-900 mb-2">
-                    Automatic upload is unavailable
-                  </h3>
-                  <p className="text-[13px] text-gray-500 leading-relaxed">
-                    Manual fallback: press Stop, download the captured audio,
-                    and upload it by hand at{" "}
-                    <Link
-                      href="/app/record"
-                      className="text-[#F26522] hover:underline underline-offset-2"
-                    >
-                      /app/record
-                    </Link>
-                    . Your captions are still saved locally by the extension.
-                  </p>
-                </div>
-              </div>
+              {/* 5 */}
+              <article className="fex-fixc fex-fixc-wide">
+                <span className="fex-chipcode fex-chipcode-neu">
+                  <i aria-hidden="true" />
+                  manual upload
+                </span>
+                <h3>Automatic upload is unavailable</h3>
+                <p className="fex-fx">
+                  Press <b>Stop</b>, save the captured audio locally, upload by
+                  hand at <Link href="/app/record">/app/record</Link>. Your
+                  captions persist — nothing lost.
+                </p>
+              </article>
             </div>
           </div>
-        </section>
+        </LiveSection>
 
-        {/* CTA */}
+        {/* CTA — light section, breathing rec-orb island (fe-cta artboard) */}
         <section className="bg-[#EFEFEF] pt-8 sm:pt-12 pb-16 sm:pb-20 lg:pb-28">
           <div className="max-w-[1440px] mx-auto px-5 sm:px-8 lg:px-12">
             <div className="doppel-outer">
@@ -940,15 +931,43 @@ export default function ExtensionPage() {
                       </Link>
                     </div>
                   </div>
-                  <div className="rounded-2xl overflow-hidden w-full lg:w-[520px]">
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img
-                      src="/studio/gauge_ext_cta_record.jpg"
-                      alt="A large glossy red record button with orbiting chips for recent calls, the health score, and the Slack digest"
-                      className="block w-full"
-                      loading="lazy"
-                    />
-                  </div>
+                  <LiveDiv className="w-full lg:w-[540px]">
+                    <div className="fex-island-cta">
+                      <p className="fex-ctameta">
+                        <span>
+                          <b>Record</b> · next call
+                        </span>
+                        <span>same gauge account</span>
+                      </p>
+                      <div
+                        className="fex-orbwrap"
+                        role="img"
+                        aria-label="A breathing record button ringed by the three promises the account already tracks"
+                      >
+                        <div className="fex-breathe" aria-hidden="true" />
+                        <div className="fex-ring" aria-hidden="true" />
+                        <div className="fex-ring fex-ring2" aria-hidden="true" />
+                        <div className="fex-core">
+                          <span>REC</span>
+                        </div>
+                      </div>
+                      <div className="fex-chips">
+                        <span className="fex-chip">
+                          <b aria-hidden="true" />
+                          Recent calls
+                        </span>
+                        <span className="fex-chip fex-chip-hot">
+                          <b aria-hidden="true" />
+                          Health scores
+                        </span>
+                        <span className="fex-chip">
+                          <b aria-hidden="true" />
+                          Slack digest
+                        </span>
+                      </div>
+                      <p className="fex-foot">Works the moment your key is saved</p>
+                    </div>
+                  </LiveDiv>
                 </div>
               </div>
             </div>

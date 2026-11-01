@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Extension Install — V1 OBSIDIAN TRIO</title>
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; }
+  :root{
+    --orange:#F26522; --green:#34d399;
+    --glass-hi:rgba(255,255,255,0.085); --glass-lo:rgba(255,255,255,0.018);
+    --mline:rgba(255,255,255,.09); --mono:"SF Mono",ui-monospace,Menlo,monospace;
+  }
+  body{ width:1440px; background:#fff; font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif; color:#fff; -webkit-font-smoothing:antialiased; }
+
+  .band{
+    position:relative; overflow:hidden; padding:76px 70px;
+    background:
+      radial-gradient(1100px 440px at 14% -10%, rgba(242,101,34,.1), transparent 60%),
+      radial-gradient(900px 420px at 90% 116%, rgba(16,185,129,.06), transparent 58%),
+      radial-gradient(1400px 700px at 50% 50%, #0B0B0D 0%, #070708 72%);
+  }
+  .grain{ position:absolute; inset:0; opacity:.055; pointer-events:none;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='240' height='240'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='240' height='240' filter='url(%23n)' opacity='1'/%3E%3C/svg%3E"); }
+  .inner{ max-width:1300px; margin:0 auto; position:relative; }
+
+  .eyebrow{ font-family:var(--mono); font-size:11px; letter-spacing:.2em; color:var(--orange); font-weight:600; margin-bottom:14px; text-transform:uppercase; }
+  h2{ font-size:40px; line-height:1.08; letter-spacing:-.028em; font-weight:500; }
+  h2 .soft{ color:#7d818c; }
+  .sub{ margin-top:12px; font-family:var(--mono); font-size:10.5px; letter-spacing:.14em; color:#8b8f9a; text-transform:uppercase; }
+
+  .trio{ display:grid; grid-template-columns:1fr 1fr 1fr; gap:18px; margin-top:40px; }
+  .pcard{ border-radius:24px; padding:22px 22px 20px; display:flex; flex-direction:column; gap:14px;
+    background:linear-gradient(180deg, var(--glass-hi), var(--glass-lo));
+    border:1px solid var(--mline);
+    box-shadow:0 40px 90px rgba(0,0,0,.55), inset 0 1px 0 rgba(255,255,255,.09); }
+  .prole{ display:flex; justify-content:space-between; align-items:center; }
+  .stepn{ font-family:var(--mono); font-size:9px; letter-spacing:.2em; color:#7d818c; text-transform:uppercase; }
+  .stepn b{ color:#fb923c; font-weight:600; }
+  .scene{ border-radius:16px; overflow:hidden; min-height:170px; display:flex;
+    background:linear-gradient(180deg,#101014,#0a0a0d);
+    border:1px solid rgba(255,255,255,.1); box-shadow:0 20px 44px rgba(0,0,0,.5), inset 0 1px 0 rgba(255,255,255,.05); }
+  .sbody{ flex:1; display:flex; flex-direction:column; justify-content:center; gap:9px; padding:18px 16px; }
+
+  /* card 1 scene — zip detonates into a folder of real files */
+  .ziprow{ display:flex; align-items:center; gap:10px; }
+  .ztile{ display:flex; align-items:center; gap:7px; font-family:var(--mono); font-size:9px; letter-spacing:.1em; color:#c6c9d2;
+    padding:9px 11px; border-radius:9px; background:rgba(242,101,34,.08); border:1px solid rgba(242,101,34,.3); }
+  .ztile i{ width:16px; height:16px; border-radius:5px; background:linear-gradient(135deg,#fb923c,#c2410c); display:flex; align-items:center; justify-content:center;
+    font:800 7.5px/1 var(--mono); color:#fff; letter-spacing:0; }
+  .folder{ flex:1; border-radius:11px; background:rgba(255,255,255,.03); border:1px solid rgba(255,255,255,.08); overflow:hidden; }
+  .fhead{ display:flex; align-items:center; gap:7px; padding:7px 10px; font-family:var(--mono); font-size:8.5px; letter-spacing:.14em; color:#8b8f9a;
+    border-bottom:1px solid rgba(255,255,255,.06); text-transform:uppercase; }
+  .fhead i{ width:9px; height:7px; border-radius:2px; background:linear-gradient(180deg,#fbbf24,#d97706); }
+  .frow{ display:flex; align-items:center; gap:7px; padding:5.5px 10px; font-family:var(--mono); font-size:9px; letter-spacing:.06em; color:#c6c9d2; }
+  .frow + .frow{ border-top:1px solid rgba(255,255,255,.04); }
+  .frow s{ width:5px; height:5px; border-radius:1.5px; background:#5b6270; text-decoration:none; }
+  .frow.js{ color:#6ee7b7; } .frow.js s{ background:#10b981; }
+  .ftag{ margin-left:auto; font-size:7.5px; letter-spacing:.14em; color:#6ee7b7; }
+  .splitline{ position:relative; height:1px; background:linear-gradient(90deg, rgba(242,101,34,.25), rgba(242,101,34,.6), rgba(242,101,34,.25)); }
+  .splitline::after{ content:""; position:absolute; top:-2.5px; right:18px; width:6px; height:6px; border-radius:50%;
+    background:#fb923c; box-shadow:0 0 10px rgba(242,101,34,.9); animation:flow 2.4s linear infinite; }
+  @keyframes flow{ 0%{ left:0; opacity:0; } 15%{ opacity:1; } 85%{ opacity:1; } 100%{ left:calc(100% - 6px); opacity:0; } }
+
+  /* card 2 scene — chrome://extensions */
+  .urlbar{ display:flex; align-items:center; gap:8px; padding:9px 12px; border-radius:999px;
+    background:rgba(255,255,255,.05); border:1px solid rgba(255,255,255,.12); }
+  .urlbar svg{ width:12px; height:12px; flex:none; }
+  .urlbar span{ font-family:var(--mono); font-size:10px; letter-spacing:.06em; color:#c6c9d2; }
+  .urlbar .lock{ margin-left:auto; color:#6ee7b7; font-size:8px; letter-spacing:.14em; font-family:var(--mono); }
+  .devrow{ display:flex; align-items:center; gap:9px; padding:9px 12px; border-radius:9px;
+    background:rgba(255,255,255,.03); border:1px solid rgba(255,255,255,.07); }
+  .devrow span{ font-family:var(--mono); font-size:9px; letter-spacing:.14em; color:#8b8f9a; text-transform:uppercase; }
+  .toggle{ margin-left:auto; width:30px; height:16px; border-radius:999px; background:linear-gradient(90deg,#f26522,#fb923c); position:relative;
+    box-shadow:0 0 10px rgba(242,101,34,.55); }
+  .toggle::after{ content:""; position:absolute; right:2px; top:2px; width:12px; height:12px; border-radius:50%; background:#fff; }
+  .toggle u{ position:absolute; right:-24px; top:2.5px; font-family:var(--mono); font-size:8px; letter-spacing:.14em; color:#fb923c; text-decoration:none; }
+  .loadrow{ display:flex; align-items:center; gap:8px; }
+  .loadchip{ flex:1; display:flex; align-items:center; justify-content:center; gap:8px; font-family:var(--mono); font-size:9.5px; letter-spacing:.14em; color:#fdba74;
+    padding:10px 0; border-radius:9px; border:1.5px dashed rgba(242,101,34,.5); background:rgba(242,101,34,.05); text-transform:uppercase; }
+  .loadchip i{ width:14px; height:9px; border-radius:3px; border-top:1.5px solid #fdba74; border-left:1.5px solid #fdba74; position:relative; }
+  .loadmark{ font-family:var(--mono); font-size:7.5px; letter-spacing:.16em; color:#6ee7b7; white-space:nowrap; }
+
+  /* card 3 scene — key save */
+  .keyrow{ display:flex; align-items:center; gap:8px; }
+  .keychip{ flex:1; font-family:var(--mono); font-size:10px; letter-spacing:.08em; color:#c6c9d2; padding:8px 11px; border-radius:9px;
+    background:rgba(255,255,255,.04); border:1px solid rgba(255,255,255,.09); white-space:nowrap; overflow:hidden; }
+  .savebtn{ font-family:var(--mono); font-size:10px; letter-spacing:.1em; color:#fff; font-weight:600; padding:8px 14px; border-radius:9px;
+    background:linear-gradient(180deg,#1a1a20,#101014); border:1px solid rgba(255,255,255,.16); position:relative; flex:none; }
+  .savebtn s{ position:absolute; right:-3px; top:-3px; width:9px; height:9px; border-radius:50%;
+    background:var(--orange); box-shadow:0 0 9px rgba(242,101,34,.9); text-decoration:none; }
+  .verdict{ display:flex; align-items:center; gap:8px; padding:8px 10px; border-radius:9px;
+    background:rgba(16,185,129,.06); border:1px solid rgba(16,185,129,.25); }
+  .verdict i{ width:6px; height:6px; border-radius:50%; background:var(--green); box-shadow:0 0 8px rgba(52,211,153,.7); flex:none; }
+  .verdict span{ font-family:var(--mono); font-size:9.5px; letter-spacing:.08em; color:#a7f3d0; }
+  .paneledge{ display:flex; align-items:center; gap:8px; font-family:var(--mono); font-size:8px; letter-spacing:.16em; color:#6b707c; text-transform:uppercase; }
+  .paneledge b{ width:5px; height:5px; border-radius:50%; background:#818cf8; flex:none; }
+  .paneledge .arrow{ margin-left:auto; width:10px; height:1.5px; background:#fb923c; position:relative; flex:none; }
+  .paneledge .arrow::after{ content:""; position:absolute; right:0; top:-2.75px; width:4.5px; height:4.5px; border-top:1.5px solid #fb923c; border-right:1.5px solid #fb923c; transform:rotate(45deg); border-radius:1px; }
+
+  .ttl{ font-size:17px; font-weight:600; letter-spacing:-.02em; }
+  .subline{ font-size:12px; color:#9a9ea8; line-height:1.6; }
+  .subline code{ font-family:var(--mono); font-size:10px; color:#c6c9d2; }
+  .subline b{ color:#7d818c; font-weight:600; }
+  .scrollink{ margin-top:auto; display:flex; align-items:center; gap:6px; font-family:var(--mono); font-size:9.5px; letter-spacing:.1em; color:#fdba74; text-transform:uppercase; white-space:nowrap; }
+</style>
+</head>
+<body>
+<div class="capture">
+<section class="band">
+  <div class="grain"></div>
+  <div class="inner">
+
+    <p class="eyebrow">Install</p>
+    <h2>Install in three steps.<br><span class="soft">No store visit.</span></h2>
+    <p class="sub">chrome://extensions · developer mode · session-memory key</p>
+
+    <div class="trio">
+      <!-- 01 -->
+      <article class="pcard">
+        <div class="prole"><span class="stepn"><b>STEP 1</b> · FILES OUT</span><span class="ftag">V1.0.0</span></div>
+        <div class="scene" role="img" aria-label="The extension zip extracting into a folder with three real files">
+          <div class="sbody">
+            <div class="ziprow">
+              <span class="ztile"><i>ZIP</i>gauge-extension-1.0.0.zip</span>
+              <div class="folder">
+                <div class="fhead"><i></i>unzipped</div>
+                <div class="frow"><s></s>manifest.json<span class="ftag">MV3</span></div>
+                <div class="frow js"><s></s>sidepanel.js<span class="ftag">REC</span></div>
+                <div class="frow js"><s></s>content.js<span class="ftag">SCRAPER</span></div>
+              </div>
+            </div>
+            <div class="splitline"></div>
+          </div>
+        </div>
+        <p class="ttl">Download &amp; Unzip</p>
+        <p class="subline">The archive carries the MV3 manifest, the sidepanel recorder, and the caption scraper. <b>Nothing phones home.</b></p>
+        <span class="scrollink">Download v1.0.0 (.zip)</span>
+      </article>
+
+      <!-- 02 -->
+      <article class="pcard">
+        <div class="prole"><span class="stepn"><b>STEP 2</b> · UNPACKED</span><span class="ftag">CHROMIUM</span></div>
+        <div class="scene" role="img" aria-label="chrome://extensions with Developer mode on and Load unpacked waiting for a folder">
+          <div class="sbody">
+            <div class="urlbar">
+              <svg viewBox="0 0 24 24" fill="none" stroke="#8b8f9a" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+              <span>chrome://extensions</span>
+              <span class="lock">BUILT-IN</span>
+            </div>
+            <div class="devrow"><span>Developer mode</span><span class="toggle"></span><u>ON</u></div>
+            <div class="loadrow">
+              <span class="loadchip"><i aria-hidden="true"></i>Load unpacked</span>
+              <span class="loadmark">folder picker</span>
+            </div>
+          </div>
+        </div>
+        <p class="ttl">Load unpacked in Chrome</p>
+        <p class="subline">Toggle <b>Developer mode</b>, point <code>Load unpacked</code> at the unzipped folder. Works on Chrome, Brave, Arc, Edge.</p>
+      </article>
+
+      <!-- 03 -->
+      <article class="pcard">
+        <div class="prole"><span class="stepn"><b>STEP 3</b> · KEY IN</span><span class="ftag">SESSION ONLY</span></div>
+        <div class="scene" role="img" aria-label="The side panel saving an API key — verdict line confirms session memory storage">
+          <div class="sbody">
+            <div class="keyrow">
+              <span class="keychip">cn_live_&#8230;</span>
+              <span class="savebtn">Save<s aria-hidden="true"></s></span>
+            </div>
+            <div class="verdict"><i aria-hidden="true"></i><span>Key saved · session memory only.</span></div>
+            <div class="paneledge"><b></b>side panel<span class="arrow" aria-hidden="true"></span><span>gauge account</span></div>
+          </div>
+        </div>
+        <p class="ttl">Connect &amp; Record</p>
+        <p class="subline">Paste a key or auto-connect the account, then hit <b>Record</b>. The panel reads captions — <b>no bot joins the room.</b></p>
+        <span class="scrollink">Check connection status →</span>
+      </article>
+    </div>
+
+  </div>
+</section>
+</div>
+</body>
+</html>

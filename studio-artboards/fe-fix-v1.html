@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Extension Fixes — V1 LOG STILL + FIVE PLATES</title>
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; }
+  :root{
+    --orange:#F26522; --green:#34d399;
+    --glass-hi:rgba(255,255,255,0.085); --glass-lo:rgba(255,255,255,0.018);
+    --mline:rgba(255,255,255,.09); --mono:"SF Mono",ui-monospace,Menlo,monospace;
+  }
+  body{ width:1440px; background:#fff; font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif; color:#fff; -webkit-font-smoothing:antialiased; }
+
+  .band{
+    position:relative; overflow:hidden; padding:76px 70px;
+    background:
+      radial-gradient(1000px 440px at 12% -8%, rgba(242,101,34,.09), transparent 60%),
+      radial-gradient(900px 440px at 92% 112%, rgba(244,63,94,.05), transparent 58%),
+      radial-gradient(1400px 720px at 50% 50%, #0B0B0D 0%, #070708 72%);
+  }
+  .grain{ position:absolute; inset:0; opacity:.055; pointer-events:none;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='240' height='240'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='240' height='240' filter='url(%23n)' opacity='1'/%3E%3C/svg%3E"); }
+  .inner{ max-width:1300px; margin:0 auto; position:relative; }
+
+  .headrow{ display:grid; grid-template-columns:1fr 470px; gap:44px; align-items:end; margin-bottom:40px; }
+  .eyebrow{ font-family:var(--mono); font-size:11px; letter-spacing:.2em; color:var(--orange); font-weight:600; margin-bottom:14px; text-transform:uppercase; }
+  h2{ font-size:40px; line-height:1.08; letter-spacing:-.028em; font-weight:500; }
+  h2 .soft{ color:#7d818c; }
+  .sub{ margin-top:12px; font-family:var(--mono); font-size:10.5px; letter-spacing:.14em; color:#8b8f9a; text-transform:uppercase; }
+
+  /* the real status log, as a still */
+  .logstill{ border-radius:18px; padding:18px 18px 16px;
+    background:linear-gradient(180deg,#101014,#0a0a0d);
+    border:1px solid rgba(255,255,255,.1); box-shadow:0 24px 50px rgba(0,0,0,.5), inset 0 1px 0 rgba(255,255,255,.05); }
+  .loghead{ display:flex; align-items:center; gap:8px; margin-bottom:12px; }
+  .loghead i{ width:6px; height:6px; border-radius:50%; background:#818cf8; box-shadow:0 0 8px rgba(129,140,248,.7); }
+  .loghead span{ font-family:var(--mono); font-size:8.5px; letter-spacing:.18em; color:#8b8f9a; text-transform:uppercase; }
+  .loghead b{ margin-left:auto; font-family:var(--mono); font-size:7.5px; letter-spacing:.14em; color:#6b707c; font-weight:400; }
+  .logrows{ display:flex; flex-direction:column; gap:7px; }
+  .lrow{ display:flex; align-items:flex-start; gap:9px; padding:7px 10px; border-radius:8px; background:rgba(255,255,255,.02); border:1px solid rgba(255,255,255,.05); }
+  .lrow i{ width:6px; height:6px; border-radius:50%; flex:none; margin-top:3.5px; }
+  .lrow i.amb{ background:#d97706; box-shadow:0 0 6px rgba(217,119,6,.6); }
+  .lrow i.em{ background:#10b981; box-shadow:0 0 6px rgba(16,185,129,.6); }
+  .lrow i.red{ background:#f43f5e; box-shadow:0 0 6px rgba(244,63,94,.7); }
+  .lrow i.ora{ background:#fb923c; box-shadow:0 0 6px rgba(251,146,60,.7); }
+  .lrow span{ font-family:var(--mono); font-size:9.5px; letter-spacing:.02em; color:#c6c9d2; white-space:nowrap; overflow:hidden; }
+  .lrow u{ margin-left:auto; font-family:var(--mono); font-size:8px; letter-spacing:.1em; color:#43464f; text-decoration:none; flex:none; }
+
+  .grid{ display:grid; grid-template-columns:1fr 1fr; gap:16px; }
+  .fixc{ border-radius:20px; padding:20px; display:flex; flex-direction:column; gap:12px;
+    background:linear-gradient(180deg, var(--glass-hi), var(--glass-lo));
+    border:1px solid var(--mline);
+    box-shadow:0 40px 90px rgba(0,0,0,.55), inset 0 1px 0 rgba(255,255,255,.09); }
+  .fixc.wide{ grid-column:1 / -1; }
+  .codechip{ align-self:flex-start; display:inline-flex; align-items:center; gap:7px;
+    font-family:var(--mono); font-size:8.5px; letter-spacing:.16em; padding:6px 11px; border-radius:999px; text-transform:uppercase; }
+  .codechip i{ width:6px; height:6px; border-radius:50%; flex:none; }
+  .codechip.amb{ color:#fcd34d; background:rgba(217,119,6,.09); border:1px solid rgba(217,119,6,.35); }
+  .codechip.amb i{ background:#d97706; }
+  .codechip.ora{ color:#fdba74; background:rgba(242,101,34,.09); border:1px solid rgba(242,101,34,.35); }
+  .codechip.ora i{ background:var(--orange); }
+  .codechip.red{ color:#fda4af; background:rgba(244,63,94,.08); border:1px solid rgba(244,63,94,.35); }
+  .codechip.red i{ background:#f43f5e; }
+  .codechip.ind{ color:#a5b4fc; background:rgba(99,102,241,.09); border:1px solid rgba(99,102,241,.35); }
+  .codechip.ind i{ background:#818cf8; }
+  .codechip.neu{ color:#c6c9d2; background:rgba(255,255,255,.045); border:1px solid rgba(255,255,255,.1); }
+  .codechip.neu i{ background:#5b6270; }
+
+  h3{ font-size:16px; font-weight:600; letter-spacing:-.02em; }
+  .fx{ font-size:12.5px; line-height:1.65; color:#9a9ea8; }
+  .fx code{ font-family:Menlo,monospace; font-size:11px; letter-spacing:.02em; color:#c6c9d2; }
+  .fx b{ color:#d3d6de; font-weight:600; }
+  .fx a{ color:#fdba74; }
+  .caps{ display:flex; gap:6px; flex-wrap:wrap; margin-top:2px; }
+  .cap{ font-family:var(--mono); font-size:8.5px; letter-spacing:.12em; color:#c6c9d2; padding:5px 10px; border-radius:999px;
+    background:rgba(255,255,255,.045); border:1px solid rgba(255,255,255,.1); white-space:nowrap; }
+  .cap.hot{ color:#fdba74; border-color:rgba(242,101,34,.35); background:rgba(242,101,34,.08); }
+</style>
+</head>
+<body>
+<div class="capture">
+<section class="band">
+  <div class="grain"></div>
+  <div class="inner">
+
+    <div class="headrow">
+      <div>
+        <p class="eyebrow">Troubleshooting</p>
+        <h2>When something looks wrong.<br><span class="soft">Five fixes, five real codes.</span></h2>
+        <p class="sub">The panel says one of these five — match the chip, take the fix</p>
+      </div>
+      <div class="logstill" role="img" aria-label="The panel status log — its five real messages, one per state">
+        <div class="loghead"><i aria-hidden="true"></i><span>Side panel · status log</span><b>ALL FIVE, VERBATIM</b></div>
+        <div class="logrows">
+          <div class="lrow"><i class="amb"></i><span>Open a Meet / Teams / Zoom tab, then press Record.</span><u>IDLE</u></div>
+          <div class="lrow"><i class="em"></i><span>Key saved · session memory only.</span><u>READY</u></div>
+          <div class="lrow"><i class="red"></i><span>Recording tab audio (32kbps Opus) + captions.&#8230;</span><u>LIVE</u></div>
+          <div class="lrow"><i class="ora"></i><span>Stopped. Uploading audio + finalizing captions&#8230;</span><u>TRANSIT</u></div>
+          <div class="lrow"><i class="em"></i><span>Done - summary: /app/calls/8f3k</span><u>LANDED</u></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="grid">
+      <!-- 1 -->
+      <article class="fixc">
+        <span class="codechip amb"><i aria-hidden="true"></i>CC OFF</span>
+        <h3>No captions are captured</h3>
+        <p class="fx">Captions are off on the call tab. The panel reads only <b>aria-live regions</b> — turn <b>CC on</b> and the log starts moving.</p>
+      </article>
+
+      <!-- 2 -->
+      <article class="fixc">
+        <span class="codechip ora"><i aria-hidden="true"></i>HTTP 413</span>
+        <h3>Upload fails with 413</h3>
+        <p class="fx">The take is over your plan's server-side cap. Record a shorter segment, or upgrade, then press <b>Send</b> again.</p>
+        <div class="caps">
+          <span class="cap">Free · 30MB</span>
+          <span class="cap hot">Pro · 200MB</span>
+          <span class="cap hot">Business · 500MB</span>
+        </div>
+      </article>
+
+      <!-- 3 -->
+      <article class="fixc">
+        <span class="codechip red"><i aria-hidden="true"></i>HTTP 401 · 403</span>
+        <h3>Key rejected with 401 or 403</h3>
+        <p class="fx">&ldquo;Key rejected (401/403).&rdquo; Mint fresh via <b>POST</b> <code>/api/v1/keys/exchange</code> or from <a>Settings → API Keys</a>, paste, press <b>Save</b>.</p>
+      </article>
+
+      <!-- 4 -->
+      <article class="fixc">
+        <span class="codechip ind"><i aria-hidden="true"></i>BOTS API</span>
+        <h3>Should I use a meeting bot instead?</h3>
+        <p class="fx">In the room? Use the panel. Call you can't join — or with no captions — dispatch a bot via <b>POST</b> <code>/api/v1/bots</code>. Same dashboard, same call pages.</p>
+      </article>
+
+      <!-- 5 -->
+      <article class="fixc wide">
+        <span class="codechip neu"><i aria-hidden="true"></i>Manual upload</span>
+        <h3>Automatic upload is unavailable</h3>
+        <p class="fx">Press <b>Stop</b>, save the captured audio locally, upload by hand at <a>/app/record</a>. Your captions persist — nothing lost.</p>
+      </article>
+    </div>
+
+  </div>
+</section>
+</div>
+</body>
+</html>

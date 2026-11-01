@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Extension Permissions — V1 CAPTURE SCOPE</title>
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; }
+  :root{
+    --orange:#F26522; --green:#34d399;
+    --glass-hi:rgba(255,255,255,0.085); --glass-lo:rgba(255,255,255,0.018);
+    --mline:rgba(255,255,255,.09); --mono:"SF Mono",ui-monospace,Menlo,monospace;
+  }
+  body{ width:1440px; background:#fff; font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif; color:#fff; -webkit-font-smoothing:antialiased; }
+
+  .band{
+    position:relative; overflow:hidden; padding:76px 70px;
+    background:
+      radial-gradient(1000px 440px at 12% -8%, rgba(16,185,129,.07), transparent 60%),
+      radial-gradient(900px 440px at 92% 112%, rgba(242,101,34,.08), transparent 58%),
+      radial-gradient(1400px 720px at 50% 50%, #0B0B0D 0%, #070708 72%);
+  }
+  .grain{ position:absolute; inset:0; opacity:.055; pointer-events:none;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='240' height='240'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='240' height='240' filter='url(%23n)' opacity='1'/%3E%3C/svg%3E"); }
+  .inner{ max-width:1300px; margin:0 auto; position:relative; }
+
+  .eyebrow{ font-family:var(--mono); font-size:11px; letter-spacing:.2em; color:var(--orange); font-weight:600; margin-bottom:14px; text-transform:uppercase; }
+  h2{ font-size:40px; line-height:1.08; letter-spacing:-.028em; font-weight:500; }
+  h2 .soft{ color:#7d818c; }
+  .sub{ margin-top:12px; font-size:13px; color:#9a9ea8; max-width:60ch; }
+
+  .duo{ display:grid; grid-template-columns:1.05fr 1fr; gap:18px; margin-top:44px; align-items:stretch; }
+  .maj{ border-radius:24px; padding:22px; display:flex; flex-direction:column;
+    background:linear-gradient(180deg, var(--glass-hi), var(--glass-lo));
+    border:1px solid var(--mline);
+    box-shadow:0 40px 90px rgba(0,0,0,.55), inset 0 1px 0 rgba(255,255,255,.09); }
+
+  /* left — the meeting window, capture scope drawn */
+  .win{ border-radius:14px; overflow:hidden; border:1px solid rgba(255,255,255,.1); background:linear-gradient(180deg,#101014,#0a0a0d); box-shadow:0 20px 44px rgba(0,0,0,.5); display:flex; flex-direction:column; flex:1; }
+  .winhead{ display:flex; align-items:center; gap:8px; padding:9px 12px; border-bottom:1px solid rgba(255,255,255,.06); flex:none; }
+  .wdot{ width:8px; height:8px; border-radius:50%; }
+  .winhead span{ margin-left:6px; font-family:var(--mono); font-size:9.5px; letter-spacing:.08em; color:#c6c9d2; }
+  .winhead .scope{ margin-left:auto; font-family:var(--mono); font-size:7.5px; letter-spacing:.16em; color:#6ee7b7; text-transform:uppercase; }
+  .winbody{ flex:1; padding:18px; display:flex; flex-direction:column; justify-content:space-evenly; }
+  .capzone{ position:relative; border-radius:10px; border:1.5px solid rgba(242,101,34,.55); background:rgba(242,101,34,.05); padding:10px 12px; }
+  .capzone .tag{ position:absolute; top:-8px; left:12px; font-family:var(--mono); font-size:7.5px; letter-spacing:.16em; color:#fdba74;
+    background:#0c0c0f; padding:0 7px; text-transform:uppercase; }
+  .capline{ height:5px; border-radius:2.5px; background:linear-gradient(90deg,#fdba74, rgba(251,146,60,.12)); margin:5px 0; }
+  .capline.b{ background:rgba(251,146,60,.3); width:60%; }
+  .titlerow{ display:flex; align-items:center; gap:9px; }
+  .tbrackets{ font-family:var(--mono); font-size:10px; letter-spacing:.08em; color:#c6c9d2; padding:6px 12px;
+    border:1px dashed rgba(255,255,255,.22); border-radius:8px; background:rgba(255,255,255,.02); }
+  .tbrackets b{ color:#6ee7b7; font-weight:600; }
+  .tmeta{ font-family:var(--mono); font-size:7.5px; letter-spacing:.14em; color:#8b8f9a; text-transform:uppercase; }
+  .shieldrow{ display:flex; gap:8px; }
+  .shield{ flex:1; display:flex; align-items:center; gap:7px; padding:8px 11px; border-radius:9px;
+    background:rgba(255,255,255,.02); border:1px solid rgba(255,255,255,.06); opacity:.7; }
+  .shield i{ width:9px; height:11px; border-radius:2px 2px 5px 5px; border:1.5px solid #6b707c; position:relative; flex:none; }
+  .shield i::after{ content:""; position:absolute; left:-1px; right:-1px; top:4.5px; height:1.25px; background:#f43f5e; transform:rotate(-24deg); }
+  .shield span{ font-family:var(--mono); font-size:8px; letter-spacing:.14em; color:#6b707c; text-transform:uppercase; }
+  .recfoot{ display:flex; align-items:center; gap:8px; margin-top:auto; padding-top:16px; }
+  .recfoot i{ width:7px; height:7px; border-radius:50%; background:#f43f5e; box-shadow:0 0 9px rgba(244,63,94,.9); }
+  .recfoot span{ font-family:var(--mono); font-size:8.5px; letter-spacing:.14em; color:#8b8f9a; text-transform:uppercase; }
+
+  /* right — truth table */
+  .truth{ display:flex; flex-direction:column; }
+  .thead{ display:grid; grid-template-columns:1fr 1fr; gap:14px; padding-bottom:14px; border-bottom:1px solid rgba(255,255,255,.09); }
+  .tcol{ display:flex; align-items:center; gap:8px; font-family:var(--mono); font-size:9.5px; letter-spacing:.16em; text-transform:uppercase; }
+  .tcol i{ width:7px; height:7px; border-radius:2px; flex:none; }
+  .tcol.y{ color:#6ee7b7; } .tcol.y i{ background:var(--green); box-shadow:0 0 8px rgba(52,211,153,.7); border-radius:50%; }
+  .tcol.n{ color:#fda4af; } .tcol.n i{ background:#f43f5e; border-radius:50%; box-shadow:0 0 8px rgba(244,63,94,.7); }
+  .trow{ display:grid; grid-template-columns:1fr 1fr; gap:14px; padding:11px 0; border-bottom:1px solid rgba(255,255,255,.05); align-items:baseline; }
+  .trow:last-of-type{ border-bottom:none; }
+  .ty, .tn{ font-size:12px; line-height:1.55; }
+  .ty{ color:#d3d6de; } .tn{ color:#8b8f9a; }
+  .ty b, .tn b{ font-family:var(--mono); font-size:10px; letter-spacing:.04em; font-weight:500; }
+  .ty b{ color:#6ee7b7; } .tn b{ color:#fda4af; }
+  .tfoot{ margin-top:16px; font-family:var(--mono); font-size:9px; letter-spacing:.14em; color:#8b8f9a; text-transform:uppercase; }
+  .tfoot a{ color:#fdba74; }
+</style>
+</head>
+<body>
+<div class="capture">
+<section class="band">
+  <div class="grain"></div>
+  <div class="inner">
+
+    <p class="eyebrow">Permissions</p>
+    <h2>What the extension can see.<br><span class="soft">Two brackets drawn on the tab.</span></h2>
+    <p class="sub">The scraper reads only live-caption regions and the tab title on meeting pages. Capture starts on your Record click and the stream is released on Stop.</p>
+
+    <div class="duo">
+      <!-- left: scope scene -->
+      <div class="maj">
+        <div class="win" role="img" aria-label="Meeting window with two bracketed regions — the aria-live captions and the tab title; everything else shielded">
+          <div class="winhead">
+            <span class="wdot" style="background:#ff5f57"></span>
+            <span class="wdot" style="background:#febc2e"></span>
+            <span class="wdot" style="background:#28c840"></span>
+            <span>Meet — Acme × Gauge Weekly</span>
+            <span class="scope">view from gauge · extension</span>
+          </div>
+          <div class="winbody">
+            <div class="capzone">
+              <span class="tag">Reads · aria-live region</span>
+              <div class="capline" style="width:74%"></div>
+              <div class="capline b"></div>
+              <div class="capline" style="width:52%"></div>
+              <div class="capline" style="width:40%"></div>
+            </div>
+            <div class="titlerow">
+              <span class="tbrackets">Tab title → <b>call name</b></span>
+              <span class="tmeta">second read</span>
+            </div>
+            <div class="shieldrow">
+              <div class="shield"><i aria-hidden="true"></i><span>mic</span></div>
+              <div class="shield"><i aria-hidden="true"></i><span>camera</span></div>
+              <div class="shield"><i aria-hidden="true"></i><span>other tabs</span></div>
+            </div>
+          </div>
+        </div>
+        <div class="recfoot">
+          <i aria-hidden="true"></i>
+          <span>Between record and stop only — bracket closes on stop</span>
+        </div>
+      </div>
+
+      <!-- right: truth table -->
+      <div class="maj truth">
+        <div class="thead">
+          <span class="tcol y"><i aria-hidden="true"></i>Captures</span>
+          <span class="tcol n"><i aria-hidden="true"></i>Never captures</span>
+        </div>
+        <div class="trow">
+          <p class="ty">Live caption text from aria-live regions (Meet, Teams, Zoom)</p>
+          <p class="tn">Anything before you press Record — capture never auto-starts</p>
+        </div>
+        <div class="trow">
+          <p class="ty">Meeting-tab audio at 32kbps Opus, Record → Stop only</p>
+          <p class="tn">Microphone input directly — no mic permission requested</p>
+        </div>
+        <div class="trow">
+          <p class="ty">Meeting title from the tab title, used as the call name</p>
+          <p class="tn">Camera, video, or screen content</p>
+        </div>
+        <div class="trow">
+          <p class="ty">Caption buffer in local storage — a closed tab never loses captions</p>
+          <p class="tn">Other tabs or browsing history</p>
+        </div>
+        <div class="trow">
+          <p class="ty">Bearer API key in session memory only</p>
+          <p class="tn">Google account, contacts, or email</p>
+        </div>
+        <p class="tfoot">Full disclosure → privacy policy</p>
+      </div>
+    </div>
+
+  </div>
+</section>
+</div>
+</body>
+</html>

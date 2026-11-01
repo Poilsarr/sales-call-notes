@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Extension Demo — V1 SIX SCENE PLATES</title>
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; }
+  :root{
+    --orange:#F26522; --green:#34d399;
+    --glass-hi:rgba(255,255,255,0.085); --glass-lo:rgba(255,255,255,0.018);
+    --mline:rgba(255,255,255,.09); --mono:"SF Mono",ui-monospace,Menlo,monospace;
+  }
+  body{ width:1440px; background:#fff; font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif; color:#fff; -webkit-font-smoothing:antialiased; }
+
+  .band{
+    position:relative; overflow:hidden; padding:76px 70px;
+    background:
+      radial-gradient(1100px 440px at 14% -10%, rgba(242,101,34,.1), transparent 60%),
+      radial-gradient(900px 420px at 90% 116%, rgba(16,185,129,.06), transparent 58%),
+      radial-gradient(1400px 700px at 50% 50%, #0B0B0D 0%, #070708 72%);
+  }
+  .grain{ position:absolute; inset:0; opacity:.055; pointer-events:none;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='240' height='240'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='240' height='240' filter='url(%23n)' opacity='1'/%3E%3C/svg%3E"); }
+  .inner{ max-width:1300px; margin:0 auto; position:relative; }
+
+  .head{ text-align:center; margin-bottom:26px; }
+  .eyebrow{ font-family:var(--mono); font-size:11px; letter-spacing:.2em; color:var(--orange); font-weight:600; margin-bottom:14px; text-transform:uppercase; }
+  h2{ font-size:40px; line-height:1.08; letter-spacing:-.028em; font-weight:500; }
+  h2 .soft{ color:#7d818c; }
+  .subhead{ margin-top:12px; font-family:var(--mono); font-size:10.5px; letter-spacing:.14em; color:#8b8f9a; text-transform:uppercase; }
+
+  .vocab{ display:flex; justify-content:center; gap:8px; margin-bottom:36px; }
+  .vtok{ font-family:var(--mono); font-size:9.5px; letter-spacing:.14em; color:#c6c9d2; padding:7px 13px; border-radius:999px;
+    background:rgba(255,255,255,.045); border:1px solid rgba(255,255,255,.1); white-space:nowrap; text-transform:uppercase; }
+  .vtok.hot{ color:#fdba74; border-color:rgba(242,101,34,.36); background:rgba(242,101,34,.09); }
+  .vtok.vsep{ padding:7px 4px; border:none; background:none; color:#43464f; }
+
+  .grid{ display:grid; grid-template-columns:1fr 1fr 1fr; gap:18px; }
+  .platec{ border-radius:22px; padding:20px; display:flex; flex-direction:column; gap:13px;
+    background:linear-gradient(180deg, var(--glass-hi), var(--glass-lo));
+    border:1px solid var(--mline);
+    box-shadow:0 40px 90px rgba(0,0,0,.55), inset 0 1px 0 rgba(255,255,255,.09); }
+  .chead{ display:flex; align-items:center; justify-content:space-between; }
+  .stepn{ font-family:var(--mono); font-size:9px; letter-spacing:.2em; color:#7d818c; text-transform:uppercase; }
+  .stepn b{ color:#fb923c; font-weight:600; }
+  .scap{ font-family:var(--mono); font-size:7.5px; letter-spacing:.16em; color:#6b707c; text-transform:uppercase; white-space:nowrap; }
+
+  .scene{ border-radius:16px; min-height:150px; display:flex; overflow:hidden;
+    background:linear-gradient(180deg,#101014,#0a0a0d);
+    border:1px solid rgba(255,255,255,.1); box-shadow:0 20px 44px rgba(0,0,0,.5), inset 0 1px 0 rgba(255,255,255,.05); }
+  .sbody{ flex:1; display:flex; flex-direction:column; justify-content:center; gap:8px; padding:16px; }
+
+  .caprow{ display:flex; align-items:center; gap:8px; padding:7px 10px; border-radius:8px; background:rgba(255,255,255,.03); border:1px solid rgba(255,255,255,.07); }
+  .cc{ font-family:var(--mono); font-size:8.5px; font-weight:700; letter-spacing:.1em; color:#06b6d4; border:1px solid rgba(6,182,212,.4);
+    border-radius:5px; padding:2px 6px; flex:none; }
+  .capline{ height:4px; border-radius:2px; background:rgba(255,255,255,.12); flex:none; }
+  .capline.hot{ background:linear-gradient(90deg,#22d3ee, rgba(34,211,238,.15)); }
+  .limelabel{ margin-left:auto; font-family:var(--mono); font-size:7.5px; letter-spacing:.12em; color:#8b8f9a; white-space:nowrap; }
+
+  .keyrow{ display:flex; align-items:center; gap:8px; }
+  .keychip{ flex:1; font-family:var(--mono); font-size:10px; letter-spacing:.08em; color:#c6c9d2; padding:8px 11px; border-radius:9px;
+    background:rgba(255,255,255,.04); border:1px solid rgba(255,255,255,.09); white-space:nowrap; overflow:hidden; }
+  .savebtn{ font-family:var(--mono); font-size:10px; letter-spacing:.1em; color:#fff; font-weight:600; padding:8px 14px; border-radius:9px;
+    background:linear-gradient(180deg,#1a1a20,#101014); border:1px solid rgba(255,255,255,.16); position:relative; flex:none; }
+  .savebtn s{ position:absolute; right:-3px; top:-3px; width:9px; height:9px; border-radius:50%;
+    background:var(--orange); box-shadow:0 0 9px rgba(242,101,34,.9); text-decoration:none; }
+  .verdict{ display:flex; align-items:center; gap:8px; padding:7px 10px; border-radius:8px;
+    background:rgba(16,185,129,.06); border:1px solid rgba(16,185,129,.25); }
+  .verdict i{ width:6px; height:6px; border-radius:50%; background:var(--green); box-shadow:0 0 8px rgba(52,211,153,.7); flex:none; }
+  .verdict span{ font-family:var(--mono); font-size:9px; letter-spacing:.06em; color:#a7f3d0; }
+
+  .recrow{ display:flex; align-items:center; gap:10px; }
+  .recpill{ font-family:var(--mono); font-size:9px; letter-spacing:.12em; color:#fda4af;
+    border:1px solid rgba(244,63,94,.4); background:rgba(244,63,94,.08); border-radius:999px; padding:5px 10px;
+    display:inline-flex; align-items:center; gap:6px; }
+  .recpill i{ width:6px;height:6px;border-radius:50%;background:#f43f5e;box-shadow:0 0 8px rgba(244,63,94,.9); }
+  .instrument{ display:flex; align-items:flex-end; gap:3px; height:22px; flex:1; }
+  .instrument i{ flex:1; max-width:8px; border-radius:3px 3px 1px 1px; background:linear-gradient(180deg,#fb923c,#c2410c); }
+  .instrument i.off{ background:rgba(255,255,255,.1); }
+  .opustag{ font-family:var(--mono); font-size:7.5px; letter-spacing:.14em; color:#fdba74; white-space:nowrap; }
+  .micex{ padding:7px 10px; border-radius:8px; background:rgba(255,255,255,.02); border:1px dashed rgba(255,255,255,.12);
+    display:flex; align-items:center; gap:8px; }
+  .micex span{ font-family:var(--mono); font-size:8px; letter-spacing:.14em; color:#6b707c; text-transform:uppercase; }
+  .micex .no{ margin-left:auto; color:#fda4af; }
+
+  .stoprow{ display:flex; align-items:center; justify-content:center; gap:10px; }
+  .spill{ font-family:var(--mono); font-size:9.5px; letter-spacing:.14em; color:#c6c9d2; padding:9px 16px; border-radius:999px;
+    background:rgba(255,255,255,.05); border:1px solid rgba(255,255,255,.1); text-transform:uppercase; }
+  .spill.hot{ color:#fdba74; border-color:rgba(242,101,34,.4); background:rgba(242,101,34,.1); position:relative; }
+  .spill.hot::after{ content:""; position:absolute; right:-4px; top:-4px; width:10px; height:10px; border-radius:50%;
+    border:2px solid var(--orange); border-top-color:transparent; box-shadow:0 0 6px rgba(242,101,34,.7); }
+  .flowb{ position:relative; width:64px; height:1px; background:linear-gradient(90deg, rgba(242,101,34,.25), rgba(242,101,34,.6)); }
+  .flowb::after{ content:""; position:absolute; top:-2.5px; left:0; width:6px; height:6px; border-radius:50%;
+    background:#fb923c; box-shadow:0 0 10px rgba(242,101,34,.9); animation:flow 2.4s linear infinite; }
+  .upchips{ display:flex; gap:6px; justify-content:center; }
+  .uchip{ font-family:var(--mono); font-size:8px; letter-spacing:.14em; color:#fdba74; padding:5px 9px; border-radius:999px;
+    background:rgba(242,101,34,.08); border:1px solid rgba(242,101,34,.3); white-space:nowrap; }
+  .stline{ display:flex; align-items:flex-start; gap:8px; font-family:var(--mono); font-size:9.5px; color:#5f636e; white-space:nowrap; overflow:hidden; }
+  .stline i{ width:6px; height:6px; border-radius:50%; flex:none; margin-top:3px; }
+  .stline.dm{ color:#5f636e; } .stline i.dm{ background:#5f636e; }
+  .stline.lit{ color:#d3d6de; } .stline i.lit{ background:#10b981; box-shadow:0 0 8px rgba(52,211,153,.8); }
+  .stline .q{ color:#6b707c; }
+  .doneline{ display:flex; align-items:center; gap:8px; padding:8px 10px; border-radius:9px;
+    background:rgba(16,185,129,.05); border:1px solid rgba(16,185,129,.2); }
+  .doneline i{ width:6px; height:6px; border-radius:50%; background:var(--green); box-shadow:0 0 8px rgba(52,211,153,.7); flex:none; }
+  .doneline span{ font-family:var(--mono); font-size:9.5px; color:#d3d6de; }
+  .doneline u{ margin-left:auto; font-family:var(--mono); font-size:7.5px; letter-spacing:.12em; color:#6ee7b7; text-decoration:none; }
+
+  .digest{ display:flex; align-items:center; gap:9px; padding:9px 11px; border-radius:9px;
+    background:rgba(255,255,255,.03); border:1px solid rgba(255,255,255,.08); }
+  .slack{ width:18px; height:18px; flex:none; }
+  .digest p{ font-family:var(--mono); font-size:9.5px; letter-spacing:.04em; color:#c6c9d2; }
+  .digest b{ margin-left:auto; font-family:var(--mono); font-size:7.5px; letter-spacing:.14em; color:#6ee7b7; }
+
+  .ttl{ font-size:16px; font-weight:600; letter-spacing:-.02em; }
+  .tline{ font-family:var(--mono); font-size:8.5px; letter-spacing:.12em; color:#7d818c; text-transform:uppercase; }
+  .tline b{ color:#c6c9d2; font-weight:500; }
+
+  @keyframes flow{ 0%{ left:0; opacity:0; } 15%{ opacity:1; } 85%{ opacity:1; } 100%{ left:calc(100% - 6px); opacity:0; } }
+</style>
+</head>
+<body>
+<div class="capture">
+<section class="band">
+  <div class="grain"></div>
+  <div class="inner">
+
+    <div class="head">
+      <p class="eyebrow">60 seconds</p>
+      <h2>The 60-second demo.<br><span class="soft">Four buttons. Watch them stack.</span></h2>
+      <p class="subhead">Every label below is verbatim from the side panel</p>
+    </div>
+
+    <div class="vocab">
+      <span class="vtok hot">Record</span><span class="vsep">·</span>
+      <span class="vtok">Stop</span><span class="vsep">·</span>
+      <span class="vtok">Send</span><span class="vsep">·</span>
+      <span class="vtok">Recent calls</span><span class="vsep">·</span>
+      <span class="vtok" style="color:#6ee7b7">32kbps opus</span>
+    </div>
+
+    <div class="grid">
+      <!-- 01 -->
+      <article class="platec">
+        <div class="chead"><span class="stepn"><b>STEP 01</b></span><span class="scap">Captions on</span></div>
+        <div class="scene" role="img" aria-label="A meeting tab with live captions running — the panel needs captions to hear">
+          <div class="sbody">
+            <div class="caprow"><span class="cc">CC</span><span class="capline hot" style="width:58%"></span><span class="capline" style="width:26%"></span><span class="limelabel">live</span></div>
+            <div class="caprow"><span class="cc" style="opacity:.45">CC</span><span class="capline" style="width:44%"></span><span class="capline" style="width:34%"></span><span class="limelabel">meet tab</span></div>
+            <div class="caprow" style="border-style:dashed"><span class="limelabel" style="margin-left:0">tab title</span><span class="capline" style="width:52%"></span><span class="limelabel">call name</span></div>
+          </div>
+        </div>
+        <p class="ttl">Open a meeting tab with captions on</p>
+        <p class="tline"><b>Record</b> waits — captions off means nothing to read</p>
+      </article>
+
+      <!-- 02 -->
+      <article class="platec">
+        <div class="chead"><span class="stepn"><b>STEP 02</b></span><span class="scap">Key in</span></div>
+        <div class="scene" role="img" aria-label="A cn_test key pasted and saved — held in session memory only">
+          <div class="sbody">
+            <div class="keyrow">
+              <span class="keychip">cn_test_&#8230;</span>
+              <span class="savebtn">Save<s aria-hidden="true"></s></span>
+            </div>
+            <div class="verdict"><i aria-hidden="true"></i><span>Key saved · session memory only.</span></div>
+          </div>
+        </div>
+        <p class="ttl">Paste your key and press Save</p>
+        <p class="tline"><b>cn_live_</b> or <b>cn_test_</b> — never touches disk</p>
+      </article>
+
+      <!-- 03 -->
+      <article class="platec">
+        <div class="chead"><span class="stepn"><b>STEP 03</b></span><span class="scap">Record</span></div>
+        <div class="scene" role="img" aria-label="REC pill at 14 seconds — tab audio at 32kbps Opus streaming, captions tracked">
+          <div class="sbody">
+            <div class="recrow">
+              <span class="recpill"><i aria-hidden="true"></i>REC 00:14</span>
+              <div class="instrument" aria-hidden="true"><i style="height:8px"></i><i class="off" style="height:12px"></i><i style="height:16px"></i><i style="height:9px"></i><i class="off" style="height:14px"></i><i style="height:18px"></i><i style="height:11px"></i></div>
+            </div>
+            <div class="micex"><span>tab audio · 32kbps opus</span><span class="no">mic → never asked</span></div>
+          </div>
+        </div>
+        <p class="ttl">Press Record and talk</p>
+        <p class="tline"><b>Record</b> pressed — capture starts on your click</p>
+      </article>
+
+      <!-- 04 -->
+      <article class="platec">
+        <div class="chead"><span class="stepn"><b>STEP 04</b></span><span class="scap">Stop, then send</span></div>
+        <div class="scene" role="img" aria-label="Stop released the stream, Send hands the take over">
+          <div class="sbody">
+            <div class="stoprow">
+              <span class="spill">Stop</span>
+              <span class="flowb" aria-hidden="true"></span>
+              <span class="spill hot">Send</span>
+            </div>
+            <div class="upchips"><span class="uchip">uploading audio</span><span class="uchip">captions finalize</span></div>
+          </div>
+        </div>
+        <p class="ttl">Press Stop, then Send</p>
+        <p class="tline">stream released on stop · landed on send</p>
+      </article>
+
+      <!-- 05 -->
+      <article class="platec">
+        <div class="chead"><span class="stepn"><b>STEP 05</b></span><span class="scap">Done summary</span></div>
+        <div class="scene" role="img" aria-label="Done summary line with a call-page link, echoed by a Recent calls row">
+          <div class="sbody">
+            <span class="stline dm"><i class="dm"></i>Stopped. Uploading audio + finalizing captions&#8230;</span>
+            <div class="doneline"><i aria-hidden="true"></i><span>Done - summary: /app/calls/8f3k</span><u>GET /api/v1/calls</u></div>
+            <div class="doneline" style="background:rgba(255,255,255,.02); border-color:rgba(255,255,255,.07)">
+              <i style="background:#5b6270; box-shadow:none"></i><span style="color:#8b8f9a">Acme × Gauge — Discovery</span><u style="color:#6ee7b7">score 82</u>
+            </div>
+          </div>
+        </div>
+        <p class="ttl">Open the Done summary</p>
+        <p class="tline"><b>Recent calls</b> deep-links the call · health score inline</p>
+      </article>
+
+      <!-- 06 -->
+      <article class="platec">
+        <div class="chead"><span class="stepn"><b>STEP 06</b></span><span class="scap">Slack digest</span></div>
+        <div class="scene" role="img" aria-label="Slack digest posted with summary and health score to a sales channel">
+          <div class="sbody">
+            <div class="digest">
+              <svg class="slack" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                <rect x="8.9" y="2" width="3" height="9.4" rx="1.5" fill="#36C5F0"/>
+                <rect x="12.6" y="12.6" width="9.4" height="3" rx="1.5" fill="#2EB67D"/>
+                <rect x="12.1" y="12.6" width="3" height="9.4" rx="1.5" fill="#ECB22E"/>
+                <rect x="2" y="8.4" width="9.4" height="3" rx="1.5" fill="#E01E5A"/>
+              </svg>
+              <p>#sales · digest sent</p>
+              <b>HEALTH SCORE 82</b>
+            </div>
+            <span class="stline dm"><i class="dm"></i>Same summary the dashboard holds — forward without opening it.</span>
+          </div>
+        </div>
+        <p class="ttl">Share the digest</p>
+        <p class="tline">outcome visible to the whole team</p>
+      </article>
+    </div>
+
+  </div>
+</section>
+</div>
+</body>
+</html>
