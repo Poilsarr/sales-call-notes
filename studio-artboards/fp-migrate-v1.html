@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Pricing Migration — V1 OBSIDIAN PIPELINE</title>
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; }
+  :root{
+    --orange:#F26522; --orange-deep:#c2410c;
+    --glass-hi:rgba(255,255,255,0.085); --glass-lo:rgba(255,255,255,0.018);
+    --mline:rgba(255,255,255,.09); --mono:"SF Mono",ui-monospace,Menlo,monospace;
+  }
+  body{ width:1440px; background:#fff; font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif; color:#fff; -webkit-font-smoothing:antialiased; }
+
+  .band{
+    position:relative; overflow:hidden; padding:76px 70px;
+    background:
+      radial-gradient(1000px 440px at 12% -8%, rgba(242,101,34,.09), transparent 60%),
+      radial-gradient(900px 440px at 92% 112%, rgba(16,185,129,.06), transparent 58%),
+      radial-gradient(1400px 720px at 50% 50%, #0B0B0D 0%, #070708 72%);
+  }
+  .grain{ position:absolute; inset:0; opacity:.055; pointer-events:none;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='240' height='240'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='240' height='240' filter='url(%23n)' opacity='1'/%3E%3C/svg%3E"); }
+  .inner{ max-width:1300px; margin:0 auto; position:relative; }
+
+  /* header row — three old tools + promise chips */
+  .headrow{ display:grid; grid-template-columns:1fr auto; gap:24px; align-items:start; margin-bottom:44px; }
+  .eyebrow{ font-family:var(--mono); font-size:11px; letter-spacing:.2em; color:var(--orange); font-weight:600; margin-bottom:14px; }
+  h3{ font-size:38px; line-height:1.1; letter-spacing:-.025em; font-weight:500; }
+  h3 .soft{ color:#7d818c; }
+  .sub{ margin-top:12px; font-size:13px; color:#9a9ea8; max-width:56ch; }
+
+  .promises{ display:flex; gap:8px; flex-wrap:wrap; justify-content:flex-end; }
+  .ptok{ font-family:var(--mono); font-size:9px; letter-spacing:.14em; color:#c6c9d2; padding:8px 12px; border-radius:999px;
+    background:rgba(255,255,255,.045); border:1px solid rgba(255,255,255,.10); white-space:nowrap; display:inline-flex; align-items:center; gap:7px; }
+  .ptok b{ width:6px; height:6px; border-radius:50%; background:#34d399; box-shadow:0 0 8px rgba(52,211,153,.7); }
+  .ptok.o{ color:#fdba74; border-color:rgba(242,101,34,.35); background:rgba(242,101,34,.07); }
+  .ptok.o b{ background:var(--orange); box-shadow:0 0 10px rgba(242,101,34,.8); }
+
+  /* pipeline */
+  .pipelinelabel{ font-family:var(--mono); font-size:9.5px; letter-spacing:.2em; color:#8b8f9a; text-align:center; margin-bottom:16px; text-transform:uppercase; }
+  .pipe{
+    border-radius:24px; padding:26px 30px 30px;
+    background:linear-gradient(180deg, var(--glass-hi), var(--glass-lo));
+    border:1px solid var(--mline);
+    box-shadow:0 50px 100px rgba(0,0,0,.55), inset 0 1px 0 rgba(255,255,255,.09);
+    display:grid; grid-template-columns:1fr 150px 1fr 150px 1fr; gap:0; align-items:center;
+  }
+  .stage{ display:flex; flex-direction:column; align-items:center; gap:12px; }
+  .stagelabel{ font-family:var(--mono); font-size:9px; letter-spacing:.18em; color:#fb923c; text-transform:uppercase; display:flex; align-items:center; gap:8px; }
+  .stagelabel b{ color:#fb923c; font-weight:700; }
+  .stagelabel .n{ color:#6b707c; }
+  .plate{ width:100%; border-radius:16px; padding:16px; display:flex; flex-direction:column; gap:8px;
+    background:linear-gradient(180deg,#101014,#0a0a0d); border:1px solid rgba(255,255,255,.10);
+    box-shadow:0 24px 50px rgba(0,0,0,.5), inset 0 1px 0 rgba(255,255,255,.05); min-height:150px; }
+
+  /* stage 1 — old tool export */
+  .toolrow{ display:flex; align-items:center; gap:8px; padding:8px 10px; border-radius:9px; background:rgba(255,255,255,.04); border:1px solid rgba(255,255,255,.09); }
+  .tooldot{ width:7px; height:7px; border-radius:2px; background:#5b6270; flex:none; }
+  .toolname{ font-family:var(--mono); font-size:9.5px; letter-spacing:.1em; color:#d3d6de; }
+  .hit .toolname{ white-space:nowrap; }
+  .toolbyte{ margin-left:auto; font-family:var(--mono); font-size:8px; letter-spacing:.1em; color:#6ee7b7; }
+
+  /* stage 2 — gauge ingest */
+  .filebar{ height:22px; border-radius:7px; background:rgba(255,255,255,.05); border:1px dashed rgba(242,101,34,.45); display:flex; align-items:center; justify-content:center; gap:6px; }
+  .filebar span{ font-family:var(--mono); font-size:8.5px; letter-spacing:.12em; color:#fdba74; }
+  .filebar i{ width:5px; height:5px; border-radius:50%; background:#fb923c; box-shadow:0 0 8px rgba(242,101,34,.9); }
+  .spek{ display:flex; align-items:center; gap:9px; padding:6px 10px; border-radius:8px; background:rgba(255,255,255,.03); border:1px solid rgba(255,255,255,.07); }
+  .spk{ width:7px; height:7px; border-radius:50%; flex:none; }
+  .spk.a{ background:var(--orange); } .spk.b{ background:#818cf8; }
+  .bar{ height:4px; border-radius:2px; background:rgba(255,255,255,.10); }
+
+  /* stage 3 — searchable */
+  .searchbox{ display:flex; align-items:center; gap:8px; padding:8px 11px; border-radius:9px; background:rgba(255,255,255,.05); border:1px solid rgba(255,255,255,.12); }
+  .searchbox svg{ width:11px; height:11px; flex:none; }
+  .searchbox span{ font-family:var(--mono); font-size:9px; letter-spacing:.1em; color:#c6c9d2; }
+  .searchbox .c{ margin-left:auto; width:14px; height:8px; border-radius:4px; background:#34d399; box-shadow:0 0 8px rgba(52,211,153,.7); }
+  .hit{ display:flex; align-items:center; gap:7px; padding:6px 10px; border-radius:8px; background:rgba(16,185,129,.06); border:1px solid rgba(16,185,129,.25); }
+  .hit b{ width:5px; height:5px; border-radius:50%; background:#34d399; flex:none; }
+
+  /* connective pipes */
+  .pipeseg{ display:flex; flex-direction:column; align-items:center; justify-content:center; gap:10px; padding:0 8px; }
+  .pips{ position:relative; width:100%; height:1px; background:linear-gradient(90deg, rgba(242,101,34,.25), rgba(242,101,34,.6), rgba(242,101,34,.25)); }
+  .pips::after{ content:""; position:absolute; top:-2.5px; left:0; width:6px; height:6px; border-radius:50%; background:#fb923c; box-shadow:0 0 10px rgba(242,101,34,.9); animation:flowx 2.4s linear infinite; }
+  .pipchips{ display:flex; gap:6px; }
+  .pchip{ font-family:var(--mono); font-size:8px; letter-spacing:.14em; color:#fdba74; padding:5px 8px; border-radius:999px; background:rgba(242,101,34,.08); border:1px solid rgba(242,101,34,.3); white-space:nowrap; }
+
+  /* bottom row */
+  .footrow{ margin-top:22px; display:flex; align-items:center; justify-content:center; gap:10px; }
+  .crmtok{ font-family:var(--mono); font-size:9px; letter-spacing:.14em; color:#c6c9d2; padding:8px 13px; border-radius:999px;
+    background:rgba(255,255,255,.045); border:1px solid rgba(255,255,255,.10); display:inline-flex; align-items:center; gap:8px; }
+  .crmtok.dot{ width:26px; height:26px; border-radius:8px; padding:0; justify-content:center; }
+  .crmtok.hs{ background:linear-gradient(135deg,#ff7a59,#eb6a45); border:none; }
+  .crmtok.sf{ background:linear-gradient(135deg,#00a1e0,#0077b8); border:none; }
+  .footnote{ font-family:var(--mono); font-size:9px; letter-spacing:.14em; color:#6b707c; margin-top:18px; text-align:center; text-transform:uppercase; }
+
+  @keyframes flowx{ 0%{ left:0; opacity:0; } 15%{ opacity:1; } 85%{ opacity:1; } 100%{ left:calc(100% - 6px); opacity:0; } }
+</style>
+</head>
+<body>
+<div class="capture">
+<section class="band">
+  <div class="inner">
+
+    <div class="headrow">
+      <div>
+        <p class="eyebrow">SWITCHING?</p>
+        <h3>Moving from Fireflies, Otter,<br>or Fathom? <span class="soft">Keep everything.</span></h3>
+        <p class="sub">You don't need to change your workflow. Upload your calls, keep your CRM, and get better notes at a flat price.</p>
+      </div>
+      <div class="promises">
+        <span class="ptok"><b></b>BRING YOUR HISTORY</span>
+        <span class="ptok o"><b></b>NO BOT JOINS CALLS</span>
+        <span class="ptok"><b></b>FLAT-RATE PRICING</span>
+      </div>
+    </div>
+
+    <p class="pipelinelabel">How migration works</p>
+
+    <div class="pipe">
+      <!-- 01 EXPORT -->
+      <div class="stage">
+        <span class="stagelabel"><b>01</b> · Export</span>
+        <div class="plate">
+          <div class="toolrow"><span class="tooldot"></span><span class="toolname">FIREFLIES</span><span class="toolbyte">MP3</span></div>
+          <div class="toolrow"><span class="tooldot"></span><span class="toolname">OTTER</span><span class="toolbyte">MP3</span></div>
+          <div class="toolrow"><span class="tooldot"></span><span class="toolname">FATHOM</span><span class="toolbyte">MP3</span></div>
+        </div>
+      </div>
+
+      <div class="pipeseg">
+        <div class="pips"></div>
+        <div class="pipchips"><span class="pchip">BULK-SAFE</span></div>
+        <div class="pips"></div>
+      </div>
+
+      <!-- 02 IMPORT -->
+      <div class="stage">
+        <span class="stagelabel"><b>02</b> · Import</span>
+        <div class="plate">
+          <div class="filebar"><i></i><span>GAUGE TRAY · DROP 100+</span></div>
+          <div class="spek"><span class="spk a"></span><span class="bar" style="width:56%"></span></div>
+          <div class="spek"><span class="spk b"></span><span class="bar" style="width:40%"></span></div>
+          <div class="spek"><span class="spk a"></span><span class="bar" style="width:66%"></span></div>
+        </div>
+      </div>
+
+      <div class="pipeseg">
+        <div class="pips"></div>
+        <div class="pipchips"><span class="pchip">SPEAKER-LABELED</span></div>
+        <div class="pips"></div>
+      </div>
+
+      <!-- 03 SEARCHABLE -->
+      <div class="stage">
+        <span class="stagelabel"><b>03</b> · Searchable</span>
+        <div class="plate">
+          <div class="searchbox">
+            <svg viewBox="0 0 24 24" fill="none" stroke="#8b8f9a" stroke-width="2.2"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+            <span>"pricing objection Gong"…</span>
+            <span class="c"></span>
+          </div>
+          <div class="hit"><b></b><span class="toolname">ACME · 14:22 · "evaluating Gong"</span></div>
+          <div class="hit"><b></b><span class="toolname">STARK · 09:03 · budget secured</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="footrow">
+      <span class="crmtok dot hs"></span>
+      <span class="crmtok">HUBSPOT FIELDS SYNCED</span>
+      <span class="crmtok dot sf"></span>
+      <span class="crmtok">SALESFORCE FIELDS SYNCED</span>
+    </div>
+
+    <p class="footnote">Sample CRM sync · keep your HubSpot + Salesforce workflow</p>
+  </div>
+  <div class="grain"></div>
+</section>
+</div>
+</body>
+</html>

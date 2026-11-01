@@ -1,79 +1,96 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 480" fill="none" role="img" aria-label="Call summary card with owners and due dates">
-  <defs>
-    <filter id="softShadow" x="-8%" y="-8%" width="116%" height="116%">
-      <feDropShadow dx="0" dy="8" stdDeviation="16" flood-color="#131316" flood-opacity="0.08"/>
-    </filter>
-    <filter id="cardShadow" x="-4%" y="-4%" width="108%" height="112%">
-      <feDropShadow dx="0" dy="3" stdDeviation="8" flood-color="#131316" flood-opacity="0.07"/>
-    </filter>
-    <linearGradient id="bgGrad" x1="0" y1="0" x2="720" y2="480" gradientUnits="userSpaceOnUse">
-      <stop stop-color="#F7F7F8"/>
-      <stop offset="1" stop-color="#EEEEF0"/>
-    </linearGradient>
-  </defs>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 400" role="img" aria-label="Sample call summary with owners and due dates">
+  <rect width="640" height="400" fill="#FFFFFF"/>
 
-  <rect width="720" height="480" fill="url(#bgGrad)"/>
+  <!-- title row -->
+  <text x="24" y="34" font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif" font-size="15" font-weight="700" fill="#131316">Acme Corp · Discovery</text>
+  <rect x="292" y="20" width="58" height="20" rx="10" fill="#FFF4ED"/>
+  <text x="321" y="33" text-anchor="middle" font-family="ui-monospace,Menlo,monospace" font-size="9" fill="#c2410c">BANT ✓</text>
+  <rect x="358" y="20" width="66" height="20" rx="10" fill="#F4F4F5"/>
+  <text x="391" y="33" text-anchor="middle" font-family="ui-monospace,Menlo,monospace" font-size="9" fill="#52525B">42 min</text>
+  <rect x="432" y="20" width="70" height="20" rx="10" fill="#F0FDF4"/>
+  <text x="467" y="33" text-anchor="middle" font-family="ui-monospace,Menlo,monospace" font-size="9" fill="#047857">SENTIMENT 0.86</text>
 
-  <!-- Browser chrome -->
-  <g filter="url(#softShadow)">
-    <rect x="40" y="28" width="640" height="424" rx="14" fill="#FFFFFF" stroke="#E4E4E7" stroke-width="1"/>
-    <rect x="40" y="28" width="640" height="40" rx="14" fill="#FAFAFA"/>
-    <rect x="40" y="54" width="640" height="14" fill="#FAFAFA"/>
-    <circle cx="62" cy="48" r="5" fill="#FF5F57"/>
-    <circle cx="80" cy="48" r="5" fill="#FEBC2E"/>
-    <circle cx="98" cy="48" r="5" fill="#28C840"/>
-    <rect x="220" y="38" width="280" height="20" rx="6" fill="#FFFFFF" stroke="#E4E4E7"/>
-    <text x="360" y="52" text-anchor="middle" font-family="ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="10" fill="#71717A">app.gauge.ai / summary / acme-discovery</text>
+  <!-- summary line -->
+  <text x="24" y="72" font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif" font-size="12" font-weight="600" fill="#71717A" letter-spacing="1">SUMMARY</text>
+  <rect x="24" y="84" width="560" height="6" rx="3" fill="#18181B" opacity="0.85"/>
+  <rect x="24" y="98" width="486" height="6" rx="3" fill="#27272A" opacity="0.55"/>
+  <rect x="24" y="112" width="318" height="6" rx="3" fill="#27272A" opacity="0.35"/>
+
+  <!-- action items -->
+  <text x="24" y="152" font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif" font-size="12" font-weight="600" fill="#71717A" letter-spacing="1">ACTION ITEMS · 3</text>
+  <g>
+    <rect x="24" y="166" width="278" height="34" rx="9" fill="#FAFAFA" stroke="#E4E4E7" stroke-width="1"/>
+    <rect x="24" y="208" width="278" height="34" rx="9" fill="#FAFAFA" stroke="#E4E4E7" stroke-width="1"/>
+    <rect x="24" y="250" width="278" height="34" rx="9" fill="#FAFAFA" stroke="#E4E4E7" stroke-width="1"/>
+    <circle cx="42" cy="183" r="5" fill="#F26522"/><circle cx="42" cy="225" r="5" fill="#818CF8"/><circle cx="42" cy="267" r="5" fill="#10B981"/>
+    <rect x="56" y="171" width="150" height="5" rx="2.5" fill="#18181B" opacity="0.8"/>
+    <rect x="56" y="184" width="96" height="5" rx="2.5" fill="#27272A" opacity="0.4"/>
+    <rect x="56" y="213" width="128" height="5" rx="2.5" fill="#18181B" opacity="0.8"/>
+    <rect x="56" y="226" width="150" height="5" rx="2.5" fill="#27272A" opacity="0.4"/>
+    <rect x="56" y="255" width="112" height="5" rx="2.5" fill="#18181B" opacity="0.8"/>
+    <rect x="56" y="268" width="84" height="5" rx="2.5" fill="#27272A" opacity="0.4"/>
+    <!-- owner chips -->
+    <rect x="212" y="175" width="76" height="16" rx="8" fill="#FFF4ED"/>
+    <text x="250" y="186" text-anchor="middle" font-family="ui-monospace,Menlo,monospace" font-size="8" fill="#c2410c">MAYA KIM</text>
+    <rect x="212" y="217" width="76" height="16" rx="8" fill="#EEF2FF"/>
+    <text x="250" y="228" text-anchor="middle" font-family="ui-monospace,Menlo,monospace" font-size="8" fill="#4338CA">JAKE DOYLE</text>
+    <rect x="212" y="259" width="76" height="16" rx="8" fill="#ECFDF5"/>
+    <text x="250" y="270" text-anchor="middle" font-family="ui-monospace,Menlo,monospace" font-size="8" fill="#047857">SARAH CHEN</text>
   </g>
 
-  <!-- Header -->
-  <text x="64" y="100" font-family="ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="11" font-weight="600" fill="#A1A1AA" letter-spacing="0.04em">CALL SUMMARY</text>
-  <text x="64" y="126" font-family="ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="20" font-weight="600" fill="#131316">Acme Corp · Discovery</text>
-  <rect x="500" y="104" width="156" height="26" rx="13" fill="#F4F4F5"/>
-  <text x="578" y="121" text-anchor="middle" font-family="ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace" font-size="11" fill="#52525B">42 min · 3 owners</text>
-
-  <!-- Summary body card -->
-  <g filter="url(#cardShadow)">
-    <rect x="64" y="152" width="360" height="260" rx="12" fill="#FFFFFF" stroke="#E4E4E7"/>
+  <!-- owners panel -->
+  <g>
+    <rect x="330" y="166" width="286" height="118" rx="12" fill="#FAFAFA" stroke="#E4E4E7" stroke-width="1"/>
+    <text x="350" y="192" font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif" font-size="11" font-weight="600" fill="#71717A" letter-spacing="1">OWNERS</text>
+    <g font-family="ui-monospace,Menlo,monospace" font-size="9" fill="#3F3F46">
+      <circle cx="356" cy="214" r="7" fill="#F26522"/>
+      <text x="372" y="218" fill="#18181B" font-weight="600">Maya Kim</text>
+      <rect x="524" y="206" width="74" height="16" rx="8" fill="#FFF4ED"/>
+      <text x="561" y="217" text-anchor="middle" font-size="8" fill="#c2410c">DUE OCT 14</text>
+    </g>
+    <g font-family="ui-monospace,Menlo,monospace" font-size="9">
+      <circle cx="356" cy="244" r="7" fill="#818CF8"/>
+      <text x="372" y="248" fill="#18181B" font-weight="600" font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif">Jake Doyle</text>
+      <rect x="524" y="236" width="74" height="16" rx="8" fill="#EEF2FF"/>
+      <text x="561" y="247" text-anchor="middle" font-size="8" fill="#4338CA">DUE OCT 17</text>
+    </g>
+    <g>
+      <circle cx="356" cy="274" r="7" fill="#10B981"/>
+      <text x="372" y="278" fill="#18181B" font-weight="600" font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif" font-size="11">Sarah Chen</text>
+      <rect x="524" y="266" width="74" height="16" rx="8" fill="#F0FDF4"/>
+      <text x="561" y="277" text-anchor="middle" font-family="ui-monospace,Menlo,monospace" font-size="8" fill="#047857">DONE ✓</text>
+    </g>
   </g>
-  <text x="84" y="184" font-family="ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="12" font-weight="600" fill="#131316">Key takeaways</text>
-  <circle cx="92" cy="216" r="4" fill="#F26522"/>
-  <text x="108" y="220" font-family="ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="13" fill="#3F3F46">Evaluating Gong and Chorus for rollout</text>
-  <circle cx="92" cy="252" r="4" fill="#F26522"/>
-  <text x="108" y="256" font-family="ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="13" fill="#3F3F46">Q3 timeline preferred; security review open</text>
-  <circle cx="92" cy="288" r="4" fill="#F26522"/>
-  <text x="108" y="292" font-family="ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="13" fill="#3F3F46">Need side-by-side competitive comparison</text>
 
-  <rect x="84" y="320" width="320" height="1" fill="#E4E4E7"/>
-  <text x="84" y="352" font-family="ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="12" font-weight="600" fill="#131316">Sentiment</text>
-  <rect x="84" y="368" width="200" height="10" rx="5" fill="#F4F4F5"/>
-  <rect x="84" y="368" width="148" height="10" rx="5" fill="#16A34A"/>
-  <text x="84" y="398" font-family="ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="11" fill="#71717A">Positive · high buying intent</text>
-
-  <!-- Owners panel -->
-  <g filter="url(#cardShadow)">
-    <rect x="444" y="152" width="212" height="260" rx="12" fill="#FFFFFF" stroke="#E4E4E7"/>
+  <!-- rival signal + health -->
+  <g>
+    <rect x="330" y="304" width="140" height="34" rx="9" fill="#FFF7ED" stroke="#FED7AA" stroke-width="1"/>
+    <text x="348" y="318" font-family="ui-monospace,Menlo,monospace" font-size="8" fill="#9A3412" letter-spacing="1">RIVAL SIGNAL</text>
+    <text x="348" y="331" font-family="ui-monospace,Menlo,monospace" font-size="11" font-weight="700" fill="#c2410c">Gong</text>
+    <rect x="478" y="304" width="138" height="34" rx="9" fill="#ECFDF5" stroke="#A7F3D0" stroke-width="1"/>
+    <text x="496" y="318" font-family="ui-monospace,Menlo,monospace" font-size="8" fill="#065F46" letter-spacing="1">HEALTH SCORE</text>
+    <text x="496" y="332" font-family="ui-monospace,Menlo,monospace" font-size="13" font-weight="700" fill="#047857">8.2<tspan font-size="8" fill="#6EE7B7" font-weight="400"> / 10</tspan></text>
   </g>
-  <text x="464" y="184" font-family="ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="12" font-weight="600" fill="#131316">Owners &amp; due dates</text>
 
-  <!-- Owner 1 -->
-  <rect x="464" y="204" width="172" height="56" rx="10" fill="#FAFAFA" stroke="#E4E4E7"/>
-  <circle cx="486" cy="232" r="14" fill="#F26522"/>
-  <text x="486" y="236" text-anchor="middle" font-family="ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="9" font-weight="700" fill="#FFFFFF">MK</text>
-  <text x="508" y="226" font-family="ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="12" font-weight="600" fill="#131316">Maya Kim</text>
-  <text x="508" y="244" font-family="ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="10" fill="#71717A">Comp sheet · Oct 9</text>
+  <!-- crm write row -->
+  <g>
+    <text x="312" y="300" text-anchor="end" font-family="ui-monospace,Menlo,monospace" font-size="8" fill="#059669">SYNCED 12S AGO</text>
+    <rect x="24" y="304" width="288" height="34" rx="9" fill="#FAFAFA" stroke="#E4E4E7" stroke-width="1"/>
+    <circle cx="44" cy="321" r="8" fill="#FF7A59"/>
+    <text x="60" y="319" font-family="ui-monospace,Menlo,monospace" font-size="9" font-weight="600" fill="#18181B">HUBSPOT</text>
+    <path d="M52 321h74" stroke="#F26522" stroke-opacity="0.35" stroke-width="1"/>
+    <circle cx="134" cy="321" r="2.5" fill="#F26522"/>
+    <circle cx="156" cy="321" r="8" fill="#00A1E0"/>
+    <text x="172" y="319" font-family="ui-monospace,Menlo,monospace" font-size="9" font-weight="600" fill="#18181B">SALESFORCE</text>
+    <circle cx="284" cy="321" r="6" fill="#10B981" opacity="0.15"/>
+    <path d="M281 321l2 2 4-5" stroke="#059669" stroke-width="1.6" fill="none"/>
+  </g>
 
-  <!-- Owner 2 -->
-  <rect x="464" y="272" width="172" height="56" rx="10" fill="#FAFAFA" stroke="#E4E4E7"/>
-  <circle cx="486" cy="300" r="14" fill="#131316"/>
-  <text x="486" y="304" text-anchor="middle" font-family="ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="9" font-weight="700" fill="#FFFFFF">JR</text>
-  <text x="508" y="294" font-family="ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="12" font-weight="600" fill="#131316">Jordan Rhee</text>
-  <text x="508" y="312" font-family="ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="10" fill="#71717A">Security pack · Oct 11</text>
-
-  <!-- Owner 3 -->
-  <rect x="464" y="340" width="172" height="56" rx="10" fill="#FFF8F4" stroke="#F26522"/>
-  <circle cx="486" cy="368" r="14" fill="#F26522"/>
-  <text x="486" y="372" text-anchor="middle" font-family="ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="9" font-weight="700" fill="#FFFFFF">SC</text>
-  <text x="508" y="362" font-family="ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="12" font-weight="600" fill="#131316">Sarah Chen</text>
-  <text x="508" y="380" font-family="ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="10" fill="#F26522">Confirm budget · Oct 14</text>
+  <!-- footer strip -->
+  <rect x="0" y="366" width="640" height="34" fill="#FAFAFA"/>
+  <line x1="0" y1="366" x2="640" y2="366" stroke="#E4E4E7" stroke-width="1"/>
+  <text x="24" y="387" font-family="ui-monospace,Menlo,monospace" font-size="9" fill="#71717A">CONFIDENCE 0.96</text>
+  <rect x="140" y="380" width="90" height="6" rx="3" fill="#ECECEC"/>
+  <rect x="140" y="380" width="82" height="6" rx="3" fill="#F26522"/>
+  <text x="616" y="387" text-anchor="end" font-family="ui-monospace,Menlo,monospace" font-size="9" fill="#047857">3 OWNERS · 3 ACTION ITEMS</text>
 </svg>

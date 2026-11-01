@@ -3,9 +3,10 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import { useUser } from "@clerk/nextjs";
 import type { Paddle } from "@paddle/paddle-js";
-import { CheckCircle, Loader2, ArrowRight, Zap, Plus, Minus, ShieldCheck, RotateCcw, CreditCard, Clock, TrendingUp, ArrowUpRight, Download } from "lucide-react";
+import { CheckCircle, Loader2, ArrowRight, Zap, Plus, Minus, ShieldCheck, RotateCcw, CreditCard, Clock, TrendingUp } from "lucide-react";
 import Link from "next/link";
 import { trackEvent } from "@/lib/analytics";
+import { useAmbientLive } from "@/components/use-ambient-live";
 import type { Tier } from "@/lib/pricing-tiers";
 import { PRODUCT_STILLS } from "@/lib/demo-call-fiction";
 import PricingCalculator from "@/components/pricing-calculator";
@@ -137,6 +138,8 @@ export default function PricingClient({
   const [checkingOut, setCheckingOut] = useState(false);
   const checkingOutRef = useRef(false);
   const [paddleError, setPaddleError] = useState(false);
+  // Ambient pipe-dots in the migration band pause off-screen + reduced motion.
+  const migrateSectionRef = useAmbientLive<HTMLElement>();
 
   // Map tier name -> formatted total string from Paddle PricePreview.
   const [prices, setPrices] = useState<Record<string, string>>({});
@@ -312,47 +315,38 @@ export default function PricingClient({
               </div>
             </div>
 
-            {/* RIGHT: Pro proof visual — product still inside .product-chrome,
-                so visitors see what Pro actually buys. Caption reuses honest
-                plan facts only. */}
+            {/* RIGHT: Pro proof visual — obsidian proof island (Batch B).
+                The still does the talking; copy collapses to a mono proof
+                ledger. .product-chrome supplies the browser strip; pinned
+                caption + strip strings stay verbatim. */}
             <div className="relative">
-              <div className="doppel-outer">
-                <div className="doppel-inner bg-white p-0 overflow-hidden">
-                  <div
-                    data-testid="pricing-pro-visual"
-                    className="product-chrome m-2 mb-0"
-                  >
-                    {/* eslint-disable-next-line @next/next/no-img-element -- img keeps vitest free of next/image mocks */}
-                    <img
-                      src={PRODUCT_STILLS.summary}
-                      alt="Sample call summary still with owners and due dates"
-                      width={640}
-                      height={400}
-                      className="block w-full h-auto"
-                    />
-                  </div>
-                  <div className="px-5 sm:px-6 py-4">
-                    <p className="text-[13px] font-medium text-gray-900">
-                      Pro · $9/mo flat · 5 seats included
-                    </p>
-                    <p className="text-[10px] font-mono text-gray-500 mt-1">
-                      sample summary · owners + dates · 1,200 min/mo
-                    </p>
-                  </div>
-
-                  <div className="px-5 sm:px-6 py-3 border-t border-black/[0.06] flex items-center justify-between text-[10px] text-gray-500">
-                    <span className="flex items-center gap-1.5">
-                      <span aria-hidden className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
-                      1,200 min/mo
-                    </span>
-                    <span className="flex items-center gap-1.5">
-                      <span aria-hidden className="w-1.5 h-1.5 rounded-full bg-[#F26522]" />
-                      HubSpot + Salesforce
-                    </span>
-                    <span className="hidden sm:flex items-center gap-1.5">
-                      Cancel anytime
-                    </span>
-                  </div>
+              <div className="fph-island">
+                <div className="fph-islandmeta">
+                  <span className="fph-ilabel"><b>Pro</b> · What you get</span>
+                  <span className="fph-itag">Sample</span>
+                </div>
+                <div
+                  data-testid="pricing-pro-visual"
+                  className="product-chrome fph-chrome"
+                >
+                  {/* eslint-disable-next-line @next/next/no-img-element -- img keeps vitest free of next/image mocks */}
+                  <img
+                    src={PRODUCT_STILLS.summary}
+                    alt="Sample call summary still with owners and due dates"
+                    width={640}
+                    height={400}
+                    className="block w-full h-auto"
+                  />
+                </div>
+                <div className="fph-ledger">
+                  <span className="fph-tok fph-tok--g"><b aria-hidden="true" />1,200 min/mo</span>
+                  <span className="fph-tok fph-tok--o"><b aria-hidden="true" />HubSpot + Salesforce</span>
+                  <span className="fph-tok fph-tok--d">Cancel anytime</span>
+                </div>
+                <div className="fph-divider" />
+                <div className="fph-srcrow">
+                  <span className="fph-proline"><i aria-hidden="true" />Pro · $9/mo flat · 5 seats included</span>
+                  <span className="fph-minnote">No per-seat math</span>
                 </div>
               </div>
             </div>
@@ -632,107 +626,131 @@ export default function PricingClient({
         </div>
       </section>
 
-      {/* Switching from a competitor */}
-      <section className="pb-12 sm:pb-16 px-5 sm:px-8 lg:px-12">
-        <div className="max-w-[1440px] mx-auto">
-          <div className="doppel-outer">
-            <div className="doppel-inner p-6 sm:p-8 lg:p-10">
-              <div className="grid grid-cols-1 lg:grid-cols-[1fr_1.2fr] gap-8 items-center">
-                <div>
-                  <div className="eyebrow inline-flex items-center gap-2 mb-3">
-                    <ArrowUpRight size={12} /> Switching?
-                  </div>
-                  <h3 className="text-[clamp(1.25rem,3vw,1.75rem)] font-medium leading-[1.1] tracking-[-0.02em] mb-3">
-                    Moving from Fireflies, Otter, or Fathom?
-                  </h3>
-                  <p className="text-[13px] text-gray-500">
-                    You don&apos;t need to change your workflow. Upload your calls, keep your CRM, and get better notes at a flat price.
-                  </p>
-                </div>
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                  {[
-                    {
-                      icon: Download,
-                      title: "Bring your history",
-                      body: "Export MP3s from your old tool and upload them in bulk.",
-                    },
-                    {
-                      icon: ShieldCheck,
-                      title: "No bot joins calls",
-                      body: "We never auto-join your meetings. Consent-first, always.",
-                    },
-                    {
-                      icon: CreditCard,
-                      title: "Flat-rate pricing",
-                      body: "Stop multiplying per-seat costs. One price. No per-seat math.",
-                    },
-                  ].map((item) => (
-                    <div key={item.title} className="flex flex-col items-start">
-                      <div className="w-9 h-9 rounded-full bg-[#F26522]/10 flex items-center justify-center mb-3">
-                        <item.icon size={18} className="text-[#F26522]" />
-                      </div>
-                      <h4 className="text-[13px] font-semibold text-gray-900 mb-1">{item.title}</h4>
-                      <p className="text-[12px] text-gray-500 leading-relaxed">{item.body}</p>
-                    </div>
-                  ))}
-                </div>
-                {/* Migration visual — product still inside .product-chrome
-                    proving CRM carryover; export → import → searchable steps
-                    kept verbatim as text (no coded mock cards, no film
-                    tokens). Copy above kept verbatim. */}
-                <div className="mt-8 rounded-2xl bg-white border border-black/[0.06] p-5 sm:p-6">
-                  <p className="text-[10px] font-mono uppercase tracking-[0.18em] text-gray-500 mb-4 text-center">
-                    How migration works
-                  </p>
-                  <div
-                    data-testid="pricing-migration-visual"
-                    className="product-chrome"
-                  >
-                    {/* eslint-disable-next-line @next/next/no-img-element -- img keeps vitest free of next/image mocks */}
-                    <img
-                      src={PRODUCT_STILLS.crm}
-                      alt="Sample CRM sync still with HubSpot and Salesforce fields"
-                      width={640}
-                      height={400}
-                      loading="lazy"
-                      className="block w-full h-auto"
-                    />
-                  </div>
-                  <p className="mt-3 text-center text-[10px] font-mono text-gray-500">
-                    sample CRM sync · keep your HubSpot + Salesforce workflow
-                  </p>
-                  <ol className="mt-4 grid grid-cols-1 sm:grid-cols-3 gap-4">
-                    {[
-                      {
-                        step: "01",
-                        title: "Export",
-                        body: "Download MP3s from Fireflies, Otter, or Fathom.",
-                      },
-                      {
-                        step: "02",
-                        title: "Import",
-                        body: "Bulk-upload to Gauge — transcripts with speaker labels.",
-                      },
-                      {
-                        step: "03",
-                        title: "Searchable",
-                        body: "Summaries, quotes, and action items in one search.",
-                      },
-                    ].map((s) => (
-                      <li key={s.step} className="px-2 text-center">
-                        <p className="text-[10px] font-mono text-[#F26522] font-semibold mb-1">
-                          {s.step} · {s.title}
-                        </p>
-                        <p className="text-[12px] text-gray-500 leading-relaxed">
-                          {s.body}
-                        </p>
-                      </li>
-                    ))}
-                  </ol>
-                </div>
-              </div>
+      {/* Switching from a competitor — obsidian pipeline band (Batch B).
+          Copy pins verbatim; the pipeline is one styled scene
+          (role="img") instead of a product still, matching the shipped
+          workflow console. Export/Import/Searchable stay as text. */}
+      <section
+        data-live="false"
+        ref={migrateSectionRef}
+        className="fpm-band py-16 sm:py-20 px-5 sm:px-8 lg:px-12"
+      >
+        <div className="fpm-grain" aria-hidden="true" />
+        <div className="max-w-[1300px] mx-auto relative">
+          <div className="grid grid-cols-1 lg:grid-cols-[1fr_auto] gap-6 lg:gap-10 items-start">
+            <div>
+              <p className="fpm-eyebrow">Switching?</p>
+              <h3 className="fpm-title">
+                Moving from Fireflies, Otter, or Fathom?{" "}
+                <span className="fpm-soft">Keep everything.</span>
+              </h3>
+              <p className="fpm-sub">
+                You don&apos;t need to change your workflow. Upload your calls, keep your CRM, and get better notes at a flat price.
+              </p>
+            </div>
+            <div className="fpm-promises">
+              <span className="fpm-ptok"><b aria-hidden="true" />BRING YOUR HISTORY</span>
+              <span className="fpm-ptok fpm-ptok--o"><b aria-hidden="true" />NO BOT JOINS CALLS</span>
+              <span className="fpm-ptok"><b aria-hidden="true" />FLAT-RATE PRICING</span>
             </div>
           </div>
+
+          <p className="fpm-plabel">How migration works</p>
+
+          <div
+            data-testid="pricing-migration-visual"
+            className="fpm-pipe"
+            role="img"
+            aria-label="How migration works — Export MP3s from Fireflies, Otter, or Fathom; bulk-import to Gauge with speaker labels; summaries, quotes, and action items all searchable."
+          >
+            {/* 01 Export */}
+            <div className="fpm-stage">
+              <span className="fpm-stagelabel"><b>01</b> · Export</span>
+              <div className="fpm-plate">
+                <div className="fpm-toolrow">
+                  <span className="fpm-tooldot" aria-hidden="true" />
+                  <span className="fpm-toolname">FIREFLIES</span>
+                  <span className="fpm-toolbyte">MP3</span>
+                </div>
+                <div className="fpm-toolrow">
+                  <span className="fpm-tooldot" aria-hidden="true" />
+                  <span className="fpm-toolname">OTTER</span>
+                  <span className="fpm-toolbyte">MP3</span>
+                </div>
+                <div className="fpm-toolrow">
+                  <span className="fpm-tooldot" aria-hidden="true" />
+                  <span className="fpm-toolname">FATHOM</span>
+                  <span className="fpm-toolbyte">MP3</span>
+                </div>
+              </div>
+              <p className="fpm-stepcap">Download MP3s from Fireflies, Otter, or Fathom.</p>
+            </div>
+
+            <div className="fpm-pipeseg" aria-hidden="true">
+              <span className="fpm-pips" />
+              <div className="fpm-pipchips"><span className="fpm-pchip">BULK-SAFE</span></div>
+              <span className="fpm-pips" />
+            </div>
+
+            {/* 02 Import */}
+            <div className="fpm-stage">
+              <span className="fpm-stagelabel"><b>02</b> · Import</span>
+              <div className="fpm-plate">
+                <div className="fpm-filebar"><i aria-hidden="true" /><span>GAUGE TRAY · DROP 100+</span></div>
+                <div className="fpm-spek">
+                  <span className="fpm-spk fpm-spk--a" aria-hidden="true" />
+                  <span className="fpm-sbar" style={{ width: "56%" }} />
+                </div>
+                <div className="fpm-spek">
+                  <span className="fpm-spk fpm-spk--b" aria-hidden="true" />
+                  <span className="fpm-sbar" style={{ width: "40%" }} />
+                </div>
+                <div className="fpm-spek">
+                  <span className="fpm-spk fpm-spk--a" aria-hidden="true" />
+                  <span className="fpm-sbar" style={{ width: "66%" }} />
+                </div>
+              </div>
+              <p className="fpm-stepcap">Bulk-upload to Gauge — transcripts with speaker labels.</p>
+            </div>
+
+            <div className="fpm-pipeseg" aria-hidden="true">
+              <span className="fpm-pips" />
+              <div className="fpm-pipchips"><span className="fpm-pchip">SPEAKER-LABELED</span></div>
+              <span className="fpm-pips" />
+            </div>
+
+            {/* 03 Searchable */}
+            <div className="fpm-stage">
+              <span className="fpm-stagelabel"><b>03</b> · Searchable</span>
+              <div className="fpm-plate">
+                <div className="fpm-searchbox">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="#8b8f9a" strokeWidth="2.2" aria-hidden="true">
+                    <circle cx="11" cy="11" r="7" />
+                    <path d="m20 20-3.5-3.5" />
+                  </svg>
+                  <span>&quot;pricing objection Gong&quot;…</span>
+                  <span className="fpm-searchc" aria-hidden="true" />
+                </div>
+                <div className="fpm-hit">
+                  <b aria-hidden="true" />
+                  <span className="fpm-toolname">ACME · 14:22 · &quot;evaluating Gong&quot;</span>
+                </div>
+                <div className="fpm-hit">
+                  <b aria-hidden="true" />
+                  <span className="fpm-toolname">STARK · 09:03 · budget secured</span>
+                </div>
+              </div>
+              <p className="fpm-stepcap">Summaries, quotes, and action items in one search.</p>
+            </div>
+          </div>
+
+          <div className="fpm-footrow">
+            <span className="fpm-crmtok fpm-crmtok--sw fpm-crmtok--hs" aria-hidden="true" />
+            <span className="fpm-crmtok">HubSpot fields synced</span>
+            <span className="fpm-crmtok fpm-crmtok--sw fpm-crmtok--sf" aria-hidden="true" />
+            <span className="fpm-crmtok">Salesforce fields synced</span>
+          </div>
+          <p className="fpm-footnote">sample CRM sync · keep your HubSpot + Salesforce workflow</p>
         </div>
       </section>
 

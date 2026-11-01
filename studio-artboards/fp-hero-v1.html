@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Pricing Hero — V1 OBSIDIAN PROOF ISLAND</title>
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; }
+  :root{
+    --orange:#F26522; --orange-deep:#c2410c;
+    --glass-hi:rgba(255,255,255,0.085); --glass-lo:rgba(255,255,255,0.018);
+    --mline:rgba(255,255,255,.09); --mono:"SF Mono",ui-monospace,Menlo,monospace;
+  }
+  body{ width:1440px; background:#EFEFEF; font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif; color:#131316; -webkit-font-smoothing:antialiased; }
+
+  .hero{ position:relative; overflow:hidden; padding:96px 70px 64px; }
+  .hero::before{ content:""; position:absolute; inset:0; pointer-events:none;
+    background:radial-gradient(900px 420px at 84% 0%, rgba(242,101,34,.08), transparent 60%); }
+  .inner{ max-width:1300px; margin:0 auto; display:grid; grid-template-columns:1.05fr 0.95fr; gap:56px; align-items:end; position:relative; }
+
+  /* left — copy light, page tone */
+  .eyebrow{ font-family:var(--mono); font-size:11px; letter-spacing:.18em; color:#8a857c; display:inline-flex; align-items:center; gap:8px; text-transform:uppercase; }
+  .eyebrow::before{ content:""; width:5px; height:5px; border-radius:50%; background:var(--orange); }
+  h1{ font-size:56px; line-height:1.08; letter-spacing:-.032em; font-weight:500; margin:18px 0 12px; }
+  h1 .soft{ color:#a8a49c; }
+  .sub{ font-size:14px; color:#6f6a61; max-width:44ch; margin-bottom:24px; }
+  .toggle{ display:inline-flex; align-items:center; gap:0; border:1px solid rgba(19,19,22,.12); border-radius:999px; padding:4px; background:#fff; box-shadow:0 1px 2px rgba(19,19,22,.05); }
+  .tg{ font-size:12px; font-weight:600; color:#6f6a61; padding:8px 18px; border-radius:999px; }
+  .tg.on{ background:#131316; color:#fff; }
+  .tgnote{ font-family:var(--mono); font-size:9.5px; letter-spacing:.12em; color:#a8a49c; margin-left:12px; }
+
+  /* right — obsidian proof island */
+  .island{
+    border-radius:26px; padding:16px 16px 18px;
+    background:
+      linear-gradient(180deg, var(--glass-hi), var(--glass-lo)),
+      linear-gradient(180deg, #141419, #0b0b0f);
+    border:1px solid var(--mline);
+    box-shadow:0 60px 120px rgba(19,19,22,.35), inset 0 1px 0 rgba(255,255,255,.09);
+    color:#fff; position:relative;
+  }
+  .islandmeta{ display:flex; justify-content:space-between; align-items:center; margin:4px 4px 12px; }
+  .ilabel{ font-family:var(--mono); font-size:10px; letter-spacing:.18em; color:#b9bdc8; }
+  .ilabel b{ color:#fb923c; font-weight:600; }
+  .itag{ font-family:var(--mono); font-size:9px; letter-spacing:.18em; color:#6b707c; border:1px solid rgba(255,255,255,.12); border-radius:999px; padding:5px 10px; }
+  .chrome{
+    border-radius:16px; overflow:hidden; border:1px solid rgba(255,255,255,.12);
+    box-shadow:0 24px 50px rgba(0,0,0,.55); background:#fff;
+  }
+  .chromestrip{ display:flex; align-items:center; height:26px; padding-left:14px; font-family:var(--mono); font-size:10px; color:#71717a; background:#fafafa; border-bottom:1px solid #e4e4e7; letter-spacing:.02em; }
+  .still{ display:block; width:100%; height:auto; }
+
+  .ledger{ margin:14px 6px 0; display:flex; align-items:center; gap:8px; flex-wrap:wrap; }
+  .tok{ font-family:var(--mono); font-size:10px; letter-spacing:.12em; color:#c6c9d2; padding:8px 11px; border-radius:999px;
+    background:rgba(255,255,255,.045); border:1px solid rgba(255,255,255,.10); white-space:nowrap; display:inline-flex; align-items:center; gap:7px; }
+  .tok b{ width:6px; height:6px; border-radius:50%; flex:none; }
+  .tok.g b{ background:#34d399; box-shadow:0 0 8px rgba(52,211,153,.7); }
+  .tok.o{ color:#fdba74; border-color:rgba(242,101,34,.38); background:rgba(242,101,34,.09); font-weight:600; }
+  .tok.d{ color:#8b8f9a; }
+  .tok .rt{ color:#fdba74; }
+
+  .divider{ height:1px; background:linear-gradient(90deg, rgba(255,255,255,.13), transparent); margin:14px 6px; }
+  .srcrow{ display:flex; align-items:center; justify-content:space-between; margin:0 6px; }
+  .proline{ font-family:var(--mono); font-size:11px; letter-spacing:.14em; color:#d3d6de; text-transform:uppercase; }
+  .proline .price{ color:#fb923c; font-weight:600; }
+  .proline i{ width:5px; height:5px; border-radius:50%; background:#34d399; box-shadow:0 0 8px rgba(52,211,153,.7); display:inline-block; margin-right:8px; vertical-align:1px; font-style:normal; }
+  .minnote{ font-family:var(--mono); font-size:9px; letter-spacing:.14em; color:#6b707c; }
+</style>
+</head>
+<body>
+<div class="capture">
+<section class="hero">
+  <div class="inner">
+    <!-- LEFT -->
+    <div>
+      <p class="eyebrow">Simple, transparent pricing</p>
+      <h1>Free for SDRs.<br><span class="soft">Scale when you need to.</span></h1>
+      <p class="sub">No hidden fees. No AI credit traps. Prices shown in your local currency. Start free, upgrade only when your team grows.</p>
+      <span class="toggle"><span class="tg on">Monthly</span><span class="tg">Annual</span></span>
+      <span class="tgnote">SAVE WITH ANNUAL</span>
+    </div>
+
+    <!-- RIGHT — obsidian proof island -->
+    <div class="island">
+      <div class="islandmeta">
+        <span class="ilabel"><b>PRO</b> · WHAT YOU GET</span>
+        <span class="itag">SAMPLE</span>
+      </div>
+
+      <div class="chrome">
+        <div class="chromestrip">usegauge.com/intel</div>
+        <!-- REBUILT DENSE SUMMARY STILL (same 640x480 canvas) -->
+        <svg class="still" viewBox="0 0 640 400" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Sample call summary with owners and due dates">
+          <rect width="640" height="400" fill="#FFFFFF"/>
+
+          <!-- title row -->
+          <text x="24" y="34" font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif" font-size="15" font-weight="700" fill="#131316">Acme Corp · Discovery</text>
+          <rect x="292" y="20" width="58" height="20" rx="10" fill="#FFF4ED"/>
+          <text x="321" y="33" text-anchor="middle" font-family="ui-monospace,Menlo,monospace" font-size="9" fill="#c2410c">BANT ✓</text>
+          <rect x="358" y="20" width="66" height="20" rx="10" fill="#F4F4F5"/>
+          <text x="391" y="33" text-anchor="middle" font-family="ui-monospace,Menlo,monospace" font-size="9" fill="#52525B">42 min</text>
+          <rect x="432" y="20" width="70" height="20" rx="10" fill="#F0FDF4"/>
+          <text x="467" y="33" text-anchor="middle" font-family="ui-monospace,Menlo,monospace" font-size="9" fill="#047857">SENTIMENT 0.86</text>
+
+          <!-- summary line -->
+          <text x="24" y="72" font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif" font-size="12" font-weight="600" fill="#71717A" letter-spacing="1">SUMMARY</text>
+          <rect x="24" y="84" width="560" height="6" rx="3" fill="#18181B" opacity="0.85"/>
+          <rect x="24" y="98" width="486" height="6" rx="3" fill="#27272A" opacity="0.55"/>
+          <rect x="24" y="112" width="318" height="6" rx="3" fill="#27272A" opacity="0.35"/>
+
+          <!-- action items -->
+          <text x="24" y="152" font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif" font-size="12" font-weight="600" fill="#71717A" letter-spacing="1">ACTION ITEMS · 3</text>
+          <g>
+            <rect x="24" y="166" width="278" height="34" rx="9" fill="#FAFAFA" stroke="#E4E4E7" stroke-width="1"/>
+            <rect x="24" y="208" width="278" height="34" rx="9" fill="#FAFAFA" stroke="#E4E4E7" stroke-width="1"/>
+            <rect x="24" y="250" width="278" height="34" rx="9" fill="#FAFAFA" stroke="#E4E4E7" stroke-width="1"/>
+            <circle cx="42" cy="183" r="5" fill="#F26522"/><circle cx="42" cy="225" r="5" fill="#818CF8"/><circle cx="42" cy="267" r="5" fill="#10B981"/>
+            <rect x="56" y="171" width="150" height="5" rx="2.5" fill="#18181B" opacity="0.8"/>
+            <rect x="56" y="184" width="96" height="5" rx="2.5" fill="#27272A" opacity="0.4"/>
+            <rect x="56" y="213" width="128" height="5" rx="2.5" fill="#18181B" opacity="0.8"/>
+            <rect x="56" y="226" width="150" height="5" rx="2.5" fill="#27272A" opacity="0.4"/>
+            <rect x="56" y="255" width="112" height="5" rx="2.5" fill="#18181B" opacity="0.8"/>
+            <rect x="56" y="268" width="84" height="5" rx="2.5" fill="#27272A" opacity="0.4"/>
+            <!-- owner chips -->
+            <rect x="212" y="175" width="76" height="16" rx="8" fill="#FFF4ED"/>
+            <text x="250" y="186" text-anchor="middle" font-family="ui-monospace,Menlo,monospace" font-size="8" fill="#c2410c">MAYA KIM</text>
+            <rect x="212" y="217" width="76" height="16" rx="8" fill="#EEF2FF"/>
+            <text x="250" y="228" text-anchor="middle" font-family="ui-monospace,Menlo,monospace" font-size="8" fill="#4338CA">JAKE DOYLE</text>
+            <rect x="212" y="259" width="76" height="16" rx="8" fill="#ECFDF5"/>
+            <text x="250" y="270" text-anchor="middle" font-family="ui-monospace,Menlo,monospace" font-size="8" fill="#047857">SARAH CHEN</text>
+          </g>
+
+          <!-- owners panel -->
+          <g>
+            <rect x="330" y="166" width="286" height="118" rx="12" fill="#FAFAFA" stroke="#E4E4E7" stroke-width="1"/>
+            <text x="350" y="192" font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif" font-size="11" font-weight="600" fill="#71717A" letter-spacing="1">OWNERS</text>
+            <g font-family="ui-monospace,Menlo,monospace" font-size="9" fill="#3F3F46">
+              <circle cx="356" cy="214" r="7" fill="#F26522"/>
+              <text x="372" y="218" fill="#18181B" font-weight="600">Maya Kim</text>
+              <rect x="524" y="206" width="74" height="16" rx="8" fill="#FFF4ED"/>
+              <text x="561" y="217" text-anchor="middle" font-size="8" fill="#c2410c">DUE OCT 14</text>
+            </g>
+            <g font-family="ui-monospace,Menlo,monospace" font-size="9">
+              <circle cx="356" cy="244" r="7" fill="#818CF8"/>
+              <text x="372" y="248" fill="#18181B" font-weight="600" font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif">Jake Doyle</text>
+              <rect x="524" y="236" width="74" height="16" rx="8" fill="#EEF2FF"/>
+              <text x="561" y="247" text-anchor="middle" font-size="8" fill="#4338CA">DUE OCT 17</text>
+            </g>
+            <g>
+              <circle cx="356" cy="274" r="7" fill="#10B981"/>
+              <text x="372" y="278" fill="#18181B" font-weight="600" font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif" font-size="11">Sarah Chen</text>
+              <rect x="524" y="266" width="74" height="16" rx="8" fill="#F0FDF4"/>
+              <text x="561" y="277" text-anchor="middle" font-family="ui-monospace,Menlo,monospace" font-size="8" fill="#047857">DONE ✓</text>
+            </g>
+          </g>
+
+          <!-- rival signal + health -->
+          <g>
+            <rect x="330" y="304" width="140" height="34" rx="9" fill="#FFF7ED" stroke="#FED7AA" stroke-width="1"/>
+            <text x="348" y="318" font-family="ui-monospace,Menlo,monospace" font-size="8" fill="#9A3412" letter-spacing="1">RIVAL SIGNAL</text>
+            <text x="348" y="331" font-family="ui-monospace,Menlo,monospace" font-size="11" font-weight="700" fill="#c2410c">Gong</text>
+            <rect x="478" y="304" width="138" height="34" rx="9" fill="#ECFDF5" stroke="#A7F3D0" stroke-width="1"/>
+            <text x="496" y="318" font-family="ui-monospace,Menlo,monospace" font-size="8" fill="#065F46" letter-spacing="1">HEALTH SCORE</text>
+            <text x="496" y="332" font-family="ui-monospace,Menlo,monospace" font-size="13" font-weight="700" fill="#047857">8.2<tspan font-size="8" fill="#6EE7B7" font-weight="400"> / 10</tspan></text>
+          </g>
+
+          <!-- crm write row -->
+          <g>
+            <rect x="24" y="304" width="288" height="34" rx="9" fill="#FAFAFA" stroke="#E4E4E7" stroke-width="1"/>
+            <circle cx="44" cy="321" r="8" fill="#FF7A59"/>
+            <text x="60" y="319" font-family="ui-monospace,Menlo,monospace" font-size="9" font-weight="600" fill="#18181B">HUBSPOT</text>
+            <circle cx="44" cy="321" r="8" fill="none" opacity="0"/>
+            <circle cx="134" cy="321" r="2.5" fill="#F26522"/>
+            <path d="M52 321h74" stroke="#F26522" stroke-opacity="0.35" stroke-width="1"/>
+            <circle cx="156" cy="321" r="8" fill="#00A1E0"/>
+            <text x="172" y="319" font-family="ui-monospace,Menlo,monospace" font-size="9" font-weight="600" fill="#18181B">SALESFORCE</text>
+            <text x="312" y="300" text-anchor="end" font-family="ui-monospace,Menlo,monospace" font-size="8" fill="#059669">SYNCED 12S AGO</text>
+            <circle cx="284" cy="321" r="6" fill="#10B981" opacity="0.15"/>
+            <path d="M281 321l2 2 4-5" stroke="#059669" stroke-width="1.6" fill="none"/>
+          </g>
+
+          <!-- footer strip -->
+          <rect x="0" y="366" width="640" height="34" fill="#FAFAFA"/>
+          <line x1="0" y1="366" x2="640" y2="366" stroke="#E4E4E7" stroke-width="1"/>
+          <text x="24" y="387" font-family="ui-monospace,Menlo,monospace" font-size="9" fill="#71717A">CONFIDENCE 0.96</text>
+          <rect x="140" y="380" width="90" height="6" rx="3" fill="#ECECEC"/>
+          <rect x="140" y="380" width="82" height="6" rx="3" fill="#F26522"/>
+          <text x="616" y="387" text-anchor="end" font-family="ui-monospace,Menlo,monospace" font-size="9" fill="#047857">3 OWNERS · 3 ACTION ITEMS</text>
+        </svg>
+      </div>
+
+      <!-- ledger: the old bottom-strip strings verbatim -->
+      <div class="ledger">
+        <span class="tok g"><b></b>1,200 min/mo</span>
+        <span class="tok o">HUBSPOT + SALESFORCE</span>
+        <span class="tok d">CANCEL ANYTIME</span>
+      </div>
+
+      <div class="divider"></div>
+
+      <div class="srcrow">
+        <span class="proline"><i></i>Pro · <span class="price">$9/mo flat</span> · 5 seats included</span>
+        <span class="minnote">NO PER-SEAT MATH</span>
+      </div>
+    </div>
+  </div>
+</section>
+</div>
+</body>
+</html>

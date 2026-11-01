@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Pricing Seats — V1 OBSIDIAN RIBBON</title>
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; }
+  :root{
+    --orange:#F26522; --orange-deep:#c2410c;
+    --glass-hi:rgba(255,255,255,0.085); --glass-lo:rgba(255,255,255,0.018);
+    --mline:rgba(255,255,255,.09); --mono:"SF Mono",ui-monospace,Menlo,monospace;
+  }
+  body{ width:1440px; background:#fff; font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif; color:#fff; -webkit-font-smoothing:antialiased; }
+
+  .band{
+    position:relative; overflow:hidden; padding:76px 70px;
+    background:
+      radial-gradient(1100px 440px at 14% -10%, rgba(242,101,34,.10), transparent 60%),
+      radial-gradient(900px 420px at 90% 116%, rgba(16,185,129,.06), transparent 58%),
+      radial-gradient(1400px 700px at 50% 50%, #0B0B0D 0%, #070708 72%);
+  }
+  .grain{ position:absolute; inset:0; opacity:.055; pointer-events:none;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='240' height='240'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='240' height='240' filter='url(%23n)' opacity='1'/%3E%3C/svg%3E"); }
+  .inner{ max-width:1300px; margin:0 auto; position:relative; }
+
+  header{ text-align:center; margin-bottom:40px; }
+  .eyebrow{ font-family:var(--mono); font-size:11.5px; letter-spacing:.2em; color:var(--orange); font-weight:600; margin-bottom:14px; }
+  h3{ font-size:42px; line-height:1.08; letter-spacing:-.028em; font-weight:500; }
+  h3 .soft{ color:#7d818c; }
+  .sub{ margin-top:12px; font-family:var(--mono); font-size:10.5px; letter-spacing:.14em; color:#8b8f9a; text-transform:uppercase; }
+
+  /* stat ribbon */
+  .rail{
+    border-radius:26px; display:grid; grid-template-columns:1fr 1fr 1fr 1fr; overflow:hidden;
+    background:linear-gradient(180deg, var(--glass-hi), var(--glass-lo));
+    border:1px solid var(--mline);
+    box-shadow:0 50px 100px rgba(0,0,0,.55), inset 0 1px 0 rgba(255,255,255,.09);
+  }
+  .cell{ position:relative; padding:30px 28px 26px; display:flex; flex-direction:column; overflow:hidden; }
+  .cell + .cell{ border-left:1px solid rgba(255,255,255,.07); }
+  .cellhero{ position:absolute; right:-30px; top:-30px; width:110px; height:110px; border-radius:50%; filter:blur(32px); opacity:.35; pointer-events:none; }
+  .cellhero.o{ background:rgba(242,101,34,.5); }
+  .cellhero.g{ background:rgba(16,185,129,.4); }
+  .clabel{ display:flex; align-items:center; gap:8px; font-family:var(--mono); font-size:9px; letter-spacing:.2em; color:#8b8f9a; margin-bottom:12px; text-transform:uppercase; }
+  .clabel i{ width:5px; height:5px; border-radius:50%; flex:none; }
+  .big{ font-size:46px; font-weight:600; letter-spacing:-.03em; line-height:1; margin-bottom:5px; }
+  .big u{ font-size:20px; color:#8b8f9a; font-weight:500; text-decoration:none; letter-spacing:0; }
+  .sublabel{ font-family:var(--mono); font-size:9px; letter-spacing:.12em; color:#9a9ea8; margin-bottom:16px; line-height:1.6; text-transform:uppercase; }
+  .instrument{ margin-top:auto; display:flex; align-items:flex-end; gap:4px; height:24px; }
+  .instrument i{ width:7px; border-radius:3px 3px 1px 1px; height:var(--h); background:linear-gradient(180deg,#fb923c,var(--orange-deep)); }
+  .instrument i.off{ background:rgba(255,255,255,.10); }
+  .seats{ margin-top:auto; display:flex; gap:5px; }
+  .seats i{ width:10px; height:14px; border-radius:3px; background:rgba(255,255,255,.10); }
+  .seats i.on{ background:linear-gradient(180deg,#fb923c,var(--orange-deep)); }
+  .chain{ margin-top:auto; display:flex; align-items:center; gap:6px; height:24px; }
+  .chain i{ width:8px; height:8px; border-radius:50%; background:rgba(255,255,255,.10); }
+  .chain i.on{ background:#34d399; box-shadow:0 0 8px rgba(52,211,153,.7); }
+  .chain s{ width:13px; height:1px; background:rgba(255,255,255,.10); text-decoration:none; }
+
+  /* persona plates */
+  .trio{ display:grid; grid-template-columns:1fr 1fr 1fr; gap:18px; margin-top:20px; }
+  .pcard{
+    border-radius:24px; padding:22px 22px 20px; display:flex; flex-direction:column;
+    background:linear-gradient(180deg, var(--glass-hi), var(--glass-lo));
+    border:1px solid var(--mline);
+    box-shadow:0 40px 90px rgba(0,0,0,.55), inset 0 1px 0 rgba(255,255,255,.09);
+  }
+  .prole{ font-family:var(--mono); font-size:9px; letter-spacing:.2em; color:#6b707c; margin-bottom:12px; text-transform:uppercase; }
+  .prole b{ color:#fb923c; font-weight:600; }
+  .ptitle{ font-size:20px; font-weight:600; letter-spacing:-.02em; margin-bottom:6px; }
+  .ptokline{ display:flex; gap:7px; flex-wrap:wrap; margin-bottom:16px; }
+  .ptok{ font-family:var(--mono); font-size:8.5px; letter-spacing:.13em; color:#c6c9d2; padding:6px 10px; border-radius:999px;
+    background:rgba(255,255,255,.045); border:1px solid rgba(255,255,255,.10); white-space:nowrap; }
+  .ptok.hot{ color:#fdba74; border-color:rgba(242,101,34,.35); background:rgba(242,101,34,.07); }
+  .ptok.grn{ color:#6ee7b7; border-color:rgba(16,185,129,.3); background:rgba(16,185,129,.07); }
+
+  .scene{
+    position:relative; border-radius:16px; overflow:hidden; min-height:150px; margin-top:auto;
+    background:linear-gradient(180deg,#101014,#0a0a0d); border:1px solid rgba(255,255,255,.10);
+    box-shadow:0 20px 44px rgba(0,0,0,.5), inset 0 1px 0 rgba(255,255,255,.05);
+  }
+  .scap{ position:absolute; left:13px; top:11px; font-family:var(--mono); font-size:8px; letter-spacing:.2em; color:#6b707c; text-transform:uppercase; }
+  .sbody{ flex:1; display:flex; flex-direction:column; justify-content:center; gap:8px; padding:34px 16px 16px; }
+
+  .srow{ display:flex; align-items:center; gap:8px; padding:7px 10px; border-radius:8px; background:rgba(255,255,255,.03); border:1px solid rgba(255,255,255,.07); }
+  .srow .dot{ width:7px; height:7px; border-radius:50%; flex:none; }
+  .srow .dot.o{ background:var(--orange); box-shadow:0 0 8px rgba(242,101,34,.8); }
+  .srow .dot.g{ background:#34d399; box-shadow:0 0 8px rgba(52,211,153,.7); }
+  .srow .dot.bl{ background:#818cf8; }
+  .srow .bar{ height:4px; border-radius:2px; background:rgba(255,255,255,.10); }
+  .srow .tag{ margin-left:auto; font-family:var(--mono); font-size:7.5px; letter-spacing:.12em; color:#6ee7b7; }
+
+  .meterrow{ display:flex; align-items:center; gap:10px; }
+  .meterrow span{ font-family:var(--mono); font-size:8.5px; letter-spacing:.12em; color:#c6c9d2; white-space:nowrap; }
+  .mtrack{ flex:1; height:6px; border-radius:4px; background:rgba(255,255,255,.10); overflow:hidden; display:flex; }
+  .mtrack .o{ width:62%; background:linear-gradient(90deg,var(--orange-deep),#fb923c); }
+  .mtrack .b{ width:38%; background:linear-gradient(90deg,#4f46e5,#818cf8); }
+  .coachchip{ align-self:flex-start; display:inline-flex; align-items:center; gap:7px; font-family:var(--mono); font-size:8.5px; letter-spacing:.14em; color:#fdba74;
+    padding:7px 11px; border-radius:999px; background:rgba(242,101,34,.09); border:1px solid rgba(242,101,34,.35); }
+  .coachchip b{ width:5px; height:5px; border-radius:50%; background:var(--orange); box-shadow:0 0 9px rgba(242,101,34,.9); }
+
+  .disclaimer{ margin-top:22px; text-align:center; font-size:12px; color:#8b8f9a; }
+</style>
+</head>
+<body>
+<div class="capture">
+<section class="band">
+  <div class="inner">
+    <header>
+      <p class="eyebrow">BUILT FOR REVENUE TEAMS</p>
+      <h3>One tool across <span class="soft">every seat</span></h3>
+      <p class="sub">Designed for the people who actually live in sales calls</p>
+    </header>
+
+    <!-- stats ribbon: plans.ts truth -->
+    <div class="rail">
+      <!-- 300 -->
+      <div class="cell">
+        <span class="cellhero o"></span>
+        <span class="clabel"><i style="background:#fb923c"></i>Free minutes/mo</span>
+        <div class="big">300<u>min</u></div>
+        <div class="sublabel">No card required</div>
+        <div class="instrument" aria-hidden="true">
+          <i style="--h:8px" class="off"></i><i style="--h:12px"></i><i style="--h:9px" class="off"></i><i style="--h:16px"></i><i style="--h:12px" class="off"></i><i style="--h:20px"></i><i style="--h:24px"></i>
+        </div>
+      </div>
+
+      <!-- 1,200 -->
+      <div class="cell">
+        <span class="cellhero g"></span>
+        <span class="clabel"><i style="background:#6ee7b7"></i>Pro minutes/mo</span>
+        <div class="big">1,200<u>min</u></div>
+        <div class="sublabel">Flat $9 · 5 seats</div>
+        <div class="seats" aria-hidden="true">
+          <i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i>
+        </div>
+      </div>
+
+      <!-- $29 -->
+      <div class="cell">
+        <span class="cellhero o"></span>
+        <span class="clabel"><i style="background:#fb923c"></i>Business flat</span>
+        <div class="big"><u style="font-size:24px; vertical-align:7px;">$</u>29</div>
+        <div class="sublabel">Unlimited seats</div>
+        <div class="instrument" aria-hidden="true">
+          <i style="--h:10px" class="off"></i><i style="--h:14px" class="off"></i><i style="--h:18px"></i><i style="--h:24px"></i><i style="--h:16px" class="off"></i><i style="--h:22px"></i><i style="--h:24px"></i>
+        </div>
+      </div>
+
+      <!-- 4h -->
+      <div class="cell">
+        <span class="cellhero g"></span>
+        <span class="clabel"><i style="background:#6ee7b7"></i>Business call limit</span>
+        <div class="big">4<u>h</u></div>
+        <div class="sublabel">90 min on Pro</div>
+        <div class="chain" aria-hidden="true">
+          <i class="on"></i><s></s><i class="on"></i><s></s><i class="on"></i><s></s><i class="on"></i><s></s><i></i>
+        </div>
+      </div>
+    </div>
+
+    <!-- persona plates: scenes instead of bullet walls -->
+    <div class="trio">
+      <!-- Solo SDRs -->
+      <article class="pcard">
+        <p class="prole"><b>SEAT</b> · SOLO</p>
+        <p class="ptitle">Solo SDRs</p>
+        <div class="ptokline">
+          <span class="ptok hot">NEXT CALL QUEUED</span>
+          <span class="ptok">CRM-READY</span>
+          <span class="ptok grn">START FREE</span>
+        </div>
+        <div class="scene">
+          <span class="scap">Rep queue</span>
+          <div class="sbody">
+            <div class="srow"><span class="dot o"></span><span class="bar" style="width:58%"></span><span class="tag">NOTES DONE</span></div>
+            <div class="srow"><span class="dot g"></span><span class="bar" style="width:44%"></span><span class="tag">LOGGED</span></div>
+            <div class="srow"><span class="dot bl"></span><span class="bar" style="width:52%"></span><span class="tag">NEXT UP</span></div>
+          </div>
+        </div>
+      </article>
+
+      <!-- RevOps teams -->
+      <article class="pcard">
+        <p class="prole"><b>SEAT</b> · OPS</p>
+        <p class="ptitle">RevOps teams</p>
+        <div class="ptokline">
+          <span class="ptok hot">PIPELINE FILL</span>
+          <span class="ptok">CONSISTENT F/U</span>
+          <span class="ptok grn">CRM EXPORTS</span>
+        </div>
+        <div class="scene">
+          <span class="scap">Deal data</span>
+          <div class="sbody">
+            <div class="srow"><span class="dot g"></span><span class="bar" style="width:64%"></span><span class="tag">FILLED</span></div>
+            <div class="srow"><span class="dot g"></span><span class="bar" style="width:50%"></span><span class="tag">FILLED</span></div>
+            <div class="srow"><span class="dot o"></span><span class="bar" style="width:36%"></span><span class="tag">SYNCING</span></div>
+          </div>
+        </div>
+      </article>
+
+      <!-- Sales managers -->
+      <article class="pcard">
+        <p class="prole"><b>SEAT</b> · MANAGER</p>
+        <p class="ptitle">Sales managers</p>
+        <div class="ptokline">
+          <span class="ptok hot">TALK RATIO</span>
+          <span class="ptok">SENTIMENT</span>
+          <span class="ptok grn">COACH FROM DATA</span>
+        </div>
+        <div class="scene">
+          <span class="scap">Coaching peek</span>
+          <div class="sbody">
+            <div class="meterrow">
+              <span>REP 62%</span>
+              <span class="mtrack"><span class="o"></span><span class="b"></span></span>
+              <span>BUYER 38%</span>
+            </div>
+            <div class="coachchip"><b></b>COACHING MOMENT · 14:22 PRICING OBJECTION</div>
+          </div>
+        </div>
+      </article>
+    </div>
+
+    <p class="disclaimer">Customer testimonials are coming as we collect real feedback. No fake quotes here.</p>
+  </div>
+  <div class="grain"></div>
+</section>
+</div>
+</body>
+</html>

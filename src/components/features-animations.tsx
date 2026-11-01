@@ -11,6 +11,7 @@ import {
   Upload, Layers, Shield, Globe, Download, Search,
   Users, ArrowRight, Check,
 } from "lucide-react";
+import { useAmbientLive } from "@/components/use-ambient-live";
 import {
   AFileUpload, ATranscription, ASummarization, ASearch, ALocal, ALang,
 } from "@/components/feature-3d-a";
@@ -384,35 +385,6 @@ function FeatureCard({ feature, index }: { feature: typeof features[0]; index: n
       </div>
     </div>
   );
-}
-
-/**
- * Ambient-loop pause (Batch A). `data-live` starts "false" so SSR paint is a
- * frozen frame; an IntersectionObserver flips it while the section is on
- * screen. globals.css freezes `[data-live="false"] *` keyframes, and the
- * global reduced-motion catch-all stops them entirely.
- */
-function useAmbientLive<T extends HTMLElement>() {
-  const ref = useRef<T | null>(null);
-
-  useEffect(() => {
-    const sec = ref.current;
-    if (!sec) return;
-    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
-
-    const io = new IntersectionObserver(
-      (entries) => {
-        const visible = entries.some((e) => e.isIntersecting);
-        sec.dataset.live = visible ? "true" : "false";
-      },
-      { threshold: 0.12 },
-    );
-    io.observe(sec);
-
-    return () => io.disconnect();
-  }, []);
-
-  return ref;
 }
 
 /* fws scenes — ported from studio-artboards/fa-steps-v1 (Batch A). */
