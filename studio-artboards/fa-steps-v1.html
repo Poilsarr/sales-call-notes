@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>How It Works — V1 OBSIDIAN CONSOLE</title>
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; }
+  :root{
+    --orange:#F26522; --orange-deep:#c2410c;
+    --glass-hi:rgba(255,255,255,0.085); --glass-lo:rgba(255,255,255,0.018);
+    --mline:rgba(255,255,255,.09); --mono:"SF Mono",ui-monospace,Menlo,monospace;
+  }
+  body{ width:1440px; background:#000; font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif; color:#fff; -webkit-font-smoothing:antialiased; }
+
+  .band{
+    position:relative; overflow:hidden; padding:84px 70px;
+    background:
+      radial-gradient(1000px 460px at 12% -6%, rgba(242,101,34,.09), transparent 60%),
+      radial-gradient(900px 440px at 92% 110%, rgba(37,99,235,.08), transparent 58%),
+      radial-gradient(1400px 720px at 50% 50%, #0B0B0D 0%, #070708 70%);
+  }
+  .grain{ position:absolute; inset:0; opacity:.055; pointer-events:none;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='240' height='240'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='240' height='240' filter='url(%23n)' opacity='1'/%3E%3C/svg%3E"); }
+
+  .inner{ max-width:1300px; margin:0 auto; }
+
+  header{ text-align:center; margin-bottom:56px; }
+  .eyebrow{ font-family:var(--mono); font-size:11.5px; letter-spacing:.2em; color:var(--orange); font-weight:600; margin-bottom:16px; }
+  h2{ font-size:50px; line-height:1.08; letter-spacing:-.032em; font-weight:500; }
+  h2 .soft{ color:#7d818c; }
+  .sub{ margin-top:16px; font-family:var(--mono); font-size:11px; letter-spacing:.14em; color:#6b707c; }
+
+  .flow{ display:flex; flex-direction:column; gap:22px; }
+  .row{ display:grid; grid-template-columns:1fr 128px 1fr; gap:14px; align-items:stretch; }
+  .row.rev .side-a{ order:3; }
+  .row.rev .side-b{ order:2; }
+  .row.rev .side-c{ order:1; }
+
+  .plate{
+    border-radius:22px; padding:22px 24px;
+    background:linear-gradient(180deg, var(--glass-hi), var(--glass-lo));
+    border:1px solid var(--mline);
+    box-shadow:0 40px 90px rgba(0,0,0,.55), inset 0 1px 0 rgba(255,255,255,.09);
+    display:flex; flex-direction:column;
+  }
+  .stepnum{ font-family:var(--mono); font-size:10px; letter-spacing:.18em; color:#6b707c; display:flex; align-items:center; gap:9px; margin-bottom:14px; }
+  .stepnum b{ color:#fb923c; font-weight:600; }
+  .stepnum::after{ content:""; flex:1; height:1px; background:linear-gradient(90deg, rgba(242,101,34,.35), transparent); }
+  h3{ font-size:22px; font-weight:600; letter-spacing:-.02em; margin-bottom:8px; }
+  .desc{ font-size:13px; line-height:1.6; color:#9a9ea8; max-width:40ch; }
+  .micro{ display:flex; gap:8px; margin-top:auto; padding-top:18px; flex-wrap:wrap; }
+  .mchip{ font-family:var(--mono); font-size:9px; letter-spacing:.14em; color:#c6c9d2; padding:7px 11px; border-radius:999px;
+    background:rgba(255,255,255,.045); border:1px solid rgba(255,255,255,.10); white-space:nowrap; }
+  .mchip.hot{ color:#fdba74; border-color:rgba(242,101,34,.35); background:rgba(242,101,34,.07); }
+  .mchip.grn{ color:#6ee7b7; border-color:rgba(16,185,129,.30); background:rgba(16,185,129,.07); }
+
+  /* center spine */
+  .spine{ display:flex; flex-direction:column; align-items:center; justify-content:center; gap:0; padding:26px 0; }
+  .spinechip{ font-family:var(--mono); font-size:9.5px; letter-spacing:.16em; color:#b9bdc8; padding:7px 11px; border-radius:999px;
+    background:rgba(255,255,255,.045); border:1px solid rgba(255,255,255,.11); white-space:nowrap; }
+  .spineline{ position:relative; width:1px; flex:1; min-height:40px; background:linear-gradient(180deg, rgba(242,101,34,.4), rgba(242,101,34,.12)); }
+  .spineline::after{ content:""; position:absolute; left:-1.5px; width:4px; height:4px; border-radius:50%; background:#fb923c; box-shadow:0 0 8px rgba(242,101,34,.9);
+    animation:trav 3s linear infinite; }
+
+  /* scene shells */
+  .scene{
+    position:relative; border-radius:18px; overflow:hidden; min-height:218px;
+    background:linear-gradient(180deg,#101014,#0a0a0d);
+    border:1px solid rgba(255,255,255,.10);
+    box-shadow:0 24px 50px rgba(0,0,0,.5), inset 0 1px 0 rgba(255,255,255,.05);
+    display:flex; flex-direction:column;
+  }
+  .scenecap{ position:absolute; left:14px; top:12px; font-family:var(--mono); font-size:8.5px; letter-spacing:.2em; color:#5b5f6a; }
+  .scenebody{ flex:1; display:flex; align-items:center; justify-content:center; padding:30px 22px 40px; }
+
+  /* scene 01 : upload tray */
+  .drop{ width:100%; border:1.5px dashed rgba(242,101,34,.4); border-radius:14px; padding:16px; display:flex; flex-direction:column; gap:10px; }
+  .filechip{ display:flex; align-items:center; gap:10px; padding:9px 12px; border-radius:10px;
+    background:rgba(255,255,255,.04); border:1px solid rgba(255,255,255,.09); }
+  .filechip .fw{ display:flex; align-items:flex-end; gap:2px; height:16px; flex:none; }
+  .fw i{ width:3px; border-radius:2px; background:linear-gradient(180deg,#fb923c,var(--orange-deep)); height:var(--h); }
+  .fname{ font-family:var(--mono); font-size:10px; letter-spacing:.06em; color:#d3d6de; }
+  .ftag{ margin-left:auto; font-family:var(--mono); font-size:8.5px; letter-spacing:.12em; color:#6ee7b7; }
+  .progress{ height:5px; border-radius:4px; background:rgba(255,255,255,.08); overflow:hidden; }
+  .progressfill{ height:100%; width:78%; border-radius:4px; background:linear-gradient(90deg,var(--orange-deep),#fb923c); }
+
+  /* scene 02 : transcribe */
+  .trwrap{ width:100%; display:flex; flex-direction:column; gap:14px; }
+  .eq{ display:flex; align-items:flex-end; gap:4px; height:40px; }
+  .eq i{ flex:1; border-radius:3px; background:linear-gradient(180deg,#5b6270,#3a3f4b); height:var(--h); animation:eq 1.15s ease-in-out infinite alternate; animation-delay:var(--d); transform-origin:bottom; }
+  .eq i.hot{ background:linear-gradient(180deg,#fb923c,var(--orange-deep)); }
+  .trline{ display:flex; align-items:center; gap:9px; padding:8px 11px; border-radius:9px; background:rgba(255,255,255,.03); border:1px solid rgba(255,255,255,.07); }
+  .spk{ width:8px; height:8px; border-radius:50%; flex:none; }
+  .spk.a{ background:var(--orange); } .spk.b{ background:#818cf8; }
+  .trbar{ height:5px; border-radius:3px; background:rgba(255,255,255,.10); }
+  .beam{ position:absolute; left:0; right:0; top:0; bottom:0; pointer-events:none;
+    background:linear-gradient(100deg, transparent 30%, rgba(242,101,34,.10) 46%, rgba(251,146,60,.18) 50%, rgba(242,101,34,.10) 54%, transparent 70%);
+    animation:scan 4.2s linear infinite; }
+
+  /* scene 03 : analyze */
+  .doc{ width:210px; border-radius:13px; background:rgba(255,255,255,.05); border:1px solid rgba(255,255,255,.10); padding:14px; box-shadow:0 24px 46px rgba(0,0,0,.45); }
+  .docbar{ height:5px; border-radius:3px; background:rgba(255,255,255,.13); margin-bottom:8px; }
+  .docbar.w{ width:62%; }
+  .eject{ position:absolute; right:20px; display:flex; flex-direction:column; gap:9px; }
+  .echip{ display:flex; align-items:center; gap:8px; font-family:var(--mono); font-size:9.5px; letter-spacing:.12em; color:#fdba74;
+    padding:9px 12px; border-radius:999px; background:rgba(242,101,34,.09); border:1px solid rgba(242,101,34,.38); white-space:nowrap;
+    box-shadow:0 14px 30px rgba(0,0,0,.4); }
+  .echip b{ width:6px; height:6px; border-radius:50%; background:var(--orange); box-shadow:0 0 10px rgba(242,101,34,.8); }
+  .echip.g{ color:#6ee7b7; background:rgba(16,185,129,.08); border-color:rgba(16,185,129,.35); }
+  .echip.g b{ background:#34d399; box-shadow:0 0 10px rgba(52,211,153,.8); }
+
+  /* scene 04 : export */
+  .exrow{ display:flex; align-items:center; gap:14px; width:100%; justify-content:center; }
+  .node{ display:flex; flex-direction:column; align-items:center; gap:8px; padding:14px 18px; border-radius:14px;
+    background:rgba(255,255,255,.05); border:1px solid rgba(255,255,255,.10); }
+  .node.wide{ flex-direction:row; }
+  .nball{ width:26px; height:26px; border-radius:8px; }
+  .nball.hs{ background:linear-gradient(135deg,#ff7a59,#eb6a45); }
+  .nball.sf{ background:linear-gradient(135deg,#00a1e0,#0077b8); }
+  .nball.chk{ display:flex; align-items:center; justify-content:center; background:rgba(16,185,129,.12); border:1px solid rgba(16,185,129,.4); }
+  .nball.chk svg{ width:13px; height:13px; }
+  .nname{ font-family:var(--mono); font-size:9.5px; letter-spacing:.14em; color:#d3d6de; }
+  .flowline{ position:relative; width:74px; height:1px; background:linear-gradient(90deg, rgba(242,101,34,.25), rgba(242,101,34,.6)); }
+  .flowline::after{ content:""; position:absolute; top:-2.5px; left:0; width:6px; height:6px; border-radius:50%; background:#fb923c; box-shadow:0 0 10px rgba(242,101,34,.9); animation:flowx 2.4s linear infinite; }
+  .summaryrow{ margin-top:16px; width:78%; max-width:340px; display:flex; align-items:center; gap:10px; padding:10px 14px; border-radius:11px;
+    background:rgba(16,185,129,.07); border:1px solid rgba(16,185,129,.32); }
+  .summaryrow .nname{ color:#6ee7b7; }
+
+  /* keyframes */
+  @keyframes eq{ from{ transform:scaleY(.45);} to{ transform:scaleY(1);} }
+  @keyframes scan{ 0%{ transform:translateX(-30%);} 100%{ transform:translateX(30%);} }
+  @keyframes trav{ 0%{ top:-2px; opacity:0;} 15%{ opacity:1;} 85%{ opacity:1;} 100%{ top:calc(100% - 4px); opacity:0;} }
+  @keyframes flowx{ 0%{ left:0; opacity:0;} 15%{ opacity:1;} 85%{ opacity:1;} 100%{ left:calc(100% - 6px); opacity:0;} }
+  @keyframes blink{ 0%,49%{opacity:1;} 50%,100%{opacity:.15;} }
+</style>
+</head>
+<body>
+<div class="capture">
+<section class="band">
+  <div class="inner">
+    <header>
+      <p class="eyebrow">HOW IT WORKS</p>
+      <h2>Four steps to <span class="soft">zero notes</span></h2>
+      <p class="sub">RAW RECORDING → CRM-READY · UNDER 60 SECONDS</p>
+    </header>
+
+    <div class="flow">
+      <!-- 01 UPLOAD -->
+      <div class="row">
+        <article class="plate side-a">
+          <div class="stepnum"><b>STEP 01</b></div>
+          <h3>Upload</h3>
+          <p class="desc">Drop your call recording. MP3, WAV, M4A, WebM — bulk-safe.</p>
+          <div class="micro"><span class="mchip hot">NO TOKEN BURN</span><span class="mchip">DROP OR CLICK</span></div>
+        </article>
+        <div class="spine side-b"><span class="spineline"></span><span class="spinechip">INGEST</span><span class="spineline"></span></div>
+        <div class="scene side-c">
+          <span class="scenecap">UPLOAD TRAY</span>
+          <div class="scenebody">
+            <div class="drop">
+              <div class="filechip"><span class="fw"><i style="--h:6px"></i><i style="--h:12px"></i><i style="--h:9px"></i><i style="--h:14px"></i><i style="--h:7px"></i></span><span class="fname">acme_discovery.mp3</span><span class="ftag">QUEUED</span></div>
+              <div class="filechip"><span class="fw"><i style="--h:10px"></i><i style="--h:5px"></i><i style="--h:13px"></i><i style="--h:8px"></i><i style="--h:11px"></i></span><span class="fname">stark_closing.wav</span><span class="ftag">QUEUED</span></div>
+              <div class="filechip"><span class="fw"><i style="--h:7px"></i><i style="--h:12px"></i><i style="--h:6px"></i><i style="--h:10px"></i><i style="--h:9px"></i></span><span class="fname">vandelay_demo.m4a</span><span class="ftag">T-2s</span></div>
+              <div class="progress"><div class="progressfill"></div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 02 TRANSCRIBE -->
+      <div class="row rev">
+        <article class="plate side-a">
+          <div class="stepnum"><b>STEP 02</b></div>
+          <h3>Transcribe</h3>
+          <p class="desc">Whisper AI converts speech to text — speakers labeled automatically.</p>
+          <div class="micro"><span class="mchip hot">WHISPER-LARGE-V3</span><span class="mchip grn">VIA GROQ</span></div>
+        </article>
+        <div class="spine side-b"><span class="spineline"></span><span class="spinechip">DECODE</span><span class="spineline"></span></div>
+        <div class="scene side-c">
+          <span class="scenecap">SPEECH → TEXT</span>
+          <div class="beam"></div>
+          <div class="scenebody">
+            <div class="trwrap">
+              <div class="eq">
+                <i style="--h:40%;--d:0s"></i><i style="--h:76%;--d:.08s" class="hot"></i><i style="--h:55%;--d:.16s"></i><i style="--h:100%;--d:.24s" class="hot"></i><i style="--h:48%;--d:.32s"></i><i style="--h:88%;--d:.4s" class="hot"></i><i style="--h:35%;--d:.48s"></i><i style="--h:70%;--d:.56s"></i><i style="--h:58%;--d:.64s" class="hot"></i>
+              </div>
+              <div class="trline"><span class="spk a"></span><span class="trbar" style="width:64%"></span></div>
+              <div class="trline"><span class="spk b"></span><span class="trbar" style="width:46%"></span></div>
+              <div class="trline"><span class="spk a"></span><span class="trbar" style="width:56%"></span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 03 ANALYZE -->
+      <div class="row">
+        <article class="plate side-a">
+          <div class="stepnum"><b>STEP 03</b></div>
+          <h3>Analyze</h3>
+          <p class="desc">Extract insights &amp; action items — owners, dates, rivals named.</p>
+          <div class="micro"><span class="mchip hot">ACTIONS · OWNERS</span><span class="mchip">RIVAL CATCH</span></div>
+        </article>
+        <div class="spine side-b"><span class="spineline"></span><span class="spinechip">READ</span><span class="spineline"></span></div>
+        <div class="scene side-c">
+          <span class="scenecap">SIGNALS EXTRACTED</span>
+          <div class="scenebody">
+            <div class="doc">
+              <div class="docbar"></div><div class="docbar w"></div><div class="docbar" style="width:78%"></div><div class="docbar w" style="width:52%"></div>
+            </div>
+            <div class="eject">
+              <span class="echip"><b></b>OWNER · MAYA KIM</span>
+              <span class="echip g"><b></b>DUE · OCT 14</span>
+              <span class="echip"><b></b>RIVAL · GONG</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 04 EXPORT -->
+      <div class="row rev">
+        <article class="plate side-a">
+          <div class="stepnum"><b>STEP 04</b></div>
+          <h3>Export</h3>
+          <p class="desc">Push to CRM or download — summary, owners, dates included.</p>
+          <div class="micro"><span class="mchip hot">HUBSPOT · SALESFORCE</span><span class="mchip grn">SYNCED 12S AGO</span></div>
+        </article>
+        <div class="spine side-b"><span class="spineline"></span><span class="spinechip">DEPLOY</span><span class="spineline"></span></div>
+        <div class="scene side-c">
+          <span class="scenecap">CRM WRITE-BACK</span>
+          <div class="scenebody" style="flex-direction:column; gap:0;">
+            <div class="exrow">
+              <div class="node wide"><span class="nball hs"></span><span class="nname">HUBSPOT</span></div>
+              <span class="flowline"></span>
+              <div class="node wide"><span class="nball sf"></span><span class="nname">SALESFORCE</span></div>
+              <span class="flowline"></span>
+              <div class="node"><span class="nball chk"><svg viewBox="0 0 24 24" fill="none" stroke="#34d399" stroke-width="2.6"><path d="M4 12.5 9.5 18 20 6.5"/></svg></span></div>
+            </div>
+            <div class="summaryrow"><svg class="" viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="#6ee7b7" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg><span class="nname">SUMMARY · OWNERS · DUE DATES</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="grain"></div>
+</section>
+</div>
+</body>
+</html>

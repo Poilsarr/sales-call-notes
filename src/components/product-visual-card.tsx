@@ -1,9 +1,13 @@
 /**
- * ProductVisualCard — soft doppel shell + product stills (Gauge Radar).
+ * ProductVisualCard — obsidian proof card (Batch A port of
+ * studio-artboards/fa-proof-v2). The still does the talking; the caption is
+ * a compact proof ledger (speaker · timestamp · rival token · channel ·
+ * confidence meter), not a paragraph. Keeps the .doppel-outer +
+ * .product-chrome contract and the aria progressbar for a11y pins.
  *
- * Server component, display only. Top plane is a still from PRODUCT_STILLS
- * inside `.product-chrome`; caption carries speaker/quote/rival proof text
- * and a slim confidence progressbar for a11y.
+ * Server component, display only. Card data from demo-call-fiction
+ * DEMO_ACME / DEMO_VANDELAY / DEMO_STARK. Also used by /vs/* pages
+ * (light context) — the card is self-dark, so it works on any bg.
  */
 
 import {
@@ -19,9 +23,12 @@ export type ProductVisualVariant = "transcript" | "slack" | "crm";
 export interface ProductVisualCardProps {
   eyebrow: string;
   title: string;
+  /** Optional one-liner under the title (Batch A redesign). */
   body: string;
   footer: string;
   variant: ProductVisualVariant;
+  /** Renders the mono SAMPLE tag when the section is a mock. */
+  sample?: boolean;
   confidence?: number;
   /** Display data — defaults from demo-call-fiction DEMO_* signals. */
   callName?: string;
@@ -32,8 +39,6 @@ export interface ProductVisualCardProps {
   slackChannel?: string;
 }
 
-const ACCENT = "#F26522";
-
 const VARIANT_DEFAULTS: Record<ProductVisualVariant, DemoCallSignal> = {
   transcript: DEMO_ACME,
   slack: DEMO_VANDELAY,
@@ -42,7 +47,7 @@ const VARIANT_DEFAULTS: Record<ProductVisualVariant, DemoCallSignal> = {
 
 const STILL_SIZE = { width: 640, height: 400 } as const;
 
-function ConfidenceBar({
+function ConfidenceMeter({
   rival,
   confidence,
 }: {
@@ -51,24 +56,25 @@ function ConfidenceBar({
 }) {
   const pct = Math.round(confidence * 100);
   return (
-    <div className="mt-3 flex items-center gap-2">
-      <div
-        className="h-1.5 flex-1 rounded-full bg-gray-200 overflow-hidden"
+    <span className="fpb-conf">
+      <span
+        className="fpb-confbar"
         role="progressbar"
         aria-valuenow={pct}
         aria-valuemin={0}
         aria-valuemax={100}
+        aria-valuetext={`${pct}%`}
         aria-label={`${rival} confidence`}
       >
-        <div
-          className="h-full rounded-full"
-          style={{ width: `${pct}%`, backgroundColor: ACCENT }}
+        <span
+          className="fpb-conffill"
+          style={{ width: `${pct}%` }}
         />
-      </div>
-      <span className="text-[10px] font-mono text-gray-500 tabular-nums">
+      </span>
+      <span className="fpb-confval tabular-nums">
         {confidence.toFixed(2)}
       </span>
-    </div>
+    </span>
   );
 }
 
@@ -78,6 +84,7 @@ export function ProductVisualCard({
   body,
   footer,
   variant,
+  sample,
   confidence,
   callName,
   speaker,
@@ -92,6 +99,7 @@ export function ProductVisualCard({
     speaker: speaker ?? defaults.speaker,
     timestamp: timestamp ?? defaults.timestamp,
     rival: rival ?? defaults.rival,
+    // The quote is rendered inside the still artwork — data stays intact.
     quote: quote ?? defaults.quote,
     slackChannel: slackChannel ?? defaults.slackChannel,
     confidence: confidence ?? defaults.confidence,
@@ -100,37 +108,44 @@ export function ProductVisualCard({
   const stillSrc = PRODUCT_STILLS[variant];
 
   return (
-    <div className="doppel-outer transition-all duration-300 hover:-translate-y-1 hover:shadow-md group">
-      <div className="doppel-inner bg-white p-0 overflow-hidden">
-        <div className="product-chrome product-still-reveal m-2 mb-0 rounded-xl overflow-hidden border border-black/[0.04] bg-neutral-50/50 transition-transform duration-500 group-hover:scale-[1.01]">
+    <div className="fpb-cardwrap doppel-outer transition-all duration-300 hover:-translate-y-1">
+      <div className="fpb-card">
+        <div className="fpb-meta">
+          <p className="fpb-eyebrow">{eyebrow}</p>
+          {sample && <span className="fpb-tag">SAMPLE</span>}
+        </div>
+
+        <div className="product-chrome product-still-reveal">
           {/* eslint-disable-next-line @next/next/no-img-element -- img keeps vitest free of next/image mocks */}
           <img
             src={stillSrc}
-            alt={title}
+            alt={`Demo still — ${signal.rival} named on the ${variant} view (${signal.timestamp})`}
             width={STILL_SIZE.width}
             height={STILL_SIZE.height}
             className="block w-full h-auto"
           />
         </div>
 
-        <div className="p-6">
-          <p className="text-[11px] font-mono uppercase tracking-[0.16em] text-gray-500 mb-2">
-            {eyebrow}
-          </p>
-          <p className="text-[15px] font-semibold text-gray-900 tracking-tight mb-2">
-            {title}
-          </p>
-          <p className="text-[13px] text-gray-600 leading-relaxed mb-2">
-            {body}
-          </p>
-          <p className="text-[12px] text-gray-500 leading-snug mb-3">
-            {signal.speaker} · {signal.timestamp} — &ldquo;{signal.quote}&rdquo;
-            {" "}
-            Rival: {signal.rival}. {signal.slackChannel}.
-          </p>
-          <p className="text-[11px] font-mono text-gray-500">{footer}</p>
-          <ConfidenceBar rival={signal.rival} confidence={signal.confidence} />
+        <div className="fpb-ledger">
+          <div className="fpb-lrow">
+            <span className="fpb-tok"><b />{signal.speaker}</span>
+            <span className="fpb-tok fpb-tok--dim">{signal.timestamp}</span>
+            <ConfidenceMeter
+              rival={signal.rival}
+              confidence={signal.confidence}
+            />
+          </div>
+          <div className="fpb-lrow">
+            <span className="fpb-tok fpb-tok--hot"><b />{signal.rival}</span>
+            <span className="fpb-tok">{signal.slackChannel}</span>
+          </div>
         </div>
+
+        <div className="fpb-line" />
+
+        <h3 className="fpb-title leading-snug">{title}</h3>
+        <p className="fpb-desc">{body}</p>
+        <p className="fpb-src"><i /><span>{footer}</span></p>
       </div>
     </div>
   );

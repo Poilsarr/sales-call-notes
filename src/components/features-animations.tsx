@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState, useCallback } from "react";
-import type { RefObject } from "react";
+import type { CSSProperties, ElementType, RefObject } from "react";
 import Link from "next/link";
 import { useGSAP } from "@gsap/react";
 import gsap from "gsap";
@@ -9,7 +9,7 @@ import { ScrollTrigger } from "gsap/ScrollTrigger";
 import {
   Mic, Brain, Target, Share2, BarChart3,
   Upload, Layers, Shield, Globe, Download, Search,
-  Users, Clock, ArrowRight, Zap, Check,
+  Users, ArrowRight, Check,
 } from "lucide-react";
 import {
   AFileUpload, ATranscription, ASummarization, ASearch, ALocal, ALang,
@@ -61,20 +61,6 @@ function Feature3D({ index, color }: { index: number; color: string }) {
     default: return <CAct />;
   }
 }
-
-const statsData = [
-  { value: "60s", label: "Avg. processing time", icon: Clock },
-  { value: "Whisper", label: "large-v3 via Groq", icon: Target },
-  { value: "12+", label: "Languages supported", icon: Globe },
-  { value: "10+", label: "CRM integrations", icon: Share2 },
-];
-
-const steps = [
-  { num: "01", title: "Upload", desc: "Drop your call recording", icon: Upload, color: "#F26522" },
-  { num: "02", title: "Transcribe", desc: "Whisper AI converts speech to text", icon: Mic, color: "#2563eb" },
-  { num: "03", title: "Analyze", desc: "Extract insights & action items", icon: Brain, color: "#7c3aed" },
-  { num: "04", title: "Export", desc: "Push to CRM or download", icon: Share2, color: "#059669" },
-];
 
 /**
  * Per-card link targets — one honest destination per feature card.
@@ -400,154 +386,433 @@ function FeatureCard({ feature, index }: { feature: typeof features[0]; index: n
   );
 }
 
-function AnimatedCounter({ value, label, icon: Icon }: { value: string; label: string; icon: any }) {
-  const ref = useRef<HTMLDivElement>(null);
-  const numRef = useRef<HTMLSpanElement>(null);
-  const num = parseFloat(value);
-  const suffix = value.replace(/[\d.]/g, "");
+/**
+ * Ambient-loop pause (Batch A). `data-live` starts "false" so SSR paint is a
+ * frozen frame; an IntersectionObserver flips it while the section is on
+ * screen. globals.css freezes `[data-live="false"] *` keyframes, and the
+ * global reduced-motion catch-all stops them entirely.
+ */
+function useAmbientLive<T extends HTMLElement>() {
+  const ref = useRef<T | null>(null);
 
-  useGSAP(() => {
-    if (!ref.current || !numRef.current) return;
-    const obj = { val: 0 };
-    gsap.to(obj, {
-      val: num,
-      duration: 2.5,
-      ease: "power3.out",
-      scrollTrigger: { trigger: ref.current, start: "top 85%" },
-      onUpdate: () => {
-        if (numRef.current) {
-          const formatted = Number.isInteger(num) ? Math.round(obj.val) : obj.val.toFixed(1);
-          numRef.current.textContent = formatted + suffix;
-        }
+  useEffect(() => {
+    const sec = ref.current;
+    if (!sec) return;
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+
+    const io = new IntersectionObserver(
+      (entries) => {
+        const visible = entries.some((e) => e.isIntersecting);
+        sec.dataset.live = visible ? "true" : "false";
       },
-    });
+      { threshold: 0.12 },
+    );
+    io.observe(sec);
+
+    return () => io.disconnect();
   }, []);
 
+  return ref;
+}
+
+/* fws scenes — ported from studio-artboards/fa-steps-v1 (Batch A). */
+
+type SceneKey = "upload" | "transcribe" | "analyze" | "export";
+
+function FwsSceneUpload() {
   return (
-    <div ref={ref} className="stat-item text-center">
-      <div className="doppel-outer group">
-        <div className="doppel-inner p-6 sm:p-8 md:p-10 flex flex-col items-center relative overflow-hidden">
-          <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-700"
-            style={{ background: "radial-gradient(ellipse at 50% 50%, rgba(242,101,34,0.04), transparent 70%)" }} />
-          <div className="relative">
-            <Icon strokeWidth={1.5} className="w-5 h-5 text-[#F26522] mb-3" />
-            <div className="text-[clamp(1.75rem,3vw,2.75rem)] font-semibold tracking-tighter text-gray-900 mb-1">
-              <span ref={numRef}>0{suffix}</span>
-            </div>
-            <div className="text-[12px] text-gray-500 font-medium">{label}</div>
+    <>
+      <span className="fws-scenecap">Upload tray</span>
+      <div className="fws-scenebody">
+        <div className="fws-drop">
+          <div className="fws-filechip">
+            <span className="fws-fw" aria-hidden="true">
+              <i style={{ "--h": "6px" } as CSSProperties} />
+              <i style={{ "--h": "12px" } as CSSProperties} />
+              <i style={{ "--h": "9px" } as CSSProperties} />
+              <i style={{ "--h": "14px" } as CSSProperties} />
+              <i style={{ "--h": "7px" } as CSSProperties} />
+            </span>
+            <span className="fws-fname">acme_discovery.mp3</span>
+            <span className="fws-ftag">Queued</span>
+          </div>
+          <div className="fws-filechip">
+            <span className="fws-fw" aria-hidden="true">
+              <i style={{ "--h": "10px" } as CSSProperties} />
+              <i style={{ "--h": "5px" } as CSSProperties} />
+              <i style={{ "--h": "13px" } as CSSProperties} />
+              <i style={{ "--h": "8px" } as CSSProperties} />
+              <i style={{ "--h": "11px" } as CSSProperties} />
+            </span>
+            <span className="fws-fname">stark_closing.wav</span>
+            <span className="fws-ftag">Queued</span>
+          </div>
+          <div className="fws-filechip">
+            <span className="fws-fw" aria-hidden="true">
+              <i style={{ "--h": "7px" } as CSSProperties} />
+              <i style={{ "--h": "12px" } as CSSProperties} />
+              <i style={{ "--h": "6px" } as CSSProperties} />
+              <i style={{ "--h": "10px" } as CSSProperties} />
+              <i style={{ "--h": "9px" } as CSSProperties} />
+            </span>
+            <span className="fws-fname">vandelay_demo.m4a</span>
+            <span className="fws-ftag">T-2s</span>
+          </div>
+          <div className="fws-progress" aria-hidden="true">
+            <div className="fws-progressfill" />
           </div>
         </div>
       </div>
-    </div>
+    </>
   );
 }
 
-function StatsSection() {
-  const sectionRef = useRef<HTMLDivElement>(null);
+function FwsSceneTranscribe() {
+  return (
+    <>
+      <span className="fws-scenecap">Speech → text</span>
+      <div className="fws-beam" aria-hidden="true" />
+      <div className="fws-scenebody">
+        <div className="fws-trwrap">
+          <div className="fws-eq" aria-hidden="true">
+            <i style={{ "--h": "40%", "--d": "0s" } as CSSProperties} />
+            <i style={{ "--h": "76%", "--d": "0.08s" } as CSSProperties} className="fws-hot" />
+            <i style={{ "--h": "55%", "--d": "0.16s" } as CSSProperties} />
+            <i style={{ "--h": "100%", "--d": "0.24s" } as CSSProperties} className="fws-hot" />
+            <i style={{ "--h": "48%", "--d": "0.32s" } as CSSProperties} />
+            <i style={{ "--h": "88%", "--d": "0.4s" } as CSSProperties} className="fws-hot" />
+            <i style={{ "--h": "35%", "--d": "0.48s" } as CSSProperties} />
+            <i style={{ "--h": "70%", "--d": "0.56s" } as CSSProperties} />
+            <i style={{ "--h": "58%", "--d": "0.64s" } as CSSProperties} className="fws-hot" />
+          </div>
+          <div className="fws-trline">
+            <span className="fws-spk fws-spk--a" aria-hidden="true" />
+            <span className="fws-trbar" style={{ width: "64%" }} />
+          </div>
+          <div className="fws-trline">
+            <span className="fws-spk fws-spk--b" aria-hidden="true" />
+            <span className="fws-trbar" style={{ width: "46%" }} />
+          </div>
+          <div className="fws-trline">
+            <span className="fws-spk fws-spk--a" aria-hidden="true" />
+            <span className="fws-trbar" style={{ width: "56%" }} />
+          </div>
+        </div>
+      </div>
+    </>
+  );
+}
 
-  useGSAP(() => {
-    if (!sectionRef.current) return;
-    const stats = sectionRef.current.querySelectorAll(".stat-item");
-    gsap.fromTo(stats, { y: 40, opacity: 0 }, {
-      y: 0, opacity: 1, stagger: 0.15, duration: 0.8, ease: "power3.out",
-      scrollTrigger: { trigger: sectionRef.current, start: "top 80%" },
-    });
-  }, { scope: sectionRef });
+function FwsSceneAnalyze() {
+  return (
+    <>
+      <span className="fws-scenecap">Signals extracted</span>
+      <div className="fws-scenebody">
+        <div className="fws-doc" aria-hidden="true">
+          <div className="fws-docbar" />
+          <div className="fws-docbar fws-docbar--w" />
+          <div className="fws-docbar" style={{ width: "78%" }} />
+          <div className="fws-docbar fws-docbar--w" style={{ width: "52%" }} />
+        </div>
+        <div className="fws-eject">
+          <span className="fws-echip"><b aria-hidden="true" />OWNER · MAYA KIM</span>
+          <span className="fws-echip fws-echip--g"><b aria-hidden="true" />DUE · OCT 14</span>
+          <span className="fws-echip"><b aria-hidden="true" />RIVAL · GONG</span>
+        </div>
+      </div>
+    </>
+  );
+}
+
+function FwsSceneExport() {
+  return (
+    <>
+      <span className="fws-scenecap">CRM write-back</span>
+      <div className="fws-scenebody" style={{ flexDirection: "column", gap: 0 }}>
+        <div className="fws-exrow">
+          <div className="fws-node">
+            <span className="fws-nball fws-nball--hs" aria-hidden="true" />
+            <span className="fws-nname">HUBSPOT</span>
+          </div>
+          <span className="fws-flowline" aria-hidden="true" />
+          <div className="fws-node">
+            <span className="fws-nball fws-nball--sf" aria-hidden="true" />
+            <span className="fws-nname">SALESFORCE</span>
+          </div>
+          <span className="fws-flowline" aria-hidden="true" />
+          <div className="fws-node">
+            <span className="fws-nball fws-nball--chk" aria-hidden="true">
+              <svg viewBox="0 0 24 24" width={13} height={13} fill="none" stroke="#34d399" strokeWidth={2.6}>
+                <path d="M4 12.5 9.5 18 20 6.5" />
+              </svg>
+            </span>
+          </div>
+        </div>
+        <div className="fws-sumrow">
+          <svg viewBox="0 0 24 24" width={13} height={13} fill="none" stroke="#6ee7b7" strokeWidth={2} aria-hidden="true">
+            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+            <path d="M14 2v6h6" />
+          </svg>
+          <span className="fws-nname">SUMMARY · OWNERS · DUE DATES</span>
+        </div>
+      </div>
+    </>
+  );
+}
+
+const workflowSteps: {
+  num: string;
+  title: string;
+  desc: string;
+  scene: SceneKey;
+  spine: string;
+  chips: { hot?: boolean; grn?: boolean; label: string }[];
+}[] = [
+  {
+    num: "STEP 01",
+    title: "Upload",
+    desc: "Drop your call recording. MP3, WAV, M4A, WebM — bulk-safe.",
+    scene: "upload",
+    spine: "Ingest",
+    chips: [
+      { hot: true, label: "NO TOKEN BURN" },
+      { label: "DROP OR CLICK" },
+    ],
+  },
+  {
+    num: "STEP 02",
+    title: "Transcribe",
+    desc: "Whisper AI converts speech to text — speakers labeled automatically.",
+    scene: "transcribe",
+    spine: "Decode",
+    chips: [
+      { hot: true, label: "WHISPER-LARGE-V3" },
+      { grn: true, label: "VIA GROQ" },
+    ],
+  },
+  {
+    num: "STEP 03",
+    title: "Analyze",
+    desc: "Extract insights & action items — owners, dates, rivals named.",
+    scene: "analyze",
+    spine: "Read",
+    chips: [
+      { hot: true, label: "ACTIONS · OWNERS" },
+      { label: "RIVAL CATCH" },
+    ],
+  },
+  {
+    num: "STEP 04",
+    title: "Export",
+    desc: "Push to CRM or download — summary, owners, dates included.",
+    scene: "export",
+    spine: "Deploy",
+    chips: [
+      { hot: true, label: "HUBSPOT · SALESFORCE" },
+      { grn: true, label: "SYNCED 12S AGO" },
+    ],
+  },
+];
+
+const SCENES: Record<SceneKey, ElementType> = {
+  upload: FwsSceneUpload,
+  transcribe: FwsSceneTranscribe,
+  analyze: FwsSceneAnalyze,
+  export: FwsSceneExport,
+};
+
+/* fst cells — ported from studio-artboards/fa-stats-v1 (Batch A).
+   One console ribbon: giant mono values + instrument meters. */
+
+const BARS_60S = [
+  { h: "10px", off: true }, { h: "14px", off: true }, { h: "9px", off: true },
+  { h: "16px", off: true }, { h: "12px" }, { h: "20px" }, { h: "16px" },
+  { h: "26px" }, { h: "14px", off: true }, { h: "10px", off: true },
+];
+
+const BARS_ENGINE = [
+  { h: "14px", off: true }, { h: "20px" }, { h: "26px" },
+  { h: "18px", off: true }, { h: "12px", off: true },
+];
+
+function StatsSection() {
+  const sectionRef = useAmbientLive<HTMLElement>();
 
   return (
-    <section ref={sectionRef} className="relative py-16 sm:py-20 lg:py-24 px-5 sm:px-8 lg:px-12 overflow-hidden">
-      <div className="absolute inset-0 pointer-events-none"
-        style={{ background: "radial-gradient(ellipse at 50% 100%, rgba(242,101,34,0.04) 0%, transparent 60%)" }} />
-      <div className="max-w-[1440px] mx-auto grid grid-cols-2 md:grid-cols-4 gap-4 sm:gap-6 relative">
-        {statsData.map((s, i) => (
-          <AnimatedCounter key={i} value={s.value} label={s.label} icon={s.icon} />
-        ))}
+    <section
+      ref={sectionRef}
+      data-live="false"
+      className="fst-sec relative py-14 sm:py-16 lg:py-20 px-5 sm:px-8 lg:px-12"
+    >
+      <div className="fst-grain" aria-hidden="true" />
+      <div className="fst-sweep" aria-hidden="true" />
+      <div className="max-w-[1300px] mx-auto relative">
+        <h2 className="sr-only">Gauge pipeline telemetry</h2>
+        <div className="fst-meta">
+          <span className="fst-metalabel">
+            <b>System telemetry</b> · Gauge pipeline
+          </span>
+          <span className="fst-live"><b aria-hidden="true" />Live</span>
+        </div>
+
+        <div className="fst-rail">
+          {/* 60s — avg processing */}
+          <div className="fst-cell">
+            <span className="fst-hero fst-hero--o" aria-hidden="true" />
+            <span className="fst-label">
+              <i aria-hidden="true" style={{ background: "#fb923c" }} />
+              Avg processing time
+            </span>
+            <div className="fst-big">60<u>s</u></div>
+            <div className="fst-sub">Call in → Notes out</div>
+            <div className="fst-instrument" aria-hidden="true">
+              {BARS_60S.map((b, i) => (
+                <i
+                  key={i}
+                  className={b.off ? "fst-off" : undefined}
+                  style={{ "--h": b.h } as CSSProperties}
+                />
+              ))}
+            </div>
+          </div>
+
+          {/* engine — whisper via groq */}
+          <div className="fst-cell">
+            <span className="fst-hero fst-hero--i" aria-hidden="true" />
+            <span className="fst-label">
+              <i aria-hidden="true" style={{ background: "#a5b4fc" }} />
+              Transcription engine
+            </span>
+            <span className="fst-role fst-role--o">Via Groq</span>
+            <div className="fst-engine">whisper-large-v3</div>
+            <div className="fst-sub">Speaker diarization · 30+ languages</div>
+            <div className="fst-instrument" aria-hidden="true">
+              {BARS_ENGINE.map((b, i) => (
+                <i
+                  key={i}
+                  className={b.off ? "fst-off" : undefined}
+                  style={{ "--h": b.h } as CSSProperties}
+                />
+              ))}
+            </div>
+          </div>
+
+          {/* languages */}
+          <div className="fst-cell">
+            <span className="fst-hero fst-hero--g" aria-hidden="true" />
+            <span className="fst-label">
+              <i aria-hidden="true" style={{ background: "#6ee7b7" }} />
+              Languages supported
+            </span>
+            <div className="fst-big">12<u>+</u></div>
+            <div className="fst-sub">Auto-detect · Native output</div>
+            <div className="fst-ticks" aria-hidden="true">
+              <i /><i /><i /><i /><i /><i /><i /><i /><i /><i /><i /><i />
+            </div>
+            <div className="mt-auto" aria-hidden="true">
+              <svg className="block" width="70" height="26" viewBox="0 0 70 26" fill="none">
+                <path d="M4 22a31 31 0 0 1 62 0" stroke="rgba(52,211,153,.55)" strokeWidth="1.5" />
+                <path d="M11 22a24 24 0 0 1 48 0" stroke="rgba(52,211,153,.3)" strokeWidth="1.5" />
+                <circle cx="35" cy="7" r="2.2" fill="#34d399" />
+                <circle cx="14" cy="17" r="2" fill="rgba(52,211,153,.55)" />
+                <circle cx="56" cy="17" r="2" fill="rgba(52,211,153,.55)" />
+              </svg>
+            </div>
+          </div>
+
+          {/* CRM integrations */}
+          <div className="fst-cell">
+            <span className="fst-hero fst-hero--o" aria-hidden="true" />
+            <span className="fst-label">
+              <i aria-hidden="true" style={{ background: "#fb923c" }} />
+              CRM integrations
+            </span>
+            <div className="fst-big">10<u>+</u></div>
+            <div className="fst-sub">HubSpot · Salesforce · Slack</div>
+            <div className="fst-chain" aria-hidden="true">
+              <i className="fst-on" /><s />
+              <i className="fst-on" /><s />
+              <i className="fst-on" /><s />
+              <i /><s />
+              <i /><s />
+              <i />
+            </div>
+          </div>
+        </div>
       </div>
     </section>
   );
 }
 
 function WorkflowSection() {
-  const sectionRef = useRef<HTMLDivElement>(null);
+  const sectionRef = useAmbientLive<HTMLElement>();
 
   useGSAP(() => {
-    if (!sectionRef.current) return;
-    const stepEls = sectionRef.current.querySelectorAll(".workflow-step");
-    const line = sectionRef.current.querySelector(".workflow-line");
-    const dots = sectionRef.current.querySelectorAll(".workflow-dot");
-
-    gsap.fromTo(stepEls, { opacity: 0, x: -30 }, {
-      opacity: 1, x: 0, stagger: 0.2, duration: 0.8, ease: "power3.out",
-      scrollTrigger: { trigger: sectionRef.current, start: "top 70%" },
-    });
-
-    if (line) {
-      gsap.fromTo(line, { scaleY: 0 }, {
-        scaleY: 1, duration: 1.4, ease: "power2.inOut",
-        scrollTrigger: { trigger: sectionRef.current, start: "top 60%", end: "bottom 40%", scrub: 1.2 },
-      });
-    }
-
-    gsap.fromTo(dots, { scale: 0, opacity: 0 }, {
-      scale: 1, opacity: 1, stagger: 0.3, duration: 0.6, ease: "back.out(2)",
-      scrollTrigger: { trigger: sectionRef.current, start: "top 65%" },
+    const sec = sectionRef.current;
+    if (!sec) return;
+    // Reveal rows once on scroll; ambient loops inside scenes are CSS-driven
+    // and pause via [data-live] when off-screen. Skipped for reduced motion.
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    const rows = sec.querySelectorAll(".fws-row");
+    gsap.fromTo(rows, { opacity: 0, y: 36 }, {
+      opacity: 1, y: 0, stagger: 0.18, duration: 0.8, ease: "power3.out",
+      scrollTrigger: { trigger: sec, start: "top 72%" },
     });
   }, { scope: sectionRef });
 
   return (
-    <section ref={sectionRef} className="relative py-16 sm:py-20 lg:py-24 px-5 sm:px-8 lg:px-12 overflow-hidden">
-      <div className="absolute inset-0 pointer-events-none"
-        style={{ background: "radial-gradient(ellipse at 50% 0%, rgba(37,99,235,0.04) 0%, transparent 60%)" }} />
-      <div className="max-w-[1440px] mx-auto relative">
-        <div className="text-center mb-14">
-          <div className="eyebrow inline-flex items-center gap-2 mb-5">
-            <Zap size={12} /> How it works
-          </div>
-          <h2 className="text-[clamp(1.5rem,4vw,3rem)] font-medium leading-[1.12] tracking-[-0.02em]">
-            Four steps to <span className="text-gray-400">zero notes</span>
+    <section
+      ref={sectionRef}
+      data-live="false"
+      className="fws-sec py-16 sm:py-20 lg:py-28 px-5 sm:px-8 lg:px-12"
+    >
+      <div className="fws-grain" aria-hidden="true" />
+      <div className="max-w-[1300px] mx-auto relative">
+        <header className="text-center mb-14">
+          <p className="fpb-eyebrow mb-4">How it works</p>
+          <h2 className="text-[clamp(1.6rem,4vw,3.1rem)] font-medium leading-[1.08] tracking-[-0.03em] text-white">
+            Four steps to <span className="text-[#7d818c]">zero notes</span>
           </h2>
-          <p className="text-[14px] text-gray-500 mt-3 max-w-md mx-auto">
-            From raw recording to CRM-ready insights in under 60 seconds
-          </p>
-        </div>
+          <p className="fws-sub mt-4">Raw recording → CRM-ready · Under 60 seconds</p>
+        </header>
 
-        <div className="max-w-4xl mx-auto relative">
-          <div className="absolute left-6 md:left-1/2 top-0 bottom-0 w-px workflow-line origin-top"
-            style={{ background: "linear-gradient(to bottom, transparent, rgba(242,101,34,0.25), rgba(37,99,235,0.15), transparent)" }} />
-
-          <div className="space-y-10 md:space-y-16">
-            {steps.map((s, i) => (
-              <div key={i} className={`workflow-step relative flex items-center gap-6 md:gap-12 ${i % 2 === 1 ? "md:flex-row-reverse" : ""}`}
-                style={{ opacity: 0, transform: "translateX(-30px)" }}>
-                <div className={`flex-1 ${i % 2 === 1 ? "md:text-right" : ""}`}>
-                  <div className="doppel-outer inline-block w-full group">
-                    <div className="doppel-inner p-5 sm:p-6 md:p-8 relative overflow-hidden">
-                      <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-700"
-                        style={{ background: `radial-gradient(ellipse at 50% 50%, ${s.color}08, transparent 70%)` }} />
-                      <div className="relative">
-                        <div className={`flex items-center gap-3 mb-3 ${i % 2 === 1 ? "md:flex-row-reverse" : ""}`}>
-                          <div className="w-10 h-10 rounded-xl flex items-center justify-center"
-                            style={{ background: `${s.color}10`, border: `1px solid ${s.color}20` }}>
-                            <s.icon size={18} style={{ color: s.color }} strokeWidth={1.5} />
-                          </div>
-                          <span className="font-mono text-[10px] text-gray-400 font-medium">{s.num}</span>
-                        </div>
-                        <h3 className="text-[15px] sm:text-[17px] font-semibold tracking-tight mb-1 text-gray-900">{s.title}</h3>
-                        <p className="text-[13px] text-gray-500">{s.desc}</p>
-                      </div>
-                    </div>
+        <div className="fws-flow">
+          {workflowSteps.map((s, i) => {
+            const Scene = SCENES[s.scene];
+            return (
+              <div key={s.num} className={`fws-row${i % 2 === 1 ? " fws-row--rev" : ""}`}>
+                <article className="fws-sidecard">
+                  <p className="fws-num"><b>{s.num}</b></p>
+                  <h3 className="fws-title">{s.title}</h3>
+                  <p className="fws-desc">{s.desc}</p>
+                  <div className="fws-micro">
+                    {s.chips.map((c) => (
+                      <span
+                        key={c.label}
+                        className={`fws-mchip${c.hot ? " fws-mchip--hot" : ""}${c.grn ? " fws-mchip--grn" : ""}`}
+                      >
+                        {c.label}
+                      </span>
+                    ))}
                   </div>
+                </article>
+
+                <div className="fws-spine" aria-hidden="true">
+                  <span className="fws-spineline" />
+                  <span className="fws-spinechip">{s.spine}</span>
+                  <span className="fws-spineline" />
                 </div>
 
-                <div className="workflow-dot absolute left-6 md:left-1/2 -translate-x-1/2 w-4 h-4 rounded-full z-10 flex items-center justify-center"
-                  style={{ background: s.color, boxShadow: `0 0 24px ${s.color}50` }}>
-                  <div className="w-1.5 h-1.5 rounded-full bg-white" />
+                <div
+                  className="fws-scene"
+                  role="img"
+                  aria-label={`${s.title} — ${s.desc}`}
+                >
+                  <Scene />
                 </div>
-
-                <div className="flex-1 hidden md:block" />
               </div>
-            ))}
-          </div>
+            );
+          })}
         </div>
       </div>
     </section>
@@ -597,19 +862,7 @@ export default function FeaturesAnimations() {
         </div>
       </section>
 
-      <section className="relative pb-8">
-        <div className="max-w-[1440px] mx-auto px-5 sm:px-8 lg:px-12">
-          <div className="relative">
-            <div className="absolute inset-0 pointer-events-none"
-              style={{ background: "linear-gradient(to bottom, transparent 0%, rgba(242,101,34,0.02) 50%, transparent 100%)" }} />
-            <StatsSection />
-          </div>
-        </div>
-      </section>
-
-      <div className="max-w-[1440px] mx-auto px-5 sm:px-8 lg:px-12">
-        <div className="h-px bg-gradient-to-r from-transparent via-gray-200 to-transparent" />
-      </div>
+      <StatsSection />
 
       <WorkflowSection />
     </>

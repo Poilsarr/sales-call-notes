@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Tech Stats — V1 CONSOLE RIBBON</title>
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; }
+  :root{
+    --orange:#F26522; --orange-deep:#c2410c;
+    --glass-hi:rgba(255,255,255,0.085); --glass-lo:rgba(255,255,255,0.018);
+    --mline:rgba(255,255,255,.09); --mono:"SF Mono",ui-monospace,Menlo,monospace;
+  }
+  body{ width:1440px; background:#000; font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif; color:#fff; -webkit-font-smoothing:antialiased; }
+
+  .band{
+    position:relative; overflow:hidden; padding:64px 70px;
+    background:
+      radial-gradient(1100px 420px at 14% -12%, rgba(242,101,34,.10), transparent 60%),
+      radial-gradient(900px 420px at 90% 118%, rgba(16,185,129,.06), transparent 58%),
+      radial-gradient(1400px 700px at 50% 50%, #0B0B0D 0%, #070708 70%);
+  }
+  .grain{ position:absolute; inset:0; opacity:.055; pointer-events:none;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='240' height='240'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='240' height='240' filter='url(%23n)' opacity='1'/%3E%3C/svg%3E"); }
+  .sweep{ position:absolute; inset:0; pointer-events:none; opacity:.5;
+    background:linear-gradient(100deg, transparent 42%, rgba(242,101,34,.03) 50%, transparent 58%);
+    animation:bandsweep 7s linear infinite; }
+
+  .inner{ max-width:1300px; margin:0 auto; }
+
+  .railmeta{ display:flex; align-items:center; justify-content:space-between; margin-bottom:16px; }
+  .railmeta .l{ font-family:var(--mono); font-size:10px; letter-spacing:.2em; color:#6b707c; }
+  .railmeta .l b{ color:#fb923c; font-weight:600; }
+  .livepill{ display:inline-flex; align-items:center; gap:7px; padding:7px 13px; border-radius:999px;
+    background:rgba(242,101,34,.10); border:1px solid rgba(242,101,34,.45); font-family:var(--mono); font-size:10px; letter-spacing:.16em; color:#fdba74; }
+  .livepill b{ width:6px; height:6px; border-radius:50%; background:#34d399; box-shadow:0 0 10px rgba(52,211,153,.8); animation:breathe 2.6s ease-in-out infinite; }
+
+  .rail{
+    border-radius:26px; padding:0;
+    background:linear-gradient(180deg, var(--glass-hi), var(--glass-lo));
+    border:1px solid var(--mline);
+    box-shadow:0 50px 100px rgba(0,0,0,.55), inset 0 1px 0 rgba(255,255,255,.09);
+    display:grid; grid-template-columns:1fr 1fr 1fr 1fr;
+  }
+  .cell{ position:relative; padding:34px 30px 30px; display:flex; flex-direction:column; overflow:hidden; }
+  .cell + .cell{ border-left:1px solid rgba(255,255,255,.07); }
+  .cellhero{ position:absolute; right:-32px; top:-32px; width:120px; height:120px; border-radius:50%; filter:blur(34px); opacity:.35; }
+  .cellhero.o{ background:rgba(242,101,34,.5); }
+  .cellhero.g{ background:rgba(16,185,129,.4); }
+  .cellhero.i{ background:rgba(99,102,241,.45); }
+
+  .clabel{ font-family:var(--mono); font-size:9px; letter-spacing:.22em; color:#6b707c; display:flex; align-items:center; gap:8px; margin-bottom:14px; }
+  .clabel i{ width:5px; height:5px; border-radius:50%; flex:none; }
+
+  .big{ font-size:52px; font-weight:600; letter-spacing:-.035em; line-height:1; margin-bottom:6px; }
+  .big .u{ font-size:22px; color:#8b8f9a; letter-spacing:0; font-weight:500; }
+  .bigmono{ font-family:var(--mono); font-size:21px; font-weight:600; letter-spacing:-.01em; margin-bottom:6px; }
+  .sub{ font-family:var(--mono); font-size:9px; letter-spacing:.16em; color:#8b8f9a; margin-bottom:18px; }
+  .rolepill{ font-family:var(--mono); font-size:9px; letter-spacing:.14em; font-weight:600; padding:5px 10px; border-radius:999px; display:inline-flex; width:max-content; margin-bottom:14px; }
+  .rp-o{ color:#fdba74; background:rgba(242,101,34,.10); border:1px solid rgba(242,101,34,.4); }
+  .rp-g{ color:#6ee7b7; background:rgba(16,185,129,.09); border:1px solid rgba(16,185,129,.32); }
+
+  .meter{ margin-top:auto; height:26px; display:flex; align-items:flex-end; gap:4px; }
+  .meter i{ flex:1; max-width:9px; border-radius:3px 3px 1px 1px; height:var(--h); background:linear-gradient(180deg,#fb923c,var(--orange-deep)); }
+  .meter i.off{ background:rgba(255,255,255,.10); }
+
+  .ticks{ margin-top:auto; display:flex; gap:6px; }
+  .ticks i{ width:6px; height:12px; border-radius:2px; background:rgba(255,255,255,.10); }
+  .ticks i.on{ background:linear-gradient(180deg,#fb923c,var(--orange-deep)); }
+
+  .chain{ margin-top:auto; display:flex; align-items:center; gap:6px; }
+  .chain i{ width:8px; height:8px; border-radius:50%; background:rgba(255,255,255,.10); }
+  .chain i.on{ background:#34d399; box-shadow:0 0 8px rgba(52,211,153,.7); }
+  .chain s{ width:14px; height:1px; background:rgba(255,255,255,.10); text-decoration:none; }
+
+  .globe{ margin-top:auto; }
+  .globe svg{ display:block; }
+
+  /* keyframes */
+  @keyframes breathe{ 0%,100%{ box-shadow:0 0 6px rgba(52,211,153,.5);} 50%{ box-shadow:0 0 14px rgba(52,211,153,1);} }
+  @keyframes bandsweep{ 0%{ transform:translateX(-20%);} 100%{ transform:translateX(20%);} }
+</style>
+</head>
+<body>
+<div class="capture">
+<section class="band">
+  <div class="inner">
+    <div class="railmeta">
+      <span class="l"><b>SYSTEM TELEMETRY</b> · GAUGE PIPELINE</span>
+      <span class="livepill"><b></b>LIVE</span>
+    </div>
+
+    <div class="rail">
+      <!-- 60s -->
+      <div class="cell">
+        <span class="cellhero o"></span>
+        <span class="clabel"><i style="background:#fb923c"></i>AVG PROCESSING TIME</span>
+        <div class="big">60<span class="u">s</span></div>
+        <div class="sub">CALL IN → NOTES OUT</div>
+        <div class="meter">
+          <i style="--h:10px" class="off"></i><i style="--h:14px" class="off"></i><i style="--h:9px" class="off"></i><i style="--h:16px" class="off"></i><i style="--h:12px"></i><i style="--h:20px"></i><i style="--h:16px"></i><i style="--h:26px"></i><i style="--h:14px" class="off"></i><i style="--h:10px" class="off"></i>
+        </div>
+      </div>
+
+      <!-- engine -->
+      <div class="cell">
+        <span class="cellhero i"></span>
+        <span class="clabel"><i style="background:#a5b4fc"></i>TRANSCRIPTION ENGINE</span>
+        <span class="rolepill rp-o">VIA GROQ</span>
+        <div class="bigmono">whisper-large-v3</div>
+        <div class="sub">SPEAKER DIARIZATION · 30+ LANGUAGES</div>
+        <div class="meter">
+          <i style="--h:14px" class="off"></i><i style="--h:20px"></i><i style="--h:26px"></i><i style="--h:18px" class="off"></i><i style="--h:12px" class="off"></i>
+        </div>
+      </div>
+
+      <!-- languages -->
+      <div class="cell">
+        <span class="cellhero g"></span>
+        <span class="clabel"><i style="background:#6ee7b7"></i>LANGUAGES SUPPORTED</span>
+        <div class="big">12<span class="u">+</span></div>
+        <div class="sub">AUTO-DETECT · NATIVE OUTPUT</div>
+        <div class="ticks">
+          <i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i>
+        </div>
+        <div class="globe">
+          <svg width="70" height="26" viewBox="0 0 70 26" fill="none">
+            <path d="M4 22a31 31 0 0 1 62 0" stroke="rgba(52,211,153,.55)" stroke-width="1.5"/>
+            <path d="M11 22a24 24 0 0 1 48 0" stroke="rgba(52,211,153,.3)" stroke-width="1.5"/>
+            <circle cx="35" cy="7" r="2.2" fill="#34d399"/>
+            <circle cx="14" cy="17" r="2" fill="rgba(52,211,153,.55)"/>
+            <circle cx="56" cy="17" r="2" fill="rgba(52,211,153,.55)"/>
+          </svg>
+        </div>
+      </div>
+
+      <!-- CRM -->
+      <div class="cell">
+        <span class="cellhero o"></span>
+        <span class="clabel"><i style="background:#fb923c"></i>CRM INTEGRATIONS</span>
+        <div class="big">10<span class="u">+</span></div>
+        <div class="sub">HUBSPOT · SALESFORCE · SLACK</div>
+        <div class="chain">
+          <i class="on"></i><s></s><i class="on"></i><s></s><i class="on"></i><s></s><i></i><s></s><i></i><s></s><i></i>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="sweep"></div>
+  <div class="grain"></div>
+</section>
+</div>
+</body>
+</html>

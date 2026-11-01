@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Features Proof Band — V1 LIGHT STUDIO</title>
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; }
+  :root{
+    --orange:#F26522; --orange-deep:#c2410c;
+    --ink:#131316; --line:rgba(19,19,22,.07);
+    --mono:"SF Mono",ui-monospace,Menlo,monospace;
+  }
+  body{ width:1440px; background:#fbfaf8; font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif; color:var(--ink); -webkit-font-smoothing:antialiased; }
+
+  .band{
+    position:relative; overflow:hidden; padding:84px 70px 88px;
+    background:
+      radial-gradient(1100px 460px at 16% -10%, rgba(242,101,34,.075), transparent 60%),
+      radial-gradient(900px 440px at 90% 116%, rgba(99,102,241,.05), transparent 58%),
+      linear-gradient(180deg,#fbfaf8 0%, #f6f4f0 100%);
+  }
+  .grain{ position:absolute; inset:0; opacity:.035; pointer-events:none;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='240' height='240'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='240' height='240' filter='url(%23n)' opacity='1'/%3E%3C/svg%3E"); }
+
+  .inner{ max-width:1300px; margin:0 auto; }
+
+  /* header */
+  header{ text-align:center; margin-bottom:52px; }
+  .eyebrow{ font-family:var(--mono); font-size:11.5px; letter-spacing:.2em; color:var(--orange); font-weight:600; margin-bottom:16px; }
+  h2{ font-size:50px; line-height:1.08; letter-spacing:-.032em; font-weight:500; }
+  h2 .soft{ color:#a8a49c; }
+  .sub{ margin-top:16px; font-family:var(--mono); font-size:11px; letter-spacing:.14em; color:#8a857c; }
+
+  /* cards */
+  .row{ display:grid; grid-template-columns:1fr 1fr 1fr; gap:20px; align-items:stretch; }
+  .card{
+    position:relative; border-radius:24px; padding:14px 14px 20px; display:flex; flex-direction:column;
+    background:linear-gradient(180deg,#ffffff, #fdfcfb);
+    border:1px solid var(--line);
+    box-shadow:0 40px 80px rgba(19,19,22,.07), 0 1px 0 rgba(255,255,255,.9) inset;
+  }
+  .cardmeta{ display:flex; justify-content:space-between; align-items:center; margin:6px 4px 12px; }
+  .yes{ font-family:var(--mono); font-size:10px; letter-spacing:.16em; color:#8a857c; }
+  .yes b{ color:var(--orange); font-weight:600; }
+  .tag{ font-family:var(--mono); font-size:9px; letter-spacing:.18em; color:#b0aa9f; border:1px solid rgba(19,19,22,.10); border-radius:999px; padding:5px 10px; }
+
+  .still{ border-radius:16px; overflow:hidden; border:1px solid var(--line); box-shadow:0 14px 30px rgba(19,19,22,.08); transition:transform .45s cubic-bezier(.16,1,.3,1); }
+  .card:hover .still{ transform:translateY(-4px); }
+  .still img{ display:block; width:100%; height:auto; }
+
+  .ledger{ margin:16px 4px 0; }
+  .lrow{ display:flex; align-items:center; gap:8px; }
+  .lrow + .lrow{ margin-top:8px; }
+  .tok{ display:inline-flex; align-items:center; gap:7px; font-family:var(--mono); font-size:10.5px; letter-spacing:.1em; color:#4c4840;
+    background:#f7f5f2; border:1px solid rgba(19,19,22,.08); border-radius:999px; padding:8px 12px; white-space:nowrap; }
+  .tok b{ width:6px; height:6px; border-radius:50%; flex:none; }
+  .tok .bs{ background:#7a7466; }
+  .tok.hot{ color:var(--orange-deep); background:rgba(242,101,34,.07); border-color:rgba(242,101,34,.30); font-weight:600; }
+  .tok.hot b{ background:var(--orange); box-shadow:0 0 10px rgba(242,101,34,.65); }
+  .tok.dim{ color:#8a857c; }
+  .tok.link{ color:#4c4840; }
+
+  .conf{ margin-left:auto; display:flex; align-items:center; gap:8px; }
+  .confbar{ display:block; width:64px; height:5px; border-radius:4px; background:#eceae5; overflow:hidden; }
+  .conffill{ display:block; height:100%; border-radius:4px; background:linear-gradient(90deg,var(--orange-deep),#fb923c); }
+  .confval{ font-family:var(--mono); font-size:10.5px; color:#4c4840; letter-spacing:.06em; }
+
+  .line{ height:1px; background:linear-gradient(90deg, rgba(19,19,22,.10), transparent); margin:16px 4px 12px; }
+
+  .title{ font-size:17px; font-weight:600; letter-spacing:-.015em; margin:0 4px 6px; }
+  .desc{ font-size:12px; line-height:1.55; color:#8a857c; margin:0 4px; margin-bottom:14px; max-width:34ch; }
+  .src{ margin:auto 4px 0; font-family:var(--mono); font-size:9.5px; letter-spacing:.16em; color:#b0aa9f; display:flex; align-items:center; gap:7px; }
+  .src i{ width:5px; height:5px; border-radius:50%; background:#28c840; box-shadow:0 0 8px rgba(40,200,64,.6); }
+
+  /* portal rail under header */
+</style>
+</head>
+<body>
+<div class="capture">
+<section class="band">
+  <div class="inner">
+    <header>
+      <p class="eyebrow">PRODUCT IN ACTION</p>
+      <h2>Every signal ships with proof —<br><span class="soft">see it.</span></h2>
+      <p class="sub">THE LINE. THE PING. THE WRITE-BACK.</p>
+    </header>
+
+    <div class="row">
+      <!-- 01 TRANSCRIPT -->
+      <article class="card">
+        <div class="cardmeta">
+          <span class="yes"><b>01</b> · Transcript proof</span>
+          <span class="tag">SAMPLE</span>
+        </div>
+        <div class="still"><img src="../public/product/transcript-proof.svg" alt="Transcript still with rival name Gong highlighted"></div>
+        <div class="ledger">
+          <div class="lrow">
+            <span class="tok"><b class="bs"></b>SARAH CHEN</span>
+            <span class="tok dim">00:14:22</span>
+            <span class="conf"><span class="confbar"><span class="conffill" style="width:96%"></span></span><span class="confval">0.96</span></span>
+          </div>
+          <div class="lrow">
+            <span class="tok hot"><b></b>GONG</span>
+            <span class="tok link">#deal-room-acme</span>
+          </div>
+        </div>
+        <div class="line"></div>
+        <p class="title">The exact line.</p>
+        <p class="desc">Speaker, timestamp, rival highlight — captured as heard.</p>
+        <p class="src"><i></i>ACME CORP · DISCOVERY</p>
+      </article>
+
+      <!-- 02 SLACK -->
+      <article class="card">
+        <div class="cardmeta">
+          <span class="yes"><b>02</b> · Slack ping</span>
+          <span class="tag">SAMPLE</span>
+        </div>
+        <div class="still"><img src="../public/product/slack-ping.svg" alt="Slack ping still landing in a deal room"></div>
+        <div class="ledger">
+          <div class="lrow">
+            <span class="tok"><b class="bs"></b>PRIYA SHAH</span>
+            <span class="tok dim">11:42:08</span>
+            <span class="conf"><span class="confbar"><span class="conffill" style="width:91%"></span></span><span class="confval">0.91</span></span>
+          </div>
+          <div class="lrow">
+            <span class="tok hot"><b></b>OTTER.AI</span>
+            <span class="tok link">#deal-room-vandelay</span>
+          </div>
+        </div>
+        <div class="line"></div>
+        <p class="title">Mid-call ping.</p>
+        <p class="desc">Quote, speaker, call link — lands in the deal room live.</p>
+        <p class="src"><i></i>VANDELAY · DEMO</p>
+      </article>
+
+      <!-- 03 CRM -->
+      <article class="card">
+        <div class="cardmeta">
+          <span class="yes"><b>03</b> · CRM sync</span>
+          <span class="tag">SAMPLE</span>
+        </div>
+        <div class="still"><img src="../public/product/crm-sync.svg" alt="CRM sync still with HubSpot and Salesforce fields"></div>
+        <div class="ledger">
+          <div class="lrow">
+            <span class="tok"><b class="bs"></b>MARCUS LEE</span>
+            <span class="tok dim">09:03:51</span>
+            <span class="conf"><span class="confbar"><span class="conffill" style="width:99%"></span></span><span class="confval">0.99</span></span>
+          </div>
+          <div class="lrow">
+            <span class="tok hot"><b></b>FIREFLIES.AI</span>
+            <span class="tok link">#deal-room-stark</span>
+          </div>
+        </div>
+        <div class="line"></div>
+        <p class="title">One-click write-back.</p>
+        <p class="desc">Summary, owners, due dates — straight into your CRM.</p>
+        <p class="src"><i></i>STARK INDUSTRIES · CLOSING</p>
+      </article>
+    </div>
+  </div>
+  <div class="grain"></div>
+</section>
+</div>
+</body>
+</html>

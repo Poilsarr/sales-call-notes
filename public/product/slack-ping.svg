@@ -73,7 +73,7 @@
 
   <!-- Meta pills -->
   <rect x="328" y="344" width="120" height="22" rx="11" fill="#1E3A5F"/>
-  <text x="388" y="359" text-anchor="middle" font-family="ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="10" font-weight="600" fill="#93C5FD">Priya Shah Â· Demo</text>
+  <text x="388" y="359" text-anchor="middle" font-family="ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="10" font-weight="600" fill="#93C5FD">Priya Shah · Demo</text>
   <rect x="460" y="344" width="100" height="22" rx="11" fill="#14532D"/>
   <text x="510" y="359" text-anchor="middle" font-family="ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="10" font-weight="600" fill="#86EFAC">Confidence 0.91</text>
 </svg>
