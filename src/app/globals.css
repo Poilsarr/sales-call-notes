@@ -5624,3 +5624,713 @@ svg [class^="psw-spin"] {
   align-items: center;
   gap: 6px;
 }
+
+/* =============================================================
+   Batch E — extension cinematic rebuild.
+   fexc-* : hero float, install conveyor, demo filmstrip + rail,
+            fix status-log rail. fexl-* : light two-product duo
+            band (3D scene cards). All motion IO-gated via the
+            LiveSection/LiveDiv data-live freeze rule and killed
+            by the global prefers-reduced-motion ponytail above.
+   ============================================================= */
+
+/* ---------- hero island: gentle perpetual float ---------- */
+.fexc-float { animation: fexc-float-k 7.5s ease-in-out infinite; }
+@keyframes fexc-float-k {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-10px); }
+}
+
+/* ---------- install: three-step conveyor ---------- */
+.fexc-install {
+  margin-top: 30px;
+  display: grid;
+  grid-template-columns: 1fr 44px 1fr 44px 1fr;
+  align-items: stretch;
+}
+.fexc-step {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  padding: 0 0 14px;
+}
+.fexc-step .fex-scene {
+  display: flex;
+  min-height: 218px;
+}
+.fexc-badge { display: flex; align-items: center; gap: 9px; }
+.fexc-badge b {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  display: inline-grid;
+  place-items: center;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.02));
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  color: #d3d6de;
+  font-family: var(--fex-mono);
+  font-size: 11px;
+  letter-spacing: 0;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.12);
+}
+.fexc-install > .fexc-step:nth-of-type(1) .fexc-badge b {
+  animation: fexc-march-k 10.8s ease-in-out 0s infinite;
+}
+.fexc-install > .fexc-step:nth-of-type(2) .fexc-badge b {
+  animation: fexc-march-k 10.8s ease-in-out 3.6s infinite;
+}
+.fexc-install > .fexc-step:nth-of-type(3) .fexc-badge b {
+  animation: fexc-march-k 10.8s ease-in-out 7.2s infinite;
+}
+@keyframes fexc-march-k {
+  0% {
+    color: #ffb08a;
+    border-color: rgba(242, 101, 34, 0.8);
+    box-shadow: 0 0 0 1px rgba(242, 101, 34, 0.35), 0 0 22px rgba(242, 101, 34, 0.35);
+  }
+  28%, 100% {
+    color: #d3d6de;
+    border-color: rgba(255, 255, 255, 0.14);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.12);
+  }
+}
+.fexc-install > .fexc-step:nth-of-type(1) .fex-scene {
+  animation: fexc-edge-k 10.8s ease-in-out 0s infinite;
+}
+.fexc-install > .fexc-step:nth-of-type(2) .fex-scene {
+  animation: fexc-edge-k 10.8s ease-in-out 3.6s infinite;
+}
+.fexc-install > .fexc-step:nth-of-type(3) .fex-scene {
+  animation: fexc-edge-k 10.8s ease-in-out 7.2s infinite;
+}
+@keyframes fexc-edge-k {
+  0% {
+    border-color: rgba(242, 101, 34, 0.55);
+    box-shadow: 0 20px 44px rgba(0, 0, 0, 0.5), 0 0 30px rgba(242, 101, 34, 0.16),
+      inset 0 1px 0 rgba(255, 255, 255, 0.05);
+  }
+  28%, 100% {
+    border-color: rgba(255, 255, 255, 0.1);
+    box-shadow: 0 20px 44px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.05);
+  }
+}
+.fexc-pipe {
+  position: relative;
+  align-self: center;
+  width: 100%;
+  height: 2px;
+  border-radius: 2px;
+  background: linear-gradient(
+    90deg,
+    rgba(255, 255, 255, 0.05),
+    rgba(255, 255, 255, 0.18),
+    rgba(255, 255, 255, 0.05)
+  );
+}
+.fexc-pipe::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 0;
+  width: 6px;
+  height: 6px;
+  margin: -3px 0 0 -3px;
+  border-radius: 50%;
+  background: var(--fex-orange);
+  box-shadow: 0 0 12px rgba(242, 101, 34, 0.85);
+  animation: fexc-run2-k 3.6s linear infinite;
+}
+.fexc-install > .fexc-pipe:nth-of-type(2)::after {
+  animation-delay: 1.8s;
+}
+@keyframes fexc-run2-k {
+  0% { left: 0; opacity: 0; }
+  10% { opacity: 1; }
+  90% { opacity: 1; }
+  100% { left: 100%; opacity: 0; }
+}
+.fexc-sword {
+  margin-top: 12px;
+  font-family: var(--fex-mono);
+  font-size: 9px;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  color: #f26522;
+}
+.fexc-dlwrap {
+  margin-top: 30px;
+  display: flex;
+  justify-content: center;
+}
+.fexc-dl {
+  position: relative;
+  overflow: hidden;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 13px 26px;
+  border-radius: 999px;
+  background: linear-gradient(180deg, #f6824c, #f26522);
+  border: 1px solid rgba(255, 255, 255, 0.24);
+  color: #fff;
+  font-weight: 600;
+  font-size: 13.5px;
+  letter-spacing: 0.01em;
+  box-shadow: 0 16px 36px rgba(242, 101, 34, 0.38), inset 0 1px 0 rgba(255, 255, 255, 0.34);
+  transition: transform 0.2s ease, filter 0.2s ease;
+}
+.fexc-dl b {
+  position: absolute;
+  top: -20%;
+  bottom: -20%;
+  width: 36%;
+  background: linear-gradient(
+    100deg,
+    transparent,
+    rgba(255, 255, 255, 0.4),
+    transparent
+  );
+  transform: translateX(-150%) skewX(-18deg);
+  animation: fexc-pillshine-k 4.8s ease-in-out 1.4s infinite;
+  pointer-events: none;
+}
+@keyframes fexc-pillshine-k {
+  0% { transform: translateX(-150%) skewX(-18deg); }
+  36%, 100% { transform: translateX(420%) skewX(-18deg); }
+}
+.fexc-dl:hover {
+  transform: translateY(-1px);
+  filter: brightness(1.06);
+}
+
+/* ---------- demo: one filmstrip + six-step rail ---------- */
+.fexc-strip {
+  margin-top: 28px;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+}
+.fexc-frame {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+.fexc-shot {
+  position: relative;
+  overflow: hidden;
+  min-height: 242px;
+  flex: 1;
+}
+.fexc-shot::after {
+  content: "";
+  position: absolute;
+  top: -20%;
+  bottom: -20%;
+  width: 30%;
+  background: linear-gradient(
+    100deg,
+    transparent,
+    rgba(255, 255, 255, 0.09) 42%,
+    rgba(255, 255, 255, 0.16) 50%,
+    rgba(255, 255, 255, 0.09) 58%,
+    transparent
+  );
+  transform: translateX(-160%) skewX(-18deg);
+  pointer-events: none;
+}
+.fexc-strip > .fexc-frame:nth-of-type(1) .fexc-shot::after {
+  animation: fexc-sweep-k 12.6s cubic-bezier(0.55, 0.06, 0.35, 0.96) 0s infinite;
+}
+.fexc-strip > .fexc-frame:nth-of-type(2) .fexc-shot::after {
+  animation: fexc-sweep-k 12.6s cubic-bezier(0.55, 0.06, 0.35, 0.96) 4.2s infinite;
+}
+.fexc-strip > .fexc-frame:nth-of-type(3) .fexc-shot::after {
+  animation: fexc-sweep-k 12.6s cubic-bezier(0.55, 0.06, 0.35, 0.96) 8.4s infinite;
+}
+@keyframes fexc-sweep-k {
+  0% { transform: translateX(-160%) skewX(-18deg); opacity: 0; }
+  6% { opacity: 1; }
+  19% { transform: translateX(560%) skewX(-18deg); opacity: 0; }
+  20%, 100% { opacity: 0; }
+}
+.fexc-fword {
+  margin: 13px 0 0;
+  text-align: center;
+  font-family: var(--fex-mono);
+  font-size: 9.5px;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  color: #6b707c;
+}
+.fexc-fword b { font-weight: 600; }
+.fexc-strip > .fexc-frame:nth-of-type(1) .fexc-fword {
+  animation: fexc-fword-k 12.6s ease 0s infinite;
+}
+.fexc-strip > .fexc-frame:nth-of-type(2) .fexc-fword {
+  animation: fexc-fword-k 12.6s ease 4.2s infinite;
+}
+.fexc-strip > .fexc-frame:nth-of-type(3) .fexc-fword {
+  animation: fexc-fword-k 12.6s ease 8.4s infinite;
+}
+@keyframes fexc-fword-k {
+  0%, 19% {
+    color: #f9976b;
+    text-shadow: 0 0 14px rgba(242, 101, 34, 0.45);
+  }
+  25%, 100% {
+    color: #6b707c;
+    text-shadow: none;
+  }
+}
+.fexc-rail {
+  position: relative;
+  margin-top: 30px;
+  height: 36px;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+.fexc-rundot {
+  position: absolute;
+  top: -4px;
+  left: 0;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--fex-orange);
+  box-shadow: 0 0 12px rgba(242, 101, 34, 0.85);
+  transform: translateX(-50%);
+  animation: fexc-railrun-k 6.6s linear infinite;
+}
+@keyframes fexc-railrun-k {
+  0% { left: 1.5%; }
+  96% { left: 98.5%; opacity: 1; }
+  100% { left: 98.5%; opacity: 0; }
+}
+.fexc-rail > span {
+  position: absolute;
+  top: 11px;
+  transform: translateX(-50%);
+  font-family: var(--fex-mono);
+  font-size: 10px;
+  letter-spacing: 0.14em;
+  color: #5a5e69;
+  opacity: 0.55;
+  animation: fexc-tick-k 6.6s linear infinite;
+}
+.fexc-rail > span:nth-child(2) { left: 1.5%; animation-delay: 0s; }
+.fexc-rail > span:nth-child(3) { left: 20.8%; animation-delay: 1.1s; }
+.fexc-rail > span:nth-child(4) { left: 40.1%; animation-delay: 2.2s; }
+.fexc-rail > span:nth-child(5) { left: 59.4%; animation-delay: 3.3s; }
+.fexc-rail > span:nth-child(6) { left: 78.7%; animation-delay: 4.4s; }
+.fexc-rail > span:nth-child(7) { left: 98.5%; animation-delay: 5.5s; }
+@keyframes fexc-tick-k {
+  0%, 5% { color: #ffb08a; opacity: 1; transform: translateX(-50%); }
+  15%, 100% { color: #5a5e69; opacity: 0.55; transform: translateX(-50%); }
+}
+
+/* ---------- fix: wide status rail + code chips ---------- */
+.fexc-fixbar {
+  margin-top: 28px;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 10px;
+}
+.fexc-log { width: 100%; margin-top: 24px; }
+.fex-band-fix .fex-headrow {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 4px;
+}
+.fexc-log .fex-lrow > u {
+  color: #43464f;
+}
+.fexc-log .fex-lrow:nth-of-type(1) > u {
+  --g: #fbbf24;
+  animation: fexc-state-k 9s ease-in-out 0s infinite;
+}
+.fexc-log .fex-lrow:nth-of-type(2) > u {
+  --g: #34d399;
+  animation: fexc-state-k 9s ease-in-out 1.8s infinite;
+}
+.fexc-log .fex-lrow:nth-of-type(3) > u {
+  --g: #fb7185;
+  animation: fexc-state-k 9s ease-in-out 3.6s infinite;
+}
+.fexc-log .fex-lrow:nth-of-type(4) > u {
+  --g: #fb923c;
+  animation: fexc-state-k 9s ease-in-out 5.4s infinite;
+}
+.fexc-log .fex-lrow:nth-of-type(5) > u {
+  --g: #34d399;
+  animation: fexc-state-k 9s ease-in-out 7.2s infinite;
+}
+@keyframes fexc-state-k {
+  0%, 16% {
+    color: var(--g);
+    text-shadow: 0 0 12px var(--g);
+  }
+  26%, 100% {
+    color: #43464f;
+    text-shadow: none;
+  }
+}
+
+/* ---------- light duo band (duo-v2-light reference) ---------- */
+.fexl-sec {
+  background: #efefef;
+  padding: 84px 20px 92px;
+}
+.fexl-inner {
+  max-width: 1440px;
+  margin: 0 auto;
+}
+.fexl-eyebrow {
+  margin: 0 0 14px;
+  text-align: center;
+  font-family: var(--fex-mono);
+  font-size: 10px;
+  letter-spacing: 0.26em;
+  text-transform: uppercase;
+  color: var(--fex-orange);
+}
+.fexl-h2 {
+  margin: 0;
+  text-align: center;
+  font-size: clamp(28px, 3.8vw, 44px);
+  line-height: 1.14;
+  letter-spacing: -0.02em;
+  font-weight: 600;
+  color: #17181c;
+}
+.fexl-h2 i {
+  font-style: normal;
+  color: #a1a6b0;
+}
+.fexl-grid {
+  max-width: 1180px;
+  margin: 34px auto 0;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+}
+.fexl-card {
+  display: flex;
+  flex-direction: column;
+  border-radius: 24px;
+  padding: 22px 22px 20px;
+  background: linear-gradient(180deg, #ffffff, #f7f7f8);
+  border: 1px solid rgba(23, 24, 28, 0.07);
+  box-shadow: 0 30px 60px rgba(23, 24, 28, 0.09), inset 0 1px 0 rgba(255, 255, 255, 0.9);
+}
+.fexl-metarow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  font-family: var(--fex-mono);
+  font-size: 8.5px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: #9aa0ac;
+}
+.fexl-main {
+  color: var(--fex-orange);
+  border: 1px solid rgba(242, 101, 34, 0.28);
+  background: rgba(242, 101, 34, 0.07);
+  border-radius: 999px;
+  padding: 4px 9px;
+}
+.fexl-t {
+  margin: 12px 0 4px;
+  font-size: 19px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  color: #17181c;
+}
+.fexl-d {
+  margin: 0;
+  font-size: 12px;
+  line-height: 1.5;
+  color: #6d7280;
+  max-width: 46ch;
+}
+.fexl-scene {
+  position: relative;
+  margin-top: 14px;
+  min-height: 286px;
+  border-radius: 18px;
+  border: 1px solid rgba(23, 24, 28, 0.05);
+  overflow: hidden;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+}
+.fexl-scene1 {
+  background:
+    radial-gradient(120% 90% at 28% 0%, rgba(252, 187, 138, 0.35), transparent 60%),
+    linear-gradient(165deg, #f7ede0, #ece7f1 62%, #e8ebf1);
+}
+.fexl-scene2 {
+  background:
+    radial-gradient(120% 90% at 74% 0%, rgba(150, 139, 255, 0.28), transparent 60%),
+    linear-gradient(165deg, #eef0f7, #e9e5f2 62%, #f0e9e2);
+}
+.fexl-floor {
+  position: absolute;
+  left: 50%;
+  bottom: 30px;
+  width: 62%;
+  height: 40px;
+  transform: translateX(-50%);
+  border-radius: 50%;
+  background: radial-gradient(closest-side, rgba(255, 255, 255, 0.9), rgba(255, 255, 255, 0.1) 62%, transparent);
+  filter: blur(1px);
+}
+.fexl-tilt {
+  position: relative;
+  width: min(76%, 380px);
+  perspective: 700px;
+  margin-bottom: 10px;
+  animation: fexc-float-k 6.5s ease-in-out infinite;
+}
+.fexl-tpanel {
+  transform: rotateX(6deg) rotateY(-8deg) rotateZ(1deg);
+  background: linear-gradient(180deg, #17181c, #0e0f12);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 16px;
+  padding: 14px 14px 12px;
+  box-shadow: -18px 36px 60px rgba(23, 24, 28, 0.35);
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+  color: #c9ccd4;
+}
+.fexl-tp-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-family: var(--fex-mono);
+  font-size: 10px;
+  letter-spacing: 0.06em;
+}
+.fexl-tp-head b {
+  width: 20px;
+  height: 20px;
+  border-radius: 7px;
+  display: inline-grid;
+  place-items: center;
+  background: linear-gradient(135deg, #f6824c, #f26522);
+  color: #fff;
+  font-size: 10px;
+  font-weight: 700;
+}
+.fexl-tp-head u {
+  margin-left: auto;
+  text-decoration: none;
+  font-size: 8px;
+  letter-spacing: 0.12em;
+  color: #fb923c;
+  border: 1px solid rgba(251, 146, 60, 0.4);
+  background: rgba(251, 146, 60, 0.08);
+  border-radius: 999px;
+  padding: 2px 7px;
+}
+.fexl-tp-log {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  font-family: var(--fex-mono);
+  font-size: 9px;
+  line-height: 1.5;
+  color: #9ba0aa;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 8px;
+  padding: 7px 9px;
+  white-space: nowrap;
+  overflow: hidden;
+}
+.fexl-tp-log i {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  margin-top: 4px;
+  flex: none;
+}
+.fexl-tp-log .fexc-lred {
+  background: #f43f5e;
+  box-shadow: 0 0 7px rgba(244, 63, 94, 0.7);
+}
+.fexl-tp-log .fexc-lora {
+  background: #fb923c;
+  box-shadow: 0 0 7px rgba(251, 146, 60, 0.7);
+}
+.fexl-float {
+  position: absolute;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  padding: 9px 12px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.94);
+  border: 1px solid rgba(23, 24, 28, 0.08);
+  box-shadow: 0 16px 30px rgba(23, 24, 28, 0.18);
+  font-family: var(--fex-mono);
+}
+.fexl-float i {
+  position: absolute;
+  top: 9px;
+  right: 9px;
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--fex-orange);
+  box-shadow: 0 0 8px rgba(242, 101, 34, 0.8);
+}
+.fexl-float u {
+  text-decoration: none;
+  font-size: 7.5px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: #9aa0ac;
+}
+.fexl-float b {
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  color: #17181c;
+}
+.fexl-scene1 .fexl-float1 { top: 24px; right: 16px; }
+.fexl-scene1 .fexl-float2 { bottom: 62px; left: 14px; }
+.fexl-scene2 .fexl-float3 { top: 22px; left: 16px; }
+.fexl-scene2 .fexl-float4 { bottom: 56px; right: 12px; }
+.fexl-scene1 .fexl-float1 { animation: fexl-bob-k 5.8s ease-in-out infinite; }
+.fexl-scene1 .fexl-float2 { animation: fexl-bob-k 6.8s ease-in-out 0.9s infinite; }
+.fexl-scene2 .fexl-float3 { animation: fexl-bob-k 6.2s ease-in-out 0.4s infinite; }
+.fexl-scene2 .fexl-float4 { animation: fexl-bob-k 7.4s ease-in-out 1.3s infinite; }
+@keyframes fexl-bob-k {
+  0%, 100% { transform: translateY(0) rotate(0deg); }
+  50% { transform: translateY(-7px) rotate(-0.6deg); }
+}
+.fexl-bars {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: flex-end;
+  gap: 13px;
+  height: 132px;
+  margin: 0 auto 12px;
+  animation: fexl-sway-k 9s ease-in-out infinite;
+}
+@keyframes fexl-sway-k {
+  0%, 100% { transform: rotateX(0deg); }
+  50% { transform: rotateX(10deg); }
+}
+.fexl-cyl {
+  position: relative;
+  width: 22px;
+  border-radius: 11px;
+  box-shadow: 0 8px 16px rgba(23, 24, 28, 0.14);
+}
+.fexl-cyl::before {
+  content: "";
+  position: absolute;
+  top: -4px;
+  left: 0;
+  right: 0;
+  height: 9px;
+  border-radius: 50%;
+  background: inherit;
+  filter: brightness(1.18);
+}
+.fexl-cyl-o {
+  background: linear-gradient(90deg, #d95a1f, #f5733a 45%, #ffb98f);
+}
+.fexl-cyl-b {
+  background: linear-gradient(90deg, #4b52c9, #6a74e8 45%, #aab2ff);
+}
+.fexl-cyl-hot {
+  box-shadow: 0 10px 22px rgba(242, 101, 34, 0.4);
+}
+.fexl-cyl-hot::after {
+  content: "";
+  position: absolute;
+  top: 10px;
+  left: 50%;
+  width: 3px;
+  height: 56%;
+  transform: translateX(-50%);
+  border-radius: 3px;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.65), transparent);
+}
+.fexl-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 14px;
+}
+.fexl-chips span {
+  font-family: var(--fex-mono);
+  font-size: 8px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #565b63;
+  border: 1px solid rgba(23, 24, 28, 0.1);
+  background: rgba(255, 255, 255, 0.6);
+  border-radius: 999px;
+  padding: 4px 9px;
+}
+.fexl-cta {
+  margin-top: 12px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+  align-self: stretch;
+  padding: 12px 18px;
+  border-radius: 999px;
+  font-size: 13px;
+  font-weight: 600;
+  transition: transform 0.18s ease, box-shadow 0.18s ease, filter 0.18s ease;
+}
+.fexl-cta--orange {
+  color: #fff;
+  background: linear-gradient(180deg, #f6824c, #f26522);
+  box-shadow: 0 12px 26px rgba(242, 101, 34, 0.32), inset 0 1px 0 rgba(255, 255, 255, 0.35);
+}
+.fexl-cta--orange:hover {
+  transform: translateY(-1px);
+  filter: brightness(1.05);
+  box-shadow: 0 18px 34px rgba(242, 101, 34, 0.42);
+}
+.fexl-cta--dark {
+  color: #f2f2f2;
+  background: linear-gradient(180deg, #22242a, #101114);
+  box-shadow: 0 12px 26px rgba(23, 24, 28, 0.22);
+}
+.fexl-cta--dark:hover { transform: translateY(-1px); }
+
+/* ---------- Batch E responsive ---------- */
+/* inside the conveyor the ON tag must clear the scene clip */
+.fexc-step .fex-devrow { padding-right: 10px; }
+
+@media (max-width: 979px) {
+  .fexc-install { grid-template-columns: 1fr; gap: 18px; }
+  .fexc-install .fexc-pipe { display: none; }
+  .fexc-install .fex-ziprow { flex-wrap: wrap; }
+  .fexc-install .fex-ztile { margin-right: auto; }
+  .fexc-install .fex-folder { min-width: 240px; }
+  .fexc-install .fex-paneledge { flex-wrap: wrap; row-gap: 4px; }
+  .fexc-install .fex-paneledge .fex-arrow { margin-left: 0; }
+  .fexc-strip { grid-template-columns: 1fr; }
+  .fexl-grid { grid-template-columns: 1fr; }
+  .fexl-sec { padding: 60px 20px 68px; }
+  .fexl-float b { font-size: 12px; }
+}
+
+/* float chips keep their status dot clear of the label */
+.fexl-float u,
+.fexl-float b { padding-right: 10px; }
+

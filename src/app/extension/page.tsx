@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { ArrowRight, Download } from "lucide-react";
+import { ArrowRight, ArrowUpRight, Download } from "lucide-react";
 import Nav from "@/components/nav";
 import { LiveDiv, LiveSection } from "@/components/extension-live";
 
@@ -80,7 +80,7 @@ export default function ExtensionPage() {
               {/* RIGHT — the side panel playing itself: a real console
                   still, REC pill blinking only while on screen */}
               <LiveDiv className="relative flex justify-center lg:justify-end py-6 lg:py-10">
-                <div className="fex-island">
+                <div className="fex-island fexc-float">
                   <div className="fex-imeta">
                     <span className="fex-ilabel">
                       <b>Side panel</b> · what 60 seconds buys
@@ -174,18 +174,16 @@ export default function ExtensionPage() {
               <br />
               <span className="fex-soft">No store visit.</span>
             </h2>
-            <p className="fex-sub">
+            <p className="fex-sub sr-only">
               chrome://extensions · developer mode · session-memory key
             </p>
 
-            <div className="fex-trio">
-              {/* 01 — download and unzip */}
-              <article className="fex-pcard">
-                <div className="fex-prole">
-                  <span className="fex-stepn">
-                    <b>STEP 1</b> · files out
-                  </span>
-                  <span className="fex-ftag">v1.0.0</span>
+            {/* Cinematic three-step conveyor. Everything the old cards
+                said lives in the sr-only rail below. */}
+            <div className="fexc-install">
+              <div className="fexc-step">
+                <div className="fexc-badge" aria-hidden="true">
+                  <b>01</b>
                 </div>
                 <div
                   className="fex-scene"
@@ -223,27 +221,14 @@ export default function ExtensionPage() {
                     <div className="fex-splitline" aria-hidden="true" />
                   </div>
                 </div>
-                <h3 className="fex-ttl">Download &amp; Unzip</h3>
-                <p className="fex-subline">
-                  The archive carries the MV3 manifest, the sidepanel recorder,
-                  and the caption scraper. <b>Nothing phones home.</b>
-                </p>
-                <a
-                  className="fex-scrollink"
-                  href="/gauge-extension-1.0.0.zip"
-                  download="gauge-extension-1.0.0.zip"
-                >
-                  Download v1.0.0 (.zip)
-                </a>
-              </article>
+                <span className="fexc-sword">unzip</span>
+              </div>
 
-              {/* 02 — load unpacked */}
-              <article className="fex-pcard" id="store-pending">
-                <div className="fex-prole">
-                  <span className="fex-stepn">
-                    <b>STEP 2</b> · unpacked
-                  </span>
-                  <span className="fex-ftag">chromium</span>
+              <span className="fexc-pipe" aria-hidden="true" />
+
+              <div className="fexc-step">
+                <div className="fexc-badge" aria-hidden="true">
+                  <b>02</b>
                 </div>
                 <div
                   className="fex-scene"
@@ -280,21 +265,14 @@ export default function ExtensionPage() {
                     </div>
                   </div>
                 </div>
-                <h3 className="fex-ttl">Load unpacked in Chrome</h3>
-                <p className="fex-subline">
-                  Toggle <b>Developer mode</b>, point{" "}
-                  <code>Load unpacked</code> at the unzipped folder. Works on
-                  Chrome, Brave, Arc, Edge.
-                </p>
-              </article>
+                <span className="fexc-sword">load</span>
+              </div>
 
-              {/* 03 — key in */}
-              <article className="fex-pcard">
-                <div className="fex-prole">
-                  <span className="fex-stepn">
-                    <b>STEP 3</b> · key in
-                  </span>
-                  <span className="fex-ftag">session only</span>
+              <span className="fexc-pipe" aria-hidden="true" />
+
+              <div className="fexc-step">
+                <div className="fexc-badge" aria-hidden="true">
+                  <b>03</b>
                 </div>
                 <div
                   className="fex-scene"
@@ -320,16 +298,43 @@ export default function ExtensionPage() {
                     </div>
                   </div>
                 </div>
-                <h3 className="fex-ttl">Connect &amp; Record</h3>
-                <p className="fex-subline">
-                  Paste a key or auto-connect the account, then hit{" "}
-                  <b>Record</b>. The panel reads captions —{" "}
-                  <b>no bot joins the room.</b>
-                </p>
-                <Link className="fex-scrollink" href="/extension/connect">
-                  Check connection status →
-                </Link>
-              </article>
+                <span className="fexc-sword">connect</span>
+              </div>
+            </div>
+
+            <div className="fexc-dlwrap">
+              <a
+                className="fexc-dl"
+                href="/gauge-extension-1.0.0.zip"
+                download="gauge-extension-1.0.0.zip"
+              >
+                <b aria-hidden="true" />
+                Download v1.0.0 (.zip)
+                <span aria-hidden="true">↓</span>
+              </a>
+            </div>
+
+            {/* sr-only rail — the three step titles, their prose, and the
+                store-pending marker. */}
+            <div className="sr-only" id="store-pending" data-live="false">
+              <h3>Download &amp; Unzip</h3>
+              <p>
+                The archive carries the MV3 manifest, the sidepanel recorder,
+                and the caption scraper. <b>Nothing phones home.</b>
+              </p>
+              <h3>Load unpacked in Chrome</h3>
+              <p>
+                Toggle <b>Developer mode</b>, point <code>Load unpacked</code>{" "}
+                at the unzipped folder. Works on Chrome, Brave, Arc, Edge.
+              </p>
+              <h3>Connect &amp; Record</h3>
+              <p>
+                Paste a key or auto-connect the account, then hit <b>Record</b>.
+                The panel reads captions — <b>no bot joins the room.</b>
+              </p>
+              <Link href="/extension/connect">
+                Check connection status →
+              </Link>
             </div>
           </div>
         </LiveSection>
@@ -345,11 +350,127 @@ export default function ExtensionPage() {
                 <br />
                 <span className="fex-soft">Four buttons. Watch them stack.</span>
               </h2>
-              <p className="fex-sub">
+              <p className="fex-sub sr-only">
                 Every label below is verbatim from the side panel
               </p>
             </div>
 
+            {/* Cinematic three-frame strip. The six STEP plates moved to
+                the sr-only rail below; the strip plays RECORD → LAND. */}
+            <div className="fexc-strip">
+              <div className="fexc-frame">
+                <div
+                  className="fex-scene fexc-shot"
+                  role="img"
+                  aria-label="Record — captions live on the meeting tab, REC pill at 14 seconds, instrument bars moving, mic left alone"
+                >
+                  <div className="fex-sbody">
+                    <div className="fex-caprow">
+                      <span className="fex-cc">CC</span>
+                      <span
+                        className="fex-capline fex-capline-hot"
+                        style={{ width: "58%" }}
+                      />
+                      <span className="fex-capline" style={{ width: "26%" }} />
+                      <span className="fex-limelabel">live</span>
+                    </div>
+                    <div className="fex-recrow">
+                      <span className="fex-recpill">
+                        <i aria-hidden="true" />
+                        REC 00:14
+                      </span>
+                      <div className="fex-instrument" aria-hidden="true">
+                        <i style={{ height: "8px" }} />
+                        <i className="fex-off" style={{ height: "12px" }} />
+                        <i style={{ height: "16px" }} />
+                        <i style={{ height: "9px" }} />
+                        <i className="fex-off" style={{ height: "14px" }} />
+                        <i style={{ height: "18px" }} />
+                        <i style={{ height: "11px" }} />
+                      </div>
+                    </div>
+                    <div className="fex-micex">
+                      <span>tab audio · 32kbps opus</span>
+                      <span className="fex-no">mic → never asked</span>
+                    </div>
+                  </div>
+                </div>
+                <p className="fexc-fword">
+                  <b>record</b>
+                </p>
+              </div>
+
+              <div className="fexc-frame">
+                <div
+                  className="fex-scene fexc-shot"
+                  role="img"
+                  aria-label="Send — Stop releases the stream, Send hands the take to the dashboard"
+                >
+                  <div className="fex-sbody">
+                    <div className="fex-stoprow">
+                      <span className="fex-spill">Stop</span>
+                      <span className="fex-flowb" aria-hidden="true" />
+                      <span className="fex-spill fex-spill-hot">Send</span>
+                    </div>
+                    <div className="fex-upchips">
+                      <span className="fex-uchip">uploading audio</span>
+                      <span className="fex-uchip">captions finalize</span>
+                    </div>
+                    <span className="fex-stline fex-dm">
+                      <i aria-hidden="true" />
+                      Stopped. Uploading audio + finalizing captions…
+                    </span>
+                  </div>
+                </div>
+                <p className="fexc-fword">
+                  <b>send</b>
+                </p>
+              </div>
+
+              <div className="fexc-frame">
+                <div
+                  className="fex-scene fexc-shot"
+                  role="img"
+                  aria-label="Landed — Done summary with a call-page link, then the Slack digest with the health score"
+                >
+                  <div className="fex-sbody">
+                    <div className="fex-doneline">
+                      <i aria-hidden="true" />
+                      <span>Done - summary: /app/calls/8f3k</span>
+                      <u>GET /api/v1/calls</u>
+                    </div>
+                    <div className="fex-digest">
+                      <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                        <rect x="8.9" y="2" width="3" height="9.4" rx="1.5" fill="#36C5F0" />
+                        <rect x="12.6" y="12.6" width="9.4" height="3" rx="1.5" fill="#2EB67D" />
+                        <rect x="12.1" y="12.6" width="3" height="9.4" rx="1.5" fill="#ECB22E" />
+                        <rect x="2" y="8.4" width="9.4" height="3" rx="1.5" fill="#E01E5A" />
+                      </svg>
+                      <p>#sales · digest sent</p>
+                      <b>HEALTH SCORE 82</b>
+                    </div>
+                  </div>
+                </div>
+                <p className="fexc-fword">
+                  <b>landed</b>
+                </p>
+              </div>
+            </div>
+
+            {/* six-step rail — bare numerals, travelling dot */}
+            <div className="fexc-rail" aria-hidden="true">
+              <i className="fexc-rundot" />
+              <span>01</span>
+              <span>02</span>
+              <span>03</span>
+              <span>04</span>
+              <span>05</span>
+              <span>06</span>
+            </div>
+
+            {/* sr-only rail — vocabulary strip + all six STEP plates,
+                wholesale (STEP 01–06 count + Press Stop, then Send h3). */}
+            <div className="sr-only" data-live="false">
             <div className="fex-vocab">
               <span className="fex-vtok fex-vtok-hot">Record</span>
               <span className="fex-vsep" aria-hidden="true">·</span>
@@ -598,6 +719,141 @@ export default function ExtensionPage() {
                   outcome visible to the whole team
                 </p>
               </article>
+              </div>
+            </div>
+          </div>
+        </LiveSection>
+
+        {/* DUO — light two-product band, 3D scene cards (Batch E) */}
+        <LiveSection id="duo" className="fexl-sec">
+          <div className="fexl-inner">
+            <p className="fexl-eyebrow">Two sides of one revenue loop</p>
+            <h2 className="fexl-h2">
+              The extension on the call.
+              <br />
+              <i>The web hub for the team.</i>
+            </h2>
+            <p className="fexl-sub sr-only">
+              Reps capture in the panel; the team reviews in the dashboard —
+              same account, same call pages.
+            </p>
+
+            <div className="fexl-grid">
+              {/* card 1 — the in-call weapon */}
+              <div className="fexl-card">
+                <div className="fexl-metarow">
+                  <span className="fexl-main">capture · for reps</span>
+                  <span>chrome extension · mv3</span>
+                </div>
+                <h3 className="fexl-t">The In-Call Weapon</h3>
+                <p className="fexl-d">
+                  The side panel runs inside the meeting tab — capture starts
+                  on your Record click.
+                </p>
+
+                <div
+                  className="fexl-scene fexl-scene1"
+                  role="img"
+                  aria-label="A tilted dark recorder panel floating over a bright field, with a landed score card and a no-bots chip drifting above it"
+                >
+                  <div className="fexl-floor" aria-hidden="true" />
+                  <div className="fexl-tilt" aria-hidden="true">
+                    <div className="fexl-tpanel">
+                      <span className="fexl-tp-head">
+                        <b>G</b>
+                        gauge recorder
+                        <u>REC 00:14</u>
+                      </span>
+                      <span className="fexl-tp-log">
+                        <i aria-hidden="true" className="fexc-lred" />
+                        Recording tab audio (32kbps Opus) + captions.…
+                      </span>
+                      <span className="fexl-tp-log">
+                        <i aria-hidden="true" className="fexc-lora" />
+                        Done - summary: /app/calls/8f3k
+                      </span>
+                    </div>
+                  </div>
+                  <div className="fexl-float fexl-float1" aria-hidden="true">
+                    <i />
+                    <u>health score · landed</u>
+                    <b>score 82</b>
+                  </div>
+                  <div className="fexl-float fexl-float2" aria-hidden="true">
+                    <i />
+                    <b>0 bots in room</b>
+                  </div>
+                </div>
+
+                <div className="fexl-chips" aria-hidden="true">
+                  <span>0 bots in room</span>
+                  <span>32kbps opus</span>
+                  <span>session-memory key</span>
+                </div>
+
+                <a
+                  className="fexl-cta fexl-cta--orange"
+                  href="/gauge-extension-1.0.0.zip"
+                  download="gauge-extension-1.0.0.zip"
+                >
+                  <Download size={15} />
+                  Install Chrome Extension
+                  <ArrowUpRight size={14} />
+                </a>
+              </div>
+
+              {/* card 2 — the revenue hub */}
+              <div className="fexl-card">
+                <div className="fexl-metarow">
+                  <span className="fexl-main">review · for teams</span>
+                  <span>web app + database</span>
+                </div>
+                <h3 className="fexl-t">The Revenue Hub</h3>
+                <p className="fexl-d">
+                  Every landed call feeds recent calls, health scores, and the
+                  Slack digest.
+                </p>
+
+                <div
+                  className="fexl-scene fexl-scene2"
+                  role="img"
+                  aria-label="Floating 3D bars over a bright platter tracking team call volume, with a counter card and a rival mention card"
+                >
+                  <div className="fexl-floor" aria-hidden="true" />
+                  <div className="fexl-bars" aria-hidden="true">
+                    <span className="fexl-cyl fexl-cyl-b" style={{ height: 46 }} />
+                    <span className="fexl-cyl fexl-cyl-o" style={{ height: 78 }} />
+                    <span className="fexl-cyl fexl-cyl-b" style={{ height: 62 }} />
+                    <span className="fexl-cyl fexl-cyl-o" style={{ height: 92 }} />
+                    <span
+                      className="fexl-cyl fexl-cyl-o fexl-cyl-hot"
+                      style={{ height: 118 }}
+                    />
+                    <span className="fexl-cyl fexl-cyl-b" style={{ height: 70 }} />
+                  </div>
+                  <div className="fexl-float fexl-float3" aria-hidden="true">
+                    <i />
+                    <u>calls · this week</u>
+                    <b>127</b>
+                  </div>
+                  <div className="fexl-float fexl-float4" aria-hidden="true">
+                    <i />
+                    <u>Gong · mentions 7d</u>
+                    <b>+38%</b>
+                  </div>
+                </div>
+
+                <div className="fexl-chips" aria-hidden="true">
+                  <span>competitive intel</span>
+                  <span>crm sync</span>
+                  <span>Slack digest</span>
+                </div>
+
+                <Link className="fexl-cta fexl-cta--dark" href="/live">
+                  Try the live sandbox
+                  <ArrowRight size={14} />
+                </Link>
+              </div>
             </div>
           </div>
         </LiveSection>
@@ -900,7 +1156,7 @@ export default function ExtensionPage() {
                 </p>
               </div>
               <div
-                className="fex-logstill"
+                className="fex-logstill fexc-log"
                 role="img"
                 aria-label="The panel status log — its five real messages, one per state"
               >
@@ -939,6 +1195,36 @@ export default function ExtensionPage() {
               </div>
             </div>
 
+            <div
+              className="fexc-fixbar"
+              role="img"
+              aria-label="The five real status codes the panel can raise"
+            >
+              <span className="fex-chipcode fex-chipcode-amb">
+                <i aria-hidden="true" />
+                cc off
+              </span>
+              <span className="fex-chipcode fex-chipcode-ora">
+                <i aria-hidden="true" />
+                HTTP 413
+              </span>
+              <span className="fex-chipcode fex-chipcode-red">
+                <i aria-hidden="true" />
+                HTTP 401 · 403
+              </span>
+              <span className="fex-chipcode fex-chipcode-ind">
+                <i aria-hidden="true" />
+                bots api
+              </span>
+              <span className="fex-chipcode fex-chipcode-neu">
+                <i aria-hidden="true" />
+                manual upload
+              </span>
+            </div>
+
+            {/* sr-only rail — the five full troubleshooting entries,
+                wholesale (headings, code chips, links, plan caps). */}
+            <div className="sr-only" data-live="false">
             <div className="fex-fixgrid">
               {/* 1 */}
               <article className="fex-fixc">
@@ -1108,6 +1394,7 @@ export default function ExtensionPage() {
                   </div>
                 </div>
               </article>
+              </div>
             </div>
           </div>
         </LiveSection>
