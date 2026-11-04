@@ -45,6 +45,12 @@ const VARIANT_DEFAULTS: Record<ProductVisualVariant, DemoCallSignal> = {
   crm: DEMO_STARK,
 };
 
+const SWEEP_MOD = {
+  transcript: "fgv-sweep--t",
+  slack: "fgv-sweep--s",
+  crm: "fgv-sweep--c",
+} as const;
+
 const STILL_SIZE = { width: 640, height: 400 } as const;
 
 function ConfidenceMeter({
@@ -124,6 +130,10 @@ export function ProductVisualCard({
             height={STILL_SIZE.height}
             className="block w-full h-auto"
           />
+          <span
+            className={`fgv-sweep ${SWEEP_MOD[variant]}`}
+            aria-hidden="true"
+          />
         </div>
 
         <div className="fpb-ledger">
@@ -143,8 +153,8 @@ export function ProductVisualCard({
 
         <div className="fpb-line" />
 
-        <h3 className="fpb-title leading-snug">{title}</h3>
-        <p className="fpb-desc">{body}</p>
+        <h3 className="sr-only">{title}</h3>
+        <p className="sr-only">{body}</p>
         <p className="fpb-src"><i /><span>{footer}</span></p>
       </div>
     </div>

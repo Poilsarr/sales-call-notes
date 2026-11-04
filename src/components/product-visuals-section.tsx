@@ -13,6 +13,7 @@ import {
   DEMO_STARK,
   DEMO_VANDELAY,
 } from "@/lib/demo-call-fiction";
+import { LiveDiv } from "./extension-live";
 import { ProductVisualCard } from "./product-visual-card";
 
 export function ProductVisualsSection() {
@@ -43,7 +44,7 @@ export function ProductVisualsSection() {
           </p>
         </div>
 
-        <div className="product-still-reveal grid grid-cols-1 md:grid-cols-3 gap-5 items-stretch">
+        <LiveDiv className="product-still-reveal grid grid-cols-1 md:grid-cols-3 gap-5 items-stretch">
           <ProductVisualCard
             variant="transcript"
             eyebrow="01 · Transcript proof"
@@ -89,7 +90,7 @@ export function ProductVisualsSection() {
             slackChannel={DEMO_STARK.slackChannel}
             sample
           />
-        </div>
+        </LiveDiv>
       </div>
     </section>
   );

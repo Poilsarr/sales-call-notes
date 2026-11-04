@@ -5029,3 +5029,598 @@ svg [class^="psw-spin"] {
 @media (max-width: 760px) {
   .fex-trio, .fex-demogrid { grid-template-columns: 1fr; }
 }
+
+/* =====================================================================
+   Batch D — visual-first pass (features trio / pricing hero / extension
+   bands). Prose collapses to sr-only in TSX; these styles make the
+   stills + pictorial scenes carry the story with CSS motion. All loops
+   freeze off-screen via the generic [data-live="false"] rule near the
+   top of this file (features band is gated by <LiveDiv> from
+   extension-live.tsx; extension bands sit inside existing LiveSections).
+   Namespaces: fgv-* (features), fgp-* (pricing), fexd-* (extension).
+   ===================================================================== */
+
+/* ---------------- fgv-* — features proof trio ---------------- */
+
+/* The chrome (still wrapper) hosts the sweep overlay. */
+.fpb-card .product-chrome {
+  position: relative;
+  overflow: hidden;
+}
+
+@keyframes fgv-sweep-k {
+  0%   { transform: translateX(-130%) skewX(-18deg); opacity: 0; }
+  14%  { opacity: 0.85; }
+  55%  { opacity: 0.85; }
+  80%  { opacity: 0; }
+  100% { transform: translateX(340%) skewX(-18deg); opacity: 0; }
+}
+.fgv-sweep {
+  position: absolute;
+  top: -12%;
+  bottom: -12%;
+  width: 34%;
+  pointer-events: none;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(255, 255, 255, 0.02) 30%,
+    rgba(255, 205, 172, 0.13) 50%,
+    rgba(255, 255, 255, 0.02) 70%,
+    transparent 100%
+  );
+  mix-blend-mode: screen;
+  transform: translateX(-130%) skewX(-18deg);
+  animation: fgv-sweep-k 7.2s cubic-bezier(0.45, 0, 0.25, 1) infinite;
+}
+.fgv-sweep--t { animation-delay: 0.4s; }
+.fgv-sweep--s { animation-delay: 2.8s; }
+.fgv-sweep--c { animation-delay: 5.2s; }
+
+/* Hot rival token gets a soft breathing glow. */
+@keyframes fgv-hotpulse-k {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(242, 101, 34, 0); }
+  50%      { box-shadow: 0 0 14px 1px rgba(242, 101, 34, 0.38); }
+}
+.fpb-tok--hot {
+  animation: fgv-hotpulse-k 3.2s ease-in-out infinite;
+}
+
+/* Confidence-meter fill shimmer. */
+@keyframes fgv-confshim-k {
+  0%, 100% { filter: brightness(1); }
+  50%      { filter: brightness(1.35); }
+}
+.fpb-conffill {
+  animation: fgv-confshim-k 3.6s ease-in-out infinite;
+}
+
+/* Proof-source footer dot blinks. */
+@keyframes fgv-dotblink-k {
+  0%, 100% { opacity: 1; }
+  50%      { opacity: 0.2; }
+}
+.fpb-src > i {
+  animation: fgv-dotblink-k 2.4s ease-in-out infinite;
+}
+
+/* ---------------- fgp-* — pricing hero island ---------------- */
+
+.fph-chrome {
+  position: relative;
+  overflow: hidden;
+}
+@keyframes fgp-sweep-k {
+  0%   { transform: translateX(-130%) skewX(-18deg); opacity: 0; }
+  16%  { opacity: 0.8; }
+  58%  { opacity: 0.8; }
+  82%  { opacity: 0; }
+  100% { transform: translateX(340%) skewX(-18deg); opacity: 0; }
+}
+.fph-chrome::after {
+  content: "";
+  position: absolute;
+  top: -12%;
+  bottom: -12%;
+  width: 34%;
+  pointer-events: none;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(255, 255, 255, 0.02) 30%,
+    rgba(255, 205, 172, 0.12) 50%,
+    rgba(255, 255, 255, 0.02) 70%,
+    transparent 100%
+  );
+  mix-blend-mode: screen;
+  transform: translateX(-130%) skewX(-18deg);
+  animation: fgp-sweep-k 8.4s cubic-bezier(0.45, 0, 0.25, 1) infinite;
+}
+
+/* Pro ledger-line dot pulse. */
+@keyframes fgp-pro-k {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(242, 101, 34, 0); }
+  50%      { box-shadow: 0 0 12px 2px rgba(242, 101, 34, 0.45); }
+}
+.fph-proline > i {
+  animation: fgp-pro-k 3.4s ease-in-out infinite;
+}
+
+/* ---------------- fexd-* — extension Batch D scenes ---------------- */
+
+/* Truth band — pictorial capture/never ledger. */
+.fexd-ledger {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+  align-items: start;
+}
+.fexd-col {
+  border-radius: 16px;
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.fexd-col--cap   { background: rgba(242, 101, 34, 0.05); border: 1px solid rgba(242, 101, 34, 0.32); }
+.fexd-col--never { background: rgba(239, 68, 68, 0.05);  border: 1px solid rgba(239, 68, 68, 0.30); }
+.fexd-colhead {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  font-family: var(--fex-mono);
+  font-size: 9px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  padding: 2px 2px 6px;
+}
+.fexd-colhead--cap   { color: #fdba74; }
+.fexd-colhead--never { color: #fca5a5; }
+.fexd-tile {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  border-radius: 10px;
+  padding: 9px 10px;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.015));
+  border: 1px solid rgba(255, 255, 255, 0.09);
+}
+.fexd-cat {
+  font-family: var(--fex-mono);
+  font-size: 9px;
+  letter-spacing: 0.13em;
+  color: #d3d6de;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+.fexd-ic {
+  flex: none;
+  width: 26px;
+  height: 22px;
+  border-radius: 7px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+.fexd-ic--cap {
+  background: rgba(242, 101, 34, 0.13);
+  border: 1px solid rgba(242, 101, 34, 0.42);
+}
+.fexd-ic--never {
+  background: rgba(239, 68, 68, 0.11);
+  border: 1px solid rgba(239, 68, 68, 0.38);
+}
+
+/* Pictogram ≈1: audio wave bars (animated). */
+@keyframes fexd-wave-k {
+  0%, 100% { transform: scaleY(0.4); }
+  50%      { transform: scaleY(1); }
+}
+.fexd-wave {
+  display: inline-flex;
+  align-items: flex-end;
+  gap: 2px;
+  height: 12px;
+}
+.fexd-wave b {
+  display: block;
+  width: 3px;
+  border-radius: 1px;
+  background: #fb923c;
+  transform-origin: bottom;
+  animation: fexd-wave-k 1.15s ease-in-out infinite;
+}
+.fexd-wave b:nth-child(1) { height: 7px;  animation-delay: 0s;    }
+.fexd-wave b:nth-child(2) { height: 11px; animation-delay: 0.22s; }
+.fexd-wave b:nth-child(3) { height: 5px;  animation-delay: 0.44s; }
+.fexd-wave b:nth-child(4) { height: 12px; animation-delay: 0.12s; }
+.fexd-wave b:nth-child(5) { height: 9px;  animation-delay: 0.33s; }
+
+/* Pictogram 2: caption bars (static widths). */
+.fexd-bars {
+  display: inline-flex;
+  flex-direction: column;
+  gap: 3px;
+}
+.fexd-bars b {
+  display: block;
+  height: 3px;
+  border-radius: 2px;
+  background: #fb923c;
+  opacity: 0.9;
+}
+.fexd-bars b:nth-child(1) { width: 14px; }
+.fexd-bars b:nth-child(2) { width: 10px; }
+.fexd-bars b:nth-child(3) { width: 12px; }
+
+/* Pictogram 3: title bracket. */
+.fexd-bra {
+  position: relative;
+  width: 14px;
+  height: 13px;
+}
+.fexd-bra i {
+  position: absolute;
+  width: 5px;
+  height: 5px;
+  border: 1.5px solid #fb923c;
+}
+.fexd-bra i:nth-child(1) { top: 0; left: 0; border-right: none; border-bottom: none; }
+.fexd-bra i:nth-child(2) { top: 0; right: 0; border-left: none; border-bottom: none; }
+.fexd-bra i:nth-child(3) { border-left: none; border-right: none; top: 6px; left: 2px; right: 2px; height: 2px; display: block; background: none; }
+
+/* Pictogram 4: buffer dots (staggered blink). */
+.fexd-bufs {
+  display: inline-grid;
+  grid-template-columns: repeat(4, 3px);
+  gap: 3px;
+}
+.fexd-bufs b {
+  width: 3px;
+  height: 3px;
+  border-radius: 50%;
+  background: #fb923c;
+  animation: fgv-dotblink-k 2.1s ease-in-out infinite;
+}
+.fexd-bufs b:nth-child(2n) { animation-delay: 0.35s; }
+.fexd-bufs b:nth-child(3n) { animation-delay: 0.7s;  }
+
+/* Pictogram 5: local key chip. */
+.fexd-keychip {
+  font-family: var(--fex-mono);
+  font-size: 7.5px;
+  letter-spacing: 0.08em;
+  color: #fdba74;
+  border: 1px solid rgba(242, 101, 34, 0.5);
+  background: rgba(242, 101, 34, 0.1);
+  border-radius: 4px;
+  padding: 2px 4px;
+  animation: fexd-keyglow-k 3s ease-in-out infinite;
+}
+@keyframes fexd-keyglow-k {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(242, 101, 34, 0); }
+  50%      { box-shadow: 0 0 9px 0 rgba(242, 101, 34, 0.45); }
+}
+
+/* Pictogram 6: red shield (never column). */
+.fexd-shield {
+  width: 12px;
+  height: 14px;
+  background: #fca5a5;
+  clip-path: polygon(50% 0%, 100% 18%, 100% 58%, 50% 100%, 0% 58%, 0% 18%);
+  opacity: 0.92;
+}
+
+/* Fix band — five pictorial plates. */
+.fexd-plate {
+  position: relative;
+  flex: 1;
+  min-height: 148px;
+  border-radius: 14px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background:
+    radial-gradient(120% 90% at 50% 0%, rgba(242, 101, 34, 0.06), transparent 62%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.032), rgba(255, 255, 255, 0.008));
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  overflow: hidden;
+}
+
+/* Plate components: setting rows. */
+.fexd-setrow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 8px 10px;
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.09);
+  background: rgba(255, 255, 255, 0.035);
+}
+
+/* CC toggle switch: off row (grey) and on row (cyan, blinking knob). */
+.fexd-ccsw {
+  position: relative;
+  flex: none;
+  width: 30px;
+  height: 16px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.16);
+}
+.fexd-ccsw::after {
+  content: "";
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: #94a3b8;
+}
+.fexd-ccsw--on {
+  background: rgba(6, 182, 212, 0.3);
+  border-color: rgba(6, 182, 212, 0.55);
+}
+.fexd-ccsw--on::after {
+  left: 16px;
+  background: #22d3ee;
+  box-shadow: 0 0 8px rgba(34, 211, 238, 0.75);
+  animation: fgv-dotblink-k 2.2s ease-in-out infinite;
+}
+
+/* Plan meter bars with cap needle. */
+.fexd-meter {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 0;
+}
+.fexd-track {
+  position: relative;
+  flex: 1;
+  height: 9px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.07);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+.fexd-fill {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  border-radius: 999px;
+  background: linear-gradient(90deg, #fb923c, #f97316);
+  box-shadow: inset 0 0 5px rgba(255, 255, 255, 0.35);
+  animation: fexd-fillbreath-k 3.4s ease-in-out infinite;
+}
+@keyframes fexd-fillbreath-k {
+  0%, 100% { filter: brightness(1); }
+  50%      { filter: brightness(1.28); }
+}
+.fexd-needle {
+  position: absolute;
+  top: -4px;
+  bottom: -4px;
+  width: 2px;
+  border-radius: 1px;
+  background: #ffffff;
+  box-shadow: 0 0 8px rgba(255, 255, 255, 0.65);
+}
+
+/* Travelling-pipe loops (key exchange). */
+.fexd-strand {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 9px;
+  border-radius: 9px;
+  border: 1px solid rgba(255, 255, 255, 0.09);
+  background: rgba(255, 255, 255, 0.035);
+}
+.fexd-pipe {
+  position: relative;
+  flex: 1;
+  height: 12px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+.fexd-pipe::after {
+  content: "";
+  position: absolute;
+  top: 2px;
+  left: 2%;
+  width: 9px;
+  height: 6px;
+  border-radius: 999px;
+  background: #22d3ee;
+  box-shadow: 0 0 10px rgba(34, 211, 238, 0.8);
+  opacity: 0;
+  animation: fexd-run-k 2.6s ease-in-out infinite;
+}
+@keyframes fexd-run-k {
+  0%   { left: 2%;  opacity: 0; }
+  18%  { opacity: 1; }
+  82%  { opacity: 1; }
+  100% { left: 90%; opacity: 0; }
+}
+
+/* Two-lane panel-vs-bot diagram: green dot flows, red dot stops at wall. */
+.fexd-lanewall {
+  position: relative;
+  flex: 1;
+  height: 10px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  overflow: hidden;
+}
+.fexd-lanewall::before {
+  content: "";
+  position: absolute;
+  top: 2px;
+  width: 6px;
+  height: 4px;
+  border-radius: 999px;
+  opacity: 0;
+  animation: fexd-run-k 2.8s ease-in-out infinite;
+}
+.fexd-lanewall--ok::before {
+  left: 2%;
+  background: #34d399;
+  box-shadow: 0 0 8px rgba(52, 211, 153, 0.75);
+}
+.fexd-lanewall--bl::before {
+  left: 2%;
+  background: #f87171;
+  box-shadow: 0 0 8px rgba(248, 113, 113, 0.75);
+  animation: fexd-blk-k 2.8s ease-in-out infinite;
+}
+@keyframes fexd-blk-k {
+  0%   { left: 2%;  opacity: 0; }
+  18%  { opacity: 1; }
+  58%  { left: 62%; opacity: 1; }
+  76%  { left: 62%; opacity: 0; }
+  100% { left: 62%; opacity: 0; }
+}
+.fexd-lanewall--bl::after {
+  content: "";
+  position: absolute;
+  top: -4px;
+  bottom: -4px;
+  left: 68%;
+  width: 3px;
+  border-radius: 2px;
+  background: #f87171;
+  box-shadow: 0 0 8px rgba(248, 113, 113, 0.6);
+}
+
+/* Manual upload drop scene. */
+.fexd-drop {
+  position: relative;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  height: 52px;
+  padding-bottom: 4px;
+}
+.fexd-ufile {
+  width: 64px;
+  padding: 6px 8px 7px;
+  border-radius: 8px;
+  border: 1px solid rgba(242, 101, 34, 0.4);
+  background: rgba(242, 101, 34, 0.09);
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  animation: fexd-drop-k 3.6s ease-in-out infinite;
+}
+@keyframes fexd-drop-k {
+  0%   { transform: translateY(-14px); opacity: 0; }
+  30%  { transform: translateY(0); opacity: 1; }
+  88%  { transform: translateY(0); opacity: 1; }
+  100% { transform: translateY(-4px); opacity: 0.35; }
+}
+.fexd-upbar {
+  height: 4px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.09);
+  overflow: hidden;
+}
+.fexd-upbar b {
+  display: block;
+  height: 100%;
+  border-radius: 999px;
+  background: #fb923c;
+  animation: fexd-upbar-k 3.6s ease-out infinite;
+}
+@keyframes fexd-upbar-k {
+  0%   { width: 0; }
+  62%  { width: 100%; }
+  100% { width: 100%; }
+}
+
+/* Capzone live read-dot in the truth left scene. */
+.fexd-readdot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #34d399;
+  box-shadow: 0 0 8px rgba(52, 211, 153, 0.8);
+  animation: fgv-dotblink-k 2.4s ease-in-out infinite;
+}
+
+@media (max-width: 760px) {
+  .fexd-ledger { grid-template-columns: 1fr; }
+  .fexd-plate { min-height: 128px; }
+}
+
+/* Batch D addendum — extension page specifics. */
+.fex-island {
+  position: relative;
+  overflow: hidden;
+}
+@keyframes fexd-islandshine-k {
+  0%   { transform: translateX(-140%) skewX(-20deg); opacity: 0; }
+  15%  { opacity: 0.6; }
+  46%  { opacity: 0.6; }
+  72%  { opacity: 0; }
+  100% { transform: translateX(380%) skewX(-20deg); opacity: 0; }
+}
+.fex-island::after {
+  content: "";
+  position: absolute;
+  top: -12%;
+  bottom: -12%;
+  width: 34%;
+  pointer-events: none;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(255, 255, 255, 0.018) 30%,
+    rgba(242, 101, 34, 0.11) 50%,
+    rgba(255, 255, 255, 0.018) 70%,
+    transparent 100%
+  );
+  transform: translateX(-140%) skewX(-20deg);
+  animation: fexd-islandshine-k 9.5s cubic-bezier(0.45, 0, 0.25, 1) infinite;
+}
+.fexd-postchip {
+  align-self: flex-start;
+  display: inline-flex;
+  align-items: center;
+  font-family: var(--fex-mono);
+  font-size: 9px;
+  letter-spacing: 0.08em;
+  color: #22d3ee;
+  border: 1px solid rgba(6, 182, 212, 0.35);
+  background: rgba(6, 182, 212, 0.07);
+  border-radius: 6px;
+  padding: 5px 9px;
+  white-space: nowrap;
+}
+.fexd-privchip {
+  align-self: flex-start;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  font-family: var(--fex-mono);
+  font-size: 9px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: #8b8f9a;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(255, 255, 255, 0.04);
+  padding: 6px 10px;
+  border-radius: 999px;
+}
+.fexd-privchip:hover { color: #d3d6de; }
+.fex-capzone .fex-ztag {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}

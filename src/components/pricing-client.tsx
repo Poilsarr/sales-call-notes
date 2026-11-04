@@ -140,6 +140,8 @@ export default function PricingClient({
   const [paddleError, setPaddleError] = useState(false);
   // Ambient pipe-dots in the migration band pause off-screen + reduced motion.
   const migrateSectionRef = useAmbientLive<HTMLElement>();
+  // Hero island: fph-chrome sweep + proline pulse only animate while on screen.
+  const heroLiveRef = useAmbientLive<HTMLDivElement>();
 
   // Map tier name -> formatted total string from Paddle PricePreview.
   const [prices, setPrices] = useState<Record<string, string>>({});
@@ -294,7 +296,7 @@ export default function PricingClient({
           you, so visitors don't have to scroll to picture the value. */}
       <section className="relative pt-32 pb-12 sm:pt-36 sm:pb-16 lg:pt-44 lg:pb-20 px-5 sm:px-8 lg:px-12 bg-[#EFEFEF] overflow-hidden">
         <div className="max-w-[1440px] mx-auto">
-          <div className="grid grid-cols-1 lg:grid-cols-[1.1fr_0.9fr] gap-10 lg:gap-16 items-end">
+          <div className="grid grid-cols-1 lg:grid-cols-[0.85fr_1.15fr] gap-10 lg:gap-16 items-end">
             {/* LEFT: eyebrow + headline + sub + toggle */}
             <div className="text-center lg:text-left">
               <div className="eyebrow inline-flex items-center gap-2 mb-5 sm:mb-6">
@@ -305,7 +307,7 @@ export default function PricingClient({
                 <br />
                 <span className="text-gray-400">Scale when you need to.</span>
               </h1>
-              <p className="text-gray-500 max-w-xl lg:mx-0 mx-auto text-[14px] mb-8">
+              <p className="sr-only">
                 No hidden fees. No AI credit traps. Prices shown in your local currency. Start
                 free, upgrade only when your team grows.
               </p>
@@ -319,7 +321,7 @@ export default function PricingClient({
                 The still does the talking; copy collapses to a mono proof
                 ledger. .product-chrome supplies the browser strip; pinned
                 caption + strip strings stay verbatim. */}
-            <div className="relative">
+            <div className="relative" ref={heroLiveRef} data-live="false">
               <div className="fph-island">
                 <div className="fph-islandmeta">
                   <span className="fph-ilabel"><b>Pro</b> · What you get</span>

@@ -50,13 +50,13 @@ export default function ExtensionPage() {
                   <span className="sm:hidden"> </span>the moment you press
                   Send.
                 </h1>
-                <p className="text-[15px] text-gray-500 max-w-xl mt-4 mb-8">
+                <p className="sr-only">
                   The side panel captures the meeting-tab audio and the live
                   captions while you record, then ships a transcribed call to
                   your dashboard when you press Send. Nothing captures before
                   you press Record.
                 </p>
-                <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 sm:gap-5">
+                <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 sm:gap-5 mt-8">
                   <a
                     href="/gauge-extension-1.0.0.zip"
                     download="gauge-extension-1.0.0.zip"
@@ -612,7 +612,7 @@ export default function ExtensionPage() {
               <br />
               <span className="fex-soft">Two brackets drawn on the tab.</span>
             </h2>
-            <p className="fex-subplain">
+            <p className="fex-subplain sr-only">
               The scraper reads only live-caption regions and the tab title on
               meeting pages. Capture starts on your Record click and the
               stream is released on Stop.
@@ -635,7 +635,10 @@ export default function ExtensionPage() {
                   </div>
                   <div className="fex-winbody">
                     <div className="fex-capzone">
-                      <span className="fex-ztag">Reads · aria-live region</span>
+                      <span className="fex-ztag">
+                        <i aria-hidden="true" className="fexd-readdot" />
+                        Reads · aria-live region
+                      </span>
                       <div className="fex-capl" style={{ width: "74%" }} />
                       <div className="fex-capl fex-capl-b" />
                       <div className="fex-capl" style={{ width: "52%" }} />
@@ -671,8 +674,127 @@ export default function ExtensionPage() {
                 </div>
               </div>
 
-              {/* right: the real capture-scope table */}
+              {/* right: pictorial capture/never ledger; the real */}
+              {/* capture-scope table stays below, screen-reader only. */}
               <div className="fex-maj fex-truthcard">
+                <div className="fexd-ledger">
+                  <div className="fexd-col fexd-col--cap">
+                    <p className="fexd-colhead fexd-colhead--cap">
+                      Captures
+                    </p>
+                    <div className="fexd-tile">
+                      <span className="fexd-ic fexd-ic--cap" aria-hidden="true">
+                        <span className="fexd-bars">
+                          <b />
+                          <b />
+                          <b />
+                        </span>
+                      </span>
+                      <span className="fexd-cat">Caption text</span>
+                    </div>
+                    <div className="fexd-tile">
+                      <span className="fexd-ic fexd-ic--cap" aria-hidden="true">
+                        <span className="fexd-wave">
+                          <b />
+                          <b />
+                          <b />
+                          <b />
+                          <b />
+                        </span>
+                      </span>
+                      <span className="fexd-cat">Tab audio</span>
+                    </div>
+                    <div className="fexd-tile">
+                      <span className="fexd-ic fexd-ic--cap" aria-hidden="true">
+                        <span className="fexd-bra">
+                          <i />
+                          <i />
+                          <i />
+                        </span>
+                      </span>
+                      <span className="fexd-cat">Call name</span>
+                    </div>
+                    <div className="fexd-tile">
+                      <span className="fexd-ic fexd-ic--cap" aria-hidden="true">
+                        <span className="fexd-bufs">
+                          <b />
+                          <b />
+                          <b />
+                          <b />
+                          <b />
+                          <b />
+                          <b />
+                          <b />
+                          <b />
+                        </span>
+                      </span>
+                      <span className="fexd-cat">Local buffer</span>
+                    </div>
+                    <div className="fexd-tile">
+                      <span className="fexd-ic fexd-ic--cap" aria-hidden="true">
+                        <span className="fexd-keychip">KEY</span>
+                      </span>
+                      <span className="fexd-cat">Session key</span>
+                    </div>
+                  </div>
+
+                  <div className="fexd-col fexd-col--never">
+                    <p className="fexd-colhead fexd-colhead--never">
+                      Never captures
+                    </p>
+                    <div className="fexd-tile">
+                      <span
+                        className="fexd-ic fexd-ic--never"
+                        aria-hidden="true"
+                      >
+                        <span className="fexd-shield" />
+                      </span>
+                      <span className="fexd-cat">Pre-record</span>
+                    </div>
+                    <div className="fexd-tile">
+                      <span
+                        className="fexd-ic fexd-ic--never"
+                        aria-hidden="true"
+                      >
+                        <span className="fexd-shield" />
+                      </span>
+                      <span className="fexd-cat">Microphone</span>
+                    </div>
+                    <div className="fexd-tile">
+                      <span
+                        className="fexd-ic fexd-ic--never"
+                        aria-hidden="true"
+                      >
+                        <span className="fexd-shield" />
+                      </span>
+                      <span className="fexd-cat">Camera</span>
+                    </div>
+                    <div className="fexd-tile">
+                      <span
+                        className="fexd-ic fexd-ic--never"
+                        aria-hidden="true"
+                      >
+                        <span className="fexd-shield" />
+                      </span>
+                      <span className="fexd-cat">Other tabs</span>
+                    </div>
+                    <div className="fexd-tile">
+                      <span
+                        className="fexd-ic fexd-ic--never"
+                        aria-hidden="true"
+                      >
+                        <span className="fexd-shield" />
+                      </span>
+                      <span className="fexd-cat">Account data</span>
+                    </div>
+                  </div>
+                </div>
+
+                <Link href="/privacy" className="fexd-privchip">
+                  Full disclosure → privacy policy
+                </Link>
+
+                <div className="sr-only">
                 <table className="fex-table">
                   <caption className="sr-only">
                     Capture scope — what the side panel reads and what it
@@ -754,6 +876,7 @@ export default function ExtensionPage() {
                     privacy policy
                   </Link>
                 </p>
+                </div>
               </div>
             </div>
           </div>
@@ -771,7 +894,7 @@ export default function ExtensionPage() {
                   <br />
                   <span className="fex-soft">Five fixes, five real codes.</span>
                 </h2>
-                <p className="fex-sub">
+                <p className="fex-sub sr-only">
                   The panel says one of these five — match the chip, take the
                   fix
                 </p>
@@ -823,12 +946,36 @@ export default function ExtensionPage() {
                   <i aria-hidden="true" />
                   cc off
                 </span>
-                <h3>No captions are captured</h3>
-                <p className="fex-fx">
+                <h3 className="sr-only">No captions are captured</h3>
+                <p className="sr-only">
                   Captions are off on the call tab. The panel reads only{" "}
                   <b>aria-live caption regions</b> — turn <b>CC on</b> and the
                   log starts moving.
                 </p>
+                <div className="fexd-plate">
+                  <div className="fexd-setrow">
+                    <span className="fex-cc" style={{ opacity: 0.45 }}>
+                      CC
+                    </span>
+                    <span className="fexd-ccsw" aria-hidden="true" />
+                    <span className="fex-capm">captions off</span>
+                  </div>
+                  <div className="fexd-setrow">
+                    <span className="fex-cc">CC</span>
+                    <span
+                      className="fexd-ccsw fexd-ccsw--on"
+                      aria-hidden="true"
+                    />
+                    <span className="fex-capm fex-capm-hot">
+                      captions live
+                    </span>
+                  </div>
+                  <div className="fexd-setrow">
+                    <span className="fex-capm">panel</span>
+                    <span className="fexd-pipe" aria-hidden="true" />
+                    <span className="fex-capm fex-capm-hot">log moves</span>
+                  </div>
+                </div>
               </article>
 
               {/* 2 */}
@@ -837,15 +984,35 @@ export default function ExtensionPage() {
                   <i aria-hidden="true" />
                   HTTP 413
                 </span>
-                <h3>Upload fails with 413</h3>
-                <p className="fex-fx">
+                <h3 className="sr-only">Upload fails with 413</h3>
+                <p className="sr-only">
                   The take is over your plan&apos;s server-side cap. Record a
                   shorter segment, or upgrade, then press <b>Send</b> again.
                 </p>
-                <div className="fex-caps">
-                  <span className="fex-capm">Free 30MB</span>
-                  <span className="fex-capm fex-capm-hot">Pro 200MB</span>
-                  <span className="fex-capm fex-capm-hot">Business 500MB</span>
+                <div className="fexd-plate">
+                  <div className="fexd-meter">
+                    <span className="fex-capm">Free 30MB</span>
+                    <span className="fexd-track">
+                      <span className="fexd-fill" style={{ width: "46%" }} />
+                      <span className="fexd-needle" style={{ left: "30%" }} />
+                    </span>
+                  </div>
+                  <div className="fexd-meter">
+                    <span className="fex-capm fex-capm-hot">Pro 200MB</span>
+                    <span className="fexd-track">
+                      <span className="fexd-fill" style={{ width: "46%" }} />
+                      <span className="fexd-needle" style={{ left: "58%" }} />
+                    </span>
+                  </div>
+                  <div className="fexd-meter">
+                    <span className="fex-capm fex-capm-hot">
+                      Business 500MB
+                    </span>
+                    <span className="fexd-track">
+                      <span className="fexd-fill" style={{ width: "46%" }} />
+                      <span className="fexd-needle" style={{ left: "88%" }} />
+                    </span>
+                  </div>
                 </div>
               </article>
 
@@ -855,13 +1022,29 @@ export default function ExtensionPage() {
                   <i aria-hidden="true" />
                   HTTP 401 · 403
                 </span>
-                <h3>Key rejected with 401 or 403</h3>
-                <p className="fex-fx">
+                <h3 className="sr-only">Key rejected with 401 or 403</h3>
+                <p className="sr-only">
                   &ldquo;Key rejected (401/403).&rdquo; Mint fresh via{" "}
                   <code>POST /api/v1/keys/exchange</code> or from{" "}
                   <Link href="/settings?tab=api-keys">Settings → API Keys</Link>
                   , paste, press <b>Save</b>.
                 </p>
+                <div className="fexd-plate">
+                  <code className="fexd-postchip">
+                    POST /api/v1/keys/exchange
+                  </code>
+                  <div className="fexd-strand">
+                    <span className="fex-capm fex-capm-hot">re-mint</span>
+                    <span className="fexd-pipe" aria-hidden="true" />
+                    <span className="fex-keychip">cn_live_…</span>
+                  </div>
+                  <div className="fexd-setrow">
+                    <span className="fex-capm">paste</span>
+                    <span className="fex-savebtn">
+                      Save<s aria-hidden="true" />
+                    </span>
+                  </div>
+                </div>
               </article>
 
               {/* 4 */}
@@ -870,13 +1053,26 @@ export default function ExtensionPage() {
                   <i aria-hidden="true" />
                   bots api
                 </span>
-                <h3>Should I use a meeting bot instead?</h3>
-                <p className="fex-fx">
+                <h3 className="sr-only">Should I use a meeting bot instead?</h3>
+                <p className="sr-only">
                   In the room? Use the panel. Call you can&apos;t join — or
                   with no captions — dispatch a bot via{" "}
                   <code>POST /api/v1/bots</code>. Same dashboard, same call
                   pages.
                 </p>
+                <div className="fexd-plate">
+                  <code className="fexd-postchip">POST /api/v1/bots</code>
+                  <div className="fexd-strand">
+                    <span className="fex-capm fex-capm-hot">in room</span>
+                    <span className="fexd-pipe" aria-hidden="true" />
+                    <span className="fex-capm">panel</span>
+                  </div>
+                  <div className="fexd-strand">
+                    <span className="fex-capm">no captions</span>
+                    <span className="fexd-pipe" aria-hidden="true" />
+                    <span className="fex-capm fex-capm-hot">bot</span>
+                  </div>
+                </div>
               </article>
 
               {/* 5 */}
@@ -885,12 +1081,32 @@ export default function ExtensionPage() {
                   <i aria-hidden="true" />
                   manual upload
                 </span>
-                <h3>Automatic upload is unavailable</h3>
-                <p className="fex-fx">
+                <h3 className="sr-only">Automatic upload is unavailable</h3>
+                <p className="sr-only">
                   Press <b>Stop</b>, save the captured audio locally, upload by
                   hand at <Link href="/app/record">/app/record</Link>. Your
                   captions persist — nothing lost.
                 </p>
+                <div className="fexd-plate">
+                  <div className="fexd-drop">
+                    <span className="fexd-ufile" aria-hidden="true">
+                      <span className="fexd-upbar">
+                        <b />
+                      </span>
+                    </span>
+                  </div>
+                  <div className="fexd-strand">
+                    <span className="fex-capm fex-capm-hot">save locally</span>
+                    <span className="fexd-pipe" aria-hidden="true" />
+                    <span className="fex-capm">dashboard</span>
+                  </div>
+                  <div className="fexd-setrow">
+                    <span className="fex-capm">fallback page</span>
+                    <Link href="/app/record" className="fex-capm fex-capm-hot">
+                      /app/record
+                    </Link>
+                  </div>
+                </div>
               </article>
             </div>
           </div>
@@ -909,11 +1125,11 @@ export default function ExtensionPage() {
                     <h2 className="text-[clamp(1.5rem,4vw,2.6rem)] font-medium leading-[1.12] tracking-[-0.02em] mb-3 text-gray-900">
                       Press Record on your next call.
                     </h2>
-                    <p className="text-gray-500 mb-8 text-[14px] max-w-xl lg:max-w-md mx-auto lg:mx-0">
+                    <p className="sr-only">
                       Same Gauge account. Recent calls, health scores, and the
                       Slack digest work the moment your key is saved.
                     </p>
-                    <div className="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-4">
+                    <div className="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-4 mb-4">
                       <Link
                         href="/app/record"
                         className="group inline-flex items-center gap-2 bg-[#F26522] hover:bg-[#e05a1a] text-white text-[13px] rounded-full pl-5 pr-2 py-2"
